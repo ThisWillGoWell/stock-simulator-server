@@ -4,6 +4,8 @@ import (
 	"math"
 	"math/rand"
 	"time"
+	"fmt"
+	"stock-server/utils"
 )
 
 const (
@@ -15,20 +17,23 @@ const (
 )
 
 type StockManager struct {
-	stocks map[string]*Stock
-	stockUpdateChannel chan *Stock
+	stocks             map[string]*Stock
+	StockUpdateChannel utils.ChannelDuplicator
 }
 
 
 func (manager *StockManager) StartSimulateStocks(intervalLength time.Duration){
+	ticker := time.NewTicker(intervalLength)
+
 	go func() {
-		for _ , stock := range manager.stocks{
-			stock.priceChanger.change(stock)
-			manager.stockUpdateChannel <- stock
+		for {
+			for _ , stock := range manager.stocks{
+				stock.PriceChanger.change(stock)
+			}
+			<-ticker.C
 		}
+
 	}()
-
-
 }
 
 func (manager *StockManager) AddStock(tickerId, name string, startPrice float64){
@@ -36,28 +41,27 @@ func (manager *StockManager) AddStock(tickerId, name string, startPrice float64)
 		Name: name,
 		TickerId: tickerId,
 		CurrentPrice: startPrice,
+		UpdateChannel: utils.MakeDuplicator(),
 	}
 
-	stock.priceChanger = &RandomPrice{
-		targetPrice: 100.0,
-		percentToChange: .1,
-		volatility: 5,
+	stock.PriceChanger = &RandomPrice{
+		TargetPrice:     100.0,
+		PercentToChange: 100,
+		Volatility:      5,
 	}
 
 	manager.stocks[tickerId] = &stock
-
-	manager.stockUpdateChannel <- &stock
+	manager.StockUpdateChannel.RegisterInput(stock.UpdateChannel.RegisterOutput())
 }
 
-func (manager *StockManager) ModifyOpenShares(tickerID string, amount float64){
-	 manager.stocks[tickerID].openShares = manager.stocks[tickerID].openShares + amount
-	 manager.stockUpdateChannel <- manager.stocks[tickerID]
+func (stock *Stock) ModifyOpenShares(amount float64){
+	stock.OpenShares = stock.OpenShares + amount
+	stock.UpdateChannel.Offer(stock)
 }
 
 func NewStockManager() *StockManager{
 	return &StockManager{
-		stocks: make(map[string]*Stock),
-		stockUpdateChannel: make(chan *Stock),
+		stocks:             make(map[string]*Stock),
 	}
 }
 
@@ -67,9 +71,10 @@ type Stock struct {
 	Name         string  `json:"name"`
 	TickerId     string  `json:"ticker_id"`
 	CurrentPrice float64 `json:"current_price"`
-	priceChanger  PriceChange
+	PriceChanger PriceChange `json:"price_changer"`
 	TotalShares  float64 `json:"total_shares"`
-	openShares   float64 `json:"open_shares"`
+	OpenShares   float64 `json:"open_shares"`
+	UpdateChannel *utils.ChannelDuplicator
 }
 
 
@@ -81,26 +86,41 @@ type PriceChange interface {
 
 // Random Price implements priceChange
 type RandomPrice struct {
-	targetPrice     float64
-	percentToChange float64
-	volatility      float64
+	TargetPrice     float64 `json:"target_price"`
+	PercentToChange float64 `json:"change_percent"`
+	Volatility      float64 `json:"volatility"`
 }
 
 //change the stock using the changer
 func (randPrice *RandomPrice) change(stock *Stock){
-	if rand.Float64() <= randPrice.percentToChange {
+	if rand.Float64() <= randPrice.PercentToChange {
 		randPrice.changeValues()
 	}
-	stock.CurrentPrice = stock.CurrentPrice + ((randPrice.targetPrice - stock.CurrentPrice) /
-		MapNum(randPrice.volatility, volatilityMin, volatilityMax, volatilityMinTurns, volatilityMaxTurns))
+
+	//can make this a lot more interesting, like adding in the ability for it to drop
+	change :=  (randPrice.TargetPrice - stock.CurrentPrice) /
+		MapNum(randPrice.Volatility, volatilityMin, volatilityMax, volatilityMinTurns, volatilityMaxTurns)
+	fmt.Println("change: ", change)
+
+	stock.CurrentPrice = stock.CurrentPrice + change
 }
 
 // change the price of the changer
 func (randPrice *RandomPrice)changeValues(){
-	lowerTarget := RoundPlus(randPrice.targetPrice * (1 - randPrice.volatility)/ 11 * 100, 2)
-	upperTarget := RoundPlus(randPrice.targetPrice * (1 + randPrice.volatility)/ 11 * 100, 2)
-	randPrice.targetPrice = RoundPlus(RandRange(lowerTarget, upperTarget) / 100.0, 2)
-	randPrice.volatility = RandRange(volatilityMin, volatilityMax)
+
+	// get what the upper and lower bounds in % of the current price
+	window := MapNum(randPrice.Volatility, volatilityMin, volatilityMax, 0, 0.3)
+	fmt.Println("window", window)
+	// select a random number on +- that %
+	newTarget := MapNum(rand.Float64(), 0, 1, randPrice.TargetPrice * (1 - window/2), randPrice.TargetPrice * (1 + window))
+
+	//need to deiced if the floor should happen before or after
+	if newTarget < 0{
+		newTarget = 0
+	}
+
+	randPrice.TargetPrice = newTarget
+	randPrice.Volatility = RandRange(volatilityMin, volatilityMax)
 }
 
 /** ########################################
@@ -124,8 +144,15 @@ func RandRange(min, max float64) float64 {
 	return MapNum(rand.Float64(), 0, 1, min, max)
 }
 
+
 // map a number from one range to another range
 func MapNum(value, inMin, inMax, outMin, outMax float64) float64{
+	if value >= inMax{
+		return outMax
+	}
+	if value <= inMin{
+		return outMin
+	}
 	return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin
 }
 
