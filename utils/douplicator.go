@@ -6,7 +6,6 @@ import (
 )
 
 type ChannelDuplicator struct {
-	inputs   []chan interface{}
 	transfer chan interface{}
 	outputs  []chan interface{}
 }
@@ -22,11 +21,11 @@ func MakeDuplicator() *ChannelDuplicator {
 	return chDoup
 }
 
-func (ch *ChannelDuplicator) RegisterOutput() chan interface{} {
+func (ch *ChannelDuplicator) GetOutput() chan interface{} {
 	// make a channel with a 10 buffer size
-	newChannel := make(chan interface{}, 10)
-	ch.outputs = append(ch.outputs, newChannel)
-	return newChannel
+	newOutput := make(chan interface{}, 10)
+	ch.outputs = append(ch.outputs, newOutput)
+	return newOutput
 }
 
 func (ch *ChannelDuplicator) UnregisterOutput(remove chan interface{}) {
@@ -84,7 +83,7 @@ func main() {
 	chDoup.RegisterInput(input1)
 	chDoup.RegisterInput(input2)
 	for i := 0; i < 3; i++ {
-		output := chDoup.RegisterOutput()
+		output := chDoup.GetOutput()
 		go func() {
 			for value := range output {
 				fmt.Println("recieved: ", value)

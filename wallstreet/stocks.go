@@ -36,6 +36,10 @@ func (manager *StockManager) StartSimulateStocks(intervalLength time.Duration){
 	}()
 }
 
+func (manager *StockManager) getStock(ticker string)(*Stock){
+	return manager.stocks[ticker]
+}
+
 func (manager *StockManager) AddStock(tickerId, name string, startPrice float64){
 	stock := Stock{
 		Name: name,
@@ -51,7 +55,8 @@ func (manager *StockManager) AddStock(tickerId, name string, startPrice float64)
 	}
 
 	manager.stocks[tickerId] = &stock
-	manager.StockUpdateChannel.RegisterInput(stock.UpdateChannel.RegisterOutput())
+
+	manager.StockUpdateChannel.RegisterInput(stock.UpdateChannel.GetOutput())
 }
 
 func (stock *Stock) ModifyOpenShares(amount float64){
@@ -74,9 +79,15 @@ type Stock struct {
 	PriceChanger PriceChange `json:"price_changer"`
 	TotalShares  float64 `json:"total_shares"`
 	OpenShares   float64 `json:"open_shares"`
+	amountOwned  map[*Portfolio]float64 `json:"ownage"`
 	UpdateChannel *utils.ChannelDuplicator
 }
 
+
+
+func (stock *Stock)ValidatePurchase(portfolio Portfolio, float64 float64)  {
+
+}
 
 
 // Some thing that can take in a stock and change the current price
@@ -103,6 +114,9 @@ func (randPrice *RandomPrice) change(stock *Stock){
 	fmt.Println("change: ", change)
 
 	stock.CurrentPrice = stock.CurrentPrice + change
+
+	stock.UpdateChannel.Offer(stock)
+
 }
 
 // change the price of the changer
@@ -122,6 +136,9 @@ func (randPrice *RandomPrice)changeValues(){
 	randPrice.TargetPrice = newTarget
 	randPrice.Volatility = RandRange(volatilityMin, volatilityMax)
 }
+
+
+
 
 /** ########################################
 *           Math Helper Functions
