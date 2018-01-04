@@ -3,9 +3,9 @@ package wallstreet
 import (
 	"math"
 	"math/rand"
-	"time"
 	"fmt"
 	"stock-server/utils"
+	"time"
 )
 
 const (
@@ -22,25 +22,20 @@ type StockManager struct {
 }
 
 
-func (manager *StockManager) StartSimulateStocks(intervalLength time.Duration){
-	ticker := time.NewTicker(intervalLength)
-
-	go func() {
-		for {
-			for _ , stock := range manager.stocks{
-				stock.PriceChanger.change(stock)
-			}
-			<-ticker.C
-		}
-
-	}()
+func (manager *StockManager) changeStock(){
+	for _ , stock := range manager.stocks {
+		stock.PriceChanger.change(stock)
+	}
 }
 
 func (manager *StockManager) getStock(ticker string)(*Stock){
 	return manager.stocks[ticker]
 }
 
-func (manager *StockManager) AddStock(tickerId, name string, startPrice float64){
+func (manager *StockManager) addStock(tickerId, name string, startPrice , runPercent float64) *Stock{
+	if _, ok := manager.stocks[tickerId]; ok{
+		return nil
+	}
 	stock := Stock{
 		Name: name,
 		TickerId: tickerId,
@@ -49,6 +44,7 @@ func (manager *StockManager) AddStock(tickerId, name string, startPrice float64)
 	}
 
 	stock.PriceChanger = &RandomPrice{
+		RunPercent:      runPercent,
 		TargetPrice:     100.0,
 		PercentToChange: 100,
 		Volatility:      5,
@@ -57,16 +53,12 @@ func (manager *StockManager) AddStock(tickerId, name string, startPrice float64)
 	manager.stocks[tickerId] = &stock
 
 	manager.StockUpdateChannel.RegisterInput(stock.UpdateChannel.GetOutput())
+	return &stock
 }
 
-func (stock *Stock) ModifyOpenShares(amount float64){
-	stock.OpenShares = stock.OpenShares + amount
-	stock.UpdateChannel.Offer(stock)
-}
-
-func NewStockManager() *StockManager{
+func buildStockManager() *StockManager{
 	return &StockManager{
-		stocks:             make(map[string]*Stock),
+		stocks: make(map[string]*Stock),
 	}
 }
 
@@ -77,9 +69,6 @@ type Stock struct {
 	TickerId     string  `json:"ticker_id"`
 	CurrentPrice float64 `json:"current_price"`
 	PriceChanger PriceChange `json:"price_changer"`
-	TotalShares  float64 `json:"total_shares"`
-	OpenShares   float64 `json:"open_shares"`
-	amountOwned  map[*Portfolio]float64 `json:"ownage"`
 	UpdateChannel *utils.ChannelDuplicator
 }
 
@@ -97,6 +86,7 @@ type PriceChange interface {
 
 // Random Price implements priceChange
 type RandomPrice struct {
+	RunPercent      float64 `json:"run_percent"`
 	TargetPrice     float64 `json:"target_price"`
 	PercentToChange float64 `json:"change_percent"`
 	Volatility      float64 `json:"volatility"`
@@ -104,6 +94,9 @@ type RandomPrice struct {
 
 //change the stock using the changer
 func (randPrice *RandomPrice) change(stock *Stock){
+	if(rand.Float64() <= randPrice.RunPercent){
+		return
+	}
 	if rand.Float64() <= randPrice.PercentToChange {
 		randPrice.changeValues()
 	}
