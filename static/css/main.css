@@ -383,10 +383,10 @@ input[type=password]:focus ~ .input-focus-border{
     -webkit-box-shadow: 0px -4px 23px 2px rgba(0,0,0,0.18);
     -moz-box-shadow: 0px -4px 23px 2px rgba(0,0,0,0.18);
     box-shadow: 0px -4px 23px 2px rgba(0,0,0,0.18);
-    -moz-transition: all ease-in-out 0.13s;
-    -o-transition: all ease-in-out 0.13s;
-    -webkit-transition: all ease-in-out 0.13s;
-    transition: all ease-in-out 0.13s;
+    -moz-transition: all cubic-bezier(.23,1,.32,1) 0.7s;
+    -o-transition: all cubic-bezier(.23,1,.32,1) 0.7s;
+    -webkit-transition: all cubic-bezier(.23,1,.32,1) 0.7s;
+    transition: all cubic-bezier(.23,1,.32,1) 0.7s;
 }
 
 #chat-module--container.closed {
@@ -411,8 +411,19 @@ input[type=password]:focus ~ .input-focus-border{
     height: 40px;
     text-align: left;
     box-shadow: 0 13px 15px rgba(0,0,0,0.001), 0 3px 5px rgba(0,0,0,0.05);
+    -moz-transition: all ease-in-out 0.13s;
+    -o-transition: all ease-in-out 0.13s;
+    -webkit-transition: all ease-in-out 0.13s;
+    transition: all ease-in-out 0.13s;
+}
+
+#chat-module--container .chat-title-bar:hover {
+    background-color: #f7f7f7;
+    
 
 }
+
+
 
 #chat-module--container textarea{
     position: absolute;
@@ -438,7 +449,7 @@ input[type=password]:focus ~ .input-focus-border{
     top: 0;
     right: 0;
     height: 40px;
-    width: 200px;
+    width: 280px;
     background-color: transparent;
     border: none;
     z-index: 6;
@@ -452,7 +463,40 @@ input[type=password]:focus ~ .input-focus-border{
     height: 3px;
     width: 19px;
     content: "";
+    -moz-transition: all ease-in-out 0.13s;
+    -o-transition: all ease-in-out 0.13s;
+    -webkit-transition: all ease-in-out 0.13s;
+    transition: all ease-in-out 0.13s;
+}
 
+#chat-module--container.closed .chat-title-bar:before {
+    position: absolute;
+    top: 18px;
+    right: 15px;
+    background-color: #BDC3C7;
+    height: 3px;
+    width: 19px;
+    content: "";
+    transform: rotate(-90deg);
+    -moz-transition: all ease-in-out 0.13s;
+    -o-transition: all ease-in-out 0.13s;
+    -webkit-transition: all ease-in-out 0.13s;
+    transition: all ease-in-out 0.13s;
+}
+
+#chat-module--container .chat-title-bar:before {
+    position: absolute;
+    top: 18px;
+    right: 15px;
+    background-color: #BDC3C7;
+    height: 3px;
+    width: 19px;
+    content: "";
+    transform: rotate(0deg);
+    -moz-transition: all cubic-bezier(.23,1,.32,1) 0.9s;
+    -o-transition: all cubic-bezier(.23,1,.32,1) 0.9s;
+    -webkit-transition: all cubic-bezier(.23,1,.32,1) 0.9s;
+    transition: all cubic-bezier(.23,1,.32,1) 0.9s;
 }
 
 #chat-module--container .chat-title-bar span{
