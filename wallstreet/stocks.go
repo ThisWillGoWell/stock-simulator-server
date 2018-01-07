@@ -5,7 +5,6 @@ import (
 	"math/rand"
 	"fmt"
 	"stock-server/utils"
-	"time"
 )
 
 const (
@@ -70,12 +69,7 @@ type Stock struct {
 	CurrentPrice float64 `json:"current_price"`
 	PriceChanger PriceChange `json:"price_changer"`
 	UpdateChannel *utils.ChannelDuplicator
-}
-
-
-
-func (stock *Stock)ValidatePurchase(portfolio Portfolio, float64 float64)  {
-
+	lock utils.Lock
 }
 
 
@@ -94,7 +88,10 @@ type RandomPrice struct {
 
 //change the stock using the changer
 func (randPrice *RandomPrice) change(stock *Stock){
-	if(rand.Float64() <= randPrice.RunPercent){
+	stock.lock.Acquire()
+	defer stock.lock.Release()
+
+	if rand.Float64() <= randPrice.RunPercent {
 		return
 	}
 	if rand.Float64() <= randPrice.PercentToChange {
@@ -109,6 +106,7 @@ func (randPrice *RandomPrice) change(stock *Stock){
 	stock.CurrentPrice = stock.CurrentPrice + change
 
 	stock.UpdateChannel.Offer(stock)
+
 
 }
 

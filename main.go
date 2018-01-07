@@ -8,20 +8,14 @@ import (
 )
 
 func main() {
+	exchange:= wallstreet.BuildExchange(time.Second)
+	exchange.AddStock("CHUNT", "Chunt's Hats", 69, 420, time.Second * 10)
+	exchange.AddStock("KING", "Paddle King", 10, 100, time.Second * 2)
+	exchange.AddStock("CBIO", "Sebio's Streaming Services", 10, 100, time.Second)
 
-	stockManager := wallstreet.NewStockManager()
-	go func() {
-		for {
-			value, _ := json.Marshal(<-stockManager.StockUpdateChannel)
-			fmt.Println(string(value))
-		}
-	}()
+	exchange.AddPortfolio()
 
-	stockManager.AddStock("CHUNT", "Conner Hunt's Hats", 420.69)
-	stockManager.StartSimulateStocks(3 * time.Second)
+	exchange.RunExchange()
 
-	for {
-		time.Sleep(100 * time.Second)
-	}
 
 }
