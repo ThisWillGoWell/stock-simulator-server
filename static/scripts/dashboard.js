@@ -103,7 +103,7 @@ $( document ).ready(function() {
 	$('.chat-title-bar button').click(function() {
     
         $('#chat-module--container').toggleClass('closed');
-
+        $('#chat-text-input').focus();
     });
 
     $(document).keypress(function(e) {

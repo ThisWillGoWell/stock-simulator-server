@@ -24,20 +24,46 @@
 		<div class="flex--container">
 
 			<div id="login-container" class="flex--center-vert-horiz">
-				<div class="input-grp">
-					<div class="input-name">Username</div>
-					<input type="text" id="uid" class="input-full-width" name="uid" required>
-					<span class="input-focus-border"></span>
-				</div>
-				<div class="input-grp">
-					<div class="input-name">Password</div>
-					<input type="password" id="pw" class="input-full-width" name="ps" required>
-					<span class="input-focus-border"></span>
-				</div>
+				<div class="card-title-panel">
+    				<div class="card-title">Create Account</div>
+    				<i id="menu-close-btn" class="material-icons">close</i>
+    			</div>
+				<div class="card-group">
+					<div class="input-grp">
+						<div class="input-name">Username</div>
+						<input type="text" id="uid" class="input-full-width" name="uid" required>
+						<span class="input-focus-border"></span>
+					</div>
+					<div class="input-grp">
+						<div class="input-name">Password</div>
+						<input type="password" id="pw" class="input-full-width" name="ps" required>
+						<span class="input-focus-border"></span>
+					</div>
 
-				<input type="submit" value="LOGIN" class="input-full-width">
-	    		
-	    		<a href="#" class="not-active hanger-anim">create account</a>
+					<input type="submit" value="LOGIN" class="input-full-width">
+		    		
+		    		<a href="#" class="create-account-btn not-active hanger-anim create-active">create account</a>
+		    		
+		    		<!-- 
+						Make inputs disabled unless you are viewing them
+						Change Easing on "create account clicked" 
+					-->
+		    		<div id="create-account--container">
+		    			
+		    			<div class="input-grp">
+							<div class="input-name">Username</div>
+							<input type="text" id="uid" class="input-full-width" name="create-uid" required>
+							<span class="input-focus-border"></span>
+						</div>
+						<div class="input-grp">
+							<div class="input-name">Password <span>(Pro tip: Make up one just for MockStarket)</span></div>
+							<input type="password" id="pw" class="input-full-width" name="create-ps" required>
+							<span class="input-focus-border"></span>
+						</div>
+
+						<input type="submit" value="CREATE ACCOUNT" class="input-full-width">
+		    		</div>
+	    		</div>
 			</div>
 			
 

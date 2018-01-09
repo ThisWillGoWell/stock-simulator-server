@@ -24,11 +24,67 @@ $( document ).ready(function() {
 
 	});
 
+	function disableScroll() {
+	  if (window.addEventListener) // older FF
+	      window.addEventListener('DOMMouseScroll', preventDefault, false);
+	  window.onwheel = preventDefault; // modern standard
+	  window.onmousewheel = document.onmousewheel = preventDefault; // older browsers, IE
+	  window.ontouchmove  = preventDefault; // mobile
+	  document.onkeydown  = preventDefaultForScrollKeys;
+	}
 
-	// $('.mobile-nav-btn').click(function() {
-    
- //        $('#side-menu').addClass('open');
- //    });
+	function enableScroll() {
+	    if (window.removeEventListener)
+	        window.removeEventListener('DOMMouseScroll', preventDefault, false);
+	    window.onmousewheel = document.onmousewheel = null; 
+	    window.onwheel = null; 
+	    window.ontouchmove = null;  
+	    document.onkeydown = null;  
+	}
+
+	function disableWheelScroll(e){
+	    if(!e){ /* IE7, IE8, Chrome, Safari */ 
+	        e = window.event; 
+	    }
+	    if(e.preventDefault) { /* Chrome, Safari, Firefox */ 
+	        e.preventDefault(); 
+	    } 
+	    e.returnValue = false; /* IE7, IE8 */
+	}
+
+	var cardGroup = $('.card-group');
+
+	cardGroup.bind('mousewheel DOMMouseScroll',function(){ 
+        disableWheelScroll(); 
+    });
+
+	$('.create-account-btn ').click(function() {
+    	//enableScroll();
+		$('.card-title-panel').addClass('show');
+		
+
+		cardGroup.animate({
+            scrollTop: cardGroup[0].scrollHeight
+        }, 500, function(){
+        	$("input[type='text'][name='create-uid']").focus();
+        });
+
+		
+
+    });
+
+    $('.card-title-panel i').click(function() {
+    	//enableScroll();
+		$('.card-title-panel').removeClass('show');
+		
+		cardGroup.animate({
+            scrollTop: 0
+        }, 400, function(){
+        	$("input[type='text'][name='uid']").focus();
+        });
+		
+
+    });
 
  //    $('#menu-close-btn').click(function() {
  //    	$('#side-menu').removeClass('open');
