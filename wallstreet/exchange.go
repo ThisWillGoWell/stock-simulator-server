@@ -1,9 +1,13 @@
 package wallstreet
 
 import (
-	"time"
 	"stock-server/utils"
+	"time"
 )
+
+var exchanges map[string]*Exchange
+
+
 
 const TOLERANCE = 0.000001
 

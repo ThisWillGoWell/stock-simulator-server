@@ -1,4 +1,4 @@
-package client
+package user
 
 import (
 	"stock-server/utils"
