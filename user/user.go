@@ -3,7 +3,7 @@ package user
 import (
 	"stock-server/utils"
 	"errors"
-	"stock-server/wallstreet"
+	"stock-server/exchange"
 )
 
 // keep the uuid to user

@@ -1,5 +1,5 @@
 package web
-
+/*
 import (
 	"github.com/gorilla/websocket"
 	"net/http"
@@ -46,3 +46,4 @@ func startWebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+*/

@@ -1,10 +1,12 @@
-package wallstreet
+package valuable
 
 import (
 	"math"
 	"math/rand"
 	"fmt"
 	"stock-server/utils"
+	"time"
+	"errors"
 )
 
 const (
@@ -13,55 +15,31 @@ const (
 	volatilityMinTurns = 1
 	volatilityMaxTurns = 100
 
+	timeSimulationPeriod = time.Second
+
+
 )
+var timeSimulation = utils.MakeDuplicator()
 
-type StockManager struct {
+var manager = stockManager{
+	stocks: make(map[string]*Stock),
+	StockUpdateChannel: utils.MakeDuplicator(),
+}
+
+func StartStockStimulation(){
+	ticker := time.NewTicker(timeSimulationPeriod)
+	simulation := make(chan interface{})
+	timeSimulation.RegisterInput(simulation)
+	for range ticker.C {
+		simulation <- true
+	}
+	close(simulation)
+}
+
+type stockManager struct {
 	stocks             map[string]*Stock
-	StockUpdateChannel utils.ChannelDuplicator
+	StockUpdateChannel *utils.ChannelDuplicator
 }
-
-
-func (manager *StockManager) changeStock(){
-	for _ , stock := range manager.stocks {
-		stock.PriceChanger.change(stock)
-	}
-}
-
-func (manager *StockManager) getStock(ticker string)(*Stock){
-	return manager.stocks[ticker]
-}
-
-func (manager *StockManager) addStock(tickerId, name string, startPrice , runPercent float64) *Stock{
-	if _, ok := manager.stocks[tickerId]; ok{
-		return nil
-	}
-	stock := Stock{
-		Name: name,
-		TickerId: tickerId,
-		CurrentPrice: startPrice,
-		UpdateChannel: utils.MakeDuplicator(),
-	}
-
-	stock.PriceChanger = &RandomPrice{
-		RunPercent:      runPercent,
-		TargetPrice:     100.0,
-		PercentToChange: 100,
-		Volatility:      5,
-	}
-
-	manager.stocks[tickerId] = &stock
-
-	manager.StockUpdateChannel.RegisterInput(stock.UpdateChannel.GetOutput())
-	return &stock
-}
-
-func buildStockManager() *StockManager{
-	return &StockManager{
-		stocks: make(map[string]*Stock),
-	}
-}
-
-
 //Stock type for storing the stock information
 type Stock struct {
 	Name         string  `json:"name"`
@@ -69,8 +47,55 @@ type Stock struct {
 	CurrentPrice float64 `json:"current_price"`
 	PriceChanger PriceChange `json:"price_changer"`
 	UpdateChannel *utils.ChannelDuplicator
-	lock utils.Lock
+	lock *utils.Lock
 }
+
+func NewStock(tickerID, name string, startPrice float64, runInterval time.Duration)(*Stock, error){
+	// Acquire the valuableMapLock so no one can add a new entry till we are done
+	ValuablesLock.Acquire()
+	defer ValuablesLock.Release()
+	if _, ok := Valuables[tickerID]; ok{
+		return nil, errors.New("tickerID is already taken by another valuable")
+	}
+	stock := &Stock{
+		lock: utils.NewLock(),
+		Name: name,
+		TickerId: tickerID,
+		CurrentPrice: startPrice,
+		UpdateChannel: utils.MakeDuplicator(),
+	}
+
+	stock.PriceChanger = &RandomPrice{
+		RunPercent:      timeSimulationPeriod.Seconds() / runInterval.Seconds(),
+		TargetPrice:     100.0,
+		PercentToChange: 100,
+		Volatility:      5,
+	}
+	go stock.stockUpdateRoutine()
+	Valuables[tickerID] = stock
+	manager.StockUpdateChannel.RegisterInput(stock.UpdateChannel.GetOutput())
+	return stock, nil
+}
+
+func (stock *Stock)GetValue()float64{
+	return stock.CurrentPrice
+}
+
+func (stock *Stock)GetLock() *utils.Lock{
+	return stock.lock
+}
+
+func  (stock *Stock)GetUpdateChannel()(*utils.ChannelDuplicator){
+	return stock.UpdateChannel
+}
+
+func (stock *Stock)stockUpdateRoutine(){
+	update := timeSimulation.GetOutput()
+	for range update{
+		stock.PriceChanger.change(stock)
+	}
+}
+
 
 
 // Some thing that can take in a stock and change the current price
@@ -103,10 +128,10 @@ func (randPrice *RandomPrice) change(stock *Stock){
 		MapNum(randPrice.Volatility, volatilityMin, volatilityMax, volatilityMinTurns, volatilityMaxTurns)
 	fmt.Println("change: ", change)
 
+	stock.lock.Acquire()
 	stock.CurrentPrice = stock.CurrentPrice + change
-
+	stock.lock.Release()
 	stock.UpdateChannel.Offer(stock)
-
 
 }
 
@@ -127,9 +152,6 @@ func (randPrice *RandomPrice)changeValues(){
 	randPrice.TargetPrice = newTarget
 	randPrice.Volatility = RandRange(volatilityMin, volatilityMax)
 }
-
-
-
 
 /** ########################################
 *           Math Helper Functions

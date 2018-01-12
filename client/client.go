@@ -1,8 +1,10 @@
 package client
 
+/**
+
 import (
 	"stock-server/utils"
-	"stock-server/wallstreet"
+	"stock-server/exchange"
 	"github.com/gorilla/websocket"
 	"stock-server/messages"
 )
@@ -23,7 +25,7 @@ type Client struct {
 	portfolioUpdate chan interface{}
 	ws              websocket.Conn
 
-	portfolio *wallstreet.Portfolio
+	portfolio *exchange.Portfolio
 	user *User
 }
 
@@ -33,7 +35,7 @@ func Login(username, password string, tx, rx chan *messages.BaseMessage) (error)
 	if err != nil {
 		return err
 	}
-	portfilio := wallstreet.PortfolioIds[user.uuid]
+	portfilio := exchange.PortfolioIds[user.uuid]
 
 	client := &Client {
 		socketRx:        rx,
@@ -74,4 +76,5 @@ func (client *Client) tx(){
 
 func makeStockUpdate
 
+*/
 

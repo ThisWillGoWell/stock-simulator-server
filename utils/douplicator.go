@@ -40,22 +40,19 @@ func (ch *ChannelDuplicator) UnregisterOutput(remove chan interface{}) {
 	ch.outputs = ch.outputs[:len(ch.outputs)-1]
 }
 
-func (ch *ChannelDuplicator) RegisterInput(inputChannel chan interface{}) {
+func (ch *ChannelDuplicator) RegisterInput(inputChannel <- chan interface{}) {
 	go func() {
 		for val := range inputChannel {
 			fmt.Println("got from input", val)
 			ch.transfer <- val
 		}
-
+		fmt.Println("closeing input channel")
 	}()
-	fmt.Println("returning")
+
 }
 
 func (ch *ChannelDuplicator) Offer(value interface{}) {
-	select {
-	case ch.transfer <- value:
-	default:
-	}
+	ch.transfer <- value
 }
 
 func (ch *ChannelDuplicator) startDuplicator() {
