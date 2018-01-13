@@ -2,8 +2,7 @@ package messages
 
 import (
 	"encoding/json"
-	"stock-server/utils"
-	"stock-server/client"
+	"github.com/stock-simulator-server/utils"
 	"errors"
 )
 
@@ -32,7 +31,6 @@ type Message interface {
 type BaseMessage struct{
 	Action string `json:"action"`
 	Value  Message `json:"value"`
-	client client.Client
 }
 func (msg *BaseMessage) IsChat()bool{
 	return msg.Action == "chat"

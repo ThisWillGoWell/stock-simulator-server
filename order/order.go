@@ -1,8 +1,8 @@
 package order
 
 import (
-	"stock-server/valuable"
-	"stock-server/portfolio"
+	"github.com/stock-simulator-server/valuable"
+	"github.com/stock-simulator-server/portfolio"
 	"errors"
 )
 
@@ -25,7 +25,7 @@ func BuildPurchaseOrder(valuable valuable.Valuable, portfolio *portfolio.Portfol
 		Valuable:         valuable,
 		Portfolio:          portfolio,
 		Amount:          amount,
-		ResponseChannel: make(chan *PurchasedResponse),
+		ResponseChannel: make(chan *PurchasedResponse, 1),
 	}
 }
 

@@ -4,7 +4,7 @@ import (
 	"math"
 	"math/rand"
 	"fmt"
-	"stock-server/utils"
+	"github.com/stock-simulator-server/utils"
 	"time"
 	"errors"
 )
@@ -30,10 +30,13 @@ func StartStockStimulation(){
 	ticker := time.NewTicker(timeSimulationPeriod)
 	simulation := make(chan interface{})
 	timeSimulation.RegisterInput(simulation)
-	for range ticker.C {
-		simulation <- true
-	}
-	close(simulation)
+	go func(){
+		for range ticker.C {
+			simulation <- true
+		}
+		close(simulation)
+	}();
+
 }
 
 type stockManager struct {
@@ -45,20 +48,20 @@ type Stock struct {
 	Name         string  `json:"name"`
 	TickerId     string  `json:"ticker_id"`
 	CurrentPrice float64 `json:"current_price"`
-	PriceChanger PriceChange `json:"price_changer"`
-	UpdateChannel *utils.ChannelDuplicator
+	PriceChanger PriceChange `json:"-"`
+	UpdateChannel *utils.ChannelDuplicator `json:"-"`
 	lock *utils.Lock
 }
 
 func NewStock(tickerID, name string, startPrice float64, runInterval time.Duration)(*Stock, error){
 	// Acquire the valuableMapLock so no one can add a new entry till we are done
-	ValuablesLock.Acquire()
+	ValuablesLock.Acquire("new-stock")
 	defer ValuablesLock.Release()
 	if _, ok := Valuables[tickerID]; ok{
 		return nil, errors.New("tickerID is already taken by another valuable")
 	}
 	stock := &Stock{
-		lock: utils.NewLock(),
+		lock: utils.NewLock(fmt.Sprintf("stock-%s", tickerID)),
 		Name: name,
 		TickerId: tickerID,
 		CurrentPrice: startPrice,
@@ -66,7 +69,7 @@ func NewStock(tickerID, name string, startPrice float64, runInterval time.Durati
 	}
 
 	stock.PriceChanger = &RandomPrice{
-		RunPercent:      timeSimulationPeriod.Seconds() / runInterval.Seconds(),
+		RunPercent:      timeSimulationPeriod.Seconds() / runInterval.Seconds() / 100.0,
 		TargetPrice:     100.0,
 		PercentToChange: 100,
 		Volatility:      5,
@@ -87,6 +90,10 @@ func (stock *Stock)GetLock() *utils.Lock{
 
 func  (stock *Stock)GetUpdateChannel()(*utils.ChannelDuplicator){
 	return stock.UpdateChannel
+}
+
+func (stock *Stock)GetID() string{
+	return stock.TickerId
 }
 
 func (stock *Stock)stockUpdateRoutine(){
@@ -113,7 +120,7 @@ type RandomPrice struct {
 
 //change the stock using the changer
 func (randPrice *RandomPrice) change(stock *Stock){
-	stock.lock.Acquire()
+	stock.lock.Acquire("change-stock")
 	defer stock.lock.Release()
 
 	if rand.Float64() <= randPrice.RunPercent {
@@ -126,11 +133,9 @@ func (randPrice *RandomPrice) change(stock *Stock){
 	//can make this a lot more interesting, like adding in the ability for it to drop
 	change :=  (randPrice.TargetPrice - stock.CurrentPrice) /
 		MapNum(randPrice.Volatility, volatilityMin, volatilityMax, volatilityMinTurns, volatilityMaxTurns)
-	fmt.Println("change: ", change)
 
-	stock.lock.Acquire()
 	stock.CurrentPrice = stock.CurrentPrice + change
-	stock.lock.Release()
+
 	stock.UpdateChannel.Offer(stock)
 
 }
@@ -140,7 +145,6 @@ func (randPrice *RandomPrice)changeValues(){
 
 	// get what the upper and lower bounds in % of the current price
 	window := MapNum(randPrice.Volatility, volatilityMin, volatilityMax, 0, 0.3)
-	fmt.Println("window", window)
 	// select a random number on +- that %
 	newTarget := MapNum(rand.Float64(), 0, 1, randPrice.TargetPrice * (1 - window/2), randPrice.TargetPrice * (1 + window))
 

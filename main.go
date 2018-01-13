@@ -3,7 +3,7 @@ package main
 import (
 
 	"time"
-	"stock-server/app"
+	"github.com/stock-simulator-server/app"
 )
 
 func main() {

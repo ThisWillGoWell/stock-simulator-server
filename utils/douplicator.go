@@ -12,8 +12,8 @@ type ChannelDuplicator struct {
 
 func MakeDuplicator() *ChannelDuplicator {
 	chDoup := &ChannelDuplicator{
-		outputs:  make([]chan interface{}, 0),
-		transfer: make(chan interface{}, 10),
+		outputs:  make([]chan interface{}, 100),
+		transfer: make(chan interface{}, 100),
 	}
 
 	chDoup.startDuplicator()
@@ -43,10 +43,8 @@ func (ch *ChannelDuplicator) UnregisterOutput(remove chan interface{}) {
 func (ch *ChannelDuplicator) RegisterInput(inputChannel <- chan interface{}) {
 	go func() {
 		for val := range inputChannel {
-			fmt.Println("got from input", val)
 			ch.transfer <- val
 		}
-		fmt.Println("closeing input channel")
 	}()
 
 }
@@ -58,13 +56,10 @@ func (ch *ChannelDuplicator) Offer(value interface{}) {
 func (ch *ChannelDuplicator) startDuplicator() {
 	go func() {
 		for nextValue := range ch.transfer {
-			fmt.Println("got from transfer", nextValue)
 			for _, channel := range ch.outputs {
 				select {
 				case channel <- nextValue:
-					fmt.Println("sent to output")
 				default:
-					fmt.Println("missed value")
 				}
 			}
 		}

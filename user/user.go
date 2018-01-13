@@ -1,16 +1,15 @@
 package user
 
 import (
-	"stock-server/utils"
+	"github.com/stock-simulator-server/utils"
 	"errors"
-	"stock-server/exchange"
 )
 
 // keep the uuid to user
 var userList = make(map[string]*User)
 // keep the username to uuid list
 var uuidList = make(map[string]string)
-var userListLock = utils.NewLock()
+var userListLock = utils.NewLock("user-list")
 
 type User struct {
 	username string
@@ -21,7 +20,7 @@ type User struct {
 }
 
 func getUser(username, password string) (*User, error) {
-	userListLock.Acquire()
+	userListLock.Acquire("get-user")
 	defer userListLock.Release()
 	userUuid, exists :=  uuidList[username]
 	if ! exists{
@@ -35,7 +34,7 @@ func getUser(username, password string) (*User, error) {
 }
 
 func NewUser(username, password string) *User{
-	userListLock.Acquire()
+	userListLock.Acquire("new-user")
 	defer userListLock.Release()
 
 	uuid := utils.PseudoUuid()
