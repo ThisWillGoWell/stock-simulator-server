@@ -26,8 +26,6 @@ type Message interface {
 	message()
 }
 
-
-
 type BaseMessage struct{
 	Action string `json:"action"`
 	Value  Message `json:"value"`
