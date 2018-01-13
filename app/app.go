@@ -89,12 +89,16 @@ func RunApp(){
 	//make a purchase order
 	po := order.BuildPurchaseOrder(valuable.Valuables["CHUNT"], port, 10)
 	exchange.Exchanges["US"].InitiateTrade(po)
+	time.Sleep(2 * time.Second)
 	po2 := order.BuildPurchaseOrder(valuable.Valuables["KING"], port, 5)
 	exchange.Exchanges["US"].InitiateTrade(po2)
+	time.Sleep(2 * time.Second)
 	po3 := order.BuildPurchaseOrder(valuable.Valuables["CBIO"], port, 1)
 	exchange.Exchanges["US"].InitiateTrade(po3)
+	time.Sleep(2 * time.Second)
 	po4 := order.BuildPurchaseOrder(valuable.Valuables["CBIO"], port2, 1)
 	exchange.Exchanges["US"].InitiateTrade(po4)
+	time.Sleep(2 * time.Second)
 
 	result := <- po.ResponseChannel
 	fmt.Println(result)
