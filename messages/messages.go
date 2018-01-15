@@ -42,15 +42,16 @@ func (msg *BaseMessage) IsTrade()bool{
 }
 
 type ErrorMessage struct{
-	Err error `json:"error"`
+	Err string `json:"error"`
 }
 func (*ErrorMessage) message() {return}
 
-func NewErrorMessage(err error)(*ErrorMessage){
+func NewErrorMessage(err string)(*ErrorMessage){
 	return &ErrorMessage{
 		Err: err,
 	}
 }
+
 
 
 type LoginMessage struct {

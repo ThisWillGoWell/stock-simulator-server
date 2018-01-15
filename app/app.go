@@ -17,8 +17,8 @@ import (
 func RunApp(){
 	fmt.Println("running app")
 	//make the stocks
-	stock1, _:= valuable.NewStock("CHUNT", "Chunt's Hats", 69,  time.Second * 2)
-	stock2, _:= valuable.NewStock("KING", "Paddle King", 10,  time.Second * 5)
+	stock1, _:= valuable.NewStock("CHUNT", "Chunt's Hats", 69,  time.Second * 10)
+	stock2, _:= valuable.NewStock("KING", "Paddle King", 10,  time.Second * 20)
 	stock3, _:= valuable.NewStock("CBIO", "Sebio's Streaming Services", 10,  time.Second * 30)
 	valuable.StartStockStimulation()
 

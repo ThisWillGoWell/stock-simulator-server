@@ -69,10 +69,10 @@ func NewStock(tickerID, name string, startPrice float64, runInterval time.Durati
 	}
 
 	stock.PriceChanger = &RandomPrice{
-		RunPercent:      timeSimulationPeriod.Seconds() / (runInterval.Seconds() * 1.0),
-		TargetPrice:     100.0,
-		PercentToChange: 100,
-		Volatility:      5,
+		RunPercent:            timeSimulationPeriod.Seconds() / (runInterval.Seconds() * 1.0),
+		TargetPrice:           100.0,
+		PercentToChangeTarget: 100,
+		Volatility:            5,
 	}
 	go stock.stockUpdateRoutine()
 	Valuables[tickerID] = stock
@@ -112,10 +112,10 @@ type PriceChange interface {
 
 // Random Price implements priceChange
 type RandomPrice struct {
-	RunPercent      float64 `json:"run_percent"`
-	TargetPrice     float64 `json:"target_price"`
-	PercentToChange float64 `json:"change_percent"`
-	Volatility      float64 `json:"volatility"`
+	RunPercent            float64 `json:"run_percent"`
+	TargetPrice           float64 `json:"target_price"`
+	PercentToChangeTarget float64 `json:"change_percent"`
+	Volatility            float64 `json:"volatility"`
 }
 
 //change the stock using the changer
@@ -126,7 +126,7 @@ func (randPrice *RandomPrice) change(stock *Stock){
 	if rand.Float64() >= randPrice.RunPercent {
 		return
 	}
-	if rand.Float64() <= randPrice.PercentToChange {
+	if rand.Float64() <= randPrice.PercentToChangeTarget {
 		randPrice.changeValues()
 	}
 
@@ -146,8 +146,8 @@ func (randPrice *RandomPrice)changeValues(){
 	// get what the upper and lower bounds in % of the current price
 	window := MapNum(randPrice.Volatility, volatilityMin, volatilityMax, 0, 0.3)
 	// select a random number on +- that %
-	newTarget := MapNum(rand.Float64(), 0, 1, randPrice.TargetPrice * (1 - window/2), randPrice.TargetPrice * (1 + window))
-
+	newTarget := MapNum(rand.Float64(), 0, 1, randPrice.TargetPrice * (1 - window), randPrice.TargetPrice * (1 + window))
+	fmt.Println("old", randPrice.TargetPrice, "new", newTarget, "window", window)
 	//need to deiced if the floor should happen before or after
 	if newTarget < 0{
 		newTarget = 0

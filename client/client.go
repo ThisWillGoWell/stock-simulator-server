@@ -93,7 +93,7 @@ func (client *Client)rx(){
 		//attempt to
 		err := message.UnmarshalJSON([]byte(messageString))
 		if err != nil{
-			client.messageSender.Offer(messages.NewErrorMessage(err))
+			client.messageSender.Offer(messages.NewErrorMessage("err unmarshaling json"))
 			continue
 		}
 
@@ -105,7 +105,7 @@ func (client *Client)rx(){
 		case messages.UpdateAction:
 			client.processUpdateMessage()
 		default:
-			client.messageSender.Offer(messages.NewErrorMessage(errors.New("action is not known")))
+			client.messageSender.Offer(messages.NewErrorMessage("action is not known"))
 		}
 	}
 }
