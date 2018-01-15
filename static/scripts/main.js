@@ -69,6 +69,13 @@ $( document ).ready(function() {
         	$("input[type='text'][name='create-uid']").focus();
         });
 
+		input_login_uid.prop('disabled', true);
+        input_login_pw.prop('disabled', true);
+        input_login_submit.prop('disabled', true);
+
+        input_create_uid.prop('disabled', false);
+        input_create_pw.prop('disabled', false);
+        input_create_submit.prop('disabled', false);
 		
 
     });
@@ -83,6 +90,61 @@ $( document ).ready(function() {
         	$("input[type='text'][name='uid']").focus();
         });
 		
+		input_login_uid.prop('disabled', false);
+        input_login_pw.prop('disabled', false);
+        input_login_submit.prop('disabled', false);
+
+        input_create_uid.prop('disabled', true);
+        input_create_pw.prop('disabled', true);
+        input_create_submit.prop('disabled', true);
+
+    });
+
+    function disableInput(selector) {
+
+		let attr = selector.attr('disable');
+
+		if (typeof attr !== typeof undefined && attr !== false) {
+			$(selector).prop("disabled", false); // Element(s) are now enabled.
+		} 
+	}
+
+	function enableInput(selector) {
+
+		$(selector).prop('disabled', true);
+
+		// let attr = selector.attr('disable');
+
+		// if (typeof attr !== typeof undefined && attr !== false) {
+		// 	selector.prop("disabled", false); // Element(s) are now enabled.
+		// } 
+	}
+
+	let input_login_uid = $('#login-uid');
+	let input_login_pw = $('#login-pw');
+	let input_login_submit = $('#input-login-submit');
+	let input_create_uid = $('#create-uid');
+	let input_create_pw = $('#create-pw');
+	let input_create_submit = $('#input-create-submit');
+
+	$('.create-account-btn').click(function() {
+   
+
+        input_login_uid.prop('disabled', true);
+        input_login_pw.prop('disabled', true);
+        input_login_submit.prop('disabled', true);
+
+        input_create_uid.prop('disabled', false);
+        input_create_pw.prop('disabled', false);
+        input_create_submit.prop('disabled', false);
+
+        console.log("clicked create account");
+
+        // disableInput(input_login_uid);
+        // disableInput(input_login_pw);
+
+        // enableInput(input_create_uid);
+        // enableInput(input_create_pw);
 
     });
 

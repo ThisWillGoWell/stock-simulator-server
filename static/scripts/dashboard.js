@@ -106,6 +106,8 @@ $( document ).ready(function() {
         $('#chat-text-input').focus();
     });
 
+
+
     $(document).keypress(function(e) {
     	if($('#chat-module--container textarea').val()) {
 		    if(e.which == 13) {
