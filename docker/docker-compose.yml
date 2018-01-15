@@ -1,0 +1,10 @@
+version: '3'
+services:
+  server:
+    build: .
+    container_name: starket_server
+    ports:
+      - "8000:8000"
+    environment:
+      FILE_SERVE: opt/server/static
+
