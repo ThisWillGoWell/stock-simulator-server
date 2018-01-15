@@ -473,6 +473,10 @@ input[type=password]:focus ~ .input-focus-border{
     text-align: left;
 }
 
+#side-menu--container ul li button i.menu-icon {
+    transform: translateY(-2px);
+}
+
 #side-menu--container ul li button .menu-item-title {
     color: #fff;
     display: inline-block;
@@ -526,8 +530,10 @@ input[type=password]:focus ~ .input-focus-border{
 
 .material-icons {
     vertical-align: middle;
-    transform: translateY(-2px);
+    
 }
+
+
 
 #side-menu--container ul li:hover .right-arrow {
     opacity: 1;
