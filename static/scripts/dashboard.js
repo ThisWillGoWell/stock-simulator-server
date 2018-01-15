@@ -106,6 +106,20 @@ $( document ).ready(function() {
         $('#chat-text-input').focus();
     });
 
+    $('#top-bar--container .account-settings-btn').click(function() {
+    
+        $('#top-bar--container .account-settings-menu--container').toggleClass('open');
+        
+    });
+
+    $('#account-settings-menu-close-btn').click(function() {
+    
+        $('#top-bar--container .account-settings-menu--container').toggleClass('open');
+        
+    });
+
+    
+
 
 
     $(document).keypress(function(e) {

@@ -611,8 +611,79 @@ input[type=password]:focus ~ .input-focus-border{
 }
 
 #top-bar--container .account-settings-btn:hover span {
-        width: 28px;
-        opacity: 1;
+    width: 28px;
+    opacity: 1;
+}
+
+#top-bar--container .account-settings-menu--container {
+    position: absolute;
+    z-index: -1;
+    right: -200px;
+    top: 18px;
+    height: 300px;
+    width: 200px;
+
+    background-color: #34495e;
+    -moz-transition: all cubic-bezier(.23,1,.32,1) 0.3s;
+    -o-transition: all cubic-bezier(.23,1,.32,1) 0.3s;
+    -webkit-transition: all cubic-bezier(.23,1,.32,1) 0.3s;
+    transition: all cubic-bezier(.23,1,.32,1) 0.3s;
+    box-shadow: rgba(0, 0, 0, 0.14) 0px 2px 2px 0px, rgba(0, 0, 0, 0.12) 0px 1px 5px 0px, rgba(0, 0, 0, 0.2) 0px 3px 1px -2px;
+    opacity: 0;
+}
+
+.account-settings-menu--container #account-settings-menu-close-btn{
+    position: absolute;
+    cursor: pointer;
+    right: 15px;
+    top: 15px;
+    color: #fff;
+    -moz-transition: all cubic-bezier(.23,1,.32,1) 0.7s;
+    -o-transition: all cubic-bezier(.23,1,.32,1) 0.7s;
+    -webkit-transition: all cubic-bezier(.23,1,.32,1) 0.7s;
+    transition: all cubic-bezier(.23,1,.32,1) 0.7s;
+}
+
+#top-bar--container .account-settings-menu--container.open {
+    z-index: 10;
+    opacity: 1;
+    right: 35px;
+    top: 18px;
+}
+
+#top-bar--container .account-settings-menu--container ul {
+    width: 100%;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    left: 0;
+}
+
+#top-bar--container .account-settings-menu--container ul li{
+    width: 100%;
+    height: 50px;
+    -moz-transition: all cubic-bezier(.23,1,.32,1) 0.7s;
+    -o-transition: all cubic-bezier(.23,1,.32,1) 0.7s;
+    -webkit-transition: all cubic-bezier(.23,1,.32,1) 0.7s;
+    transition: all cubic-bezier(.23,1,.32,1) 0.7s;
+}
+
+#top-bar--container .account-settings-menu--container ul li button{
+    width: 100%;
+    height: 100%;
+    color: #fff;
+    border: none;
+    background-color: transparent;
+    line-height: 50px;
+    font-size: 14px;
+}
+
+#top-bar--container .account-settings-menu--container ul li:hover{
+    background-color: #263544;
 }
 
 #chat-module--container {
