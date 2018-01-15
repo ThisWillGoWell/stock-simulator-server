@@ -8,7 +8,6 @@ import (
 )
 
 func main() {
-
 	go app.RunApp()
 	web.StartHandlers()
 
