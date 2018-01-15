@@ -59,13 +59,17 @@ $( document ).ready(function() {
 
 	var chat_feed = $('#chat-module--container .chat-message--list');
 
-	function appendNewMessage(msg){
+	function appendNewMessage(msg, fromMe){
 
+		let isMe = "";
+		if (fromMe) {
+			isMe = "is-me";
+		}
 		let msg_text = msg.body;
 		let msg_author = msg.author;
 		let msg_timestamp = msg.timestamp;
 		let msg_template = '<li>'+
-				'				<div class="msg-username">'+ msg_author +' <span class="msg-timestamp">'+ msg_timestamp +'</span></div>'+
+				'				<div class="msg-username '+ isMe +'">'+ msg_author +' <span class="msg-timestamp">'+ msg_timestamp +'</span></div>'+
 				'				<div class="msg-text">'+ msg_text +'</div>'+
 				'			</li>';
 
@@ -94,7 +98,7 @@ $( document ).ready(function() {
 			chat_feed.empty();
 		}
 
-	    appendNewMessage(sampleMessages[i]);
+	    appendNewMessage(sampleMessages[i], false);
 
 	    i++;
 
@@ -133,7 +137,7 @@ $( document ).ready(function() {
 			        timestamp: timestamp,
 			        body: message_body,
 			    };
-		        appendNewMessage(temp_msg);
+		        appendNewMessage(temp_msg, true);
 		        $('#chat-module--container textarea').val().replace(/\n/g, "");
 		        $('#chat-module--container textarea').val('');
 		        return false;
