@@ -873,6 +873,11 @@ input[type=password]:focus ~ .input-focus-border{
     font-size: 16px;
 }
 
+#chat-module--container .chat-message--list .msg-username.is-me{
+    color: #FF5722;
+    font-size: 16px;
+}
+
 #chat-module--container .chat-message--list .msg-timestamp {
     color: #73E7CE;
     float: right;
