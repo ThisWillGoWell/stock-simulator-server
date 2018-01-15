@@ -5,14 +5,19 @@ import (
 	"net/http"
 	"log"
 	"github.com/stock-simulator-server/client"
+	"os"
+	"fmt"
 )
-
-
 
 var clients = make(map[*websocket.Conn]http.Client) // connected clients
 
 func StartHandlers() {
-	var fs = http.FileServer(http.Dir("demo"))
+	shareDir := os.Getenv("FILE_SERVE")
+	if shareDir == ""{
+		shareDir = "static"
+	}
+	fmt.Println(shareDir)
+	var fs = http.FileServer(http.Dir(shareDir))
 	http.Handle("/", fs)
 	http.HandleFunc("/ws", handleConnections)
 	err := http.ListenAndServe(":8000", nil)
