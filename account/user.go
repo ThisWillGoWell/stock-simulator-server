@@ -1,8 +1,9 @@
-package user
+package account
 
 import (
 	"github.com/stock-simulator-server/utils"
 	"errors"
+	"github.com/stock-simulator-server/portfolio"
 )
 
 // keep the uuid to user
@@ -12,14 +13,14 @@ var uuidList = make(map[string]string)
 var userListLock = utils.NewLock("user-list")
 
 type User struct {
-	username string
+	Username string
 	password string
-	displayName string
-	uuid string
-
+	DisplayName string
+	Uuid string
+	ActiveClients int64
 }
 
-func getUser(username, password string) (*User, error) {
+func GetUser(username, password string) (*User, error) {
 	userListLock.Acquire("get-user")
 	defer userListLock.Release()
 	userUuid, exists :=  uuidList[username]
@@ -43,11 +44,12 @@ func NewUser(username, password string) *User{
 		_, exists := userList[uuid]
 		if ! exists{
 			uuidList[username] = uuid
+			portfolio.NewPortfolio(uuid, username)
 			userList[uuid]=&User{
-				username: username,
-				displayName: username,
+				Username: username,
+				DisplayName: username,
 				password:password,
-				uuid: uuid,
+				Uuid: uuid,
 			}
 
 			return userList[uuid]

@@ -9,7 +9,7 @@ import (
 
 var Portfolios = make(map[string]*Portfolio)
 var PortfoliosLock = utils.NewLock("portfolios")
-
+var PortfoliosUpdateChannel = utils.MakeDuplicator()
 
 type Portfolio struct {
 	Name     string `json:"name"`
@@ -48,6 +48,7 @@ func NewPortfolio( userUUID, name string)(*Portfolio, error){
 			PersonalLedger: make(map[string]*ledgerEntry),
 		}
 	Portfolios[userUUID] = port
+	PortfoliosUpdateChannel.RegisterInput(port.UpdateChannel.GetOutput())
 	go port.valuableUpdate()
 	return port, nil
 }
@@ -57,7 +58,7 @@ func (port *Portfolio)valuableUpdate(){
 	for range updateChannel{
 		port.Lock.Acquire("portfolio-update")
 		port.NetWorth = port.calculateNetWorth()
-		port.UpdateChannel.Offer(port)
+		port.UpdateChannel.Offer(*port)
 		port.Lock.Release()
 	}
 }

@@ -1,9 +1,10 @@
 package web
-/*
+
 import (
 	"github.com/gorilla/websocket"
 	"net/http"
 	"log"
+	"github.com/stock-simulator-server/client"
 )
 
 
@@ -11,10 +12,13 @@ import (
 var clients = make(map[*websocket.Conn]http.Client) // connected clients
 
 func StartHandlers() {
-	var fs = http.FileServer(http.Dir("static"))
+	var fs = http.FileServer(http.Dir("demo"))
 	http.Handle("/", fs)
-	http.HandleFunc("/ws", handleConnections
-	http.ListenAndServe(":3000", nil)
+	http.HandleFunc("/ws", handleConnections)
+	err := http.ListenAndServe(":8000", nil)
+	if err != nil{
+		log.Fatal("ListenAndServe:", err)
+	}
 
 }
 
@@ -24,26 +28,46 @@ var upgrader = websocket.Upgrader{
 }
 
 func handleConnections(w http.ResponseWriter, r *http.Request) {
-	username := r.Header["username"]
-	password := r.Header["password"]
-	// Upgrade initial GET request to a websocket
+	//first upgrade the connection
 	ws, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Fatal(err)
+	if err != nil{
+		return
+	}
+	socketRX := make(chan string)
+	socketTX := make(chan string)
+	// Gate Keeper
+	for {
+		_, msg, err := ws.ReadMessage()
+		if err != nil {
+			ws.WriteMessage(websocket.TextMessage, []byte(err.Error()))
+			continue
+		}
+		loginErr := client.Login(string(msg), socketTX, socketRX)
+		if err != nil {
+			ws.WriteMessage(websocket.TextMessage, []byte(loginErr.Error()))
+		} else {
+			break
+		}
+
 	}
 	// Make sure we close the connection when the function returns
 	defer ws.Close()
+	go runTxSocket(ws, socketTX)
+	rxSocket(ws, socketRX)
 }
 
-
-
-func startWebSocket(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-
-	if err != nil {
-		log.Println(conn)
-		return
+func runTxSocket(conn *websocket.Conn, tx chan string){
+	for str := range tx{
+		conn.WriteMessage(websocket.TextMessage, []byte(str))
 	}
-
 }
-*/
+
+func rxSocket(conn *websocket.Conn, rx chan string){
+	for{
+		_, msg, err := conn.ReadMessage()
+		if err != nil{
+
+		}
+		rx <- string(msg)
+	}
+}

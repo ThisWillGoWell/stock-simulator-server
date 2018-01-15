@@ -76,7 +76,7 @@ func NewStock(tickerID, name string, startPrice float64, runInterval time.Durati
 	}
 	go stock.stockUpdateRoutine()
 	Valuables[tickerID] = stock
-	manager.StockUpdateChannel.RegisterInput(stock.UpdateChannel.GetOutput())
+	ValuableUpdateChannel.RegisterInput(stock.UpdateChannel.GetOutput())
 	return stock, nil
 }
 

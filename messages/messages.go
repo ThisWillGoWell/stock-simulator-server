@@ -9,9 +9,12 @@ import (
 const TradeAction  = "trade"
 const ChatAction  = "chat"
 const UpdateAction = "update"
+const ErrorAction  = "error"
+const LoginAction = "login"
 
-const StockUpdate = "stock"
+const ValuableUpdate = "valuable"
 const PortfolioUpdate = "portfolio"
+const LedgerUpdate = "ledger"
 
 type MessageProcessor struct {
 	inputchannel chan string
@@ -30,9 +33,15 @@ type BaseMessage struct{
 	Action string `json:"action"`
 	Value  Message `json:"value"`
 }
+
 func (msg *BaseMessage) IsChat()bool{
 	return msg.Action == "chat"
 }
+
+func (msg *BaseMessage) IsLogin()bool{
+	return msg.Action == LoginAction
+}
+
 
 func (msg *BaseMessage) IsUpdate()bool{
 	return msg.Action == "update"
@@ -42,13 +51,43 @@ func (msg *BaseMessage) IsTrade()bool{
 	return msg.Action == "trade"
 }
 
+type ErrorMessage struct{
+	Err error `json:"error"`
+}
+func (*ErrorMessage) message() {return}
 
+func NewErrorMessage(err error)(*ErrorMessage){
+	return &ErrorMessage{
+		Err: err,
+	}
+}
+
+
+type LoginMessage struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+func (*LoginMessage) message() {return}
 
 type TradeMessage struct {
 	StockTicker string `json:"stock_ticker"`
+	ExchangeID string `json:"exchange_id"`
 	Amount float64 `json:"amount"`
 }
 func (*TradeMessage) message() {return}
+
+type TradeResponse struct {
+	Trade *TradeMessage `json:"trade"`
+	Response interface{} `json:"response"`
+}
+func (*TradeResponse) message() {return}
+
+func BuildPurchaseResponse(message *TradeMessage, response interface{})*TradeResponse{
+	return &TradeResponse{
+		Trade: message,
+		Response: response,
+	}
+}
 
 type ChatMessage struct {
 	Message string `json:"message_body"`
@@ -64,7 +103,7 @@ type UpdateMessage struct {
 }
 func (*UpdateMessage) message() {return}
 
-func NewUpdateMessage(t string, obj interface{})*BaseMessage{
+func BuildUpdateMessage(t string, obj interface{})*BaseMessage{
 	updateMsg :=  UpdateMessage{
 		UpdateType: t,
 		Object:obj,
@@ -102,6 +141,8 @@ func (baseMessage *BaseMessage)UnmarshalJSON(data [] byte) error{
 		message = &ChatMessage{}
 	case TradeAction:
 		message = &TradeMessage{}
+	case LoginAction:
+		message = &LoginMessage{}
 	}
 
 	str,_ := json.Marshal(obj["value"])
@@ -109,13 +150,8 @@ func (baseMessage *BaseMessage)UnmarshalJSON(data [] byte) error{
 	if err != nil {
 		return err
 	}
-	*baseMessage = BaseMessage{
-		Action: actionType,
-		Value:  message,
-	}
+	baseMessage.Action = actionType
+	baseMessage.Value = message
+
 	return nil
-}
-
-func main(){
-
 }

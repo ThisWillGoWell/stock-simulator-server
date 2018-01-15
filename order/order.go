@@ -1,14 +1,13 @@
 package order
 
 import (
-	"github.com/stock-simulator-server/valuable"
-	"github.com/stock-simulator-server/portfolio"
 	"errors"
 )
 
 type PurchaseOrder struct {
-	Valuable        valuable.Valuable
-	Portfolio       *portfolio.Portfolio
+	ValuableID       string
+	PortfolioID      string
+	ExchangeID		string
 	Amount          float64
 	ResponseChannel chan *PurchasedResponse
 }
@@ -20,13 +19,18 @@ type PurchasedResponse struct {
 
 
 // note this does not validate if the stock exists or not, thats done in the trade() funciton
-func BuildPurchaseOrder(valuable valuable.Valuable, portfolio *portfolio.Portfolio, amount float64) *PurchaseOrder {
+func BuildPurchaseOrder(valuableID, exchangeID,portfolioUUID string, amount float64) *PurchaseOrder {
 	return &PurchaseOrder{
-		Valuable:         valuable,
-		Portfolio:          portfolio,
+		ExchangeID: 		exchangeID,
+		ValuableID:        valuableID,
+		PortfolioID:       portfolioUUID,
 		Amount:          amount,
 		ResponseChannel: make(chan *PurchasedResponse, 1),
 	}
+}
+
+func (o *PurchaseOrder)Execute(){
+
 }
 
 func SuccessOrder(o *PurchaseOrder){

@@ -8,7 +8,6 @@ type Lock struct {
 }
 
 
-
 func NewLock(name string)*Lock{
 	return &Lock{
 		name: name,

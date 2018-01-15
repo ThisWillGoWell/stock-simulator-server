@@ -11,6 +11,7 @@ import (
 
 var Exchanges = make(map[string]*Exchange)
 var ExchangesLock = utils.NewLock("exchanges")
+var ExchangesUpdateChannel = utils.MakeDuplicator()
 
 const TOLERANCE = 0.000001
 
@@ -24,7 +25,7 @@ type Exchange struct {
 
 type ledgerEntry struct {
 	ValuableID		string `json:"id"`
-	ExchangeName string `json:"exchange"`
+	ExchangeName string 	`json:"exchange"`
 	Holders    map[string]float64 `json:"holders"`
 	OpenShares float64            `json:"open_shares"`
 }
@@ -45,8 +46,11 @@ func BuildExchange(name string) (*Exchange, error){
 		LedgerUpdateChannel: 	utils.MakeDuplicator(),
 	}
 	Exchanges[name] = exchange
+	ExchangesUpdateChannel.RegisterInput(ExchangesUpdateChannel.GetOutput())
 	return exchange, nil
 }
+
+
 // #########################
 //			Stocks
 // #########################
@@ -84,10 +88,13 @@ func (exchange *Exchange)GetHoldingsCount(portfolio *portfolio.Portfolio, valuab
 // 			Trade
 // #########################
 
-func (exchange *Exchange) InitiateTrade(o *order.PurchaseOrder){
-	fmt.Println(o.Amount)
-	fmt.Println(exchange.lock)
-	exchange.tradeChannel.Offer(o)
+func InitiateTrade(o *order.PurchaseOrder){
+	exchanger, exists := Exchanges[o.ExchangeID]
+	if ! exists {
+		order.FailureOrder("exchange does not exist", o)
+		return
+	}
+	exchanger.tradeChannel.Offer(o)
 }
 
 func (exchange *Exchange) StartExchange() {
@@ -105,14 +112,26 @@ func (exchange *Exchange) StartExchange() {
 // use failureTrade() and successTrade to send response down channel
 // Don't need to a lock around this since the portfolio holds it for that trade
 func (exchange *Exchange) trade(o *order.PurchaseOrder) {
-	o.Valuable.GetLock().Acquire("trade")
-	defer o.Valuable.GetLock().Release()
-	o.Portfolio.Lock.Acquire("trade")
-	defer o.Portfolio.Lock.Release()
+	//get the stock if it exists
+	value, exists := valuable.Valuables[o.ValuableID]
+	if ! exists {
+		order.FailureOrder("asset is not recognized", o)
+		return
+	}
+	value.GetLock().Acquire("trade")
+	defer value.GetLock().Release()
 
-	info, ok := exchange.ledger[o.Valuable.GetID()]
+	port, exists := portfolio.Portfolios[o.PortfolioID]
+	if ! exists {
+		order.FailureOrder("portfolio does not exist, this is very bad", o)
+		return
+	}
+	port.Lock.Acquire("trade")
+	defer port.Lock.Release()
+
+	info, ok := exchange.ledger[value.GetID()]
 	if !ok {
-		order.FailureOrder("stock is not known", o)
+		order.FailureOrder("stock is not known to exchange", o)
 		return
 	}
 	if o.Amount > 0{
@@ -122,9 +141,9 @@ func (exchange *Exchange) trade(o *order.PurchaseOrder) {
 			order.FailureOrder("not enough shares", o)
 			return
 		}
-		// does the user have enough money
-		costOfTrade := o.Amount * o.Valuable.GetValue()
-		if costOfTrade > o.Portfolio.Wallet {
+		// does the account have enough money
+		costOfTrade := o.Amount * value.GetValue()
+		if costOfTrade > port.Wallet {
 			order.FailureOrder("not enough $$", o)
 			return
 		}
@@ -134,19 +153,19 @@ func (exchange *Exchange) trade(o *order.PurchaseOrder) {
 		// subtract from open shares
 		info.OpenShares -= o.Amount
 		//add the holder amount
-		_, exists := info.Holders[o.Portfolio.UUID]
+		_, exists := info.Holders[port.UUID]
 		if ! exists {
-			info.Holders[o.Portfolio.UUID] = o.Amount
+			info.Holders[port.UUID] = o.Amount
 		}else{
-			info.Holders[o.Portfolio.UUID] += o.Amount
+			info.Holders[port.UUID] += o.Amount
 		}
 		// Update the portfolio with the new info
-		o.Portfolio.TradeUpdate(o.Valuable, info.Holders[o.Portfolio.UUID], costOfTrade)
+		port.TradeUpdate(value, info.Holders[port.UUID], costOfTrade)
 		order.SuccessOrder(o)
 	} else {
 		// we have a sell
 		//make sure they have that many shares
-		currentOwns, exists := info.Holders[o.Portfolio.UUID]
+		currentOwns, exists := info.Holders[port.UUID]
 		if ! exists{
 			order.FailureOrder("does not own any of stock", o)
 			return
@@ -156,16 +175,16 @@ func (exchange *Exchange) trade(o *order.PurchaseOrder) {
 			return
 		}
 		// make trade
-		moneyReturned := o.Amount + o.Valuable.GetValue()
+		moneyReturned := o.Amount + value.GetValue()
 		// add to open shares
 		info.OpenShares += o.Amount
 		// remove from ledger
-		info.Holders[o.Portfolio.UUID] -= o.Amount
-		if info.Holders[o.Portfolio.UUID] < TOLERANCE {
-			delete(info.Holders, o.Portfolio.UUID)
-			o.Portfolio.TradeUpdate(o.Valuable,0, moneyReturned)
+		info.Holders[port.UUID] -= o.Amount
+		if info.Holders[port.UUID] < TOLERANCE {
+			delete(info.Holders, port.UUID)
+			port.TradeUpdate(value,0, moneyReturned)
 		}else{
-			o.Portfolio.TradeUpdate(o.Valuable, info.Holders[o.Portfolio.UUID], moneyReturned)
+			port.TradeUpdate(value, info.Holders[port.UUID], moneyReturned)
 		}
 		order.SuccessOrder(o)
 	}
