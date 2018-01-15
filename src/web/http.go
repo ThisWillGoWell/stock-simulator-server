@@ -4,7 +4,7 @@ import (
 	"github.com/gorilla/websocket"
 	"net/http"
 	"log"
-	"github.com/stock-simulator-server/client"
+	"github.com/stock-simulator-server/src/client"
 	"os"
 	"fmt"
 )

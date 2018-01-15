@@ -24,21 +24,21 @@ type BaseMessage struct{
 	Value  Message `json:"value"`
 }
 
-func (msg *BaseMessage) IsChat()bool{
-	return msg.Action == "chat"
+func (baseMessage *BaseMessage) IsChat()bool{
+	return baseMessage.Action == "chat"
 }
 
-func (msg *BaseMessage) IsLogin()bool{
-	return msg.Action == LoginAction
+func (baseMessage *BaseMessage) IsLogin()bool{
+	return baseMessage.Action == LoginAction
 }
 
 
-func (msg *BaseMessage) IsUpdate()bool{
-	return msg.Action == "update"
+func (baseMessage *BaseMessage) IsUpdate()bool{
+	return baseMessage.Action == "update"
 }
 
-func (msg *BaseMessage) IsTrade()bool{
-	return msg.Action == "trade"
+func (baseMessage *BaseMessage) IsTrade()bool{
+	return baseMessage.Action == "trade"
 }
 
 type ErrorMessage struct{
@@ -52,6 +52,7 @@ func NewErrorMessage(err string)(*ErrorMessage){
 	}
 }
 
+type BatchMessage []BaseMessage
 
 
 type LoginMessage struct {
@@ -133,6 +134,8 @@ func (baseMessage *BaseMessage)UnmarshalJSON(data [] byte) error{
 		message = &TradeMessage{}
 	case LoginAction:
 		message = &LoginMessage{}
+	case UpdateAction:
+		message = &UpdateMessage{}
 	}
 
 	str,_ := json.Marshal(obj["value"])

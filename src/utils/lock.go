@@ -2,6 +2,12 @@ package utils
 
 type empty struct {}
 
+type QueuedLock struct {
+	name string
+	lock *Lock
+
+}
+
 type Lock struct {
 	name string
 	semaphore chan empty

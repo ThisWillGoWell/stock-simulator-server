@@ -1,9 +1,9 @@
 package account
 
 import (
-	"github.com/stock-simulator-server/utils"
+	"github.com/stock-simulator-server/src/utils"
 	"errors"
-	"github.com/stock-simulator-server/portfolio"
+	"github.com/stock-simulator-server/src/portfolio"
 )
 
 // keep the uuid to user

@@ -1,6 +1,6 @@
 package valuable
 
-import "github.com/stock-simulator-server/utils"
+import "github.com/stock-simulator-server/src/utils"
 
 var Valuables = make(map[string]Valuable)
 var ValuablesLock = utils.NewLock("valuables")

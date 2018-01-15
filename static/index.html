@@ -38,6 +38,7 @@
     {
         onEvent("Connected");
         doSend('{"action": "login", "value": {"username": "username", "password":"password"}}');
+        doSend('{"action": "update"}');
 
         setTimeout(function () {
             //doSend('{"action": "trade", "value": {"stock_ticker": "CHUNT", "exchange_id":"US", "amount":10}}');

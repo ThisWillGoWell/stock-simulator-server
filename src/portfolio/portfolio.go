@@ -1,8 +1,8 @@
 package portfolio
 
 import (
-	"github.com/stock-simulator-server/utils"
-	"github.com/stock-simulator-server/valuable"
+	"github.com/stock-simulator-server/src/utils"
+	"github.com/stock-simulator-server/src/valuable"
 	"errors"
 	"fmt"
 )
@@ -57,8 +57,11 @@ func (port *Portfolio)valuableUpdate(){
 
 	for range updateChannel{
 		port.Lock.Acquire("portfolio-update")
-		port.NetWorth = port.calculateNetWorth()
-		port.UpdateChannel.Offer(*port)
+		newNetWorth := port.calculateNetWorth()
+		if newNetWorth != port.NetWorth{
+			port.NetWorth = newNetWorth
+			port.UpdateChannel.Offer(port)
+		}
 		port.Lock.Release()
 	}
 }

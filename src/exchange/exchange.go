@@ -1,11 +1,11 @@
 package exchange
 
 import (
-	"github.com/stock-simulator-server/utils"
-	"github.com/stock-simulator-server/valuable"
+	"github.com/stock-simulator-server/src/utils"
+	"github.com/stock-simulator-server/src/valuable"
 	"errors"
-	"github.com/stock-simulator-server/order"
-	"github.com/stock-simulator-server/portfolio"
+	"github.com/stock-simulator-server/src/order"
+	"github.com/stock-simulator-server/src/portfolio"
 	"fmt"
 )
 
@@ -17,14 +17,13 @@ const TOLERANCE = 0.000001
 
 type Exchange struct {
 	name string
-	ledger map[string ]*ledgerEntry
+	Ledger map[string ]*ledgerEntry
 	tradeChannel *utils.ChannelDuplicator
 	lock *utils.Lock
 	LedgerUpdateChannel * utils.ChannelDuplicator
 }
 
 type ledgerEntry struct {
-	ValuableID		string `json:"id"`
 	ExchangeName string 	`json:"exchange"`
 	Holders    map[string]float64 `json:"holders"`
 	OpenShares float64            `json:"open_shares"`
@@ -40,7 +39,7 @@ func BuildExchange(name string) (*Exchange, error){
 
 	exchange := &Exchange{
 		name: name,
-		ledger:               	make(map[string]*ledgerEntry),
+		Ledger:               	make(map[string]*ledgerEntry),
 		tradeChannel:         	utils.MakeDuplicator(),
 		lock: 					utils.NewLock(fmt.Sprintf("exchange-%s", name)),
 		LedgerUpdateChannel: 	utils.MakeDuplicator(),
@@ -58,11 +57,10 @@ func BuildExchange(name string) (*Exchange, error){
 func  (exchange *Exchange) RegisterValuable(valuable valuable.Valuable, amount float64) error {
 	exchange.lock.Acquire("register-valuable")
 	defer exchange.lock.Release()
-	if _, exists := exchange.ledger[valuable.GetID()]; exists {
+	if _, exists := exchange.Ledger[valuable.GetID()]; exists {
 		return errors.New("valuable already exists in exchange")
 	}
-	exchange.ledger[valuable.GetID()] = &ledgerEntry{
-		ValuableID: valuable.GetID(),
+	exchange.Ledger[valuable.GetID()] = &ledgerEntry{
 		ExchangeName: exchange.name,
 		OpenShares: amount,
 		Holders:    make( map[string]float64),
@@ -76,7 +74,7 @@ func  (exchange *Exchange) RegisterValuable(valuable valuable.Valuable, amount f
 // #########################
 
 func (exchange *Exchange)GetHoldingsCount(portfolio *portfolio.Portfolio, valuable valuable.Valuable) float64{
-	amount, exists := exchange.ledger[valuable.GetID()].Holders[portfolio.UUID]
+	amount, exists := exchange.Ledger[valuable.GetID()].Holders[portfolio.UUID]
 	if !exists{
 		return 0
 	}
@@ -129,7 +127,7 @@ func (exchange *Exchange) trade(o *order.PurchaseOrder) {
 	port.Lock.Acquire("trade")
 	defer port.Lock.Release()
 
-	info, ok := exchange.ledger[value.GetID()]
+	info, ok := exchange.Ledger[value.GetID()]
 	if !ok {
 		order.FailureOrder("stock is not known to exchange", o)
 		return

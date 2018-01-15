@@ -4,7 +4,7 @@ import (
 	"math"
 	"math/rand"
 	"fmt"
-	"github.com/stock-simulator-server/utils"
+	"github.com/stock-simulator-server/src/utils"
 	"time"
 	"errors"
 )
@@ -71,7 +71,7 @@ func NewStock(tickerID, name string, startPrice float64, runInterval time.Durati
 	stock.PriceChanger = &RandomPrice{
 		RunPercent:            timeSimulationPeriod.Seconds() / (runInterval.Seconds() * 1.0),
 		TargetPrice:           100.0,
-		PercentToChangeTarget: 100,
+		PercentToChangeTarget: .1,
 		Volatility:            5,
 	}
 	go stock.stockUpdateRoutine()

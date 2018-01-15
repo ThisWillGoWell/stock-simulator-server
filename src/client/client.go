@@ -1,17 +1,18 @@
 package client
 
 import (
-	"github.com/stock-simulator-server/account"
-	"github.com/stock-simulator-server/utils"
-	"github.com/stock-simulator-server/exchange"
+	"github.com/stock-simulator-server/src/account"
+	"github.com/stock-simulator-server/src/utils"
+	"github.com/stock-simulator-server/src/exchange"
 	"github.com/gorilla/websocket"
-	"github.com/stock-simulator-server/messages"
-	"github.com/stock-simulator-server/portfolio"
-	"github.com/stock-simulator-server/valuable"
+	"github.com/stock-simulator-server/src/messages"
+	"github.com/stock-simulator-server/src/portfolio"
+	"github.com/stock-simulator-server/src/valuable"
 	"encoding/json"
 	"time"
-	"github.com/stock-simulator-server/order"
+	"github.com/stock-simulator-server/src/order"
 	"errors"
+	"fmt"
 )
 
 var clients = make(map[*Client]bool)
@@ -24,7 +25,7 @@ var broadcastMessages = utils.MakeDuplicator()
 func BroadcastMessageBuilder(){
 	valuableUpdateChannel := valuable.ValuableUpdateChannel.GetOutput()
 	portfolioUpdateChannel := portfolio.PortfoliosUpdateChannel.GetOutput()
-	ledgerUpdateChannel := portfolio.PortfoliosUpdateChannel.GetOutput()
+	ledgerUpdateChannel := exchange.ExchangesUpdateChannel.GetOutput()
 	for{
 		var update interface{}
 		var updateType string
@@ -88,6 +89,7 @@ func Login(loginMessageStr string, tx, rx chan string) (error){
 
 //receive go routine
 func (client *Client)rx(){
+
 	for messageString := range client.socketRx {
 		message := new(messages.BaseMessage)
 		//attempt to
@@ -112,12 +114,46 @@ func (client *Client)rx(){
 // send down websocket
 func (client *Client) tx(){
 	send := client.messageSender.GetOutput()
-	for sendMsg := range send{
-		str, err := json.Marshal(sendMsg)
+	batchSendTicker := time.NewTicker(1 * time.Second)
+	sendQueue := make(chan interface{}, 300)
+	//
+	for{
+		select{
+		case <-batchSendTicker.C:
+			sendOutQueue(sendQueue, client.socketTx)
+		case msg:= <-send:
+			select{
+			case sendQueue <- msg:
+			default:
+				//the queue is full
+				//empty it
+				sendOutQueue(sendQueue, client.socketTx)
+				//add
+				sendQueue <- msg
+			}
+
+		}
+	}
+}
+func sendOutQueue(sendQueue chan interface{}, socketTx chan string){
+	fmt.Println("sending tick")
+	sendList := make([]interface{}, 0)
+	emptyQueue:
+		for{
+			select{
+			case ele:=<- sendQueue:
+				sendList = append(sendList, ele)
+			default:
+				break emptyQueue
+			}
+		}
+
+	if len(sendList) > 0 {
+		str, err := json.Marshal(sendList)
 		if err != nil{
 			panic(err)
 		}else{
-			client.socketTx <- string(str)
+			socketTx <- string(str)
 		}
 	}
 }
@@ -141,7 +177,7 @@ func (client *Client)processTradeMessage(message messages.Message){
 
 func (client *Client)processUpdateMessage() {
 	for _, entry := range exchange.Exchanges{
-		message := messages.BuildUpdateMessage(messages.LedgerUpdate, entry)
+		message := messages.BuildUpdateMessage(messages.LedgerUpdate, entry.Ledger)
 		client.messageSender.Offer(message)
 	}
 
