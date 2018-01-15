@@ -16,11 +16,16 @@ func StartHandlers() {
 	if shareDir == ""{
 		shareDir = "static"
 	}
+	port := os.Getenv("PORT")
+	if port == ""{
+		port = "8000"
+	}
+	port = ":" + port
 	fmt.Println(shareDir)
 	var fs = http.FileServer(http.Dir(shareDir))
 	http.Handle("/", fs)
 	http.HandleFunc("/ws", handleConnections)
-	err := http.ListenAndServe(":8000", nil)
+	err := http.ListenAndServe(port, nil)
 	if err != nil{
 		log.Fatal("ListenAndServe:", err)
 	}
@@ -71,7 +76,7 @@ func rxSocket(conn *websocket.Conn, rx chan string){
 	for{
 		_, msg, err := conn.ReadMessage()
 		if err != nil{
-
+			break
 		}
 		rx <- string(msg)
 	}

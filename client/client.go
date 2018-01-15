@@ -72,11 +72,6 @@ func Login(loginMessageStr string, tx, rx chan string) (error){
 	if err != nil {
 		return err
 	}
-
-	if err != nil{
-		return err
-	}
-
 	client := &Client {
 		user: user,
 		socketRx:        rx,
@@ -131,7 +126,7 @@ func (client *Client)processChatMessage(message messages.Message){
 	chatMessage := message.(*messages.ChatMessage)
 	chatMessage.Author = client.user.Uuid
 	chatMessage.Timestamp = time.Now().Unix()
-	client.messageSender.Offer(chatMessage)
+	broadcastMessages.Offer(chatMessage)
 }
 
 func (client *Client)processTradeMessage(message messages.Message){
