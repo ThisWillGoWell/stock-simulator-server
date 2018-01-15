@@ -2,7 +2,6 @@ package messages
 
 import (
 	"encoding/json"
-	"github.com/stock-simulator-server/utils"
 	"errors"
 )
 
@@ -16,15 +15,6 @@ const ValuableUpdate = "valuable"
 const PortfolioUpdate = "portfolio"
 const LedgerUpdate = "ledger"
 
-type MessageProcessor struct {
-	inputchannel chan string
-	ChatMessages utils.ChannelDuplicator
-	TradeCommands utils.ChannelDuplicator
-}
-
-func RunMessageProcessor() {
-
-}
 type Message interface {
 	message()
 }
@@ -95,7 +85,6 @@ type ChatMessage struct {
 	Timestamp int64 `json:"timestamp"`
 }
 func (*ChatMessage) message() {return}
-
 
 type UpdateMessage struct {
 	UpdateType string `json:"type"`

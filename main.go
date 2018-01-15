@@ -9,8 +9,8 @@ import (
 )
 
 func main() {
-	account.NewUser("user", "password")
-	app.RunApp()
+
+	go app.RunApp()
 	web.StartHandlers()
 
 	for{

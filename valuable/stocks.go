@@ -69,7 +69,7 @@ func NewStock(tickerID, name string, startPrice float64, runInterval time.Durati
 	}
 
 	stock.PriceChanger = &RandomPrice{
-		RunPercent:      timeSimulationPeriod.Seconds() / runInterval.Seconds() / 100.0,
+		RunPercent:      timeSimulationPeriod.Seconds() / (runInterval.Seconds() * 1.0),
 		TargetPrice:     100.0,
 		PercentToChange: 100,
 		Volatility:      5,
@@ -123,7 +123,7 @@ func (randPrice *RandomPrice) change(stock *Stock){
 	stock.lock.Acquire("change-stock")
 	defer stock.lock.Release()
 
-	if rand.Float64() <= randPrice.RunPercent {
+	if rand.Float64() >= randPrice.RunPercent {
 		return
 	}
 	if rand.Float64() <= randPrice.PercentToChange {

@@ -11,12 +11,13 @@ import (
 	"github.com/stock-simulator-server/client"
 	"github.com/stock-simulator-server/messages"
 	"encoding/json"
+	"github.com/stock-simulator-server/order"
 )
 
 func RunApp(){
 	fmt.Println("running app")
 	//make the stocks
-	stock1, _:= valuable.NewStock("CHUNT", "Chunt's Hats", 69,  time.Second * 60)
+	stock1, _:= valuable.NewStock("CHUNT", "Chunt's Hats", 69,  time.Second * 2)
 	stock2, _:= valuable.NewStock("KING", "Paddle King", 10,  time.Second * 5)
 	stock3, _:= valuable.NewStock("CBIO", "Sebio's Streaming Services", 10,  time.Second * 30)
 	valuable.StartStockStimulation()
@@ -60,18 +61,15 @@ func RunApp(){
 		}
 	}()
 
-	/*
-	po := order.BuildPurchaseOrder("CHUNT", "US", "1", 10)
-	exchange.InitiateTrade(po)
-	time.Sleep(2 * time.Second)
+
 	po2 := order.BuildPurchaseOrder("KING", "US", "1", 5)
 	exchange.InitiateTrade(po2)
-	time.Sleep(2 * time.Second)
+	time.Sleep(10 * time.Second)
 	po3 := order.BuildPurchaseOrder("CBIO", "US", "1", 1)
 	exchange.InitiateTrade(po3)
-	time.Sleep(2 * time.Second)
+	time.Sleep(10 * time.Second)
 	po4 := order.BuildPurchaseOrder("CBIO", "US", "2", 1)
 	exchange.InitiateTrade(po4)
-	time.Sleep(2 * time.Second)
-	*/
+	time.Sleep(10 * time.Second)
+
 }
