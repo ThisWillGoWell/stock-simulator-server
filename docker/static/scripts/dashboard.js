@@ -69,6 +69,7 @@ $( document ).ready(function() {
 	}
 
 	var chat_feed = $('#chat-module--container .chat-message--list');
+	var debug_feed = $('#debug-module--container .debug-message--list');
 
 	function appendNewMessage(msg, fromMe){
 
@@ -86,6 +87,19 @@ $( document ).ready(function() {
 
 		chat_feed.append(msg_template);
 		chat_feed.animate({scrollTop: chat_feed.prop("scrollHeight")}, $('#chat-module--container .chat-message--list').height());
+
+	}
+
+	function appendNewServerMessage(msg){
+
+		
+		
+		let msg_template = '<li>'+			
+				'				<div class="msg-text">'+ msg +'</div>'+
+				'			</li>';
+
+		debug_feed.append(msg_template);
+		debug_feed.animate({scrollTop: chat_feed.prop("scrollHeight")}, $('#chat-module--container .chat-message--list').height());
 
 	}
 
@@ -160,18 +174,85 @@ $( document ).ready(function() {
 		}
 	});
 
- //    $('#menu-close-btn').click(function() {
- //    	$('#side-menu').removeClass('open');
-        
- //    });
 
-	// $("#publications-link").click(function() {
- //        $('html, body').animate({
- //            scrollTop: $("#publications").offset().top - 100
- //        }, 300);
- //    });
+	/*  WEBSOCKETS */
 
-	
+	var wsUri = "ws://localhost:8080/ws";
+    var output;
+    var webSocket;
+
+    function init()
+    {
+        output = debug_feed;
+        testWebSocket();
+    }
+
+    function testWebSocket()
+    {
+        webSocket = new WebSocket(wsUri);
+        webSocket.onopen = function(evt) { onOpen(evt) };
+        webSocket.onclose = function(evt) { onClose(evt) };
+        webSocket.onmessage = function(evt) { onMessage(evt) };
+        webSocket.onerror = function(evt) { onError(evt) };
+    }
+
+    function onOpen(evt)
+    {
+        onEvent("Connected");
+        doSend('{"action": "login", "value": {"username": "username", "password":"password"}}');
+
+        setTimeout(function () {
+            //doSend('{"action": "trade", "value": {"stock_ticker": "CHUNT", "exchange_id":"US", "amount":10}}');
+        }, 1000);
+
+        setTimeout(function () {
+
+            doSend('{"action": "chat", "value":{"message_body":"hey matty ice"}}')
+
+        }, 1000);
+
+
+
+        //doSend('{"op":"subscribe","type":"alert", "system":"irRemote"}');
+    }
+
+    function onClose(evt)
+    {
+        onEvent("Disconnected");
+    }
+
+    function onEvent(message){
+        appendNewServerMessage(message);
+    }
+
+    function onMessage(evt)
+    {
+        appendNewServerMessage(evt.data);
+
+    }
+
+    function onSend(message)
+    {
+        appendNewServerMessage(message);
+
+    }
+
+    function onError(evt)
+    {
+        appendNewServerMessage(evt.data);
+    }
+
+    function doSend(message)
+    {
+        onSend(message)
+        webSocket.send(message);
+    }
+
+   
+
+
+
+    window.addEventListener("load", init, false);
 
 	
 
