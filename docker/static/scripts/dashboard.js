@@ -177,7 +177,7 @@ $( document ).ready(function() {
 
 	/*  WEBSOCKETS */
 
-	var wsUri = "ws://localhost:8080/ws";
+	var wsUri = "ws://" + window.location.host + "/ws";
     var output;
     var webSocket;
 
