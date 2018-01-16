@@ -4,6 +4,7 @@
 		<title>MockStarket</title>
 		<meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
         <link href="https://fonts.googleapis.com/css?family=Mukta+Vaani:300,400,500,700" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:100,300,400,500" rel="stylesheet">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet">
         <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
@@ -24,7 +25,7 @@
 			<section id="side-menu--container">
 				<div class="logo-mark">MOCKSTARKET</div>
 				<div class="timer-container">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 75 75"><defs><style></style></defs><title>Timer Circler</title><g id="Layer_2" data-name="Layer 2"><g id="Layer_1-2" data-name="Layer 1"><path class="circle-timer" stroke="#ffffff" stroke-width="1px" stroke-alignment="inner" d="M37.5,1A36.5,36.5,0,1,1,1,37.5,36.54,36.54,0,0,1,37.5,1m0-1A37.5"/></g></g></svg>
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 75 75"><defs><style></style></defs><title>Timer Circler</title><g id="Layer_2" data-name="Layer 2"><g id="Layer_1-2" data-name="Layer 1"><path class="circle-timer" stroke="#ffffff" stroke-width="2px" stroke-alignment="inner" d="M37.5,1A36.5,36.5,0,1,1,1,37.5,36.54,36.54,0,0,1,37.5,1m0-1A37.5"/></g></g></svg>
 				</div>
 				<ul>
 					<li>
@@ -66,6 +67,13 @@
 						<button>
 							<i class="material-icons menu-icon">local_atm</i>
 							<div class="menu-item-title">Store</div>
+							<i class="material-icons right-arrow">keyboard_arrow_right</i>
+						</button>
+					</li>
+					<li>
+						<button class="debug-btn red">
+							<i class="material-icons menu-icon">build</i>
+							<div class="menu-item-title">Debug</div>
 							<i class="material-icons right-arrow">keyboard_arrow_right</i>
 						</button>
 					</li>
@@ -117,6 +125,28 @@
 					
 				</ul>
 				<textarea id="chat-text-input" placeholder="Say anything..."></textarea>
+			</section>
+			<section id="debug-module--container" class="closed">
+				<div class="debug-title-bar">
+					<span>Server Log</span>
+					<button></button>
+				</div>
+
+				<!-- 
+					Make Chat resizable
+					Make user's own messages show differently 
+				-->
+				<ul class="debug-message--list">
+					<li>
+						
+						<div class="msg-text">TEST MESSAGE</div>
+					</li>
+					<li>
+						
+						<div class="msg-text">TEST MESSAGE TEST MESSAGE TEST MESSAGE TEST MESSAGE TEST MESSAGE TEST MESSAGE TEST MESSAGE TEST MESSAGE </div>
+					</li>
+				</ul>
+				
 			</section>
 		</div>
 	</body>
