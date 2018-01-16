@@ -1,19 +1,18 @@
-version: '3'
+version: '3.2'
 services:
   server:
     build: .
     container_name: starket_server
     ports:
       - "8000:8000"
+    volumes:
+        - ${STATIC_FOLDER}:/opt/server/static
     environment:
       FILE_SERVE: opt/server/static
       DB_USER: starket
-
-
   db:
       image: postgres
       restart: always
       environment:
         POSTGRES_PASSWORD: example
         POSTGRES_USER: starket
-
