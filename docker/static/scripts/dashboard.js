@@ -57,27 +57,6 @@ $( document ).ready(function() {
 
 	});
 
-	var chat_feed = $('#chat-module--container .chat-message--list');
-
-	function appendNewMessage(msg, fromMe){
-
-		let isMe = "";
-		if (fromMe) {
-			isMe = "is-me";
-		}
-		let msg_text = msg.body;
-		let msg_author = msg.author;
-		let msg_timestamp = msg.timestamp;
-		let msg_template = '<li>'+
-				'				<div class="msg-username '+ isMe +'">'+ msg_author +' <span class="msg-timestamp">'+ msg_timestamp +'</span></div>'+
-				'				<div class="msg-text">'+ msg_text +'</div>'+
-				'			</li>';
-
-		chat_feed.append(msg_template);
-		chat_feed.animate({scrollTop: chat_feed.prop("scrollHeight")}, $('#chat-module--container .chat-message--list').height());
-
-	}
-
 	function formatDate12Hour(date) {
 	  let hours = date.getHours();
 	  let minutes = date.getMinutes();
@@ -88,6 +67,29 @@ $( document ).ready(function() {
 	  let strTime = hours + ':' + minutes + ' ' + ampm;
 	  return strTime;
 	}
+
+	var chat_feed = $('#chat-module--container .chat-message--list');
+
+	function appendNewMessage(msg, fromMe){
+
+		let isMe = "";
+		if (fromMe) {
+			isMe = "is-me";
+		}
+		let msg_text = msg.body;
+		let msg_author = msg.author;
+		let msg_timestamp = formatDate12Hour(new Date($.now()));
+		let msg_template = '<li>'+
+				'				<div class="msg-username '+ isMe +'">'+ msg_author +' <span class="msg-timestamp">'+ msg_timestamp +'</span></div>'+
+				'				<div class="msg-text">'+ msg_text +'</div>'+
+				'			</li>';
+
+		chat_feed.append(msg_template);
+		chat_feed.animate({scrollTop: chat_feed.prop("scrollHeight")}, $('#chat-module--container .chat-message--list').height());
+
+	}
+
+	
 
     var i=0;
 
@@ -110,6 +112,12 @@ $( document ).ready(function() {
         $('#chat-text-input').focus();
     });
 
+    $('.debug-title-bar button').click(function() {
+    
+        $('#debug-module--container').toggleClass('closed');
+        //$('#debug-text-input').focus();
+    });
+
     $('#top-bar--container .account-settings-btn').click(function() {
     
         $('#top-bar--container .account-settings-menu--container').toggleClass('open');
@@ -119,6 +127,12 @@ $( document ).ready(function() {
     $('#account-settings-menu-close-btn').click(function() {
     
         $('#top-bar--container .account-settings-menu--container').toggleClass('open');
+        
+    });
+
+    $('.debug-btn').click(function() {
+    
+        $('#debug-module--container').toggleClass('visible');
         
     });
 

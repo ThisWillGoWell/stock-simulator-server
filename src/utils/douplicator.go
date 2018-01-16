@@ -40,6 +40,18 @@ func (ch *ChannelDuplicator) GetOutput() chan interface{} {
 	return newOutput
 }
 
+
+func (ch *ChannelDuplicator) GetBufferedOutput(buffSize int64) chan interface{} {
+	// make a channel with a 10 buffer size
+	if ch.debug{
+		fmt.Println("adding output on", ch.debugName)
+	}
+	newOutput := make(chan interface{}, buffSize)
+	ch.outputs = append(ch.outputs, newOutput)
+	return newOutput
+}
+
+
 func (ch *ChannelDuplicator) UnregisterOutput(remove chan interface{}) {
 	var removeIndex int
 	for i, channel := range ch.outputs {

@@ -79,10 +79,9 @@ func Login(loginMessageStr string, tx, rx chan string) (error){
 		socketTx:        tx,
 		messageSender: utils.MakeDuplicator(),
 		}
-	go client.rx()
+	client.messageSender.RegisterInput(broadcastMessages.GetBufferedOutput(50))
 	go client.tx()
-	client.messageSender.RegisterInput(broadcastMessages.GetOutput())
-
+	go client.rx()
 	return nil
 }
 
@@ -136,7 +135,6 @@ func (client *Client) tx(){
 	}
 }
 func sendOutQueue(sendQueue chan interface{}, socketTx chan string){
-	fmt.Println("sending tick")
 	sendList := make([]interface{}, 0)
 	emptyQueue:
 		for{
@@ -176,6 +174,7 @@ func (client *Client)processTradeMessage(message messages.Message){
 }
 
 func (client *Client)processUpdateMessage() {
+	fmt.Println("got update")
 	for _, entry := range exchange.Exchanges{
 		message := messages.BuildUpdateMessage(messages.LedgerUpdate, entry.Ledger)
 		client.messageSender.Offer(message)
