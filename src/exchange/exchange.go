@@ -7,6 +7,7 @@ import (
 	"github.com/stock-simulator-server/src/order"
 	"github.com/stock-simulator-server/src/portfolio"
 	"fmt"
+	"reflect"
 )
 
 var Exchanges = make(map[string]*Exchange)
@@ -23,11 +24,17 @@ type Exchange struct {
 	LedgerUpdateChannel * utils.ChannelDuplicator
 }
 
+
 type ledgerEntry struct {
 	ExchangeName string 	`json:"exchange"`
 	Holders    map[string]float64 `json:"holders"`
 	OpenShares float64            `json:"open_shares"`
 }
+//required by change detect
+func (ledger *ledgerEntry)ChangeDetected()reflect.Type{
+	return reflect.TypeOf(ledger)
+}
+
 
 func BuildExchange(name string) (*Exchange, error){
 	ExchangesLock.Acquire("build-exchange")

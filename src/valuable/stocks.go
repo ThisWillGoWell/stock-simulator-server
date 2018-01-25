@@ -7,6 +7,7 @@ import (
 	"github.com/stock-simulator-server/src/utils"
 	"time"
 	"errors"
+	"reflect"
 )
 
 const (
@@ -47,7 +48,7 @@ type stockManager struct {
 type Stock struct {
 	Name         string  `json:"name"`
 	TickerId     string  `json:"ticker_id"`
-	CurrentPrice float64 `json:"current_price"`
+	CurrentPrice float64 `json:"current_price",change_includes:"TickerId",change_path:"ticker_id,current_price"`
 	PriceChanger PriceChange `json:"-"`
 	UpdateChannel *utils.ChannelDuplicator `json:"-"`
 	lock *utils.Lock
@@ -60,6 +61,7 @@ func NewStock(tickerID, name string, startPrice float64, runInterval time.Durati
 	if _, ok := Valuables[tickerID]; ok{
 		return nil, errors.New("tickerID is already taken by another valuable")
 	}
+
 	stock := &Stock{
 		lock: utils.NewLock(fmt.Sprintf("stock-%s", tickerID)),
 		Name: name,
@@ -69,7 +71,7 @@ func NewStock(tickerID, name string, startPrice float64, runInterval time.Durati
 	}
 
 	stock.PriceChanger = &RandomPrice{
-		RunPercent:            timeSimulationPeriod.Seconds() / (runInterval.Seconds() * 1.0),
+		RunPercent:            timeSimulationPeriod.Seconds()/ (runInterval.Seconds() * 1.0),
 		TargetPrice:           100.0,
 		PercentToChangeTarget: .1,
 		Volatility:            5,
@@ -103,6 +105,9 @@ func (stock *Stock)stockUpdateRoutine(){
 	}
 }
 
+func (stock *Stock)ChangeDetected()reflect.Type{
+	return reflect.TypeOf(stock)
+}
 
 
 // Some thing that can take in a stock and change the current price

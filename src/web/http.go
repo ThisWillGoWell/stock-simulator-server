@@ -17,9 +17,11 @@ func StartHandlers() {
 		shareDir = "static"
 	}
 	port := os.Getenv("PORT")
+
 	if port == ""{
 		port = "8000"
 	}
+
 	port = ":" + port
 	fmt.Println(shareDir)
 	var fs = http.FileServer(http.Dir(shareDir))
@@ -48,6 +50,7 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 	// Gate Keeper
 	for {
 		_, msg, err := ws.ReadMessage()
+
 		if err != nil {
 			ws.WriteMessage(websocket.TextMessage, []byte(err.Error()))
 			continue

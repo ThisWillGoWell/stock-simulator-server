@@ -7,6 +7,10 @@ import (
 	"fmt"
 )
 
+const(
+	ObjectType
+)
+
 var Portfolios = make(map[string]*Portfolio)
 var PortfoliosLock = utils.NewLock("portfolios")
 var PortfoliosUpdateChannel = utils.MakeDuplicator()
@@ -65,6 +69,7 @@ func (port *Portfolio)valuableUpdate(){
 		port.Lock.Release()
 	}
 }
+
 func GetPortfolio(userUUID string)(*Portfolio, error){
 	port, exists := Portfolios[userUUID]
 	if !exists {
