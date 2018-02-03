@@ -18,7 +18,7 @@ const (
 
 	timeSimulationPeriod = time.Second
 
-
+	ObjectType = "stock"
 )
 var timeSimulation = utils.MakeDuplicator()
 
@@ -36,7 +36,7 @@ func StartStockStimulation(){
 			simulation <- true
 		}
 		close(simulation)
-	}();
+	}()
 
 }
 
@@ -48,10 +48,14 @@ type stockManager struct {
 type Stock struct {
 	Name         string  `json:"name"`
 	TickerId     string  `json:"ticker_id"`
-	CurrentPrice float64 `json:"current_price",change_includes:"TickerId",change_path:"ticker_id,current_price"`
+	CurrentPrice float64 `json:"current_price" change:"-"`
 	PriceChanger PriceChange `json:"-"`
 	UpdateChannel *utils.ChannelDuplicator `json:"-"`
 	lock *utils.Lock
+}
+
+func(stock *Stock)GetType() string{
+	return ObjectType
 }
 
 func NewStock(tickerID, name string, startPrice float64, runInterval time.Duration)(*Stock, error){
@@ -94,7 +98,7 @@ func  (stock *Stock)GetUpdateChannel()(*utils.ChannelDuplicator){
 	return stock.UpdateChannel
 }
 
-func (stock *Stock)GetID() string{
+func (stock *Stock)GetId() string{
 	return stock.TickerId
 }
 

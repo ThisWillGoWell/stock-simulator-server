@@ -7,7 +7,6 @@ import (
 	"github.com/stock-simulator-server/src/portfolio"
 	"fmt"
 
-	"github.com/stock-simulator-server/src/client"
 	"github.com/stock-simulator-server/src/messages"
 	"encoding/json"
 	"github.com/stock-simulator-server/src/order"
@@ -27,7 +26,7 @@ func RunApp(){
 		duration time.Duration
 	}
 
-	stockConfigs := append(make([]stockConfig, 15),
+	stockConfigs := append(make([]stockConfig, 0),
 		stockConfig{"CHUNT", "Chunt's Hats", 69,  time.Second * 45},
 		stockConfig{"KING", "Paddle King", 10,  time.Second * 30},
 		stockConfig{"CBIO", "Sebio's Streaming Services", 10,  time.Minute * 1},
@@ -60,7 +59,7 @@ func RunApp(){
 	portfolio.NewPortfolio("2", "Big Blacky")
 
 	//start the builder
-	go client.BroadcastMessageBuilder()
+	//go client.BroadcastMessageBuilder()
 	//build and simulate a client
 	account.NewUser("username", "password")
 	go func(){

@@ -8,7 +8,7 @@ import (
 )
 
 const(
-	ObjectType
+	ObjectType = "Portfolio"
 )
 
 var Portfolios = make(map[string]*Portfolio)
@@ -18,11 +18,11 @@ var PortfoliosUpdateChannel = utils.MakeDuplicator()
 type Portfolio struct {
 	Name     string `json:"name"`
 	UUID     string `json:"uuid"`
-	Wallet   float64 `json:"wallet"`
-	NetWorth float64 `json:"net_worth"`
+	Wallet   float64 `json:"wallet" change:"-"`
+	NetWorth float64 `json:"net_worth" change:"-"`
 
 	//keeps track of how much $$$ they own, used for some slight optomization on calc networth
-	PersonalLedger map[string]*ledgerEntry `json:"ledger"`
+	PersonalLedger map[string]*ledgerEntry `json:"ledger" change:"-"`
 
 	UpdateChannel   *utils.ChannelDuplicator `json:"-"`
 	valuableUpdates *utils.ChannelDuplicator
@@ -33,6 +33,15 @@ type Portfolio struct {
 type ledgerEntry struct {
 	Amount float64 `json:"amount"`
 	updateChannel chan interface{}
+}
+
+func(port *Portfolio)GetId() string{
+	return port.UUID
+}
+
+
+func(port *Portfolio)GetType() string{
+	return ObjectType
 }
 
 func NewPortfolio( userUUID, name string)(*Portfolio, error){
@@ -90,7 +99,7 @@ func (port *Portfolio)calculateNetWorth() float64{
 }
 
 func (port *Portfolio)TradeUpdate(value valuable.Valuable, amountOwned, price float64){
-	valueID := value.GetID()
+	valueID := value.GetId()
 	entry, exists := port.PersonalLedger[valueID]
 	if !exists{
 		port.PersonalLedger[valueID] = &ledgerEntry{

@@ -10,6 +10,8 @@ import (
 	"reflect"
 )
 
+const ObjectType  = "exchange"
+
 var Exchanges = make(map[string]*Exchange)
 var ExchangesLock = utils.NewLock("exchanges")
 var ExchangesUpdateChannel = utils.MakeDuplicator()
@@ -27,8 +29,8 @@ type Exchange struct {
 
 type ledgerEntry struct {
 	ExchangeName string 	`json:"exchange"`
-	Holders    map[string]float64 `json:"holders"`
-	OpenShares float64            `json:"open_shares"`
+	Holders    map[string]float64 `json:"holders" change:"-"`
+	OpenShares float64            `json:"open_shares" change:"-"`
 }
 //required by change detect
 func (ledger *ledgerEntry)ChangeDetected()reflect.Type{
@@ -56,6 +58,13 @@ func BuildExchange(name string) (*Exchange, error){
 	return exchange, nil
 }
 
+func  (exchange *Exchange)GetId() string{
+	return exchange.name
+}
+
+func  (exchange *Exchange)Type() string{
+	return ObjectType
+}
 
 // #########################
 //			Stocks
@@ -64,10 +73,10 @@ func BuildExchange(name string) (*Exchange, error){
 func  (exchange *Exchange) RegisterValuable(valuable valuable.Valuable, amount float64) error {
 	exchange.lock.Acquire("register-valuable")
 	defer exchange.lock.Release()
-	if _, exists := exchange.Ledger[valuable.GetID()]; exists {
+	if _, exists := exchange.Ledger[valuable.GetId()]; exists {
 		return errors.New("valuable already exists in exchange")
 	}
-	exchange.Ledger[valuable.GetID()] = &ledgerEntry{
+	exchange.Ledger[valuable.GetId()] = &ledgerEntry{
 		ExchangeName: exchange.name,
 		OpenShares: amount,
 		Holders:    make( map[string]float64),
@@ -81,7 +90,7 @@ func  (exchange *Exchange) RegisterValuable(valuable valuable.Valuable, amount f
 // #########################
 
 func (exchange *Exchange)GetHoldingsCount(portfolio *portfolio.Portfolio, valuable valuable.Valuable) float64{
-	amount, exists := exchange.Ledger[valuable.GetID()].Holders[portfolio.UUID]
+	amount, exists := exchange.Ledger[valuable.GetId()].Holders[portfolio.UUID]
 	if !exists{
 		return 0
 	}
@@ -134,7 +143,7 @@ func (exchange *Exchange) trade(o *order.PurchaseOrder) {
 	port.Lock.Acquire("trade")
 	defer port.Lock.Release()
 
-	info, ok := exchange.Ledger[value.GetID()]
+	info, ok := exchange.Ledger[value.GetId()]
 	if !ok {
 		order.FailureOrder("stock is not known to exchange", o)
 		return

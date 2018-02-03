@@ -19,7 +19,7 @@ var clients = make(map[*Client]bool)
 var clientsLock = utils.NewLock("clients-lock")
 var clientBroadcast = utils.MakeDuplicator()
 
-var broadcastMessages = utils.MakeDuplicator()
+var BroadcastMessages = utils.MakeDuplicator()
 
 
 func BroadcastMessageBuilder(){
@@ -38,7 +38,7 @@ func BroadcastMessageBuilder(){
 			updateType = messages.LedgerUpdate
 		}
 		msg :=messages.BuildUpdateMessage(updateType, update)
-		broadcastMessages.Offer(msg)
+		BroadcastMessages.Offer(msg)
 	}
 }
 
@@ -79,7 +79,7 @@ func Login(loginMessageStr string, tx, rx chan string) (error){
 		socketTx:        tx,
 		messageSender: utils.MakeDuplicator(),
 		}
-	client.messageSender.RegisterInput(broadcastMessages.GetBufferedOutput(50))
+	client.messageSender.RegisterInput(BroadcastMessages.GetBufferedOutput(50))
 	go client.tx()
 	go client.rx()
 	return nil
@@ -160,7 +160,7 @@ func (client *Client)processChatMessage(message messages.Message){
 	chatMessage := message.(*messages.ChatMessage)
 	chatMessage.Author = client.user.Uuid
 	chatMessage.Timestamp = time.Now().Unix()
-	broadcastMessages.Offer(chatMessage)
+	BroadcastMessages.Offer(chatMessage)
 }
 
 func (client *Client)processTradeMessage(message messages.Message){

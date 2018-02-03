@@ -7,7 +7,7 @@ var ValuablesLock = utils.NewLock("valuables")
 var ValuableUpdateChannel = utils.MakeDuplicator()
 
 type Valuable interface {
-	GetID() string
+	GetId() string
 	GetValue() float64
 	GetLock() *utils.Lock
 	GetUpdateChannel() *utils.ChannelDuplicator

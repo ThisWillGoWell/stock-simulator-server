@@ -1,0 +1,3 @@
+[submodule "mockstarket-front-end"]
+	path = mockstarket-front-end
+	url = https://github.com/bsieck/mockstarket-front-end

@@ -16,18 +16,12 @@ func StartHandlers() {
 	if shareDir == ""{
 		shareDir = "static"
 	}
-	port := os.Getenv("PORT")
 
-	if port == ""{
-		port = "8000"
-	}
-
-	port = ":" + port
 	fmt.Println(shareDir)
 	var fs = http.FileServer(http.Dir(shareDir))
 	http.Handle("/", fs)
 	http.HandleFunc("/ws", handleConnections)
-	err := http.ListenAndServe(port, nil)
+	err := http.ListenAndServe(":8000", nil)
 	if err != nil{
 		log.Fatal("ListenAndServe:", err)
 	}

@@ -10,7 +10,7 @@ func PseudoUuid() (uuid string) {
 	b := make([]byte, 16)
 	_, err := rand.Read(b)
 	if err != nil {
-		fmt.Println("Error: ", err)
+		panic(err)
 		return
 	}
 

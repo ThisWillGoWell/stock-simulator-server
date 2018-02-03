@@ -6,13 +6,16 @@ services:
     ports:
       - "8000:8000"
     volumes:
-        - ${STATIC_FOLDER}:/opt/server/static
+        - ${STATIC_FOLDER}:/opt/server/static/
     environment:
       FILE_SERVE: opt/server/static
       DB_USER: starket
-  db:
-      image: postgres
-      restart: always
-      environment:
-        POSTGRES_PASSWORD: example
-        POSTGRES_USER: starket
+  #db:
+      #image: postgres
+      #restart: always
+      #environment:
+        #POSTGRES_PASSWORD: example
+        #POSTGRES_USER: starket
+        #DB_PATH: /opt/server/database/
+      #volumes:
+        #- ${DB_FOLDER}:/opt/server/database/

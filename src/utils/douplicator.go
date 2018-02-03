@@ -102,7 +102,7 @@ func (ch *ChannelDuplicator) Offer(value interface{}) {
 		//make a new pointer
 		newIndirect := reflect.New(indirect.Type())
 		//set the new pointer to the value of the original one
-		newIndirect.Elem().Set(reflect.ValueOf(indirect.Interface()))
+		newIndirect.Elem().Set(reflect.ValueOf(value).Elem())
 		//pass that pointer down the transfer line
 		ch.transfer <- newIndirect.Interface()
 	} else{
