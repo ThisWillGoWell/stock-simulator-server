@@ -23,11 +23,6 @@ const (
 
 var timeSimulation = utils.MakeDuplicator()
 
-var manager = stockManager{
-	stocks:             make(map[string]*Stock),
-	StockUpdateChannel: utils.MakeDuplicator(),
-}
-
 func StartStockStimulation() {
 	ticker := time.NewTicker(timeSimulationPeriod)
 	simulation := make(chan interface{})
