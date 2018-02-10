@@ -1,13 +1,13 @@
 package valuable
 
 import (
-	"math"
-	"math/rand"
+	"errors"
 	"fmt"
 	"github.com/stock-simulator-server/src/utils"
-	"time"
-	"errors"
+	"math"
+	"math/rand"
 	"reflect"
+	"time"
 )
 
 const (
@@ -20,18 +20,19 @@ const (
 
 	ObjectType = "stock"
 )
+
 var timeSimulation = utils.MakeDuplicator()
 
 var manager = stockManager{
-	stocks: make(map[string]*Stock),
+	stocks:             make(map[string]*Stock),
 	StockUpdateChannel: utils.MakeDuplicator(),
 }
 
-func StartStockStimulation(){
+func StartStockStimulation() {
 	ticker := time.NewTicker(timeSimulationPeriod)
 	simulation := make(chan interface{})
 	timeSimulation.RegisterInput(simulation)
-	go func(){
+	go func() {
 		for range ticker.C {
 			simulation <- true
 		}
@@ -44,38 +45,39 @@ type stockManager struct {
 	stocks             map[string]*Stock
 	StockUpdateChannel *utils.ChannelDuplicator
 }
+
 //Stock type for storing the stock information
 type Stock struct {
-	Name         string  `json:"name"`
-	TickerId     string  `json:"ticker_id"`
-	CurrentPrice float64 `json:"current_price" change:"-"`
-	PriceChanger PriceChange `json:"-"`
+	Name          string                   `json:"name"`
+	TickerId      string                   `json:"ticker_id"`
+	CurrentPrice  float64                  `json:"current_price" change:"-"`
+	PriceChanger  PriceChange              `json:"-"`
 	UpdateChannel *utils.ChannelDuplicator `json:"-"`
-	lock *utils.Lock
+	lock          *utils.Lock
 }
 
-func(stock *Stock)GetType() string{
+func (stock *Stock) GetType() string {
 	return ObjectType
 }
 
-func NewStock(tickerID, name string, startPrice float64, runInterval time.Duration)(*Stock, error){
+func NewStock(tickerID, name string, startPrice float64, runInterval time.Duration) (*Stock, error) {
 	// Acquire the valuableMapLock so no one can add a new entry till we are done
 	ValuablesLock.Acquire("new-stock")
 	defer ValuablesLock.Release()
-	if _, ok := Valuables[tickerID]; ok{
+	if _, ok := Valuables[tickerID]; ok {
 		return nil, errors.New("tickerID is already taken by another valuable")
 	}
 
 	stock := &Stock{
-		lock: utils.NewLock(fmt.Sprintf("stock-%s", tickerID)),
-		Name: name,
-		TickerId: tickerID,
-		CurrentPrice: startPrice,
+		lock:          utils.NewLock(fmt.Sprintf("stock-%s", tickerID)),
+		Name:          name,
+		TickerId:      tickerID,
+		CurrentPrice:  startPrice,
 		UpdateChannel: utils.MakeDuplicator(),
 	}
 
 	stock.PriceChanger = &RandomPrice{
-		RunPercent:            timeSimulationPeriod.Seconds()/ (runInterval.Seconds() * 1.0),
+		RunPercent:            timeSimulationPeriod.Seconds() / (runInterval.Seconds() * 1.0),
 		TargetPrice:           100.0,
 		PercentToChangeTarget: .1,
 		Volatility:            5,
@@ -86,33 +88,32 @@ func NewStock(tickerID, name string, startPrice float64, runInterval time.Durati
 	return stock, nil
 }
 
-func (stock *Stock)GetValue()float64{
+func (stock *Stock) GetValue() float64 {
 	return stock.CurrentPrice
 }
 
-func (stock *Stock)GetLock() *utils.Lock{
+func (stock *Stock) GetLock() *utils.Lock {
 	return stock.lock
 }
 
-func  (stock *Stock)GetUpdateChannel()(*utils.ChannelDuplicator){
+func (stock *Stock) GetUpdateChannel() *utils.ChannelDuplicator {
 	return stock.UpdateChannel
 }
 
-func (stock *Stock)GetId() string{
+func (stock *Stock) GetId() string {
 	return stock.TickerId
 }
 
-func (stock *Stock)stockUpdateRoutine(){
+func (stock *Stock) stockUpdateRoutine() {
 	update := timeSimulation.GetOutput()
-	for range update{
+	for range update {
 		stock.PriceChanger.change(stock)
 	}
 }
 
-func (stock *Stock)ChangeDetected()reflect.Type{
+func (stock *Stock) ChangeDetected() reflect.Type {
 	return reflect.TypeOf(stock)
 }
-
 
 // Some thing that can take in a stock and change the current price
 type PriceChange interface {
@@ -128,7 +129,7 @@ type RandomPrice struct {
 }
 
 //change the stock using the changer
-func (randPrice *RandomPrice) change(stock *Stock){
+func (randPrice *RandomPrice) change(stock *Stock) {
 	stock.lock.Acquire("change-stock")
 	defer stock.lock.Release()
 
@@ -140,7 +141,7 @@ func (randPrice *RandomPrice) change(stock *Stock){
 	}
 
 	//can make this a lot more interesting, like adding in the ability for it to drop
-	change :=  (randPrice.TargetPrice - stock.CurrentPrice) /
+	change := (randPrice.TargetPrice - stock.CurrentPrice) /
 		MapNum(randPrice.Volatility, volatilityMin, volatilityMax, volatilityMinTurns, volatilityMaxTurns)
 
 	stock.CurrentPrice = stock.CurrentPrice + change
@@ -150,15 +151,15 @@ func (randPrice *RandomPrice) change(stock *Stock){
 }
 
 // change the price of the changer
-func (randPrice *RandomPrice)changeValues(){
+func (randPrice *RandomPrice) changeValues() {
 
 	// get what the upper and lower bounds in % of the current price
 	window := MapNum(randPrice.Volatility, volatilityMin, volatilityMax, 0, 0.3)
 	// select a random number on +- that %
-	newTarget := MapNum(rand.Float64(), 0, 1, randPrice.TargetPrice * (1 - window), randPrice.TargetPrice * (1 + window))
+	newTarget := MapNum(rand.Float64(), 0, 1, randPrice.TargetPrice*(1-window), randPrice.TargetPrice*(1+window))
 	fmt.Println("old", randPrice.TargetPrice, "new", newTarget, "window", window)
 	//need to deiced if the floor should happen before or after
-	if newTarget < 0{
+	if newTarget < 0 {
 		newTarget = 0
 	}
 
@@ -169,12 +170,12 @@ func (randPrice *RandomPrice)changeValues(){
 /** ########################################
 *           Math Helper Functions
 *   ########################################
-*/
+ */
 
 // Round f to nearest number of decimal points
-func RoundPlus(f float64, places int) (float64) {
+func RoundPlus(f float64, places int) float64 {
 	shift := math.Pow(10, float64(places))
-	return Round(f * shift) / shift
+	return Round(f*shift) / shift
 }
 
 // Round a float to the nearest int
@@ -187,15 +188,13 @@ func RandRange(min, max float64) float64 {
 	return MapNum(rand.Float64(), 0, 1, min, max)
 }
 
-
 // map a number from one range to another range
-func MapNum(value, inMin, inMax, outMin, outMax float64) float64{
-	if value >= inMax{
+func MapNum(value, inMin, inMax, outMin, outMax float64) float64 {
+	if value >= inMax {
 		return outMax
 	}
-	if value <= inMin{
+	if value <= inMin {
 		return outMin
 	}
-	return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin
+	return (value-inMin)*(outMax-outMin)/(inMax-inMin) + outMin
 }
-

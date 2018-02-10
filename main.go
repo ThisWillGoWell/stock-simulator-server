@@ -1,15 +1,14 @@
 package main
 
 import (
-
-	"github.com/stock-simulator-server/src/app"
-	"github.com/stock-simulator-server/src/web"
 	"fmt"
-	"github.com/stock-simulator-server/src/utils"
-	"github.com/stock-simulator-server/src/portfolio"
-	"github.com/stock-simulator-server/src/exchange"
+	"github.com/stock-simulator-server/src/app"
 	"github.com/stock-simulator-server/src/client"
+	"github.com/stock-simulator-server/src/exchange"
+	"github.com/stock-simulator-server/src/portfolio"
+	"github.com/stock-simulator-server/src/utils"
 	"github.com/stock-simulator-server/src/valuable"
+	"github.com/stock-simulator-server/src/web"
 )
 
 func main() {

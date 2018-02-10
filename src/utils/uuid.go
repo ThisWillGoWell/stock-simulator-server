@@ -1,8 +1,8 @@
 package utils
 
 import (
-"crypto/rand"
-"fmt"
+	"crypto/rand"
+	"fmt"
 )
 
 func PseudoUuid() (uuid string) {
@@ -18,4 +18,3 @@ func PseudoUuid() (uuid string) {
 
 	return uuid
 }
-

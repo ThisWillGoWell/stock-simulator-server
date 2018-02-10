@@ -1,8 +1,8 @@
 package utils
 
 import (
-	"reflect"
 	"fmt"
+	"reflect"
 	"time"
 )
 
@@ -47,14 +47,13 @@ import (
 		"value": 2
 	}]
 
- */
+*/
 
+const (
+	changeTag = "change"
+)
 
-const(
-	changeTag     = "change"
-	)
-
-var(
+var (
 	//subscribeables is something that can be subscribed to
 	subscribeables        = make(map[string]*SubscribeUpdate)
 	subscribeablesLock    = NewLock("subscribeables")
@@ -62,26 +61,25 @@ var(
 	SubscribeUpdateOutput = MakeDuplicator()
 )
 
-
-func registerChangeDetect(o Identifiable)(*SubscribeUpdate){
+func registerChangeDetect(o Identifiable) *SubscribeUpdate {
 	//get the include tags
 	t := reflect.TypeOf(o)
-	if t.Kind() == reflect.Ptr || t.Kind() == reflect.Interface{
+	if t.Kind() == reflect.Ptr || t.Kind() == reflect.Interface {
 		t = reflect.ValueOf(o).Elem().Type()
 	}
 	//t := reflect.ValueOf(o).Type()
 	newChangeDetect := &SubscribeUpdate{
-		Type: o.GetType(),
-		Id: o.GetId(),
+		Type:          o.GetType(),
+		Id:            o.GetId(),
 		changeDetects: make(map[string]*ChangeField),
 	}
 
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		_, exists := field.Tag.Lookup(changeTag)
-		if exists{
+		if exists {
 			jsonFieldName, exists := field.Tag.Lookup("json")
-			if ! exists {
+			if !exists {
 				jsonFieldName = field.Name
 			}
 
@@ -95,14 +93,14 @@ func registerChangeDetect(o Identifiable)(*SubscribeUpdate){
 	return newChangeDetect
 }
 
-func getValue(o interface{}, name string) interface{}{
+func getValue(o interface{}, name string) interface{} {
 	var r reflect.Value
 	//get the type of the interface provided
 	t := reflect.TypeOf(o)
 	// if pointer, dereference it and then get the field
-	if t.Kind() == reflect.Ptr || t.Kind() == reflect.Interface{
+	if t.Kind() == reflect.Ptr || t.Kind() == reflect.Interface {
 		r = reflect.ValueOf(o).Elem().FieldByName(name)
-	}else{
+	} else {
 		r = reflect.ValueOf(o).FieldByName(name)
 	}
 
@@ -115,39 +113,38 @@ func getValue(o interface{}, name string) interface{}{
 	return r.Interface()
 }
 
-
-func StartDetectChanges(){
+func StartDetectChanges() {
 	subscribeUpdateChannel := SubscribeUpdateInputs.GetOutput()
-	go func(){
+	go func() {
 		for updateObj := range subscribeUpdateChannel {
 			update, ok := updateObj.(Identifiable)
-			if ! ok {
-				 panic("got a non identifiable in the change detector")
+			if !ok {
+				panic("got a non identifiable in the change detector")
 			}
 			subscribeablesLock.Acquire("detect change")
 
-			changeDetect, exists := subscribeables[update.GetType() + update.GetId()]
-			if ! exists{
+			changeDetect, exists := subscribeables[update.GetType()+update.GetId()]
+			if !exists {
 				changeDetect = registerChangeDetect(update)
-				subscribeables[update.GetType() + update.GetId()] = changeDetect
+				subscribeables[update.GetType()+update.GetId()] = changeDetect
 				fmt.Println(changeDetect.changeDetects)
 			}
 			changedFields := make([]*ChangeField, 0)
 			changed := false
-			for filedName, fieldChange := range changeDetect.changeDetects{
+			for filedName, fieldChange := range changeDetect.changeDetects {
 				currentValue := getValue(update, filedName)
 
-				if ! reflect.DeepEqual(currentValue, fieldChange.Value) {
+				if !reflect.DeepEqual(currentValue, fieldChange.Value) {
 					changed = true
 					fieldChange.Value = currentValue
 					changedFields = append(changedFields, fieldChange)
 				}
 			}
-			if changed{
+			if changed {
 				fmt.Println("changed:", changedFields)
 				SubscribeUpdateOutput.Offer(&ChangeNotify{
-					Type: changeDetect.Type,
-					Id: changeDetect.Id,
+					Type:    changeDetect.Type,
+					Id:      changeDetect.Id,
 					Changes: changedFields,
 				})
 			}
@@ -158,36 +155,35 @@ func StartDetectChanges(){
 }
 
 type SubscribeUpdate struct {
-	Type string
-	Id string
+	Type          string
+	Id            string
 	changeDetects map[string]*ChangeField
-	}
-
+}
 
 type ChangeField struct {
-	Field string `json:"field"`
+	Field string      `json:"field"`
 	Value interface{} `json:"value"`
-	}
+}
 type ChangeNotify struct {
-	Type string `json:"type"`
-	Id string `json:"id"`
+	Type    string         `json:"type"`
+	Id      string         `json:"id"`
 	Changes []*ChangeField `json:"changes"`
 }
 
 type changeTest struct {
-	Name	string
+	Name string
 	Test int `change:"-"`
 }
 
-func (change *changeTest)GetId() string{
+func (change *changeTest) GetId() string {
 	return change.Name
 }
 
-func (change *changeTest)GetType() string{
+func (change *changeTest) GetType() string {
 	return "test"
 }
 
-func Test(){
+func Test() {
 	StartDetectChanges()
 	SubscribeUpdateInputs.EnableCopyMode()
 
@@ -195,7 +191,6 @@ func Test(){
 		Name: "this is my name",
 		Test: 1,
 	}
-
 
 	tempUpdateChannel := make(chan interface{})
 	SubscribeUpdateInputs.RegisterInput(tempUpdateChannel)
@@ -206,8 +201,7 @@ func Test(){
 	SubscribeUpdateInputs.Offer(v)
 	v.Test = 3
 	SubscribeUpdateInputs.Offer(v)
-	for{
+	for {
 		time.Sleep(10 * time.Hour)
 	}
 }
-

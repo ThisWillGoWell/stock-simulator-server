@@ -5,10 +5,10 @@ import (
 	"errors"
 )
 
-const TradeAction  = "trade"
-const ChatAction  = "chat"
+const TradeAction = "trade"
+const ChatAction = "chat"
 const UpdateAction = "update"
-const ErrorAction  = "error"
+const ErrorAction = "error"
 const LoginAction = "login"
 
 const ValuableUpdate = "valuable"
@@ -19,34 +19,34 @@ type Message interface {
 	message()
 }
 
-type BaseMessage struct{
-	Action string `json:"action"`
-	Msg  interface{} `json:"msg"`
+type BaseMessage struct {
+	Action string      `json:"action"`
+	Msg    interface{} `json:"msg"`
 }
 
-func (baseMessage *BaseMessage) IsChat()bool{
+func (baseMessage *BaseMessage) IsChat() bool {
 	return baseMessage.Action == "chat"
 }
 
-func (baseMessage *BaseMessage) IsLogin()bool{
+func (baseMessage *BaseMessage) IsLogin() bool {
 	return baseMessage.Action == LoginAction
 }
 
-
-func (baseMessage *BaseMessage) IsUpdate()bool{
+func (baseMessage *BaseMessage) IsUpdate() bool {
 	return baseMessage.Action == "update"
 }
 
-func (baseMessage *BaseMessage) IsTrade()bool{
+func (baseMessage *BaseMessage) IsTrade() bool {
 	return baseMessage.Action == "trade"
 }
 
-type ErrorMessage struct{
+type ErrorMessage struct {
 	Err string `json:"error"`
 }
-func (*ErrorMessage) message() {return}
 
-func NewErrorMessage(err string)(*ErrorMessage){
+func (*ErrorMessage) message() { return }
+
+func NewErrorMessage(err string) *ErrorMessage {
 	return &ErrorMessage{
 		Err: err,
 	}
@@ -54,68 +54,71 @@ func NewErrorMessage(err string)(*ErrorMessage){
 
 type BatchMessage []BaseMessage
 
-
 type LoginMessage struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
-func (*LoginMessage) message() {return}
+
+func (*LoginMessage) message() { return }
 
 type TradeMessage struct {
-	StockTicker string `json:"stock_ticker"`
-	ExchangeID string `json:"exchange_id"`
-	Amount float64 `json:"amount"`
+	StockTicker string  `json:"stock_ticker"`
+	ExchangeID  string  `json:"exchange_id"`
+	Amount      float64 `json:"amount"`
 }
-func (*TradeMessage) message() {return}
+
+func (*TradeMessage) message() { return }
 
 type TradeResponse struct {
-	Trade *TradeMessage `json:"trade"`
-	Response interface{} `json:"response"`
+	Trade    *TradeMessage `json:"trade"`
+	Response interface{}   `json:"response"`
 }
-func (*TradeResponse) message() {return}
 
-func BuildPurchaseResponse(message *TradeMessage, response interface{})*TradeResponse{
+func (*TradeResponse) message() { return }
+
+func BuildPurchaseResponse(message *TradeMessage, response interface{}) *TradeResponse {
 	return &TradeResponse{
-		Trade: message,
+		Trade:    message,
 		Response: response,
 	}
 }
 
 type ChatMessage struct {
-	Message string `json:"message_body"`
-	Author string `json:"author"`
-	Timestamp int64 `json:"timestamp"`
+	Message   string `json:"message_body"`
+	Author    string `json:"author"`
+	Timestamp int64  `json:"timestamp"`
 }
-func (*ChatMessage) message() {return}
+
+func (*ChatMessage) message() { return }
 
 type UpdateMessage struct {
-
 }
-func (*UpdateMessage) message() {return}
 
-func BuildUpdateMessage(obj interface{})*BaseMessage{
+func (*UpdateMessage) message() { return }
+
+func BuildUpdateMessage(obj interface{}) *BaseMessage {
 	return &BaseMessage{
 		Action: UpdateAction,
-		Msg: &obj,
+		Msg:    &obj,
 	}
 }
 
-func (baseMessage *BaseMessage)UnmarshalJSON(data [] byte) error{
+func (baseMessage *BaseMessage) UnmarshalJSON(data []byte) error {
 	//start with a generic string -> interface map
 	var obj map[string]interface{}
 	err := json.Unmarshal(data, &obj)
-	if err != nil{
+	if err != nil {
 		return err
 	}
 	// make sure that generic one contains the required keys
 	actionType := ""
 	if t, ok := obj["action"].(string); ok {
 		actionType = t
-	}else{
+	} else {
 		return errors.New("action not there")
 	}
 
-	if _, ok := obj["value"].(string); ok{
+	if _, ok := obj["value"].(string); ok {
 		return errors.New("value not there")
 	}
 
@@ -133,7 +136,7 @@ func (baseMessage *BaseMessage)UnmarshalJSON(data [] byte) error{
 		message = &UpdateMessage{}
 	}
 
-	str,_ := json.Marshal(obj["value"])
+	str, _ := json.Marshal(obj["value"])
 	err = json.Unmarshal(str, &message)
 	if err != nil {
 		return err

@@ -1,19 +1,19 @@
 package web
 
 import (
-	"github.com/gorilla/websocket"
-	"net/http"
-	"log"
-	"github.com/stock-simulator-server/src/client"
-	"os"
 	"fmt"
+	"github.com/gorilla/websocket"
+	"github.com/stock-simulator-server/src/client"
+	"log"
+	"net/http"
+	"os"
 )
 
 var clients = make(map[*websocket.Conn]http.Client) // connected clients
 
 func StartHandlers() {
 	shareDir := os.Getenv("FILE_SERVE")
-	if shareDir == ""{
+	if shareDir == "" {
 		shareDir = "static"
 	}
 
@@ -22,7 +22,7 @@ func StartHandlers() {
 	http.Handle("/", fs)
 	http.HandleFunc("/ws", handleConnections)
 	err := http.ListenAndServe(":8000", nil)
-	if err != nil{
+	if err != nil {
 		log.Fatal("ListenAndServe:", err)
 	}
 
@@ -36,7 +36,7 @@ var upgrader = websocket.Upgrader{
 func handleConnections(w http.ResponseWriter, r *http.Request) {
 	//first upgrade the connection
 	ws, err := upgrader.Upgrade(w, r, nil)
-	if err != nil{
+	if err != nil {
 		return
 	}
 	socketRX := make(chan string)
@@ -63,16 +63,16 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 	rxSocket(ws, socketRX)
 }
 
-func runTxSocket(conn *websocket.Conn, tx chan string){
-	for str := range tx{
+func runTxSocket(conn *websocket.Conn, tx chan string) {
+	for str := range tx {
 		conn.WriteMessage(websocket.TextMessage, []byte(str))
 	}
 }
 
-func rxSocket(conn *websocket.Conn, rx chan string){
-	for{
+func rxSocket(conn *websocket.Conn, rx chan string) {
+	for {
 		_, msg, err := conn.ReadMessage()
-		if err != nil{
+		if err != nil {
 			break
 		}
 		rx <- string(msg)
