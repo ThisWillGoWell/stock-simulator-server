@@ -21,7 +21,7 @@ type Message interface {
 
 type BaseMessage struct{
 	Action string `json:"action"`
-	Value  Message `json:"value"`
+	Msg  interface{} `json:"msg"`
 }
 
 func (baseMessage *BaseMessage) IsChat()bool{
@@ -89,19 +89,14 @@ type ChatMessage struct {
 func (*ChatMessage) message() {return}
 
 type UpdateMessage struct {
-	UpdateType string `json:"type"`
-	Object interface{} `json:"object"`
+
 }
 func (*UpdateMessage) message() {return}
 
-func BuildUpdateMessage(t string, obj interface{})*BaseMessage{
-	updateMsg :=  UpdateMessage{
-		UpdateType: t,
-		Object:obj,
-	}
+func BuildUpdateMessage(obj interface{})*BaseMessage{
 	return &BaseMessage{
 		Action: UpdateAction,
-		Value: &updateMsg,
+		Msg: &obj,
 	}
 }
 
@@ -144,7 +139,7 @@ func (baseMessage *BaseMessage)UnmarshalJSON(data [] byte) error{
 		return err
 	}
 	baseMessage.Action = actionType
-	baseMessage.Value = message
+	baseMessage.Msg = message
 
 	return nil
 }

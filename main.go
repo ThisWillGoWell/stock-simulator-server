@@ -20,7 +20,8 @@ func main() {
 	utils.SubscribeUpdateInputs.RegisterInput(exchange.ExchangesUpdateChannel.GetOutput())
 	utils.SubscribeUpdateInputs.RegisterInput(valuable.ValuableUpdateChannel.GetOutput())
 
-	client.BroadcastMessages.RegisterInput(utils.SubscribeUpdateOutput.GetOutput())
+	//this takes the subscribe output and converts it to a message
+	client.BroadcastMessageBuilder()
 	utils.StartDetectChanges()
 
 	web.StartHandlers()

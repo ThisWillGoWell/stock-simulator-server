@@ -6,8 +6,6 @@ import (
 	"github.com/stock-simulator-server/src/exchange"
 	"github.com/gorilla/websocket"
 	"github.com/stock-simulator-server/src/messages"
-	"github.com/stock-simulator-server/src/portfolio"
-	"github.com/stock-simulator-server/src/valuable"
 	"encoding/json"
 	"time"
 	"github.com/stock-simulator-server/src/order"
@@ -23,23 +21,12 @@ var BroadcastMessages = utils.MakeDuplicator()
 
 
 func BroadcastMessageBuilder(){
-	valuableUpdateChannel := valuable.ValuableUpdateChannel.GetOutput()
-	portfolioUpdateChannel := portfolio.PortfoliosUpdateChannel.GetOutput()
-	ledgerUpdateChannel := exchange.ExchangesUpdateChannel.GetOutput()
-	for{
-		var update interface{}
-		var updateType string
-		select{
-		case update = <- portfolioUpdateChannel:
-			updateType = messages.PortfolioUpdate
-		case update = <- valuableUpdateChannel:
-			updateType = messages.ValuableUpdate
-		case  update = <- ledgerUpdateChannel:
-			updateType = messages.LedgerUpdate
+	updates := utils.SubscribeUpdateOutput.GetOutput()
+	go func(){
+		for update := range updates{
+			BroadcastMessages.Offer(messages.BuildUpdateMessage(update))
 		}
-		msg :=messages.BuildUpdateMessage(updateType, update)
-		BroadcastMessages.Offer(msg)
-	}
+	}()
 }
 
 
@@ -67,7 +54,7 @@ func Login(loginMessageStr string, tx, rx chan string) (error){
 	if !loginBaseMessage.IsLogin(){
 		return errors.New("wrong type")
 	}
-	loginMessage := loginBaseMessage.Value.(*messages.LoginMessage)
+	loginMessage := loginBaseMessage.Msg.(*messages.LoginMessage)
 
 	user, err := account.GetUser(loginMessage.Username, loginMessage.Password)
 	if err != nil {
@@ -100,9 +87,9 @@ func (client *Client)rx(){
 
 		switch message.Action {
 		case messages.ChatAction:
-			client.processChatMessage(message.Value)
+			client.processChatMessage(message.Msg.(messages.Message))
 		case messages.TradeAction:
-			client.processTradeMessage(message.Value)
+			client.processTradeMessage(message.Msg.(messages.Message))
 		case messages.UpdateAction:
 			client.processUpdateMessage()
 		default:
@@ -175,6 +162,7 @@ func (client *Client)processTradeMessage(message messages.Message){
 
 func (client *Client)processUpdateMessage() {
 	fmt.Println("got update")
+	/*
 	for _, entry := range exchange.Exchanges{
 		message := messages.BuildUpdateMessage(messages.LedgerUpdate, entry.Ledger)
 		client.messageSender.Offer(message)
@@ -189,5 +177,6 @@ func (client *Client)processUpdateMessage() {
 		message := messages.BuildUpdateMessage(messages.ValuableUpdate, entry)
 		client.messageSender.Offer(message)
 	}
+	*/
 }
 

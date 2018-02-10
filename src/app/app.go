@@ -70,7 +70,7 @@ func RunApp(){
 		go func(){
 			msg := messages.BaseMessage{
 				Action:messages.TradeAction,
-				Value:&messages.TradeMessage{
+				Msg:&messages.TradeMessage{
 				StockTicker:"CHUNT",
 				ExchangeID: "US",
 				Amount: 10,
