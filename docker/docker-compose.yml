@@ -6,7 +6,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-        - ${STATIC_FOLDER}:/opt/server/static/
+        - /root/starket/stock-simulator-server/docker:/opt/server/static/
     environment:
       FILE_SERVE: opt/server/static
       DB_USER: starket
