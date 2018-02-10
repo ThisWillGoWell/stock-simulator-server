@@ -145,7 +145,7 @@ func StartDetectChanges(){
 			}
 			if changed{
 				fmt.Println("changed:", changedFields)
-				SubscribeUpdateOutput.Offer(&ChangeNotfity{
+				SubscribeUpdateOutput.Offer(&ChangeNotify{
 					Type: changeDetect.Type,
 					Id: changeDetect.Id,
 					Changes: changedFields,
@@ -165,11 +165,10 @@ type SubscribeUpdate struct {
 
 
 type ChangeField struct {
-
 	Field string `json:"field"`
 	Value interface{} `json:"value"`
 	}
-type ChangeNotfity struct {
+type ChangeNotify struct {
 	Type string `json:"type"`
 	Id string `json:"id"`
 	Changes []*ChangeField `json:"changes"`

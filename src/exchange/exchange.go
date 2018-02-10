@@ -7,10 +7,10 @@ import (
 	"github.com/stock-simulator-server/src/order"
 	"github.com/stock-simulator-server/src/portfolio"
 	"fmt"
-	"reflect"
+
 )
 
-const ObjectType  = "exchange"
+const ObjectType  = "exchange_ledger"
 
 var Exchanges = make(map[string]*Exchange)
 var ExchangesLock = utils.NewLock("exchanges")
@@ -29,12 +29,18 @@ type Exchange struct {
 
 type ledgerEntry struct {
 	ExchangeName string 	`json:"exchange"`
+	Name string				`json:"name"`
 	Holders    map[string]float64 `json:"holders" change:"-"`
 	OpenShares float64            `json:"open_shares" change:"-"`
 }
-//required by change detect
-func (ledger *ledgerEntry)ChangeDetected()reflect.Type{
-	return reflect.TypeOf(ledger)
+
+func (ledger *ledgerEntry) GetId() string{
+	return ledger.ExchangeName + "/" + ledger.Name
+}
+
+
+func (ledger *ledgerEntry) GetType() string{
+	return ObjectType
 }
 
 
@@ -54,17 +60,10 @@ func BuildExchange(name string) (*Exchange, error){
 		LedgerUpdateChannel: 	utils.MakeDuplicator(),
 	}
 	Exchanges[name] = exchange
-	ExchangesUpdateChannel.RegisterInput(ExchangesUpdateChannel.GetOutput())
+	ExchangesUpdateChannel.RegisterInput(exchange.LedgerUpdateChannel.GetOutput())
 	return exchange, nil
 }
 
-func  (exchange *Exchange)GetId() string{
-	return exchange.name
-}
-
-func  (exchange *Exchange)Type() string{
-	return ObjectType
-}
 
 // #########################
 //			Stocks

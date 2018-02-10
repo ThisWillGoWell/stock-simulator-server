@@ -8,7 +8,7 @@ import (
 )
 
 const(
-	ObjectType = "Portfolio"
+	ObjectType = "portfolio"
 )
 
 var Portfolios = make(map[string]*Portfolio)

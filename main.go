@@ -25,7 +25,5 @@ func main() {
 	utils.StartDetectChanges()
 
 	web.StartHandlers()
-
-
 	fmt.Println("exited!")
 }
