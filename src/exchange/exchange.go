@@ -71,6 +71,7 @@ func (exchange *Exchange) RegisterValuable(valuable valuable.Valuable, amount fl
 		return errors.New("valuable already exists in exchange")
 	}
 	exchange.Ledger[valuable.GetId()] = &ledgerEntry{
+		Name:         valuable.GetId(),
 		ExchangeName: exchange.name,
 		OpenShares:   amount,
 		Holders:      make(map[string]float64),
