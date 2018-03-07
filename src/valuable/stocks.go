@@ -79,6 +79,7 @@ func NewStock(tickerID, name string, startPrice float64, runInterval time.Durati
 	go stock.stockUpdateRoutine()
 	Valuables[tickerID] = stock
 	ValuableUpdateChannel.RegisterInput(stock.UpdateChannel.GetOutput())
+	ValuableUpdateChannel.Offer(stock)
 	return stock, nil
 }
 
@@ -164,4 +165,3 @@ func (randPrice *RandomPrice) changeValues() {
 *           Math Helper Functions
 *   ########################################
  */
-

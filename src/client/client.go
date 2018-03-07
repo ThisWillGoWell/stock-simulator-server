@@ -177,7 +177,7 @@ func (client *Client) processTradeMessage(message messages.Message) {
 
 func (client *Client) sendAllUpdates() {
 	fmt.Println("got update")
-	client.messageSender.Offer(utils.GetCurrentValues())
+	client.messageSender.Offer(messages.BuildUpdateMessage(utils.GetCurrentValues()))
 	/*
 		for _, entry := range exchange.Exchanges{
 			message := messages.BuildUpdateMessage(messages.LedgerUpdate, entry.Ledger)

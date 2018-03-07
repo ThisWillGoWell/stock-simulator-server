@@ -62,6 +62,7 @@ func NewPortfolio(userUUID, name string) (*Portfolio, error) {
 	Portfolios[userUUID] = port
 	PortfoliosUpdateChannel.RegisterInput(port.UpdateChannel.GetOutput())
 	go port.valuableUpdate()
+	PortfoliosUpdateChannel.Offer(port)
 	return port, nil
 }
 func (port *Portfolio) valuableUpdate() {
