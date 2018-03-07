@@ -66,7 +66,7 @@ func RunApp() {
 			id := utils.PseudoUuid()
 			stockIdList[i] = id
 			stock, _ := valuable.NewStock(id, id, 1, time.Second*10)
-			exchanger.RegisterValuable(stock, 1000000)
+			exchanger.RegisterValuable(stock, 1000)
 		}
 
 		for i := 0; i < numPortfolios; i++ {

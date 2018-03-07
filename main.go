@@ -13,7 +13,7 @@ import (
 
 func main() {
 
-	go app.RunApp()
+
 	//Wiring of system
 	utils.SubscribeUpdateInputs.RegisterInput(portfolio.PortfoliosUpdateChannel.GetOutput())
 	utils.SubscribeUpdateInputs.RegisterInput(exchange.ExchangesUpdateChannel.GetOutput())
@@ -22,7 +22,7 @@ func main() {
 	//this takes the subscribe output and converts it to a message
 	client.BroadcastMessageBuilder()
 	utils.StartDetectChanges()
-
+	go app.RunApp()
 	web.StartHandlers()
 	fmt.Println("exited!")
 }
