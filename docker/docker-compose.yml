@@ -10,12 +10,12 @@ services:
     environment:
       FILE_SERVE: opt/server/static
       DB_USER: starket
-  #db:
-      #image: postgres
-      #restart: always
-      #environment:
-        #POSTGRES_PASSWORD: example
-        #POSTGRES_USER: starket
-        #DB_PATH: /opt/server/database/
-      #volumes:
-        #- ${DB_FOLDER}:/opt/server/database/
+  db:
+      image: postgres
+      restart: always
+      environment:
+        POSTGRES_PASSWORD: example
+        POSTGRES_USER: starket
+        B_PATH: /opt/server/database/
+      volumes:
+        - ${DB_FOLDER}:/opt/server/database/

@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/gorilla/websocket"
 	"github.com/stock-simulator-server/src/account"
 	"github.com/stock-simulator-server/src/exchange"
 	"github.com/stock-simulator-server/src/messages"
 	"github.com/stock-simulator-server/src/order"
 	"github.com/stock-simulator-server/src/utils"
-	"time"
 )
 
 var clients = make(map[*Client]bool)
@@ -24,6 +25,22 @@ func BroadcastMessageBuilder() {
 	go func() {
 		for update := range updates {
 			BroadcastMessages.Offer(messages.BuildUpdateMessage(update))
+		}
+	}()
+	BroadcastMessagePrinter()
+}
+
+func BroadcastMessagePrinter() {
+	messages := BroadcastMessages.GetOutput()
+	return
+	go func() {
+		for msg := range messages {
+			str, err := json.Marshal(msg)
+			if err != nil {
+				panic(err)
+			} else {
+				fmt.Println(string(str))
+			}
 		}
 	}()
 }
@@ -159,6 +176,7 @@ func (client *Client) processTradeMessage(message messages.Message) {
 
 func (client *Client) processUpdateMessage() {
 	fmt.Println("got update")
+	client.messageSender.Offer(utils.GetCurrentValues())
 	/*
 		for _, entry := range exchange.Exchanges{
 			message := messages.BuildUpdateMessage(messages.LedgerUpdate, entry.Ledger)

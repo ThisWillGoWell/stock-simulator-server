@@ -119,6 +119,11 @@ func (exchange *Exchange) StartExchange() {
 // Don't need to a lock around this since the portfolio holds it for that trade
 func (exchange *Exchange) trade(o *order.PurchaseOrder) {
 	//get the stock if it exists
+	exchange.lock.Acquire("trade")
+	defer exchange.lock.Release()
+	valuable.ValuablesLock.Acquire("trade")
+	defer valuable.ValuablesLock.Release()
+
 	value, exists := valuable.Valuables[o.ValuableID]
 	if !exists {
 		order.FailureOrder("asset is not recognized", o)

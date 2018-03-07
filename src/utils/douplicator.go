@@ -13,14 +13,16 @@ type ChannelDuplicator struct {
 	debug     bool
 	debugName string
 	copy      bool
+	lock      *Lock
 }
 
 func MakeDuplicator() *ChannelDuplicator {
 	chDoup := &ChannelDuplicator{
+		lock:     NewLock("channel-duplicator"),
 		outputs:  make([]chan interface{}, 0),
 		transfer: make(chan interface{}, 100),
 		debug:    false,
-		copy:     false,
+		copy:     true,
 	}
 	chDoup.startDuplicator()
 
@@ -36,6 +38,8 @@ func (ch *ChannelDuplicator) EnableDebug(name string) {
 }
 
 func (ch *ChannelDuplicator) GetOutput() chan interface{} {
+	ch.lock.Acquire("getOutput")
+	defer ch.lock.Release()
 	// make a channel with a 10 buffer size
 	if ch.debug {
 		fmt.Println("adding output on", ch.debugName)
@@ -110,6 +114,8 @@ func (ch *ChannelDuplicator) Offer(value interface{}) {
 func (ch *ChannelDuplicator) startDuplicator() {
 	go func() {
 		for nextValue := range ch.transfer {
+			ch.lock.Acquire("startDuplicator")
+
 			if ch.debug {
 				fmt.Println("sending down outputs on", ch.debugName)
 			}
@@ -127,6 +133,7 @@ func (ch *ChannelDuplicator) startDuplicator() {
 					continue
 				}
 			}
+			ch.lock.Release()
 		}
 	}()
 

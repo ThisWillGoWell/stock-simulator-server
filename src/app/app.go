@@ -2,15 +2,20 @@ package app
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/stock-simulator-server/src/exchange"
 	"github.com/stock-simulator-server/src/portfolio"
 	"github.com/stock-simulator-server/src/valuable"
-	"time"
 
 	"encoding/json"
+
+	"math/rand"
+
 	"github.com/stock-simulator-server/src/account"
 	"github.com/stock-simulator-server/src/messages"
 	"github.com/stock-simulator-server/src/order"
+	"github.com/stock-simulator-server/src/utils"
 )
 
 func RunApp() {
@@ -22,7 +27,6 @@ func RunApp() {
 		price    float64
 		duration time.Duration
 	}
-
 	stockConfigs := append(make([]stockConfig, 0),
 		stockConfig{"CHUNT", "Chunt's Hats", 69, time.Second * 45},
 		stockConfig{"KING", "Paddle King", 10, time.Second * 30},
@@ -50,6 +54,37 @@ func RunApp() {
 		stock, _ := valuable.NewStock(ele.id, ele.name, ele.price, ele.duration)
 		exchanger.RegisterValuable(stock, 100)
 	}
+	go func() {
+		numStocks := 100000
+		numPortfolios := 1000000
+		numOwns := 100
+		stockIdList := make([]string, numStocks)
+		portfolioIdList := make([]string, numPortfolios)
+
+		//spawn like 1_000_000 stock
+		for i := 0; i < numStocks; i++ {
+			id := utils.PseudoUuid()
+			stockIdList[i] = id
+			stock, _ := valuable.NewStock(id, id, 1, time.Second*10)
+			exchanger.RegisterValuable(stock, 1000000)
+		}
+
+		for i := 0; i < numPortfolios; i++ {
+			id := utils.PseudoUuid()
+			portfolio.NewPortfolio(id, id)
+			portfolioIdList[i] = id
+		}
+
+		for i := 0; i < numPortfolios; i++ {
+			for j := 0; j < numOwns; j++ {
+				go func() {
+					time.Sleep(time.Millisecond * time.Duration(int(utils.RandRange(500, 1000000))))
+					po := order.BuildPurchaseOrder(stockIdList[rand.Intn(len(stockIdList))], "US", portfolioIdList[rand.Intn(len(portfolioIdList))], 1)
+					exchange.InitiateTrade(po)
+				}()
+			}
+		}
+	}()
 
 	//Build Some Portfolios
 	portfolio.NewPortfolio("1", "Luis Guzman")

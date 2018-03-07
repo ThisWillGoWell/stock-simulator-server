@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"reflect"
 	"time"
 )
@@ -106,14 +105,14 @@ func getValue(o interface{}, name string) interface{} {
 
 	//is the value of that field a pointer?
 	if r.Kind() == reflect.Ptr || r.Kind() == reflect.Interface {
-		fmt.Println("value")
 		return reflect.Indirect(r)
 	}
-	fmt.Println(o, r.Type(), r.Interface())
 	return r.Interface()
 }
 
 func StartDetectChanges() {
+	SubscribeUpdateInputs.EnableCopyMode()
+	SubscribeUpdateOutput.EnableCopyMode()
 	subscribeUpdateChannel := SubscribeUpdateInputs.GetOutput()
 	go func() {
 		for updateObj := range subscribeUpdateChannel {
@@ -127,7 +126,6 @@ func StartDetectChanges() {
 			if !exists {
 				changeDetect = registerChangeDetect(update)
 				subscribeables[update.GetType()+update.GetId()] = changeDetect
-				fmt.Println(changeDetect.changeDetects)
 			}
 			changedFields := make([]*ChangeField, 0)
 			changed := false
@@ -141,7 +139,6 @@ func StartDetectChanges() {
 				}
 			}
 			if changed {
-				fmt.Println("changed:", changedFields)
 				SubscribeUpdateOutput.Offer(&ChangeNotify{
 					Type:    changeDetect.Type,
 					Id:      changeDetect.Id,
@@ -164,10 +161,31 @@ type ChangeField struct {
 	Field string      `json:"field"`
 	Value interface{} `json:"value"`
 }
+
 type ChangeNotify struct {
 	Type    string         `json:"type"`
 	Id      string         `json:"id"`
 	Changes []*ChangeField `json:"changes"`
+}
+
+func GetCurrentValues() []*ChangeNotify {
+	subscribeablesLock.Acquire("current values")
+	defer subscribeablesLock.Release()
+	values := make([]*ChangeNotify, 10)
+	for _, value := range subscribeables {
+		currentVals := make([]*ChangeField, len(value.changeDetects))
+		for _, val := range value.changeDetects {
+			currentVals = append(currentVals, val)
+		}
+
+		newVal := &ChangeNotify{
+			Type:    value.Type,
+			Id:      value.Id,
+			Changes: currentVals,
+		}
+		values = append(values, newVal)
+	}
+	return values
 }
 
 type changeTest struct {
@@ -191,11 +209,6 @@ func Test() {
 		Name: "this is my name",
 		Test: 1,
 	}
-
-	tempUpdateChannel := make(chan interface{})
-	SubscribeUpdateInputs.RegisterInput(tempUpdateChannel)
-	SubscribeUpdateInputs.Offer(v)
-	SubscribeUpdateInputs.Offer(v)
 	SubscribeUpdateInputs.Offer(v)
 	v.Test = 2
 	SubscribeUpdateInputs.Offer(v)

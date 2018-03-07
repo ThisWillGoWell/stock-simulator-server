@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/stock-simulator-server/src/utils"
-	"math"
 	"math/rand"
 	"reflect"
 	"time"
@@ -137,7 +136,7 @@ func (randPrice *RandomPrice) change(stock *Stock) {
 
 	//can make this a lot more interesting, like adding in the ability for it to drop
 	change := (randPrice.TargetPrice - stock.CurrentPrice) /
-		MapNum(randPrice.Volatility, volatilityMin, volatilityMax, volatilityMinTurns, volatilityMaxTurns)
+		utils.MapNum(randPrice.Volatility, volatilityMin, volatilityMax, volatilityMinTurns, volatilityMaxTurns)
 
 	stock.CurrentPrice = stock.CurrentPrice + change
 
@@ -149,17 +148,16 @@ func (randPrice *RandomPrice) change(stock *Stock) {
 func (randPrice *RandomPrice) changeValues() {
 
 	// get what the upper and lower bounds in % of the current price
-	window := MapNum(randPrice.Volatility, volatilityMin, volatilityMax, 0, 0.3)
+	window := utils.MapNum(randPrice.Volatility, volatilityMin, volatilityMax, 0, 0.3)
 	// select a random number on +- that %
-	newTarget := MapNum(rand.Float64(), 0, 1, randPrice.TargetPrice*(1-window), randPrice.TargetPrice*(1+window))
-	fmt.Println("old", randPrice.TargetPrice, "new", newTarget, "window", window)
+	newTarget := utils.MapNum(rand.Float64(), 0, 1, randPrice.TargetPrice*(1-window), randPrice.TargetPrice*(1+window))
 	//need to deiced if the floor should happen before or after
 	if newTarget < 0 {
 		newTarget = 0
 	}
 
 	randPrice.TargetPrice = newTarget
-	randPrice.Volatility = RandRange(volatilityMin, volatilityMax)
+	randPrice.Volatility = utils.RandRange(volatilityMin, volatilityMax)
 }
 
 /** ########################################
@@ -167,29 +165,3 @@ func (randPrice *RandomPrice) changeValues() {
 *   ########################################
  */
 
-// Round f to nearest number of decimal points
-func RoundPlus(f float64, places int) float64 {
-	shift := math.Pow(10, float64(places))
-	return Round(f*shift) / shift
-}
-
-// Round a float to the nearest int
-func Round(f float64) float64 {
-	return math.Floor(f + .5)
-}
-
-// generate a random number between two floats
-func RandRange(min, max float64) float64 {
-	return MapNum(rand.Float64(), 0, 1, min, max)
-}
-
-// map a number from one range to another range
-func MapNum(value, inMin, inMax, outMin, outMax float64) float64 {
-	if value >= inMax {
-		return outMax
-	}
-	if value <= inMin {
-		return outMin
-	}
-	return (value-inMin)*(outMax-outMin)/(inMax-inMin) + outMin
-}
