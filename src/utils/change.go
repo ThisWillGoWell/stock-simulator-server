@@ -171,9 +171,9 @@ type ChangeNotify struct {
 func GetCurrentValues() []*ChangeNotify {
 	subscribeablesLock.Acquire("current values")
 	defer subscribeablesLock.Release()
-	values := make([]*ChangeNotify, 10)
+	values := make([]*ChangeNotify, 0)
 	for _, value := range subscribeables {
-		currentVals := make([]*ChangeField, len(value.changeDetects))
+		currentVals := make([]*ChangeField, 0)
 		for _, val := range value.changeDetects {
 			currentVals = append(currentVals, val)
 		}

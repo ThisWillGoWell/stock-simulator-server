@@ -55,9 +55,9 @@ func RunApp() {
 		exchanger.RegisterValuable(stock, 100)
 	}
 	go func() {
-		numStocks := 100000
-		numPortfolios := 1000000
-		numOwns := 100
+		numStocks := 10
+		numPortfolios := 5
+		numOwns := 5
 		stockIdList := make([]string, numStocks)
 		portfolioIdList := make([]string, numPortfolios)
 

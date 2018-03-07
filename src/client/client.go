@@ -83,6 +83,7 @@ func Login(loginMessageStr string, tx, rx chan string) error {
 	client.messageSender.RegisterInput(BroadcastMessages.GetBufferedOutput(50))
 	go client.tx()
 	go client.rx()
+	client.sendAllUpdates()
 	return nil
 }
 
@@ -104,7 +105,7 @@ func (client *Client) rx() {
 		case messages.TradeAction:
 			client.processTradeMessage(message.Msg.(messages.Message))
 		case messages.UpdateAction:
-			client.processUpdateMessage()
+			client.sendAllUpdates()
 		default:
 			client.messageSender.Offer(messages.NewErrorMessage("action is not known"))
 		}
@@ -174,7 +175,7 @@ func (client *Client) processTradeMessage(message messages.Message) {
 	}()
 }
 
-func (client *Client) processUpdateMessage() {
+func (client *Client) sendAllUpdates() {
 	fmt.Println("got update")
 	client.messageSender.Offer(utils.GetCurrentValues())
 	/*
