@@ -9,13 +9,13 @@ services:
         - /root/starket/stock-simulator-server/mockstarket-front-end:/opt/server/static/
     environment:
       FILE_SERVE: opt/server/static
-      DB_USER: starket
-  db:
-      image: postgres
-      restart: always
-      environment:
-        POSTGRES_PASSWORD: example
-        POSTGRES_USER: starket
-        B_PATH: /opt/server/database/
-      volumes:
-        - ${DB_FOLDER}:/opt/server/database/
+      #DB_USER: starket
+  #db:
+   #   image: postgres
+   #   restart: always
+    #  environment:
+     #   POSTGRES_PASSWORD: example
+      #  POSTGRES_USER: starket
+       # B_PATH: /opt/server/database/
+     # volumes:
+      #  - ${DB_FOLDER}:/opt/server/database/
