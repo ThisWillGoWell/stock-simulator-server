@@ -36,6 +36,7 @@ var upgrader = websocket.Upgrader{
 func handleConnections(w http.ResponseWriter, r *http.Request) {
 	//first upgrade the connection
 	ws, err := upgrader.Upgrade(w, r, nil)
+	defer ws.Close()
 	if err != nil {
 		return
 	}
@@ -49,16 +50,17 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 			ws.WriteMessage(websocket.TextMessage, []byte(err.Error()))
 			continue
 		}
-		loginErr := client.Login(string(msg), socketTX, socketRX)
+		loginErr := client.InitialRecieve(string(msg), socketTX, socketRX)
 		if err != nil {
 			ws.WriteMessage(websocket.TextMessage, []byte(loginErr.Error()))
+			return
 		} else {
 			break
 		}
 
 	}
 	// Make sure we close the connection when the function returns
-	defer ws.Close()
+
 	go runTxSocket(ws, socketTX)
 	rxSocket(ws, socketRX)
 }

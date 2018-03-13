@@ -10,10 +10,12 @@ const ChatAction = "chat"
 const UpdateAction = "update"
 const ErrorAction = "error"
 const LoginAction = "login"
+const NewAccountAction="new_account"
 
 const ValuableUpdate = "valuable"
 const PortfolioUpdate = "portfolio"
 const LedgerUpdate = "ledger"
+const UserUUIDUpdate = "user"
 
 type Message interface {
 	message()
@@ -40,6 +42,10 @@ func (baseMessage *BaseMessage) IsTrade() bool {
 	return baseMessage.Action == "trade"
 }
 
+func (baseMessage *BaseMessage) IsAccountCreate() bool {
+	return baseMessage.Action == NewAccountAction
+}
+
 type ErrorMessage struct {
 	Err string `json:"error"`
 }
@@ -55,7 +61,7 @@ func NewErrorMessage(err string) *ErrorMessage {
 type BatchMessage []BaseMessage
 
 type LoginMessage struct {
-	Username string `json:"username"`
+	UserName string `json:"username"`
 	Password string `json:"password"`
 }
 
@@ -88,13 +94,21 @@ type ChatMessage struct {
 	Author    string `json:"author"`
 	Timestamp int64  `json:"timestamp"`
 }
-
 func (*ChatMessage) message() { return }
+
+type NewAccountMessage struct {
+	UserName    string `json:"user_name"`
+	Password    string `json:"password"`
+	DisplayName string `json:"display_name"`
+}
+func (*NewAccountMessage) message() { return }
+
+
 
 type UpdateMessage struct {
 }
-
 func (*UpdateMessage) message() { return }
+
 
 func BuildUpdateMessage(obj interface{}) *BaseMessage {
 	return &BaseMessage{
@@ -134,6 +148,8 @@ func (baseMessage *BaseMessage) UnmarshalJSON(data []byte) error {
 		message = &LoginMessage{}
 	case UpdateAction:
 		message = &UpdateMessage{}
+	case NewAccountAction:
+		message = &NewAccountMessage{}
 	}
 
 	str, _ := json.Marshal(obj["value"])

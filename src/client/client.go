@@ -2,7 +2,6 @@ package client
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"time"
 
@@ -59,21 +58,28 @@ type Client struct {
 	user *account.User
 }
 
-func Login(loginMessageStr string, tx, rx chan string) error {
-	loginBaseMessage := new(messages.BaseMessage)
-	unmarshErr := loginBaseMessage.UnmarshalJSON([]byte(loginMessageStr))
-	if unmarshErr != nil {
-		return unmarshErr
-	}
-	if !loginBaseMessage.IsLogin() {
-		return errors.New("wrong type")
-	}
-	loginMessage := loginBaseMessage.Msg.(*messages.LoginMessage)
+func InitialRecieve(initialPayload string,  tx, rx chan string) error{
+	initialMessage := new(messages.BaseMessage)
+	unmarshalErr := initialMessage.UnmarshalJSON([]byte(initialPayload))
 
-	user, err := account.GetUser(loginMessage.Username, loginMessage.Password)
-	if err != nil {
-		return err
+	if unmarshalErr != nil {
+		return unmarshalErr
 	}
+	user := new(account.User)
+	if initialMessage.IsAccountCreate() {
+		userTemp, err := account.NewUser(initialMessage.Msg.(*messages.NewAccountMessage).UserName, initialMessage.Msg.(*messages.NewAccountMessage).Password)
+		if err != nil {
+			return err
+		}
+		user = userTemp
+	} else if initialMessage.IsLogin() {
+		userTemp, err := account.GetUser(initialMessage.Msg.(*messages.LoginMessage).UserName, initialMessage.Msg.(*messages.LoginMessage).Password)
+		if err != nil {
+			return err
+		}
+		user= userTemp
+	}
+
 	client := &Client{
 		user:          user,
 		socketRx:      rx,
@@ -83,9 +89,11 @@ func Login(loginMessageStr string, tx, rx chan string) error {
 	client.messageSender.RegisterInput(BroadcastMessages.GetBufferedOutput(50))
 	go client.tx()
 	go client.rx()
-	client.sendAllUpdates()
+	client.sendInitialPayload()
 	return nil
+
 }
+
 
 //receive go routine
 func (client *Client) rx() {
@@ -105,7 +113,7 @@ func (client *Client) rx() {
 		case messages.TradeAction:
 			client.processTradeMessage(message.Msg.(messages.Message))
 		case messages.UpdateAction:
-			client.sendAllUpdates()
+			client.sendInitialPayload()
 		default:
 			client.messageSender.Offer(messages.NewErrorMessage("action is not known"))
 		}
@@ -175,7 +183,7 @@ func (client *Client) processTradeMessage(message messages.Message) {
 	}()
 }
 
-func (client *Client) sendAllUpdates() {
+func (client *Client) sendInitialPayload() {
 	fmt.Println("got update")
 	client.messageSender.Offer(messages.BuildUpdateMessage(utils.GetCurrentValues()))
 	/*
