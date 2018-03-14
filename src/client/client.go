@@ -88,7 +88,6 @@ func InitialRecieve(initialPayload string,  tx, rx chan string) error{
 		messageSender: utils.MakeDuplicator(),
 		active: true,
 	}
-	client.messageSender.EnableDebug("client message sender")
 	client.tx()
 	go client.rx()
 	client.messageSender.RegisterInput(BroadcastMessages.GetBufferedOutput(50))
