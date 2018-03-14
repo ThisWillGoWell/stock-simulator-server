@@ -6,7 +6,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-        - /root/starket/stock-simulator-server/mockstarket-front-end:/opt/server/static/
+        - /root/starket/stock-simulator-server/debug_frontend:/opt/server/static/
     environment:
       FILE_SERVE: opt/server/static
       #DB_USER: starket

@@ -1,5 +1,5 @@
 FROM phusion/baseimage:latest
-ADD stock-simulator-server /opt/server/
-RUN chmod +x /opt/server/stock-simulator-server
+ADD stock-server-linux /opt/server/
+RUN chmod +x /opt/server/stock-server-linux
 EXPOSE 8000
-CMD ["./opt/server/stock-simulator-server"]
+CMD ["./opt/server/stock-server-linux"]
