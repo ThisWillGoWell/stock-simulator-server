@@ -17,9 +17,10 @@ type User struct {
 	UserName      string
 	password      string
 	DisplayName   string `json:"display_name" change:"-"`
-	Uuid          string `json:"uuid" change:"-"`
+	Uuid          string
 	Active        bool   `json:"active" change:"-"`
 	ActiveClients int64
+	Lock 		  *utils.Lock
 }
 
 func GetUser(username, password string) (*User, error) {
@@ -33,6 +34,7 @@ func GetUser(username, password string) (*User, error) {
 	if user.password != password {
 		return nil, errors.New("password is incorrect")
 	}
+	user.Active = true
 	utils.SubscribeUpdateInputs.Offer(user)
 	return user, nil
 }
@@ -56,6 +58,8 @@ func NewUser(username, password string) (*User, error){
 				DisplayName: username,
 				password:    password,
 				Uuid:        uuid,
+				Lock: 		 utils.NewLock("user"),
+				Active: 	 true,
 			}
 			utils.SubscribeUpdateInputs.Offer(userList[uuid])
 			return userList[uuid], nil
@@ -67,7 +71,21 @@ func NewUser(username, password string) (*User, error){
 	return nil, nil
 }
 
+func (user *User) LogoutUser(){
+	user.Lock.Acquire("logout")
+	defer user.Lock.Release()
+	user.ActiveClients -= 1
+	if user.ActiveClients < 0{
+		user.ActiveClients = 0
+	}
+	if user.ActiveClients == 0{
+		user.Active = false
+	}
+	utils.SubscribeUpdateInputs.Offer(user)
+}
+
 func GetAllUsers() map[string]string{
+
 	return uuidList
 }
 func (user *User)GetId() string {
