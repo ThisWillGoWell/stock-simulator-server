@@ -67,7 +67,6 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 
 func runTxSocket(conn *websocket.Conn, tx chan string) {
 	for str := range tx {
-		fmt.Println("sending: " + str)
 		conn.WriteMessage(websocket.TextMessage, []byte(str))
 	}
 }
