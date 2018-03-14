@@ -89,7 +89,7 @@ func InitialRecieve(initialPayload string,  tx, rx chan string) error{
 		active: true,
 	}
 	client.messageSender.EnableDebug("client message sender")
-	go client.tx()
+	client.tx()
 	go client.rx()
 	client.messageSender.RegisterInput(BroadcastMessages.GetBufferedOutput(50))
 	client.sendInitialPayload()
