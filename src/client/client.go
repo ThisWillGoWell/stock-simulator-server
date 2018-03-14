@@ -56,6 +56,7 @@ type Client struct {
 	ws websocket.Conn
 
 	user *account.User
+	active bool
 }
 
 func InitialRecieve(initialPayload string,  tx, rx chan string) error{
@@ -85,7 +86,9 @@ func InitialRecieve(initialPayload string,  tx, rx chan string) error{
 		socketRx:      rx,
 		socketTx:      tx,
 		messageSender: utils.MakeDuplicator(),
+		active: true,
 	}
+	client.messageSender.EnableDebug("client message sender")
 	client.messageSender.RegisterInput(BroadcastMessages.GetBufferedOutput(50))
 	go client.tx()
 	go client.rx()
@@ -118,6 +121,8 @@ func (client *Client) rx() {
 			client.messageSender.Offer(messages.NewErrorMessage("action is not known"))
 		}
 	}
+	client.active = false
+	client.user.LogoutUser()
 }
 
 // send down websocket
@@ -129,6 +134,9 @@ func (client *Client) tx() {
 	for {
 		select {
 		case <-batchSendTicker.C:
+			if ! client.active{
+				 break
+			}
 			sendOutQueue(sendQueue, client.socketTx)
 		case msg := <-send:
 			select {
