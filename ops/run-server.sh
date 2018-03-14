@@ -11,3 +11,4 @@ echo $FILE_SERVE
 docker-compose rm -f server
 docker-compose build
 docker-compose up -d server
+docker-compose logs -f
