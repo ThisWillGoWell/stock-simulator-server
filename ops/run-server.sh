@@ -2,7 +2,7 @@
 
 cd docker
 
-if [ "$HOSTNAME" = "high-in-the-clouds" ]; then
+if [ "$HOSTNAME" = high-in-the-clouds ]; then
     export FILE_SERVE=/root/starket/stock-simulator-server/mockstarket-front-end
 else
     export FILE_SERVE=$(cd .. && pwd cd docker)/debug_frontend
