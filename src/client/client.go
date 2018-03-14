@@ -89,9 +89,9 @@ func InitialRecieve(initialPayload string,  tx, rx chan string) error{
 		active: true,
 	}
 	client.messageSender.EnableDebug("client message sender")
-	client.messageSender.RegisterInput(BroadcastMessages.GetBufferedOutput(50))
 	go client.tx()
 	go client.rx()
+	client.messageSender.RegisterInput(BroadcastMessages.GetBufferedOutput(50))
 	client.sendInitialPayload()
 	return nil
 
@@ -130,27 +130,30 @@ func (client *Client) tx() {
 	send := client.messageSender.GetOutput()
 	batchSendTicker := time.NewTicker(1 * time.Second)
 	sendQueue := make(chan interface{}, 300)
-	//
-	for {
-		select {
-		case <-batchSendTicker.C:
-			if ! client.active{
-				 break
-			}
-			sendOutQueue(sendQueue, client.socketTx)
-		case msg := <-send:
+	go func(){
+		for {
 			select {
-			case sendQueue <- msg:
-			default:
-				//the queue is full
-				//empty it
+			case <-batchSendTicker.C:
+				if ! client.active{
+					break
+				}
 				sendOutQueue(sendQueue, client.socketTx)
-				//add
-				sendQueue <- msg
-			}
+			case msg := <-send:
+				select {
+				case sendQueue <- msg:
+				default:
+					//the queue is full
+					//empty it
+					sendOutQueue(sendQueue, client.socketTx)
+					//add
+					sendQueue <- msg
+				}
 
+			}
 		}
-	}
+	}()
+	//
+
 }
 func sendOutQueue(sendQueue chan interface{}, socketTx chan string) {
 	sendList := make([]interface{}, 0)
