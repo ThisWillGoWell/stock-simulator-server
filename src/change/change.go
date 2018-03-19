@@ -1,8 +1,10 @@
-package utils
+package change
 
 import (
 	"reflect"
 	"time"
+	"github.com/stock-simulator-server/src/duplicator"
+	"github.com/stock-simulator-server/src/lock"
 )
 
 /*
@@ -55,9 +57,9 @@ const (
 var (
 	//subscribeables is something that can be subscribed to
 	subscribeables        = make(map[string]*SubscribeUpdate)
-	subscribeablesLock    = NewLock("subscribeables")
-	SubscribeUpdateInputs = MakeDuplicator()
-	SubscribeUpdateOutput = MakeDuplicator()
+	subscribeablesLock    = lock.NewLock("subscribeables")
+	SubscribeUpdateInputs =duplicator.MakeDuplicator()
+	SubscribeUpdateOutput = duplicator.MakeDuplicator()
 )
 
 func registerChangeDetect(o Identifiable) *SubscribeUpdate {

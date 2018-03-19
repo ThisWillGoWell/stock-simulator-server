@@ -3,8 +3,9 @@ package portfolio
 import (
 	"errors"
 	"fmt"
-	"github.com/stock-simulator-server/src/utils"
 	"github.com/stock-simulator-server/src/valuable"
+	"github.com/stock-simulator-server/src/lock"
+	"github.com/stock-simulator-server/src/duplicator"
 )
 
 const (
@@ -12,8 +13,8 @@ const (
 )
 
 var Portfolios = make(map[string]*Portfolio)
-var PortfoliosLock = utils.NewLock("portfolios")
-var PortfoliosUpdateChannel = utils.MakeDuplicator()
+var PortfoliosLock = lock.NewLock("portfolios")
+var PortfoliosUpdateChannel = duplicator.MakeDuplicator()
 
 type Portfolio struct {
 	Name     string  `json:"name"`
@@ -24,10 +25,10 @@ type Portfolio struct {
 	//keeps track of how much $$$ they own, used for some slight optomization on calc networth
 	PersonalLedger map[string]*ledgerEntry `json:"ledger" change:"-"`
 
-	UpdateChannel   *utils.ChannelDuplicator `json:"-"`
-	valuableUpdates *utils.ChannelDuplicator
+	UpdateChannel   *duplicator.ChannelDuplicator `json:"-"`
+	valuableUpdates *duplicator.ChannelDuplicator
 
-	Lock *utils.Lock `json:"-"`
+	Lock *lock.Lock `json:"-"`
 }
 
 type ledgerEntry struct {
@@ -54,9 +55,9 @@ func NewPortfolio(userUUID, name string) (*Portfolio, error) {
 			Name:            name,
 			UUID:            userUUID,
 			Wallet:          1000,
-			UpdateChannel:   utils.MakeDuplicator(),
-			Lock:            utils.NewLock(fmt.Sprintf("portfolio-%s", name)),
-			valuableUpdates: utils.MakeDuplicator(),
+			UpdateChannel:   duplicator.MakeDuplicator(),
+			Lock:            lock.NewLock(fmt.Sprintf("portfolio-%s", name)),
+			valuableUpdates: duplicator.MakeDuplicator(),
 			PersonalLedger:  make(map[string]*ledgerEntry),
 		}
 	Portfolios[userUUID] = port

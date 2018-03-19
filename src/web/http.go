@@ -79,4 +79,5 @@ func rxSocket(conn *websocket.Conn, rx chan string) {
 		}
 		rx <- string(msg)
 	}
+	close(rx)
 }

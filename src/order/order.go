@@ -5,16 +5,17 @@ import (
 )
 
 type PurchaseOrder struct {
-	ValuableID      string
-	PortfolioID     string
-	ExchangeID      string
-	Amount          float64
+	ValuableID      string `json:"asset"`
+	PortfolioID     string `json:"portfolio"`
+	ExchangeID      string `json:"exchange"`
+	Amount          float64 `json:"response"`
 	ResponseChannel chan *PurchasedResponse
 }
 
 type PurchasedResponse struct {
-	Success bool
-	Err     error
+	Order *PurchaseOrder `json:"order"`
+	Success bool `json:"success"`
+	Err     error `json:"err"`
 }
 
 // note this does not validate if the stock exists or not, thats done in the trade() funciton
@@ -34,12 +35,14 @@ func (o *PurchaseOrder) Execute() {
 
 func SuccessOrder(o *PurchaseOrder) {
 	o.ResponseChannel <- &PurchasedResponse{
+		Order: o,
 		Success: true,
 		Err:     nil,
 	}
 }
 func FailureOrder(msg string, o *PurchaseOrder) {
 	o.ResponseChannel <- &PurchasedResponse{
+		Order: o,
 		Success: false,
 		Err:     errors.New(msg),
 	}

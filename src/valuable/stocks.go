@@ -7,6 +7,8 @@ import (
 	"math/rand"
 	"reflect"
 	"time"
+	"github.com/stock-simulator-server/src/duplicator"
+	"github.com/stock-simulator-server/src/lock"
 )
 
 const (
@@ -20,7 +22,7 @@ const (
 	ObjectType = "stock"
 )
 
-var timeSimulation = utils.MakeDuplicator()
+var timeSimulation = duplicator.MakeDuplicator()
 
 func StartStockStimulation() {
 	ticker := time.NewTicker(timeSimulationPeriod)
@@ -37,7 +39,7 @@ func StartStockStimulation() {
 
 type stockManager struct {
 	stocks             map[string]*Stock
-	StockUpdateChannel *utils.ChannelDuplicator
+	StockUpdateChannel *duplicator.ChannelDuplicator
 }
 
 //Stock type for storing the stock information
@@ -45,9 +47,9 @@ type Stock struct {
 	Name          string                   `json:"name"`
 	TickerId      string                   `json:"ticker_id"`
 	CurrentPrice  float64                  `json:"current_price" change:"-"`
-	PriceChanger  PriceChange              `json:"-"`
-	UpdateChannel *utils.ChannelDuplicator `json:"-"`
-	lock          *utils.Lock
+	PriceChanger  PriceChange
+	UpdateChannel *duplicator.ChannelDuplicator
+	lock          *lock.Lock
 }
 
 func (stock *Stock) GetType() string {
@@ -63,11 +65,11 @@ func NewStock(tickerID, name string, startPrice float64, runInterval time.Durati
 	}
 
 	stock := &Stock{
-		lock:          utils.NewLock(fmt.Sprintf("stock-%s", tickerID)),
+		lock:          lock.NewLock(fmt.Sprintf("stock-%s", tickerID)),
 		Name:          name,
 		TickerId:      tickerID,
 		CurrentPrice:  startPrice,
-		UpdateChannel: utils.MakeDuplicator(),
+		UpdateChannel: duplicator.MakeDuplicator(),
 	}
 
 	stock.PriceChanger = &RandomPrice{
@@ -87,11 +89,11 @@ func (stock *Stock) GetValue() float64 {
 	return stock.CurrentPrice
 }
 
-func (stock *Stock) GetLock() *utils.Lock {
+func (stock *Stock) GetLock() *lock.Lock {
 	return stock.lock
 }
 
-func (stock *Stock) GetUpdateChannel() *utils.ChannelDuplicator {
+func (stock *Stock) GetUpdateChannel() *duplicator.ChannelDuplicator {
 	return stock.UpdateChannel
 }
 

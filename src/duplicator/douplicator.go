@@ -1,10 +1,11 @@
-package utils
+package duplicator
 
 import (
 	"fmt"
 	"time"
 
 	"reflect"
+	"github.com/stock-simulator-server/src/lock"
 )
 
 type ChannelDuplicator struct {
@@ -13,12 +14,12 @@ type ChannelDuplicator struct {
 	debug     bool
 	debugName string
 	copy      bool
-	lock      *Lock
+	lock      *lock.Lock
 }
 
 func MakeDuplicator() *ChannelDuplicator {
 	chDoup := &ChannelDuplicator{
-		lock:     NewLock("channel-duplicator"),
+		lock:     lock.NewLock("channel-duplicator"),
 		outputs:  make([]chan interface{}, 0),
 		transfer: make(chan interface{}, 100),
 		debug:    false,

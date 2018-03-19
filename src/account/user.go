@@ -4,6 +4,8 @@ import (
 	"errors"
 	"github.com/stock-simulator-server/src/portfolio"
 	"github.com/stock-simulator-server/src/utils"
+	"github.com/stock-simulator-server/src/lock"
+	"github.com/stock-simulator-server/src/change"
 )
 
 // keep the uuid to user
@@ -11,7 +13,7 @@ var userList = make(map[string]*User)
 
 // keep the username to uuid list
 var uuidList = make(map[string]string)
-var userListLock = utils.NewLock("user-list")
+var userListLock = lock.NewLock("user-list")
 
 type User struct {
 	UserName      string
@@ -20,7 +22,7 @@ type User struct {
 	Uuid          string
 	Active        bool   `json:"active" change:"-"`
 	ActiveClients int64
-	Lock 		  *utils.Lock
+	Lock 		  *lock.Lock
 }
 
 func GetUser(username, password string) (*User, error) {
@@ -35,7 +37,7 @@ func GetUser(username, password string) (*User, error) {
 		return nil, errors.New("password is incorrect")
 	}
 	user.Active = true
-	utils.SubscribeUpdateInputs.Offer(user)
+	change.SubscribeUpdateInputs.Offer(user)
 	return user, nil
 }
 
@@ -58,10 +60,10 @@ func NewUser(username, password string) (*User, error){
 				DisplayName: username,
 				password:    password,
 				Uuid:        uuid,
-				Lock: 		 utils.NewLock("user"),
+				Lock: 		 lock.NewLock("user"),
 				Active: 	 true,
 			}
-			utils.SubscribeUpdateInputs.Offer(userList[uuid])
+			change.SubscribeUpdateInputs.Offer(userList[uuid])
 			return userList[uuid], nil
 		}
 		uuid = utils.PseudoUuid()
@@ -81,13 +83,9 @@ func (user *User) LogoutUser(){
 	if user.ActiveClients == 0{
 		user.Active = false
 	}
-	utils.SubscribeUpdateInputs.Offer(user)
+	change.SubscribeUpdateInputs.Offer(user)
 }
 
-func GetAllUsers() map[string]string{
-
-	return uuidList
-}
 func (user *User)GetId() string {
 	return user.Uuid
 }

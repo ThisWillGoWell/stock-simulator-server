@@ -10,17 +10,19 @@ import (
 	"github.com/stock-simulator-server/src/exchange"
 	"github.com/stock-simulator-server/src/messages"
 	"github.com/stock-simulator-server/src/order"
-	"github.com/stock-simulator-server/src/utils"
+	"github.com/stock-simulator-server/src/duplicator"
+	"github.com/stock-simulator-server/src/lock"
+	"github.com/stock-simulator-server/src/change"
 )
 
 var clients = make(map[*Client]bool)
-var clientsLock = utils.NewLock("clients-lock")
-var clientBroadcast = utils.MakeDuplicator()
+var clientsLock = lock.NewLock("clients-lock")
+var clientBroadcast = duplicator.MakeDuplicator()
 
-var BroadcastMessages = utils.MakeDuplicator()
+var BroadcastMessages = duplicator.MakeDuplicator()
 
 func BroadcastMessageBuilder() {
-	updates := utils.SubscribeUpdateOutput.GetOutput()
+	updates := change.SubscribeUpdateOutput.GetOutput()
 	go func() {
 		for update := range updates {
 			BroadcastMessages.Offer(messages.BuildUpdateMessage(update))
@@ -30,10 +32,10 @@ func BroadcastMessageBuilder() {
 }
 
 func BroadcastMessagePrinter() {
-	messages := BroadcastMessages.GetOutput()
+	msgs := BroadcastMessages.GetOutput()
 	return
 	go func() {
-		for msg := range messages {
+		for msg := range msgs {
 			str, err := json.Marshal(msg)
 			if err != nil {
 				panic(err)
@@ -48,18 +50,18 @@ type Client struct {
 	socketRx chan string
 	socketTx chan string
 
-	messageSender *utils.ChannelDuplicator
+	messageSender *duplicator.ChannelDuplicator
 
 	broadcastTx chan messages.Message
 	broadcastRx chan messages.Message
 
 	ws websocket.Conn
 
-	user *account.User
+	user   *account.User
 	active bool
 }
 
-func InitialRecieve(initialPayload string,  tx, rx chan string) error{
+func InitialRecieve(initialPayload string, tx, rx chan string) error {
 	initialMessage := new(messages.BaseMessage)
 	unmarshalErr := initialMessage.UnmarshalJSON([]byte(initialPayload))
 
@@ -78,15 +80,15 @@ func InitialRecieve(initialPayload string,  tx, rx chan string) error{
 		if err != nil {
 			return err
 		}
-		user= userTemp
+		user = userTemp
 	}
 
 	client := &Client{
 		user:          user,
 		socketRx:      rx,
 		socketTx:      tx,
-		messageSender: utils.MakeDuplicator(),
-		active: true,
+		messageSender: duplicator.MakeDuplicator(),
+		active:        true,
 	}
 	client.tx()
 	go client.rx()
@@ -95,7 +97,6 @@ func InitialRecieve(initialPayload string,  tx, rx chan string) error{
 	return nil
 
 }
-
 
 //receive go routine
 func (client *Client) rx() {
@@ -129,11 +130,11 @@ func (client *Client) tx() {
 	send := client.messageSender.GetOutput()
 	batchSendTicker := time.NewTicker(1 * time.Second)
 	sendQueue := make(chan interface{}, 300)
-	go func(){
+	go func() {
 		for {
 			select {
 			case <-batchSendTicker.C:
-				if ! client.active{
+				if ! client.active {
 					break
 				}
 				sendOutQueue(sendQueue, client.socketTx)
@@ -195,21 +196,5 @@ func (client *Client) processTradeMessage(message messages.Message) {
 
 func (client *Client) sendInitialPayload() {
 	fmt.Println("got update")
-	client.messageSender.Offer(messages.BuildUpdateMessage(utils.GetCurrentValues()))
-	/*
-		for _, entry := range exchange.Exchanges{
-			message := messages.BuildUpdateMessage(messages.LedgerUpdate, entry.Ledger)
-			client.messageSender.Offer(message)
-		}
-
-		for _, entry := range portfolio.Portfolios{
-			message := messages.BuildUpdateMessage(messages.PortfolioUpdate, entry)
-			client.messageSender.Offer(message)
-		}
-
-		for _, entry := range valuable.Valuables{
-			message := messages.BuildUpdateMessage(messages.ValuableUpdate, entry)
-			client.messageSender.Offer(message)
-		}
-	*/
+	client.messageSender.Offer(messages.BuildUpdateMessage(change.GetCurrentValues()))
 }

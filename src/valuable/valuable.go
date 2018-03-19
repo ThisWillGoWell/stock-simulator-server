@@ -1,14 +1,17 @@
 package valuable
 
-import "github.com/stock-simulator-server/src/utils"
+import (
+	"github.com/stock-simulator-server/src/lock"
+	"github.com/stock-simulator-server/src/duplicator"
+)
 
 var Valuables = make(map[string]Valuable)
-var ValuablesLock = utils.NewLock("valuables")
-var ValuableUpdateChannel = utils.MakeDuplicator()
+var ValuablesLock = lock.NewLock("valuables")
+var ValuableUpdateChannel = duplicator.MakeDuplicator()
 
 type Valuable interface {
 	GetId() string
 	GetValue() float64
-	GetLock() *utils.Lock
-	GetUpdateChannel() *utils.ChannelDuplicator
+	GetLock() *lock.Lock
+	GetUpdateChannel() *duplicator.ChannelDuplicator
 }

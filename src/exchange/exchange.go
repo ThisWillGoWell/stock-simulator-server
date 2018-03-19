@@ -5,24 +5,25 @@ import (
 	"fmt"
 	"github.com/stock-simulator-server/src/order"
 	"github.com/stock-simulator-server/src/portfolio"
-	"github.com/stock-simulator-server/src/utils"
 	"github.com/stock-simulator-server/src/valuable"
+	"github.com/stock-simulator-server/src/lock"
+	"github.com/stock-simulator-server/src/duplicator"
 )
 
 const ObjectType = "exchange_ledger"
 
 var Exchanges = make(map[string]*Exchange)
-var ExchangesLock = utils.NewLock("exchanges")
-var ExchangesUpdateChannel = utils.MakeDuplicator()
+var ExchangesLock = lock.NewLock("exchanges")
+var ExchangesUpdateChannel = duplicator.MakeDuplicator()
 
 const TOLERANCE = 0.000001
 
 type Exchange struct {
 	name                string
 	Ledger              map[string]*ledgerEntry
-	tradeChannel        *utils.ChannelDuplicator
-	lock                *utils.Lock
-	LedgerUpdateChannel *utils.ChannelDuplicator
+	tradeChannel        *duplicator.ChannelDuplicator
+	lock                *lock.Lock
+	LedgerUpdateChannel *duplicator.ChannelDuplicator
 }
 
 type ledgerEntry struct {
@@ -51,9 +52,9 @@ func BuildExchange(name string) (*Exchange, error) {
 	exchange := &Exchange{
 		name:                name,
 		Ledger:              make(map[string]*ledgerEntry),
-		tradeChannel:        utils.MakeDuplicator(),
-		lock:                utils.NewLock(fmt.Sprintf("exchange-%s", name)),
-		LedgerUpdateChannel: utils.MakeDuplicator(),
+		tradeChannel:        duplicator.MakeDuplicator(),
+		lock:                lock.NewLock(fmt.Sprintf("exchange-%s", name)),
+		LedgerUpdateChannel: duplicator.MakeDuplicator(),
 	}
 	Exchanges[name] = exchange
 	ExchangesUpdateChannel.RegisterInput(exchange.LedgerUpdateChannel.GetOutput())

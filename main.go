@@ -1,28 +1,61 @@
 package main
 
 import (
-	"fmt"
-	"github.com/stock-simulator-server/src/app"
-	"github.com/stock-simulator-server/src/client"
-	"github.com/stock-simulator-server/src/exchange"
+	"flag"
+	"github.com/stock-simulator-server/src/change"
 	"github.com/stock-simulator-server/src/portfolio"
-	"github.com/stock-simulator-server/src/utils"
+	"github.com/stock-simulator-server/src/exchange"
 	"github.com/stock-simulator-server/src/valuable"
+	"github.com/stock-simulator-server/src/client"
+	"github.com/stock-simulator-server/src/app"
 	"github.com/stock-simulator-server/src/web"
+	"os"
+	"log"
+	"runtime/pprof"
+	"runtime"
+	"time"
 )
 
-func main() {
 
+var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
+var memprofile = flag.String("memprofile", "", "write memory profile to `file`")
+
+func main() {
+	flag.Parse()
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			log.Fatal("could not create CPU profile: ", err)
+		}
+		if err := pprof.StartCPUProfile(f); err != nil {
+			log.Fatal("could not start CPU profile: ", err)
+		}
+		defer pprof.StopCPUProfile()
+	}
 
 	//Wiring of system
-	utils.SubscribeUpdateInputs.RegisterInput(portfolio.PortfoliosUpdateChannel.GetOutput())
-	utils.SubscribeUpdateInputs.RegisterInput(exchange.ExchangesUpdateChannel.GetOutput())
-	utils.SubscribeUpdateInputs.RegisterInput(valuable.ValuableUpdateChannel.GetOutput())
+	change.SubscribeUpdateInputs.RegisterInput(portfolio.PortfoliosUpdateChannel.GetOutput())
+	change.SubscribeUpdateInputs.RegisterInput(exchange.ExchangesUpdateChannel.GetOutput())
+	change.SubscribeUpdateInputs.RegisterInput(valuable.ValuableUpdateChannel.GetOutput())
 
 	//this takes the subscribe output and converts it to a message
 	client.BroadcastMessageBuilder()
-	utils.StartDetectChanges()
+	change.StartDetectChanges()
 	go app.RunApp()
-	web.StartHandlers()
-	fmt.Println("exited!")
+	go web.StartHandlers()
+	select{
+	case <- time.After(60*time.Second):
+	}
+	if *memprofile != "" {
+		f, err := os.Create(*memprofile)
+		if err != nil {
+			log.Fatal("could not create memory profile: ", err)
+		}
+		runtime.GC() // get up-to-date statistics
+		if err := pprof.WriteHeapProfile(f); err != nil {
+			log.Fatal("could not write memory profile: ", err)
+		}
+		f.Close()
+	}
+
 }
