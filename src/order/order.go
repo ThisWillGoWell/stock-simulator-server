@@ -1,8 +1,5 @@
 package order
 
-import (
-	"errors"
-)
 
 type PurchaseOrder struct {
 	ValuableID      string `json:"asset"`
@@ -15,7 +12,7 @@ type PurchaseOrder struct {
 type PurchasedResponse struct {
 	Order *PurchaseOrder `json:"order"`
 	Success bool `json:"success"`
-	Err     error `json:"err"`
+	Err     string `json:"err"`
 }
 
 // note this does not validate if the stock exists or not, thats done in the trade() funciton
@@ -37,13 +34,12 @@ func SuccessOrder(o *PurchaseOrder) {
 	o.ResponseChannel <- &PurchasedResponse{
 		Order: o,
 		Success: true,
-		Err:     nil,
 	}
 }
 func FailureOrder(msg string, o *PurchaseOrder) {
 	o.ResponseChannel <- &PurchasedResponse{
 		Order: o,
 		Success: false,
-		Err:     errors.New(msg),
+		Err:     msg,
 	}
 }

@@ -156,12 +156,12 @@ func (client *Client) processTradeMessage(message messages.Message) {
 	exchange.InitiateTrade(po)
 	go func() {
 		response := <-po.ResponseChannel
-		client.sendMessage(messages.BuildPurchaseResponse(tradeMessage, response))
+		client.sendMessage(messages.BuildPurchaseResponse(response))
 	}()
 }
 
 func (client *Client) initSession() {
-	fmt.Println("got update")
+
 	client.sendMessage(messages.SuccessLogin(client.user.Uuid))
 	for _, v := range account.GetAllUsers(){
 		client.sendMessage(messages.NewObjectMessage(v))
@@ -172,7 +172,6 @@ func (client *Client) initSession() {
 	for _, v := range valuable.GetAllStocks(){
 		client.sendMessage(messages.NewObjectMessage(v))
 	}
-
 
 	client.messageSender.RegisterInput(BroadcastMessages.GetBufferedOutput(50))
 }

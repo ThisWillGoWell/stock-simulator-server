@@ -21,14 +21,11 @@ func (baseMessage *BaseMessage) IsTrade() bool {
 	return baseMessage.Action == "trade"
 }
 
-func BuildPurchaseResponse(message *TradeMessage, response interface{}) *BaseMessage {
+func BuildPurchaseResponse(response interface{}) *BaseMessage {
 	return &BaseMessage{
 		Action:AlertAction,
 		Msg: &AlertMessage{
-			Alert: &TradeResponse{
-				Trade:    message,
-				Response: response,
-			},
+			Alert: response,
 			Type: "trade_response",
 		},
 	}

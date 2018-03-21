@@ -17,17 +17,17 @@ var(
 		`);`
 	tableUpdatePriceStmt = `INSERT into ` + tableName + `(zone_id, type, TickerId, CurrentPrice) values($1, $2, $3) `+
 		`ON CONFLICT (TickerId) DO UPDATE SET CurrentPrice=EXCLUDED.CurrentPrice`
-	getCurrentPrice()
+	//getCurrentPrice()
 )
 
 func startUpdateDatabse(){
-	connStr := "postgresql://postgres:5433?user=%sdbname=pqgotest sslmode=verify-full"
-	db, err := sql.Open("postgres", connStr)
+	//connStr := "postgresql://postgres:5433?user=%sdbname=pqgotest sslmode=verify-full"
+	//db, err := sql.Open("postgres", connStr)
 
 }
 
 func updateValueable(){
-	update := valuable.ValuableUpdateChannel.GetBufferedOutput(10)
+	//update := valuable.ValuableUpdateChannel.GetBufferedOutput(10)
 
 
 }

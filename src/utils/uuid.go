@@ -14,7 +14,7 @@ func PseudoUuid() (uuid string) {
 		return
 	}
 
-	uuid = fmt.Sprintf("%X", b[0:7])
+	uuid = fmt.Sprintf("%X", b[0:3])
 
 	return uuid
 }
