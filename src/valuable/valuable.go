@@ -5,12 +5,13 @@ import (
 	"github.com/stock-simulator-server/src/duplicator"
 )
 
-var Valuables = make(map[string]Valuable)
 var ValuablesLock = lock.NewLock("valuables")
-var ValuableUpdateChannel = duplicator.MakeDuplicator()
+var ValuableUpdateChannel = duplicator.MakeDuplicator("valueable-update")
+var NewValuableChannel = duplicator.MakeDuplicator("new-vauleuable")
 
 type Valuable interface {
 	GetId() string
+	GetName() string
 	GetValue() float64
 	GetLock() *lock.Lock
 	GetUpdateChannel() *duplicator.ChannelDuplicator

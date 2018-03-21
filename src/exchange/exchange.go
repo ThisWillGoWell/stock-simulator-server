@@ -14,7 +14,7 @@ const ObjectType = "exchange_ledger"
 
 var Exchanges = make(map[string]*Exchange)
 var ExchangesLock = lock.NewLock("exchanges")
-var ExchangesUpdateChannel = duplicator.MakeDuplicator()
+var ExchangesUpdateChannel = duplicator.MakeDuplicator("exchange-update")
 
 const TOLERANCE = 0.000001
 
@@ -52,12 +52,12 @@ func BuildExchange(name string) (*Exchange, error) {
 	exchange := &Exchange{
 		name:                name,
 		Ledger:              make(map[string]*ledgerEntry),
-		tradeChannel:        duplicator.MakeDuplicator(),
+		tradeChannel:        duplicator.MakeDuplicator(fmt.Sprintf("exchange-%s-trade", name)),
 		lock:                lock.NewLock(fmt.Sprintf("exchange-%s", name)),
-		LedgerUpdateChannel: duplicator.MakeDuplicator(),
+		LedgerUpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("exchange-%s-ledger-update", name)),
 	}
 	Exchanges[name] = exchange
-	ExchangesUpdateChannel.RegisterInput(exchange.LedgerUpdateChannel.GetOutput())
+	ExchangesUpdateChannel.RegisterInput(exchange.LedgerUpdateChannel.GetBufferedOutput(10))
 	return exchange, nil
 }
 
@@ -108,7 +108,7 @@ func InitiateTrade(o *order.PurchaseOrder) {
 }
 
 func (exchange *Exchange) StartExchange() {
-	incomingTrades := exchange.tradeChannel.GetOutput()
+	incomingTrades := exchange.tradeChannel.GetBufferedOutput(10)
 	go func() {
 		for purchaseOrder := range incomingTrades {
 			exchange.trade(purchaseOrder.(*order.PurchaseOrder))
@@ -128,7 +128,7 @@ func (exchange *Exchange) trade(o *order.PurchaseOrder) {
 	valuable.ValuablesLock.Acquire("trade")
 	defer valuable.ValuablesLock.Release()
 
-	value, exists := valuable.Valuables[o.ValuableID]
+	value, exists := valuable.Stocks[o.ValuableID]
 	if !exists {
 		order.FailureOrder("asset is not recognized", o)
 		return

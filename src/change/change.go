@@ -58,8 +58,8 @@ var (
 	//subscribeables is something that can be subscribed to
 	subscribeables        = make(map[string]*SubscribeUpdate)
 	subscribeablesLock    = lock.NewLock("subscribeables")
-	SubscribeUpdateInputs =duplicator.MakeDuplicator()
-	SubscribeUpdateOutput = duplicator.MakeDuplicator()
+	SubscribeUpdateInputs =duplicator.MakeDuplicator("subscribe-update-input")
+	SubscribeUpdateOutput = duplicator.MakeDuplicator("subscribe-update-output")
 )
 
 func registerChangeDetect(o Identifiable) *SubscribeUpdate {
@@ -115,7 +115,7 @@ func getValue(o interface{}, name string) interface{} {
 func StartDetectChanges() {
 	SubscribeUpdateInputs.EnableCopyMode()
 	SubscribeUpdateOutput.EnableCopyMode()
-	subscribeUpdateChannel := SubscribeUpdateInputs.GetOutput()
+	subscribeUpdateChannel := SubscribeUpdateInputs.GetBufferedOutput(100)
 	go func() {
 		for updateObj := range subscribeUpdateChannel {
 			update, ok := updateObj.(Identifiable)

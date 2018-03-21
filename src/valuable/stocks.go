@@ -22,7 +22,10 @@ const (
 	ObjectType = "stock"
 )
 
-var timeSimulation = duplicator.MakeDuplicator()
+var timeSimulation = duplicator.MakeDuplicator("time-sim")
+
+var Stocks = make(map[string]*Stock)
+var NewStockChannel = duplicator.MakeDuplicator("new-stock-channel")
 
 func StartStockStimulation() {
 	ticker := time.NewTicker(timeSimulationPeriod)
@@ -44,12 +47,12 @@ type stockManager struct {
 
 //Stock type for storing the stock information
 type Stock struct {
-	Name          string                   `json:"name" change:"-"`
+	Name          string                   `json:"name"`
 	TickerId      string                   `json:"ticker_id"`
 	CurrentPrice  float64                  `json:"current_price" change:"-"`
-	PriceChanger  PriceChange
-	UpdateChannel *duplicator.ChannelDuplicator
-	lock          *lock.Lock
+	PriceChanger  PriceChange				`json:"-"`
+	UpdateChannel *duplicator.ChannelDuplicator `json:"-"`
+	lock          *lock.Lock `json:"-"`
 }
 
 func (stock *Stock) GetType() string {
@@ -60,7 +63,7 @@ func NewStock(tickerID, name string, startPrice float64, runInterval time.Durati
 	// Acquire the valuableMapLock so no one can add a new entry till we are done
 	ValuablesLock.Acquire("new-stock")
 	defer ValuablesLock.Release()
-	if _, ok := Valuables[tickerID]; ok {
+	if _, ok := Stocks[tickerID]; ok {
 		return nil, errors.New("tickerID is already taken by another valuable")
 	}
 
@@ -69,7 +72,7 @@ func NewStock(tickerID, name string, startPrice float64, runInterval time.Durati
 		Name:          name,
 		TickerId:      tickerID,
 		CurrentPrice:  startPrice,
-		UpdateChannel: duplicator.MakeDuplicator(),
+		UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("stock-%s-update", tickerID)),
 	}
 
 	stock.PriceChanger = &RandomPrice{
@@ -79,14 +82,19 @@ func NewStock(tickerID, name string, startPrice float64, runInterval time.Durati
 		Volatility:            5,
 	}
 	go stock.stockUpdateRoutine()
-	Valuables[tickerID] = stock
+	Stocks[tickerID] = stock
 	ValuableUpdateChannel.RegisterInput(stock.UpdateChannel.GetOutput())
 	ValuableUpdateChannel.Offer(stock)
+	NewStockChannel.Offer(stock)
 	return stock, nil
 }
 
 func (stock *Stock) GetValue() float64 {
 	return stock.CurrentPrice
+}
+
+func (stock *Stock) GetName() string {
+	return stock.Name
 }
 
 func (stock *Stock) GetLock() *lock.Lock {
@@ -162,6 +170,21 @@ func (randPrice *RandomPrice) changeValues() {
 	randPrice.TargetPrice = newTarget
 	randPrice.Volatility = utils.RandRange(volatilityMin, volatilityMax)
 }
+
+
+func GetAllStocks()[]*Stock{
+	ValuablesLock.Acquire("Get List")
+	defer ValuablesLock.Release()
+	v := make([]*Stock, len(Stocks))
+	i := 0
+	for _, val := range Stocks{
+		v[i] = val
+		i+= 1
+	}
+	return v
+
+}
+
 
 /** ########################################
 *           Math Helper Functions

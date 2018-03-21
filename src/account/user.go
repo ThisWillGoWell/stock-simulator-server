@@ -16,13 +16,13 @@ var uuidList = make(map[string]string)
 var userListLock = lock.NewLock("user-list")
 
 type User struct {
-	UserName      string
-	password      string
+	UserName      string `json:"-"`
+	password      string `json:"-"`
 	DisplayName   string `json:"display_name" change:"-"`
-	Uuid          string
+	Uuid          string `json:"-"`
 	Active        bool   `json:"active" change:"-"`
-	ActiveClients int64
-	Lock 		  *lock.Lock
+	ActiveClients int64 `json:"-"`
+	Lock 		  *lock.Lock `json:"-"`
 }
 
 func GetUser(username, password string) (*User, error) {
@@ -93,3 +93,14 @@ func (user *User) GetType() string {
 	return "user"
 }
 
+func GetAllUsers()[]*User{
+	userListLock.Acquire("get all users")
+	defer userListLock.Release()
+	lst := make([]*User, len(userList))
+	i := 0
+	for _, val := range userList{
+		lst[i] = val
+		i+= 1
+	}
+	return lst
+}

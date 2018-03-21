@@ -14,7 +14,9 @@ const (
 
 var Portfolios = make(map[string]*Portfolio)
 var PortfoliosLock = lock.NewLock("portfolios")
-var PortfoliosUpdateChannel = duplicator.MakeDuplicator()
+var PortfoliosUpdateChannel = duplicator.MakeDuplicator("portfolio-update")
+var NewPortfolioChannel = duplicator.MakeDuplicator("new-portfolio")
+
 
 type Portfolio struct {
 	Name     string  `json:"name"`
@@ -26,14 +28,14 @@ type Portfolio struct {
 	PersonalLedger map[string]*ledgerEntry `json:"ledger" change:"-"`
 
 	UpdateChannel   *duplicator.ChannelDuplicator `json:"-"`
-	valuableUpdates *duplicator.ChannelDuplicator
+	valuableUpdates *duplicator.ChannelDuplicator `json:"-"`
 
 	Lock *lock.Lock `json:"-"`
 }
 
 type ledgerEntry struct {
 	Amount        float64 `json:"amount"`
-	updateChannel chan interface{}
+	updateChannel chan interface{} `json:"-"`
 }
 
 func (port *Portfolio) GetId() string {
@@ -55,15 +57,15 @@ func NewPortfolio(userUUID, name string) (*Portfolio, error) {
 			Name:            name,
 			UUID:            userUUID,
 			Wallet:          1000,
-			UpdateChannel:   duplicator.MakeDuplicator(),
+			UpdateChannel:   duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-update", userUUID)),
 			Lock:            lock.NewLock(fmt.Sprintf("portfolio-%s", name)),
-			valuableUpdates: duplicator.MakeDuplicator(),
+			valuableUpdates: duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-valueable-update", userUUID)),
 			PersonalLedger:  make(map[string]*ledgerEntry),
 		}
 	Portfolios[userUUID] = port
 	PortfoliosUpdateChannel.RegisterInput(port.UpdateChannel.GetOutput())
 	go port.valuableUpdate()
-	PortfoliosUpdateChannel.Offer(port)
+	NewPortfolioChannel.Offer(port)
 	return port, nil
 }
 func (port *Portfolio) valuableUpdate() {
@@ -92,7 +94,7 @@ func GetPortfolio(userUUID string) (*Portfolio, error) {
 func (port *Portfolio) calculateNetWorth() float64 {
 	sum := 0.0
 	for valueStr, entry := range port.PersonalLedger {
-		value := valuable.Valuables[valueStr]
+		value := valuable.Stocks[valueStr]
 		sum += value.GetValue() * entry.Amount
 	}
 	return sum + port.Wallet
@@ -122,4 +124,16 @@ func (port *Portfolio) TradeUpdate(value valuable.Valuable, amountOwned, price f
 	port.NetWorth = port.calculateNetWorth()
 	port.UpdateChannel.Offer(port)
 
+}
+
+func GetAllPortfolios()[]*Portfolio{
+	PortfoliosLock.Acquire("get all ports")
+	defer PortfoliosLock.Release()
+	lst := make([]*Portfolio, len(Portfolios))
+	i := 0
+	for _, val := range Portfolios{
+		lst[i] = val
+		i+= 1
+	}
+	return lst
 }

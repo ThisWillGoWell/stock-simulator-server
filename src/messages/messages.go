@@ -35,7 +35,7 @@ func (baseMessage *BaseMessage) UnmarshalJSON(data []byte) error {
 		return errors.New("action not there")
 	}
 
-	if _, ok := obj["value"].(string); ok {
+	if _, ok := obj["msg"].(string); ok {
 		return errors.New("value not there")
 	}
 
@@ -55,7 +55,7 @@ func (baseMessage *BaseMessage) UnmarshalJSON(data []byte) error {
 		message = &NewAccountMessage{}
 	}
 
-	str, _ := json.Marshal(obj["value"])
+	str, _ := json.Marshal(obj["msg"])
 	err = json.Unmarshal(str, &message)
 	if err != nil {
 		return err

@@ -45,7 +45,8 @@
     {
         onEvent("Connected");
         //doSend('{"container_type": "register", "register_action": "register", "device_type": "test", "device_name":"' + window.prompt("device_name","test")  + '"}');
-        doSend('{"action": "login", "value": {"username": "username", "password":"password"}}');
+        doSend('{"action": "login", "msg": {"username": "Luke", "password":"pass"}}');
+        doSend('{"action": "trade", "msg": {"stock_ticker":"BA", "exchange_id":"US", "amount":1}}')
         //doSend('{"op":"subscribe","type":"alert", "system":"irRemote"}');
     }
 

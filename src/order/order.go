@@ -9,7 +9,7 @@ type PurchaseOrder struct {
 	PortfolioID     string `json:"portfolio"`
 	ExchangeID      string `json:"exchange"`
 	Amount          float64 `json:"amount"`
-	ResponseChannel chan *PurchasedResponse
+	ResponseChannel chan *PurchasedResponse `json:"-"`
 }
 
 type PurchasedResponse struct {

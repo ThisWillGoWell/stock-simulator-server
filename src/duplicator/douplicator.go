@@ -17,13 +17,14 @@ type ChannelDuplicator struct {
 	lock      *lock.Lock
 }
 
-func MakeDuplicator() *ChannelDuplicator {
+func MakeDuplicator(name string) *ChannelDuplicator {
 	chDoup := &ChannelDuplicator{
 		lock:     lock.NewLock("channel-duplicator"),
 		outputs:  make([]chan interface{}, 0),
 		transfer: make(chan interface{}, 100),
 		debug:    false,
 		copy:     true,
+		debugName: name,
 	}
 	chDoup.startDuplicator()
 
@@ -38,6 +39,10 @@ func (ch *ChannelDuplicator) EnableDebug(name string) {
 	ch.debug = true
 }
 
+func (ch *ChannelDuplicator) SetName(name string){
+	ch.debugName = name
+}
+
 func (ch *ChannelDuplicator) GetOutput() chan interface{} {
 	ch.lock.Acquire("getOutput")
 	defer ch.lock.Release()
@@ -45,7 +50,7 @@ func (ch *ChannelDuplicator) GetOutput() chan interface{} {
 	if ch.debug {
 		fmt.Println("adding output on", ch.debugName)
 	}
-	newOutput := make(chan interface{}, 10)
+	newOutput := make(chan interface{}, 100)
 	ch.outputs = append(ch.outputs, newOutput)
 	return newOutput
 }
@@ -94,6 +99,7 @@ func (ch *ChannelDuplicator) RegisterInput(inputChannel <-chan interface{}) {
 
 }
 
+
 func (ch *ChannelDuplicator) Offer(value interface{}) {
 	if ch.debug {
 		fmt.Println("offering to transfer", ch.debugName)
@@ -128,9 +134,7 @@ func (ch *ChannelDuplicator) startDuplicator() {
 					}
 					continue
 				default:
-					if ch.debug {
-						fmt.Println("missing messages on", ch.debugName, "index", i)
-					}
+					fmt.Println("missing messages on", ch.debugName, "index", i)
 					continue
 				}
 			}
@@ -144,7 +148,7 @@ func main() {
 	input1 := make(chan interface{})
 	input2 := make(chan interface{})
 
-	chDoup := MakeDuplicator()
+	chDoup := MakeDuplicator("'")
 	chDoup.RegisterInput(input1)
 	chDoup.RegisterInput(input2)
 	for i := 0; i < 3; i++ {

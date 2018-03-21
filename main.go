@@ -33,9 +33,10 @@ func main() {
 	}
 
 	//Wiring of system
-	change.SubscribeUpdateInputs.RegisterInput(portfolio.PortfoliosUpdateChannel.GetOutput())
-	change.SubscribeUpdateInputs.RegisterInput(exchange.ExchangesUpdateChannel.GetOutput())
-	change.SubscribeUpdateInputs.RegisterInput(valuable.ValuableUpdateChannel.GetOutput())
+	change.SubscribeUpdateInputs.RegisterInput(portfolio.PortfoliosUpdateChannel.GetBufferedOutput(10))
+	change.SubscribeUpdateInputs.RegisterInput(exchange.ExchangesUpdateChannel.GetBufferedOutput(10))
+	change.SubscribeUpdateInputs.RegisterInput(valuable.ValuableUpdateChannel.GetBufferedOutput(10))
+
 
 	//this takes the subscribe output and converts it to a message
 	client.BroadcastMessageBuilder()

@@ -13,27 +13,28 @@ import (
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
 	"github.com/stock-simulator-server/src/change"
+	"github.com/stock-simulator-server/src/valuable"
+	"github.com/stock-simulator-server/src/portfolio"
 )
 
 var clients = make(map[*Client]bool)
 var clientsLock = lock.NewLock("clients-lock")
-var clientBroadcast = duplicator.MakeDuplicator()
 
-var BroadcastMessages = duplicator.MakeDuplicator()
+var BroadcastMessages = duplicator.MakeDuplicator("client-broadcast-messages")
 
 func BroadcastMessageBuilder() {
-	updates := change.SubscribeUpdateOutput.GetOutput()
+	updates := change.SubscribeUpdateOutput.GetBufferedOutput(100)
 	go func() {
 		for update := range updates {
 			BroadcastMessages.Offer(messages.BuildUpdateMessage(update))
 		}
 	}()
-	BroadcastMessagePrinter()
+	//BroadcastMessagePrinter()
 }
 
 func BroadcastMessagePrinter() {
-	msgs := BroadcastMessages.GetOutput()
-	return
+
+	msgs := BroadcastMessages.GetBufferedOutput(100)
 	go func() {
 		for msg := range msgs {
 			str, err := json.Marshal(msg)
@@ -87,14 +88,12 @@ func InitialRecieve(initialPayload string, tx, rx chan string) error {
 		user:          user,
 		socketRx:      rx,
 		socketTx:      tx,
-		messageSender: duplicator.MakeDuplicator(),
+		messageSender: duplicator.MakeDuplicator("client-"+user.Uuid+"-message"),
 		active:        true,
 	}
 	client.tx()
 	go client.rx()
-	client.messageSender.RegisterInput(BroadcastMessages.GetBufferedOutput(50))
-	client.messageSender.Offer(messages.SuccessLogin(client.user.Uuid))
-	client.sendInitialPayload()
+	go client.initSession()
 	return nil
 
 }
@@ -117,7 +116,7 @@ func (client *Client) rx() {
 		case messages.TradeAction:
 			client.processTradeMessage(message.Msg.(messages.Message))
 		case messages.UpdateAction:
-			client.sendInitialPayload()
+			client.initSession()
 		default:
 			client.messageSender.Offer(messages.NewErrorMessage("action is not known"))
 		}
@@ -128,54 +127,20 @@ func (client *Client) rx() {
 
 // send down websocket
 func (client *Client) tx() {
-	send := client.messageSender.GetOutput()
-	batchSendTicker := time.NewTicker(1 * time.Second)
-	sendQueue := make(chan interface{}, 300)
+	send := client.messageSender.GetBufferedOutput(100)
 	go func() {
-		for {
-			select {
-			case <-batchSendTicker.C:
-				if ! client.active {
-					break
-				}
-				sendOutQueue(sendQueue, client.socketTx)
-			case msg := <-send:
-				select {
-				case sendQueue <- msg:
-				default:
-					//the queue is full
-					//empty it
-					sendOutQueue(sendQueue, client.socketTx)
-					//add
-					sendQueue <- msg
-				}
-
-			}
+		for msg := range send {
+			client.sendMessage(msg)
 		}
 	}()
-	//
-
 }
-func sendOutQueue(sendQueue chan interface{}, socketTx chan string) {
-	sendList := make([]interface{}, 0)
-emptyQueue:
-	for {
-		select {
-		case ele := <-sendQueue:
-			sendList = append(sendList, ele)
-		default:
-			break emptyQueue
-		}
-	}
 
-	if len(sendList) > 0 {
-		str, err := json.Marshal(sendList)
-		if err != nil {
-			panic(err)
-		} else {
-			socketTx <- string(str)
-		}
+func  (client *Client) sendMessage(msg interface{}){
+	str, err := json.Marshal(msg)
+	if err != nil{
+		fmt.Println(err)
 	}
+	client.socketTx <- string(str)
 }
 
 func (client *Client) processChatMessage(message messages.Message) {
@@ -191,11 +156,23 @@ func (client *Client) processTradeMessage(message messages.Message) {
 	exchange.InitiateTrade(po)
 	go func() {
 		response := <-po.ResponseChannel
-		client.messageSender.Offer(messages.BuildPurchaseResponse(tradeMessage, response))
+		client.sendMessage(messages.BuildPurchaseResponse(tradeMessage, response))
 	}()
 }
 
-func (client *Client) sendInitialPayload() {
+func (client *Client) initSession() {
 	fmt.Println("got update")
-	client.messageSender.Offer(messages.BuildUpdateMessage(change.GetCurrentValues()))
+	client.sendMessage(messages.SuccessLogin(client.user.Uuid))
+	for _, v := range account.GetAllUsers(){
+		client.sendMessage(messages.NewObjectMessage(v))
+	}
+	for _, v := range portfolio.GetAllPortfolios(){
+		client.sendMessage(messages.NewObjectMessage(v))
+	}
+	for _, v := range valuable.GetAllStocks(){
+		client.sendMessage(messages.NewObjectMessage(v))
+	}
+
+
+	client.messageSender.RegisterInput(BroadcastMessages.GetBufferedOutput(50))
 }
