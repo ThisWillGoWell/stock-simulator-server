@@ -44,7 +44,7 @@ type stockManager struct {
 
 //Stock type for storing the stock information
 type Stock struct {
-	Name          string                   `json:"name"`
+	Name          string                   `json:"name" change:"-"`
 	TickerId      string                   `json:"ticker_id"`
 	CurrentPrice  float64                  `json:"current_price" change:"-"`
 	PriceChanger  PriceChange
