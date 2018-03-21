@@ -6,7 +6,7 @@ func (baseMessage *BaseMessage) IsAlert() bool {
 }
 
 type AlertMessage struct {
-	Alert   string `json:"alert"`
+	Alert   interface{} `json:"alert"`
 	Type    string `json:"type"`
 	Timestamp int64  `json:"timestamp"`
 }

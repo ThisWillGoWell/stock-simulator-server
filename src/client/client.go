@@ -93,6 +93,7 @@ func InitialRecieve(initialPayload string, tx, rx chan string) error {
 	client.tx()
 	go client.rx()
 	client.messageSender.RegisterInput(BroadcastMessages.GetBufferedOutput(50))
+	client.messageSender.Offer(messages.SuccessLogin(client.user.Uuid))
 	client.sendInitialPayload()
 	return nil
 

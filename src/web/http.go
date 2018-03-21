@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"github.com/stock-simulator-server/src/messages"
+	"encoding/json"
 )
 
 var clients = make(map[*websocket.Conn]http.Client) // connected clients
@@ -51,8 +53,9 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		loginErr := client.InitialRecieve(string(msg), socketTX, socketRX)
-		if err != nil {
-			ws.WriteMessage(websocket.TextMessage, []byte(loginErr.Error()))
+		if err != loginErr {
+			val, _ :=json.Marshal(messages.FailedLogin(loginErr))
+			ws.WriteMessage(websocket.TextMessage, val)
 			return
 		} else {
 			break

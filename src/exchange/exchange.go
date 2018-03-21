@@ -133,6 +133,7 @@ func (exchange *Exchange) trade(o *order.PurchaseOrder) {
 		order.FailureOrder("asset is not recognized", o)
 		return
 	}
+	//todo possible deadlock
 	value.GetLock().Acquire("trade")
 	defer value.GetLock().Release()
 
