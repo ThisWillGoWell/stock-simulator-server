@@ -44,7 +44,7 @@ func main() {
 	go app.RunApp()
 	go web.StartHandlers()
 	select{
-	case <- time.After(60*time.Second):
+
 	}
 	if *memprofile != "" {
 		f, err := os.Create(*memprofile)
