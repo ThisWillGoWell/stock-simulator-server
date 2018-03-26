@@ -47,6 +47,7 @@ type stockManager struct {
 
 //Stock type for storing the stock information
 type Stock struct {
+	Uuid 	      string 				   `json:"uuid"`
 	Name          string                   `json:"name"`
 	TickerId      string                   `json:"ticker_id"`
 	CurrentPrice  float64                  `json:"current_price" change:"-"`
@@ -63,11 +64,22 @@ func NewStock(tickerID, name string, startPrice float64, runInterval time.Durati
 	// Acquire the valuableMapLock so no one can add a new entry till we are done
 	ValuablesLock.Acquire("new-stock")
 	defer ValuablesLock.Release()
-	if _, ok := Stocks[tickerID]; ok {
-		return nil, errors.New("tickerID is already taken by another valuable")
+	for _, s := range Stocks{
+		if s.TickerId == tickerID{
+			return nil, errors.New("tickerID is already taken by another valuable")
+		}
+	}
+	uuidString := utils.PseudoUuid()
+	for{
+		if _, ok := Stocks[uuidString]; !ok {
+			break
+		}
+		uuidString = utils.PseudoUuid()
 	}
 
+
 	stock := &Stock{
+		Uuid: uuidString,
 		lock:          lock.NewLock(fmt.Sprintf("stock-%s", tickerID)),
 		Name:          name,
 		TickerId:      tickerID,
@@ -85,7 +97,7 @@ func NewStock(tickerID, name string, startPrice float64, runInterval time.Durati
 	Stocks[tickerID] = stock
 	ValuableUpdateChannel.RegisterInput(stock.UpdateChannel.GetOutput())
 	ValuableUpdateChannel.Offer(stock)
-	NewStockChannel.Offer(stock)
+	//NewStockChannel.Offer(stock)
 	return stock, nil
 }
 

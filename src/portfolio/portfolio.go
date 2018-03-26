@@ -33,10 +33,7 @@ type Portfolio struct {
 	Lock *lock.Lock `json:"-"`
 }
 
-type ledgerEntry struct {
-	Amount        float64 `json:"amount"`
-	updateChannel chan interface{} `json:"-"`
-}
+
 
 func (port *Portfolio) GetId() string {
 	return port.UUID
@@ -47,27 +44,35 @@ func (port *Portfolio) GetType() string {
 }
 
 func NewPortfolio(userUUID, name string) (*Portfolio, error) {
+	return MakePortfolio(userUUID, name, 0, 0)
+}
+
+func MakePortfolio(uuid, name string, wallet, networth float64) (*Portfolio, error){
 	PortfoliosLock.Acquire("new-portfolio")
 	defer PortfoliosLock.Release()
-	if _, exists := Portfolios[userUUID]; exists {
+	if _, exists := Portfolios[uuid]; exists {
 		return nil, errors.New("portfolio uuid already Exists")
 	}
 	port :=
 		&Portfolio{
 			Name:            name,
-			UUID:            userUUID,
+			UUID:            uuid,
 			Wallet:          1000,
-			UpdateChannel:   duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-update", userUUID)),
+			UpdateChannel:   duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-update", uuid)),
 			Lock:            lock.NewLock(fmt.Sprintf("portfolio-%s", name)),
-			valuableUpdates: duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-valueable-update", userUUID)),
+			valuableUpdates: duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-valueable-update", uuid)),
 			PersonalLedger:  make(map[string]*ledgerEntry),
 		}
-	Portfolios[userUUID] = port
+	port.calculateNetWorth()
+	Portfolios[uuid] = port
 	PortfoliosUpdateChannel.RegisterInput(port.UpdateChannel.GetOutput())
 	go port.valuableUpdate()
-	NewPortfolioChannel.Offer(port)
+	//NewPortfolioChannel.Offer(port)
+	PortfoliosUpdateChannel.Offer(port)
 	return port, nil
 }
+
+
 func (port *Portfolio) valuableUpdate() {
 	updateChannel := port.valuableUpdates.GetOutput()
 

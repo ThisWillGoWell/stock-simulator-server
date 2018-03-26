@@ -7,8 +7,8 @@ import (
 
 
 var(
-	ledgerTableName = `ledger`
-	ledgerTableCreateStatement = `CREATE TABLE IF NOT EXISTS ` + portfolioTableName +
+	ledger = `portfolio`
+	portfolioTableCreateStatement = `CREATE TABLE IF NOT EXISTS ` + portfolioTableName +
 		`( ` +
 		`id serial,` +
 		`uuid text NOT NULL,` +
@@ -17,14 +17,14 @@ var(
 		`PRIMARY KEY(uuid)` +
 		`);`
 
-	ledgerTableUpdateInsert = `INSERT into ` + portfolioTableName + `(uuid, name, wallet, net_worth) values($1, $2, $3, $4) `+
+	portfolioTableUpdateInsert = `INSERT into ` + portfolioTableName + `(uuid, name, wallet, net_worth) values($1, $2, $3, $4) `+
 		`ON CONFLICT (uuid) DO UPDATE SET wallet=EXCLUDED.wallet, net_worth=EXCLUDED.net_worth`
 
-	pledgerTableQueryStatement = "SELECT * FROM " + portfolioTableName + `;`
+	portfolioTableQueryStatement = "SELECT * FROM " + portfolioTableName + `;`
 	//getCurrentPrice()
 )
 
-func initLedger(){
+func initPortfolio(){
 	tx, err := db.Begin()
 	if err != nil{
 		db.Close()
@@ -38,7 +38,7 @@ func initLedger(){
 	tx.Commit()
 }
 
-func runLedgerUpdate(){
+func runPortfolioUpdate(){
 	portfolioUpdateChannel := portfolio.PortfoliosUpdateChannel.GetBufferedOutput(100)
 	go func(){
 		for portfolioUpdated := range portfolioUpdateChannel{
@@ -50,7 +50,7 @@ func runLedgerUpdate(){
 
 }
 
-func updateLedger(port *portfolio.Portfolio) {
+func updatePortfolio(port *portfolio.Portfolio) {
 	dbLock.Acquire("update-stock")
 	defer dbLock.Release()
 	tx, err := db.Begin()
@@ -67,7 +67,7 @@ func updateLedger(port *portfolio.Portfolio) {
 	tx.Commit()
 }
 
-func populateLedger(){
+func populatePortfolios(){
 	var uuid, name string
 	var wallet float64
 
