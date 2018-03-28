@@ -4,8 +4,8 @@ import (
 	"github.com/stock-simulator-server/src/valuable"
 )
 
-var(
-	stocksTableName = `stocks`
+var (
+	stocksTableName            = `stocks`
 	stocksTableCreateStatement = `CREATE TABLE IF NOT EXISTS ` + stocksTableName +
 		`( ` +
 		`id serial,` +
@@ -13,23 +13,24 @@ var(
 		`ticker_id text NOT NULL,` +
 		`name text NOT NULL,` +
 		`current_price numeric(16, 4),` +
+		`open_shares int,` +
 		`PRIMARY KEY(uuid)` +
-	`);`
+		`);`
 
-	stocksTableUpdateInsert = `INSERT into ` + stocksTableName + `(uuid, ticker_id, name, current_price) values($1, $2, $3, $4) `+
-		`ON CONFLICT (uuid) DO UPDATE SET current_price=EXCLUDED.current_price`
+	stocksTableUpdateInsert = `INSERT into ` + stocksTableName + `(uuid, ticker_id, name, current_price, open_shares) values($1, $2, $3, $4, $5) ` +
+		`ON CONFLICT (uuid) DO UPDATE SET current_price=EXCLUDED.current_price, open_shares=EXCLUDED.open_shares`
 
 	stocksTableQueryStatement = ""
 	//getCurrentPrice()
 )
 
-func initStocks(){
+func initStocks() {
 	tx, err := db.Begin()
-	if err != nil{
+	if err != nil {
 		db.Close()
 		panic("could not begin stocks init: " + err.Error())
 	}
-	_,err = tx.Exec(stocksTableCreateStatement)
+	_, err = tx.Exec(stocksTableCreateStatement)
 	if err != nil {
 		tx.Rollback()
 		panic("error occurred while creating metrics table " + err.Error())
@@ -37,14 +38,14 @@ func initStocks(){
 	tx.Commit()
 }
 
-func runStockUpdate(){
+func runStockUpdate() {
 	stockUpdateChannel := valuable.ValuableUpdateChannel.GetBufferedOutput(100)
-	go func(){
-		for stockUpdated := range stockUpdateChannel{
+	go func() {
+		for stockUpdated := range stockUpdateChannel {
 			stock := stockUpdated.(*valuable.Stock)
 			updateStock(stock)
 		}
-	}();
+	}()
 }
 
 func updateStock(stock *valuable.Stock) {
@@ -56,7 +57,7 @@ func updateStock(stock *valuable.Stock) {
 		db.Close()
 		panic("could not begin stocks init")
 	}
-	_, err = tx.Exec(stocksTableUpdateInsert, stock.Uuid, stock.TickerId, stock.Name, stock.CurrentPrice)
+	_, err = tx.Exec(stocksTableUpdateInsert, stock.Uuid, stock.TickerId, stock.Name, stock.CurrentPrice, stock.OpenShares)
 	if err != nil {
 		tx.Rollback()
 		panic("error occurred while insert stock in table " + err.Error())
@@ -64,6 +65,6 @@ func updateStock(stock *valuable.Stock) {
 	tx.Commit()
 }
 
-func populateStocks(){
+func populateStocks() {
 
 }

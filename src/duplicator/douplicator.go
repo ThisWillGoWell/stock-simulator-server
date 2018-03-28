@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"time"
 
-	"reflect"
 	"github.com/stock-simulator-server/src/lock"
+	"reflect"
 )
 
 type ChannelDuplicator struct {
 	transfer  chan interface{}
 	outputs   []chan interface{}
+	inputs    []<-chan interface{}
 	debug     bool
 	debugName string
 	copy      bool
@@ -19,11 +20,12 @@ type ChannelDuplicator struct {
 
 func MakeDuplicator(name string) *ChannelDuplicator {
 	chDoup := &ChannelDuplicator{
-		lock:     lock.NewLock("channel-duplicator"),
-		outputs:  make([]chan interface{}, 0),
-		transfer: make(chan interface{}, 100),
-		debug:    false,
-		copy:     true,
+		lock:      lock.NewLock("channel-duplicator"),
+		outputs:   make([]chan interface{}, 0),
+		inputs:    make([]<-chan interface{}, 0),
+		transfer:  make(chan interface{}, 100),
+		debug:     false,
+		copy:      true,
 		debugName: name,
 	}
 	chDoup.startDuplicator()
@@ -39,7 +41,7 @@ func (ch *ChannelDuplicator) EnableDebug(name string) {
 	ch.debug = true
 }
 
-func (ch *ChannelDuplicator) SetName(name string){
+func (ch *ChannelDuplicator) SetName(name string) {
 	ch.debugName = name
 }
 
@@ -78,6 +80,7 @@ func (ch *ChannelDuplicator) UnregisterOutput(remove chan interface{}) {
 }
 
 func (ch *ChannelDuplicator) RegisterInput(inputChannel <-chan interface{}) {
+	ch.inputs = append(ch.inputs, inputChannel)
 	go func() {
 		if ch.debug {
 			fmt.Println("registering input on", ch.debugName)
@@ -98,7 +101,6 @@ func (ch *ChannelDuplicator) RegisterInput(inputChannel <-chan interface{}) {
 	}()
 
 }
-
 
 func (ch *ChannelDuplicator) Offer(value interface{}) {
 	if ch.debug {
@@ -142,6 +144,18 @@ func (ch *ChannelDuplicator) startDuplicator() {
 		}
 	}()
 
+}
+
+func UnlinkDouplicator(input, output *ChannelDuplicator) {
+	for _, inputCh := range input.inputs {
+		for _, outputCh := range output.outputs {
+			if inputCh == outputCh {
+				fmt.Println("unlinked")
+				output.UnregisterOutput(outputCh)
+				close(outputCh)
+			}
+		}
+	}
 }
 
 func main() {

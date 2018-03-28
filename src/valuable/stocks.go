@@ -3,12 +3,12 @@ package valuable
 import (
 	"errors"
 	"fmt"
+	"github.com/stock-simulator-server/src/duplicator"
+	"github.com/stock-simulator-server/src/lock"
 	"github.com/stock-simulator-server/src/utils"
 	"math/rand"
 	"reflect"
 	"time"
-	"github.com/stock-simulator-server/src/duplicator"
-	"github.com/stock-simulator-server/src/lock"
 )
 
 const (
@@ -47,13 +47,14 @@ type stockManager struct {
 
 //Stock type for storing the stock information
 type Stock struct {
-	Uuid 	      string 				   `json:"uuid"`
-	Name          string                   `json:"name"`
-	TickerId      string                   `json:"ticker_id"`
-	CurrentPrice  float64                  `json:"current_price" change:"-"`
-	PriceChanger  PriceChange				`json:"-"`
+	Uuid          string                        `json:"uuid"`
+	Name          string                        `json:"name"`
+	TickerId      string                        `json:"ticker_id"`
+	CurrentPrice  float64                       `json:"current_price" change:"-"`
+	OpenShares    float64                       `json:"open_shares"`
+	PriceChanger  PriceChange                   `json:"-"`
 	UpdateChannel *duplicator.ChannelDuplicator `json:"-"`
-	lock          *lock.Lock `json:"-"`
+	lock          *lock.Lock                    `json:"-"`
 }
 
 func (stock *Stock) GetType() string {
@@ -64,22 +65,21 @@ func NewStock(tickerID, name string, startPrice float64, runInterval time.Durati
 	// Acquire the valuableMapLock so no one can add a new entry till we are done
 	ValuablesLock.Acquire("new-stock")
 	defer ValuablesLock.Release()
-	for _, s := range Stocks{
-		if s.TickerId == tickerID{
+	for _, s := range Stocks {
+		if s.TickerId == tickerID {
 			return nil, errors.New("tickerID is already taken by another valuable")
 		}
 	}
 	uuidString := utils.PseudoUuid()
-	for{
+	for {
 		if _, ok := Stocks[uuidString]; !ok {
 			break
 		}
 		uuidString = utils.PseudoUuid()
 	}
 
-
 	stock := &Stock{
-		Uuid: uuidString,
+		Uuid:          uuidString,
 		lock:          lock.NewLock(fmt.Sprintf("stock-%s", tickerID)),
 		Name:          name,
 		TickerId:      tickerID,
@@ -183,20 +183,18 @@ func (randPrice *RandomPrice) changeValues() {
 	randPrice.Volatility = utils.RandRange(volatilityMin, volatilityMax)
 }
 
-
-func GetAllStocks()[]*Stock{
+func GetAllStocks() []*Stock {
 	ValuablesLock.Acquire("Get List")
 	defer ValuablesLock.Release()
 	v := make([]*Stock, len(Stocks))
 	i := 0
-	for _, val := range Stocks{
+	for _, val := range Stocks {
 		v[i] = val
-		i+= 1
+		i += 1
 	}
 	return v
 
 }
-
 
 /** ########################################
 *           Math Helper Functions

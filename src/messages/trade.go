@@ -3,9 +3,9 @@ package messages
 const TradeAction = "trade"
 
 type TradeMessage struct {
-	StockTicker string  `json:"stock_ticker"`
-	ExchangeID  string  `json:"exchange_id"`
-	Amount      float64 `json:"amount"`
+	StockId    string  `json:"stock_id"`
+	ExchangeID string  `json:"exchange_id"`
+	Amount     float64 `json:"amount"`
 }
 
 func (*TradeMessage) message() { return }
@@ -23,10 +23,10 @@ func (baseMessage *BaseMessage) IsTrade() bool {
 
 func BuildPurchaseResponse(response interface{}) *BaseMessage {
 	return &BaseMessage{
-		Action:AlertAction,
+		Action: AlertAction,
 		Msg: &AlertMessage{
 			Alert: response,
-			Type: "trade_response",
+			Type:  "trade_response",
 		},
 	}
 

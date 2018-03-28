@@ -7,14 +7,15 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/stock-simulator-server/src/account"
-	"github.com/stock-simulator-server/src/exchange"
+	"github.com/stock-simulator-server/src/change"
+	"github.com/stock-simulator-server/src/duplicator"
+	"github.com/stock-simulator-server/src/ledger"
+	"github.com/stock-simulator-server/src/lock"
 	"github.com/stock-simulator-server/src/messages"
 	"github.com/stock-simulator-server/src/order"
-	"github.com/stock-simulator-server/src/duplicator"
-	"github.com/stock-simulator-server/src/lock"
-	"github.com/stock-simulator-server/src/change"
-	"github.com/stock-simulator-server/src/valuable"
 	"github.com/stock-simulator-server/src/portfolio"
+	"github.com/stock-simulator-server/src/trade"
+	"github.com/stock-simulator-server/src/valuable"
 )
 
 var clients = make(map[*Client]bool)
@@ -88,7 +89,7 @@ func InitialRecieve(initialPayload string, tx, rx chan string) error {
 		user:          user,
 		socketRx:      rx,
 		socketTx:      tx,
-		messageSender: duplicator.MakeDuplicator("client-"+user.Uuid+"-message"),
+		messageSender: duplicator.MakeDuplicator("client-" + user.Uuid + "-message"),
 		active:        true,
 	}
 	client.tx()
@@ -135,9 +136,9 @@ func (client *Client) tx() {
 	}()
 }
 
-func  (client *Client) sendMessage(msg interface{}){
+func (client *Client) sendMessage(msg interface{}) {
 	str, err := json.Marshal(msg)
-	if err != nil{
+	if err != nil {
 		fmt.Println(err)
 	}
 	client.socketTx <- string(str)
@@ -152,8 +153,8 @@ func (client *Client) processChatMessage(message messages.Message) {
 
 func (client *Client) processTradeMessage(message messages.Message) {
 	tradeMessage := message.(*messages.TradeMessage)
-	po := order.BuildPurchaseOrder(tradeMessage.StockTicker, tradeMessage.ExchangeID, client.user.Uuid, tradeMessage.Amount)
-	exchange.InitiateTrade(po)
+	po := order.BuildPurchaseOrder(tradeMessage.StockId, tradeMessage.ExchangeID, client.user.Uuid, tradeMessage.Amount)
+	trade.Trade(po)
 	go func() {
 		response := <-po.ResponseChannel
 		client.sendMessage(messages.BuildPurchaseResponse(response))
@@ -163,13 +164,16 @@ func (client *Client) processTradeMessage(message messages.Message) {
 func (client *Client) initSession() {
 
 	client.sendMessage(messages.SuccessLogin(client.user.Uuid))
-	for _, v := range account.GetAllUsers(){
+	for _, v := range account.GetAllUsers() {
 		client.sendMessage(messages.NewObjectMessage(v))
 	}
-	for _, v := range portfolio.GetAllPortfolios(){
+	for _, v := range portfolio.GetAllPortfolios() {
 		client.sendMessage(messages.NewObjectMessage(v))
 	}
-	for _, v := range valuable.GetAllStocks(){
+	for _, v := range valuable.GetAllStocks() {
+		client.sendMessage(messages.NewObjectMessage(v))
+	}
+	for _, v := range ledger.GetAllLedgers() {
 		client.sendMessage(messages.NewObjectMessage(v))
 	}
 

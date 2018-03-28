@@ -3,9 +3,10 @@ package portfolio
 import (
 	"errors"
 	"fmt"
-	"github.com/stock-simulator-server/src/valuable"
-	"github.com/stock-simulator-server/src/lock"
 	"github.com/stock-simulator-server/src/duplicator"
+	"github.com/stock-simulator-server/src/ledger"
+	"github.com/stock-simulator-server/src/lock"
+	"github.com/stock-simulator-server/src/valuable"
 )
 
 const (
@@ -17,7 +18,6 @@ var PortfoliosLock = lock.NewLock("portfolios")
 var PortfoliosUpdateChannel = duplicator.MakeDuplicator("portfolio-update")
 var NewPortfolioChannel = duplicator.MakeDuplicator("new-portfolio")
 
-
 type Portfolio struct {
 	Name     string  `json:"name"`
 	UUID     string  `json:"uuid"`
@@ -25,15 +25,13 @@ type Portfolio struct {
 	NetWorth float64 `json:"net_worth" change:"-"`
 
 	//keeps track of how much $$$ they own, used for some slight optomization on calc networth
-	PersonalLedger map[string]*ledgerEntry `json:"ledger" change:"-"`
+	// stock_uuid -> ledgerObject
 
 	UpdateChannel   *duplicator.ChannelDuplicator `json:"-"`
 	valuableUpdates *duplicator.ChannelDuplicator `json:"-"`
 
 	Lock *lock.Lock `json:"-"`
 }
-
-
 
 func (port *Portfolio) GetId() string {
 	return port.UUID
@@ -44,10 +42,10 @@ func (port *Portfolio) GetType() string {
 }
 
 func NewPortfolio(userUUID, name string) (*Portfolio, error) {
-	return MakePortfolio(userUUID, name, 0, 0)
+	return MakePortfolio(userUUID, name, 1000)
 }
 
-func MakePortfolio(uuid, name string, wallet, networth float64) (*Portfolio, error){
+func MakePortfolio(uuid, name string, wallet float64) (*Portfolio, error) {
 	PortfoliosLock.Acquire("new-portfolio")
 	defer PortfoliosLock.Release()
 	if _, exists := Portfolios[uuid]; exists {
@@ -57,13 +55,11 @@ func MakePortfolio(uuid, name string, wallet, networth float64) (*Portfolio, err
 		&Portfolio{
 			Name:            name,
 			UUID:            uuid,
-			Wallet:          1000,
+			Wallet:          wallet,
 			UpdateChannel:   duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-update", uuid)),
 			Lock:            lock.NewLock(fmt.Sprintf("portfolio-%s", name)),
 			valuableUpdates: duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-valueable-update", uuid)),
-			PersonalLedger:  make(map[string]*ledgerEntry),
 		}
-	port.calculateNetWorth()
 	Portfolios[uuid] = port
 	PortfoliosUpdateChannel.RegisterInput(port.UpdateChannel.GetOutput())
 	go port.valuableUpdate()
@@ -72,17 +68,14 @@ func MakePortfolio(uuid, name string, wallet, networth float64) (*Portfolio, err
 	return port, nil
 }
 
-
 func (port *Portfolio) valuableUpdate() {
 	updateChannel := port.valuableUpdates.GetOutput()
 
 	for range updateChannel {
 		port.Lock.Acquire("portfolio-update")
 		newNetWorth := port.calculateNetWorth()
-		if newNetWorth != port.NetWorth {
-			port.NetWorth = newNetWorth
-			port.UpdateChannel.Offer(port)
-		}
+		port.NetWorth = newNetWorth
+		port.UpdateChannel.Offer(port)
 		port.Lock.Release()
 	}
 }
@@ -97,48 +90,27 @@ func GetPortfolio(userUUID string) (*Portfolio, error) {
 
 //update the current net worth. NOT THREAD SAFE
 func (port *Portfolio) calculateNetWorth() float64 {
+	ledger.EntriesLock.Acquire("calculate-worth")
 	sum := 0.0
-	for valueStr, entry := range port.PersonalLedger {
+	for valueStr, entry := range ledger.EntriesPortfolioStock[port.UUID] {
 		value := valuable.Stocks[valueStr]
 		sum += value.GetValue() * entry.Amount
 	}
 	return sum + port.Wallet
 }
 
-func (port *Portfolio) TradeUpdate(value valuable.Valuable, amountOwned, price float64) {
-	valueID := value.GetId()
-	entry, exists := port.PersonalLedger[valueID]
-	if !exists {
-		port.PersonalLedger[valueID] = &ledgerEntry{
-			Amount:        amountOwned,
-			updateChannel: value.GetUpdateChannel().GetOutput(),
-		}
-		entry = port.PersonalLedger[valueID]
-		port.valuableUpdates.RegisterInput(entry.updateChannel)
-	}
-
-	if amountOwned == 0 {
-		value.GetUpdateChannel().UnregisterOutput(entry.updateChannel)
-		close(entry.updateChannel)
-		delete(port.PersonalLedger, valueID)
-	} else {
-		entry.Amount = amountOwned
-	}
-
-	port.Wallet -= price
-	port.NetWorth = port.calculateNetWorth()
-	port.UpdateChannel.Offer(port)
+func (port *Portfolio) RegisterUpdate(newInput chan interface{}) {
 
 }
 
-func GetAllPortfolios()[]*Portfolio{
+func GetAllPortfolios() []*Portfolio {
 	PortfoliosLock.Acquire("get all ports")
 	defer PortfoliosLock.Release()
 	lst := make([]*Portfolio, len(Portfolios))
 	i := 0
-	for _, val := range Portfolios{
+	for _, val := range Portfolios {
 		lst[i] = val
-		i+= 1
+		i += 1
 	}
 	return lst
 }

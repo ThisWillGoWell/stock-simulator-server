@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/stock-simulator-server/src/exchange"
 	"github.com/stock-simulator-server/src/portfolio"
 	"github.com/stock-simulator-server/src/valuable"
 
@@ -15,6 +14,7 @@ import (
 	"github.com/stock-simulator-server/src/account"
 	"github.com/stock-simulator-server/src/messages"
 	"github.com/stock-simulator-server/src/order"
+	"github.com/stock-simulator-server/src/trade"
 	"github.com/stock-simulator-server/src/utils"
 )
 
@@ -28,13 +28,13 @@ func RunApp() {
 		duration time.Duration
 	}
 	stockConfigs := append(make([]stockConfig, 0),
-		stockConfig{"AAPL","Apple Inc.", 10, time.Minute},
-		stockConfig{"ABBV","AbbVie Inc.", 10, time.Minute},
-		stockConfig{"ABT","Abbott Laboratories", 10, time.Minute},
-		stockConfig{"ACN","Accenture plc", 10, time.Minute},
-		stockConfig{"AGN","Allergan plc", 10, time.Minute},
-		stockConfig{"AIG","American International Group Inc.", 10, time.Minute},
-		stockConfig{"ALL","Allstate Corp.", 10, time.Minute},
+		stockConfig{"AAPL", "Apple Inc.", 10, time.Minute},
+		stockConfig{"ABBV", "AbbVie Inc.", 10, time.Minute},
+		stockConfig{"ABT", "Abbott Laboratories", 10, time.Minute},
+		stockConfig{"ACN", "Accenture plc", 10, time.Minute},
+		stockConfig{"AGN", "Allergan plc", 10, time.Minute},
+		stockConfig{"AIG", "American International Group Inc.", 10, time.Minute},
+		stockConfig{"ALL", "Allstate Corp.", 10, time.Minute},
 		//stockConfig{"AMGN","Amgen Inc.", 10, time.Minute},
 		//stockConfig{"AMZN","Amazon.com", 10, time.Minute},
 		//stockConfig{"AXP","American Express Inc.", 10, time.Minute},
@@ -133,14 +133,13 @@ func RunApp() {
 	)
 	valuable.StartStockStimulation()
 
-	//Make an exchange
-	exchanger, _ := exchange.BuildExchange("US")
-	exchanger.StartExchange()
+	//Make an exchange //exchanger, _ := exchange.BuildExchange("US")
+	//#exchanger.StartExchange()
 
 	//Register stocks with Exchange
 	for _, ele := range stockConfigs {
-		stock, _ := valuable.NewStock(ele.id, ele.name, ele.price, ele.duration)
-		exchanger.RegisterValuable(stock, 100)
+		valuable.NewStock(ele.id, ele.name, ele.price, ele.duration)
+		//exchanger.RegisterValuable(stock, 100)
 	}
 	fmt.Println("done adding stocks")
 	go func() {
@@ -155,8 +154,7 @@ func RunApp() {
 		for i := 0; i < numStocks; i++ {
 			id := utils.PseudoUuid()
 			stockIdList[i] = id
-			stock, _ := valuable.NewStock(id, id, 1, time.Second*10)
-			exchanger.RegisterValuable(stock, 1000)
+			valuable.NewStock(id, id, 1, time.Second*10)
 		}
 
 		for i := 0; i < numPortfolios; i++ {
@@ -170,7 +168,7 @@ func RunApp() {
 				go func() {
 					time.Sleep(time.Millisecond * time.Duration(int(utils.RandRange(500, 1000000))))
 					po := order.BuildPurchaseOrder(stockIdList[rand.Intn(len(stockIdList))], "US", portfolioIdList[rand.Intn(len(portfolioIdList))], 1)
-					exchange.InitiateTrade(po)
+					trade.Trade(po)
 				}()
 			}
 		}
@@ -196,9 +194,9 @@ func RunApp() {
 			msg := messages.BaseMessage{
 				Action: messages.TradeAction,
 				Msg: &messages.TradeMessage{
-					StockTicker: "CHUNT",
-					ExchangeID:  "US",
-					Amount:      10,
+					StockId:    "CHUNT",
+					ExchangeID: "US",
+					Amount:     10,
 				},
 			}
 			str, _ := json.Marshal(msg)
@@ -210,13 +208,13 @@ func RunApp() {
 	}()
 
 	po2 := order.BuildPurchaseOrder("KING", "US", "1", 5)
-	exchange.InitiateTrade(po2)
+	trade.Trade(po2)
 	time.Sleep(10 * time.Second)
 	po3 := order.BuildPurchaseOrder("CBIO", "US", "1", 1)
-	exchange.InitiateTrade(po3)
+	trade.Trade(po3)
 	time.Sleep(10 * time.Second)
 	po4 := order.BuildPurchaseOrder("CBIO", "US", "2", 1)
-	exchange.InitiateTrade(po4)
+	trade.Trade(po4)
 	time.Sleep(10 * time.Second)
 
 }

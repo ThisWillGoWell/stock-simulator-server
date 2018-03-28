@@ -1,36 +1,36 @@
 package database
 
 import (
-	"github.com/stock-simulator-server/src/portfolio"
+	"github.com/stock-simulator-server/src/ledger"
 	"log"
 )
 
-
-var(
-	ledger = `portfolio`
-	portfolioTableCreateStatement = `CREATE TABLE IF NOT EXISTS ` + portfolioTableName +
+var (
+	ledgerTableName            = `ledger`
+	ledgerTableCreateStatement = `CREATE TABLE IF NOT EXISTS ` + ledgerTableName +
 		`( ` +
 		`id serial,` +
 		`uuid text NOT NULL,` +
-		`name text NOT NULL,`+
-		`wallet numeric(16, 4) NOT NULL,` +
+		`portfolio_id text NOT NULL,` +
+		`stock_id numeric(16, 4) NOT NULL,` +
+		`amount numeric(16, 4) NOT NULL,` +
 		`PRIMARY KEY(uuid)` +
 		`);`
 
-	portfolioTableUpdateInsert = `INSERT into ` + portfolioTableName + `(uuid, name, wallet, net_worth) values($1, $2, $3, $4) `+
-		`ON CONFLICT (uuid) DO UPDATE SET wallet=EXCLUDED.wallet, net_worth=EXCLUDED.net_worth`
+	ledgerTableUpdateInsert = `INSERT into ` + ledgerTableName + `(uuid, portfolio_id, stock_id, amount) values($1, $2, $3, $4) ` +
+		`ON CONFLICT (uuid) DO UPDATE SET wallet=EXCLUDED.amount, net_worth=EXCLUDED.amount`
 
-	portfolioTableQueryStatement = "SELECT * FROM " + portfolioTableName + `;`
+	ledgerTableQueryStatement = "SELECT * FROM " + ledgerTableName + `;`
 	//getCurrentPrice()
 )
 
-func initPortfolio(){
+func initLedger() {
 	tx, err := db.Begin()
-	if err != nil{
+	if err != nil {
 		db.Close()
-		panic("could not begin stocks init: " + err.Error())
+		panic("could not begin ledger init: " + err.Error())
 	}
-	_,err = tx.Exec(portfolioTableCreateStatement)
+	_, err = tx.Exec(ledgerTableCreateStatement)
 	if err != nil {
 		tx.Rollback()
 		panic("error occurred while creating metrics table " + err.Error())
@@ -38,20 +38,19 @@ func initPortfolio(){
 	tx.Commit()
 }
 
-func runPortfolioUpdate(){
-	portfolioUpdateChannel := portfolio.PortfoliosUpdateChannel.GetBufferedOutput(100)
-	go func(){
-		for portfolioUpdated := range portfolioUpdateChannel{
-			port := portfolioUpdated.(*portfolio.Portfolio)
-			updatePortfolio(port)
+func runLedgerUpdate() {
+	ledgerUpdateChannel := ledger.EntriesUpdate.GetBufferedOutput(10)
+	go func() {
+		for portfolioUpdated := range ledgerUpdateChannel {
+			entry := portfolioUpdated.(*ledger.Entry)
+			updateLedger(entry)
 		}
-	}();
-
+	}()
 
 }
 
-func updatePortfolio(port *portfolio.Portfolio) {
-	dbLock.Acquire("update-stock")
+func updateLedger(entry *ledger.Entry) {
+	dbLock.Acquire("update-ledger")
 	defer dbLock.Release()
 	tx, err := db.Begin()
 
@@ -59,7 +58,7 @@ func updatePortfolio(port *portfolio.Portfolio) {
 		db.Close()
 		panic("could not begin stocks init")
 	}
-	_, err = tx.Exec(portfolioTableUpdateInsert, port.UUID, port.Name, port.Wallet, port.NetWorth)
+	_, err = tx.Exec(ledgerTableUpdateInsert, entry.Uuid, entry.PortfolioId, entry.StockId, entry.Amount)
 	if err != nil {
 		tx.Rollback()
 		panic("error occurred while insert stock in table " + err.Error())
@@ -67,24 +66,22 @@ func updatePortfolio(port *portfolio.Portfolio) {
 	tx.Commit()
 }
 
-func populatePortfolios(){
-	var uuid, name string
-	var wallet float64
+func populateLedger() {
+	var uuid, portfolioId, stockId string
+	var amount float64
 
 	rows, err := db.Query(portfolioTableQueryStatement)
-	if err != nil{
+	if err != nil {
 		log.Fatal("error quiering databse")
 		panic("could not populate portfolios: " + err.Error())
 	}
 	defer rows.Close()
 	for rows.Next() {
-		uuid, name string
-
-		err := rows.Scan(&loadedPortfolio.UUID, &loadedPortfolio.Name, &loadedPortfolio.NetWorth)
+		err := rows.Scan(&uuid, &portfolioId, &stockId, amount)
 		if err != nil {
 			log.Fatal(err)
 		}
-		portfolio.MakePortfolio()
+		ledger.MakeLedgerEntry(uuid, portfolioId, stockId, amount)
 	}
 	err = rows.Err()
 	if err != nil {
