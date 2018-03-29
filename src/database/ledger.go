@@ -12,13 +12,13 @@ var (
 		`id serial,` +
 		`uuid text NOT NULL,` +
 		`portfolio_id text NOT NULL,` +
-		`stock_id numeric(16, 4) NOT NULL,` +
+		`stock_id text NOT NULL,` +
 		`amount numeric(16, 4) NOT NULL,` +
 		`PRIMARY KEY(uuid)` +
 		`);`
 
 	ledgerTableUpdateInsert = `INSERT into ` + ledgerTableName + `(uuid, portfolio_id, stock_id, amount) values($1, $2, $3, $4) ` +
-		`ON CONFLICT (uuid) DO UPDATE SET wallet=EXCLUDED.amount, net_worth=EXCLUDED.amount`
+		`ON CONFLICT (uuid) DO UPDATE SET amount=EXCLUDED.amount`
 
 	ledgerTableQueryStatement = "SELECT * FROM " + ledgerTableName + `;`
 	//getCurrentPrice()

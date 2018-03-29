@@ -28,6 +28,8 @@ func RunTrader() {
 // Don't need to a lock around this since the portfolio holds it for that trade
 func trade(o *order.PurchaseOrder) {
 	//get the stock if it exists
+	//valuable.ValuablesLock.EnableDebug()
+	//ledger.EntriesLock.EnableDebug()
 	valuable.ValuablesLock.Acquire("trade")
 	defer valuable.ValuablesLock.Release()
 
@@ -53,14 +55,14 @@ func trade(o *order.PurchaseOrder) {
 	defer port.Lock.Release()
 	ledgerEntry, ok := ledger.EntriesStockPortfolio[o.ValuableID][o.PortfolioID]
 	if !ok {
-		ledgerEntry = ledger.NewLedgerEntry(o.PortfolioID, o.ValuableID, 0)
-		port.UpdateChannel.RegisterInput(ledgerEntry.UpdateChannel.GetBufferedOutput(10))
+		ledgerEntry = ledger.NewLedgerEntry(o.PortfolioID, o.ValuableID, true)
+		port.UpdateInput.RegisterInput(ledgerEntry.UpdateChannel.GetBufferedOutput(10))
 	}
 	// remove the ledger at the end if the amount is 0
 	defer func() {
 		if ledgerEntry.Amount == 0 {
 			ledger.RemoveLedgerEntry(ledgerEntry.Uuid)
-			duplicator.UnlinkDouplicator(port.UpdateChannel, ledgerEntry.UpdateChannel)
+			duplicator.UnlinkDouplicator(port.UpdateInput, ledgerEntry.UpdateChannel)
 		}
 	}()
 

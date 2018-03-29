@@ -65,11 +65,7 @@ func NewStock(tickerID, name string, startPrice float64, runInterval time.Durati
 	// Acquire the valuableMapLock so no one can add a new entry till we are done
 	ValuablesLock.Acquire("new-stock")
 	defer ValuablesLock.Release()
-	for _, s := range Stocks {
-		if s.TickerId == tickerID {
-			return nil, errors.New("tickerID is already taken by another valuable")
-		}
-	}
+
 	uuidString := utils.PseudoUuid()
 	for {
 		if _, ok := Stocks[uuidString]; !ok {
@@ -77,9 +73,18 @@ func NewStock(tickerID, name string, startPrice float64, runInterval time.Durati
 		}
 		uuidString = utils.PseudoUuid()
 	}
+	return MakeStock(uuidString, tickerID, name, startPrice, 100, runInterval)
+}
 
+func MakeStock(uuid, tickerID, name string, startPrice, openShares float64, runInterval time.Duration) (*Stock, error) {
+	for _, s := range Stocks {
+		if s.TickerId == tickerID {
+			return nil, errors.New("tickerID is already taken by another valuable")
+		}
+	}
 	stock := &Stock{
-		Uuid:          uuidString,
+		OpenShares:    openShares,
+		Uuid:          uuid,
 		lock:          lock.NewLock(fmt.Sprintf("stock-%s", tickerID)),
 		Name:          name,
 		TickerId:      tickerID,
@@ -94,7 +99,7 @@ func NewStock(tickerID, name string, startPrice float64, runInterval time.Durati
 		Volatility:            5,
 	}
 	go stock.stockUpdateRoutine()
-	Stocks[tickerID] = stock
+	Stocks[uuid] = stock
 	ValuableUpdateChannel.RegisterInput(stock.UpdateChannel.GetOutput())
 	ValuableUpdateChannel.Offer(stock)
 	//NewStockChannel.Offer(stock)
@@ -193,7 +198,6 @@ func GetAllStocks() []*Stock {
 		i += 1
 	}
 	return v
-
 }
 
 /** ########################################

@@ -20,16 +20,18 @@ var EntriesUpdate = duplicator.MakeDuplicator("ledger-entries-update")
 
 type Entry struct {
 	Lock          *lock.Lock                    `json:"-"`
-	Uuid          string                        `uuid:"uuid"`
+	Uuid          string                        `json:"uuid"`
 	PortfolioId   string                        `json:"portfolio_id"`
-	StockId       string                        `json:"portfolio_id"`
+	StockId       string                        `json:"stock_id"`
 	Amount        float64                       `json:"amount" change:"-"`
 	UpdateChannel *duplicator.ChannelDuplicator `json:"-"`
 }
 
-func NewLedgerEntry(portfolioId, stockId string, amount float64) *Entry {
-	EntriesLock.Acquire("make ledger entry")
-	defer EntriesLock.Release()
+func NewLedgerEntry(portfolioId, stockId string, lockAquired bool) *Entry {
+	if !lockAquired {
+		EntriesLock.Acquire("make ledger entry")
+		defer EntriesLock.Release()
+	}
 	uuid := utils.PseudoUuid()
 	for {
 		if _, exists := Entries[uuid]; !exists {
@@ -51,7 +53,14 @@ func MakeLedgerEntry(uuid, portfolioId, stockId string, amount float64) *Entry {
 	}
 
 	Entries[uuid] = entry
+	if EntriesPortfolioStock[portfolioId] == nil {
+		EntriesPortfolioStock[portfolioId] = make(map[string]*Entry)
+	}
 	EntriesPortfolioStock[portfolioId][stockId] = entry
+
+	if EntriesStockPortfolio[stockId] == nil {
+		EntriesStockPortfolio[stockId] = make(map[string]*Entry)
+	}
 	EntriesStockPortfolio[stockId][portfolioId] = entry
 	EntriesUpdate.RegisterInput(entry.UpdateChannel.GetOutput())
 	EntriesUpdate.Offer(entry)

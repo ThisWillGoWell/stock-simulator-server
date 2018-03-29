@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	portfolioTableName            = `ledger`
+	portfolioTableName            = `portfolio`
 	portfolioTableCreateStatement = `CREATE TABLE IF NOT EXISTS ` + portfolioTableName +
 		`( ` +
 		`id serial,` +

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"encoding/json"
 	"github.com/stock-simulator-server/src/lock"
 	"reflect"
 )
@@ -87,7 +88,8 @@ func (ch *ChannelDuplicator) RegisterInput(inputChannel <-chan interface{}) {
 		}
 		for val := range inputChannel {
 			if ch.debug {
-				fmt.Println("adding to trasfer", ch.debugName, "value", val)
+				str, _ := json.Marshal(val)
+				fmt.Println("adding to trasfer=", ch.debugName, "value=", string(str))
 			}
 			ch.Offer(val)
 			if ch.debug {

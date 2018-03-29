@@ -27,8 +27,8 @@ type Portfolio struct {
 	//keeps track of how much $$$ they own, used for some slight optomization on calc networth
 	// stock_uuid -> ledgerObject
 
-	UpdateChannel   *duplicator.ChannelDuplicator `json:"-"`
-	valuableUpdates *duplicator.ChannelDuplicator `json:"-"`
+	UpdateChannel *duplicator.ChannelDuplicator `json:"-"`
+	UpdateInput   *duplicator.ChannelDuplicator `json:"-"`
 
 	Lock *lock.Lock `json:"-"`
 }
@@ -46,6 +46,7 @@ func NewPortfolio(userUUID, name string) (*Portfolio, error) {
 }
 
 func MakePortfolio(uuid, name string, wallet float64) (*Portfolio, error) {
+	//PortfoliosUpdateChannel.EnableDebug("port update")
 	PortfoliosLock.Acquire("new-portfolio")
 	defer PortfoliosLock.Release()
 	if _, exists := Portfolios[uuid]; exists {
@@ -53,12 +54,12 @@ func MakePortfolio(uuid, name string, wallet float64) (*Portfolio, error) {
 	}
 	port :=
 		&Portfolio{
-			Name:            name,
-			UUID:            uuid,
-			Wallet:          wallet,
-			UpdateChannel:   duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-update", uuid)),
-			Lock:            lock.NewLock(fmt.Sprintf("portfolio-%s", name)),
-			valuableUpdates: duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-valueable-update", uuid)),
+			Name:          name,
+			UUID:          uuid,
+			Wallet:        wallet,
+			UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-update", uuid)),
+			Lock:          lock.NewLock(fmt.Sprintf("portfolio-%s", name)),
+			UpdateInput:   duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-valueable-update", uuid)),
 		}
 	Portfolios[uuid] = port
 	PortfoliosUpdateChannel.RegisterInput(port.UpdateChannel.GetOutput())
@@ -69,7 +70,7 @@ func MakePortfolio(uuid, name string, wallet float64) (*Portfolio, error) {
 }
 
 func (port *Portfolio) valuableUpdate() {
-	updateChannel := port.valuableUpdates.GetOutput()
+	updateChannel := port.UpdateInput.GetOutput()
 
 	for range updateChannel {
 		port.Lock.Acquire("portfolio-update")
@@ -91,6 +92,7 @@ func GetPortfolio(userUUID string) (*Portfolio, error) {
 //update the current net worth. NOT THREAD SAFE
 func (port *Portfolio) calculateNetWorth() float64 {
 	ledger.EntriesLock.Acquire("calculate-worth")
+	defer ledger.EntriesLock.Release()
 	sum := 0.0
 	for valueStr, entry := range ledger.EntriesPortfolioStock[port.UUID] {
 		value := valuable.Stocks[valueStr]

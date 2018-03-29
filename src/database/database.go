@@ -23,6 +23,10 @@ func InitDatabase() {
 	initStocks()
 	initPortfolio()
 
+	//populateLedger()
+	populateStocks()
+	//populatePortfolios()
+
 	runLedgerUpdate()
 	runStockUpdate()
 	runPortfolioUpdate()

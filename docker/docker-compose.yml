@@ -9,13 +9,18 @@ services:
         - ${FILE_SERVE}:/opt/server/static/
     environment:
       FILE_SERVE: opt/server/static
-      #DB_USER: starket
-  #db:
-   #   image: postgres
-   #   restart: always
-    #  environment:
-     #   POSTGRES_PASSWORD: example
-      #  POSTGRES_USER: starket
-       # B_PATH: /opt/server/database/
-     # volumes:
-      #  - ${DB_FOLDER}:/opt/server/database/
+      DB_URI: host=db port=5432 user=starket password=password dbname=metrics sslmode=disable
+  #cache:
+  #  image: redis
+  #  container_name: redis_server
+  #  volumes:
+      - 
+  db:
+      image: postgres
+      restart: always
+      environment:
+        POSTGRES_PASSWORD: example
+        POSTGRES_USER: starket
+        B_PATH: /opt/server/database/
+      volumes:
+        - ${DB_FOLDER}:/opt/server/database/

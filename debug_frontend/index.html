@@ -46,7 +46,8 @@
         onEvent("Connected");
         //doSend('{"container_type": "register", "register_action": "register", "device_type": "test", "device_name":"' + window.prompt("device_name","test")  + '"}');
         doSend('{"action": "login", "msg": {"username": "Luke", "password":"pass"}}');
-        doSend('{"action": "trade", "msg": {"stock_ticker":"ACN", "exchange_id":"US", "amount":1}}')
+        doSend('{"action": "trade", "msg": {"stock_id":"ACN", "amount":1}}')
+
         //doSend('{"op":"subscribe","type":"alert", "system":"irRemote"}');
     }
 
@@ -101,14 +102,14 @@
             } else if (/null/.test(match)) {
                 cls = 'null';
             }
-            return '<span class="' + cls + '">' + match + '</span>';
+            return '<span class="' + cls + '">'  + match + '</span>';
         });
     }
 
     function onMessage(evt)
     {
         //writeToScreen(syntaxHighlight(evt.data));
-        var str = JSON.stringify(JSON.parse(evt.data), undefined, 1);
+        var str = JSON.stringify(JSON.parse(evt.data), undefined, 4);
         putScren(syntaxHighlight(str));
     }
 

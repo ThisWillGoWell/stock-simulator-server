@@ -3,18 +3,18 @@ package main
 import (
 	"flag"
 	"github.com/stock-simulator-server/src/change"
-	"github.com/stock-simulator-server/src/portfolio"
-	"github.com/stock-simulator-server/src/exchange"
-	"github.com/stock-simulator-server/src/valuable"
 	"github.com/stock-simulator-server/src/client"
-	"github.com/stock-simulator-server/src/app"
+	"github.com/stock-simulator-server/src/database"
+	"github.com/stock-simulator-server/src/ledger"
+	"github.com/stock-simulator-server/src/portfolio"
+	"github.com/stock-simulator-server/src/trade"
+	"github.com/stock-simulator-server/src/valuable"
 	"github.com/stock-simulator-server/src/web"
-	"os"
 	"log"
-	"runtime/pprof"
+	"os"
 	"runtime"
+	"runtime/pprof"
 )
-
 
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
 var memprofile = flag.String("memprofile", "", "write memory profile to `file`")
@@ -32,20 +32,23 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
+	//start DB
+	database.InitDatabase()
 	//Wiring of system
 	change.SubscribeUpdateInputs.RegisterInput(portfolio.PortfoliosUpdateChannel.GetBufferedOutput(10))
-	change.SubscribeUpdateInputs.RegisterInput(exchange.ExchangesUpdateChannel.GetBufferedOutput(10))
+	change.SubscribeUpdateInputs.RegisterInput(ledger.EntriesUpdate.GetBufferedOutput(100))
 	change.SubscribeUpdateInputs.RegisterInput(valuable.ValuableUpdateChannel.GetBufferedOutput(10))
-
 
 	//this takes the subscribe output and converts it to a message
 	client.BroadcastMessageBuilder()
 	change.StartDetectChanges()
-	go app.RunApp()
-	go web.StartHandlers()
-	select{
 
-	}
+	trade.RunTrader()
+	valuable.StartStockStimulation()
+
+	// go app.RunApp()
+	go web.StartHandlers()
+	select {}
 	if *memprofile != "" {
 		f, err := os.Create(*memprofile)
 		if err != nil {

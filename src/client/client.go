@@ -153,7 +153,7 @@ func (client *Client) processChatMessage(message messages.Message) {
 
 func (client *Client) processTradeMessage(message messages.Message) {
 	tradeMessage := message.(*messages.TradeMessage)
-	po := order.BuildPurchaseOrder(tradeMessage.StockId, tradeMessage.ExchangeID, client.user.Uuid, tradeMessage.Amount)
+	po := order.BuildPurchaseOrder(tradeMessage.StockId, client.user.Uuid, tradeMessage.Amount)
 	trade.Trade(po)
 	go func() {
 		response := <-po.ResponseChannel
