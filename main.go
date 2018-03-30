@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"github.com/stock-simulator-server/src/app"
 	"github.com/stock-simulator-server/src/change"
 	"github.com/stock-simulator-server/src/client"
 	"github.com/stock-simulator-server/src/database"
@@ -33,7 +34,7 @@ func main() {
 	}
 
 	//start DB
-	database.InitDatabase()
+	// database.InitDatabase()
 	//Wiring of system
 	change.SubscribeUpdateInputs.RegisterInput(portfolio.PortfoliosUpdateChannel.GetBufferedOutput(10))
 	change.SubscribeUpdateInputs.RegisterInput(ledger.EntriesUpdate.GetBufferedOutput(100))
@@ -46,7 +47,7 @@ func main() {
 	trade.RunTrader()
 	valuable.StartStockStimulation()
 
-	// go app.RunApp()
+	go app.RunApp()
 	go web.StartHandlers()
 	select {}
 	if *memprofile != "" {

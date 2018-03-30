@@ -24,7 +24,7 @@ func InitDatabase() {
 	initPortfolio()
 
 	//populateLedger()
-	populateStocks()
+	//populateStocks()
 	//populatePortfolios()
 
 	runLedgerUpdate()

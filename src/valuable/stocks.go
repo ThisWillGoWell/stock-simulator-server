@@ -123,7 +123,7 @@ func (stock *Stock) GetUpdateChannel() *duplicator.ChannelDuplicator {
 }
 
 func (stock *Stock) GetId() string {
-	return stock.TickerId
+	return stock.Uuid
 }
 
 func (stock *Stock) stockUpdateRoutine() {
