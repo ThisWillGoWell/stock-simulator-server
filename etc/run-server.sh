@@ -5,7 +5,7 @@ cd docker
 if [ "$HOSTNAME" = high-in-the-clouds ]; then
     export FILE_SERVE=/root/starket/stock-simulator-server/debug_frontend
 else
-    export FILE_SERVE=$(pwd cd docker)/debug_frontend
+    export FILE_SERVE=$(cd .. && pwd cd docker)/debug_frontend
 fi
 echo $FILE_SERVE
 docker-compose rm -f server
