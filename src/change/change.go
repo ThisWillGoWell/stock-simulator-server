@@ -1,10 +1,10 @@
 package change
 
 import (
-	"reflect"
-	"time"
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
+	"reflect"
+	"time"
 )
 
 /*
@@ -58,8 +58,9 @@ var (
 	//subscribeables is something that can be subscribed to
 	subscribeables        = make(map[string]*SubscribeUpdate)
 	subscribeablesLock    = lock.NewLock("subscribeables")
-	SubscribeUpdateInputs =duplicator.MakeDuplicator("subscribe-update-input")
+	SubscribeUpdateInputs = duplicator.MakeDuplicator("subscribe-update-input")
 	SubscribeUpdateOutput = duplicator.MakeDuplicator("subscribe-update-output")
+	NewSubscribeCreated   = duplicator.MakeDuplicator("subscribe-created")
 )
 
 func registerChangeDetect(o Identifiable) *SubscribeUpdate {
@@ -115,8 +116,8 @@ func getValue(o interface{}, name string) interface{} {
 func StartDetectChanges() {
 	//SubscribeUpdateInputs.EnableCopyMode()
 	SubscribeUpdateOutput.EnableCopyMode()
-	SubscribeUpdateInputs.EnableDebug()
-	SubscribeUpdateOutput.EnableDebug()
+	//SubscribeUpdateInputs.EnableDebug()
+	//SubscribeUpdateOutput.EnableDebug()
 	subscribeUpdateChannel := SubscribeUpdateInputs.GetBufferedOutput(100)
 	go func() {
 		for updateObj := range subscribeUpdateChannel {

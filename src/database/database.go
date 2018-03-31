@@ -8,20 +8,31 @@ import (
 )
 
 var db *sql.DB
+var ts *sql.DB
+
 var dbLock = lock.NewLock("db lock")
 
 func InitDatabase() {
-	conStr := os.Getenv("DB_URI")
+	dbConStr := os.Getenv("DB_URI")
 	// if the env is not set, default to use the local host default port
-	database, err := sql.Open("postgres", conStr)
+	database, err := sql.Open("postgres", dbConStr)
+	if err != nil {
+		panic("could not connect to database: " + err.Error())
+	}
+	db = database
+
+	conStr := os.Getenv("TS_URI")
+	timeseriers, err := sql.Open("postgres", conStr)
 	if err != nil {
 		panic("could not connect to database: " + err.Error())
 	}
 
-	db = database
+	ts = timeseriers
+
 	initLedger()
 	initStocks()
 	initPortfolio()
+	initStocksHistory()
 
 	//populateLedger()
 	//populateStocks()
@@ -30,5 +41,5 @@ func InitDatabase() {
 	runLedgerUpdate()
 	runStockUpdate()
 	runPortfolioUpdate()
-
+	runStockHistroyUpdate()
 }

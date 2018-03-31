@@ -3,6 +3,7 @@ package portfolio
 import (
 	"errors"
 	"fmt"
+	"github.com/stock-simulator-server/src/change"
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/ledger"
 	"github.com/stock-simulator-server/src/lock"
@@ -62,11 +63,12 @@ func MakePortfolio(uuid, name string, wallet float64) (*Portfolio, error) {
 			UpdateInput:   duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-valueable-update", uuid)),
 		}
 	Portfolios[uuid] = port
+
 	port.UpdateChannel.EnableCopyMode()
+	change.NewSubscribeCreated.Offer(port)
 	PortfoliosUpdateChannel.RegisterInput(port.UpdateChannel.GetOutput())
+
 	go port.valuableUpdate()
-	//NewPortfolioChannel.Offer(port)
-	PortfoliosUpdateChannel.Offer(port)
 	return port, nil
 }
 

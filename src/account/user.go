@@ -61,28 +61,19 @@ func NewUser(username, password string) (*User, error) {
 		return nil, errors.New("username already exists")
 	}
 	uuid := utils.PseudoUuid()
-	for {
-		// keep going util a unique uuid is found.. should really never have to retry
-		_, exists := userList[uuid]
-		if !exists {
-			uuidList[username] = uuid
-			portfolio.NewPortfolio(uuid, username)
-			userList[uuid] = &User{
-				UserName:    username,
-				DisplayName: username,
-				password:    password,
-				Uuid:        uuid,
-				Lock:        lock.NewLock("user"),
-				Active:      true,
-			}
-			change.SubscribeUpdateInputs.Offer(userList[uuid])
-			return userList[uuid], nil
-		}
-		uuid = utils.PseudoUuid()
-	}
-	panic("exited new user without making a new user")
 
-	return nil, nil
+	uuidList[username] = uuid
+	portfolio.NewPortfolio(uuid, username)
+	userList[uuid] = &User{
+		UserName:    username,
+		DisplayName: username,
+		password:    password,
+		Uuid:        uuid,
+		Lock:        lock.NewLock("user"),
+		Active:      true,
+	}
+	change.NewSubscribeCreated.Offer(userList[uuid])
+	return userList[uuid], nil
 }
 
 /**

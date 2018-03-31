@@ -2,6 +2,7 @@ package ledger
 
 import (
 	"fmt"
+	"github.com/stock-simulator-server/src/change"
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
 	"github.com/stock-simulator-server/src/utils"
@@ -33,12 +34,7 @@ func NewLedgerEntry(portfolioId, stockId string, lockAquired bool) *Entry {
 		defer EntriesLock.Release()
 	}
 	uuid := utils.PseudoUuid()
-	for {
-		if _, exists := Entries[uuid]; !exists {
-			break
-		}
-		uuid = utils.PseudoUuid()
-	}
+
 	return MakeLedgerEntry(uuid, portfolioId, stockId, 0)
 }
 
@@ -63,8 +59,9 @@ func MakeLedgerEntry(uuid, portfolioId, stockId string, amount float64) *Entry {
 	}
 	EntriesStockPortfolio[stockId][portfolioId] = entry
 	entry.UpdateChannel.EnableCopyMode()
+
+	change.NewSubscribeCreated.Offer(entry)
 	EntriesUpdate.RegisterInput(entry.UpdateChannel.GetOutput())
-	EntriesUpdate.Offer(entry)
 	return entry
 }
 

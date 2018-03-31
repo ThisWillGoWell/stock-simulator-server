@@ -67,12 +67,7 @@ func NewStock(tickerID, name string, startPrice float64, runInterval time.Durati
 	defer ValuablesLock.Release()
 
 	uuidString := utils.PseudoUuid()
-	for {
-		if _, ok := Stocks[uuidString]; !ok {
-			break
-		}
-		uuidString = utils.PseudoUuid()
-	}
+
 	return MakeStock(uuidString, tickerID, name, startPrice, 100, runInterval)
 }
 

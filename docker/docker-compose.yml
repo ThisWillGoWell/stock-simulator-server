@@ -1,6 +1,7 @@
 version: '2'
 services:
   server:
+    restart: always
     build: .
     container_name: starket_server
     ports:
@@ -9,13 +10,29 @@ services:
         - ${FILE_SERVE}:/opt/server/static/
     environment:
       FILE_SERVE: opt/server/static
-      DB_URI: host=db port=5432 user=starket password=password dbname=metrics sslmode=disable
+      DB_URI: host=db port=5432 user=starket password=password dbname=metrics_db sslmode=disable
+      DB_URI: host=db port=5431 user=starket password=password dbname=metrics_ts sslmode=disable
   db:
     image: postgres
     restart: always
+    ports:
+      - 5432:5432
     environment:
-      POSTGRES_PASSWORD: example
+      POSTGRES_DB: starket_db
+      POSTGRES_PASSWORD: wordpass
       POSTGRES_USER: starket
       B_PATH: /opt/server/database/
     volumes:
       - ${DB_FOLDER}:/opt/server/database/
+  ts:
+    restart: always
+    image: timescale/timescaledb:latest
+    ports:
+      - 5431:5432
+    environment:
+      POSTGRES_DB: starket_ts
+      POSTGRES_PASSWORD: wordpass
+      POSTGRES_USER: starket
+      B_PATH: /opt/server/database/
+    volumes:
+      - ${TS_FOLDER}:/opt/server/database/
