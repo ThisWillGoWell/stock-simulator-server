@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"github.com/stock-simulator-server/src/lock"
 	"reflect"
+	"github.com/stock-simulator-server/src/deepcopy"
 )
 
 type ChannelDuplicator struct {
@@ -37,8 +38,7 @@ func (ch *ChannelDuplicator) EnableCopyMode() {
 	ch.copy = true
 }
 
-func (ch *ChannelDuplicator) EnableDebug(name string) {
-	ch.debugName = name
+func (ch *ChannelDuplicator) EnableDebug() {
 	ch.debug = true
 }
 
@@ -109,15 +109,18 @@ func (ch *ChannelDuplicator) Offer(value interface{}) {
 		fmt.Println("offering to transfer", ch.debugName)
 	}
 	if ch.copy && reflect.TypeOf(value).Kind() == reflect.Ptr {
-		//get the object that value points to
-		indirect := reflect.Indirect(reflect.ValueOf(value))
-		//make a new pointer
-		newIndirect := reflect.New(indirect.Type())
-		//set the new pointer to the value of the original one
-		newIndirect.Elem().Set(reflect.ValueOf(value).Elem())
+		newVal := deepcopy.Copy(value)
 		//pass that pointer down the transfer line
-		ch.transfer <- newIndirect.Interface()
+		if ch.debug {
+			str, _ := json.Marshal(newVal)
+			fmt.Println("offering copy to trasfer=", ch.debugName, "value=", string(str))
+		}
+		ch.transfer <- newVal
 	} else {
+		if ch.debug {
+			str, _ := json.Marshal(value)
+			fmt.Println("offering to trasfer=", ch.debugName, "value=", string(str))
+		}
 		ch.transfer <- value
 	}
 }
@@ -134,7 +137,8 @@ func (ch *ChannelDuplicator) startDuplicator() {
 				select {
 				case channel <- nextValue:
 					if ch.debug {
-						fmt.Println("sent to an output of", ch.debugName, "index", i)
+						str, _ := json.Marshal(nextValue)
+						fmt.Println("sent to an output of", ch.debugName, "index", i, "vaule", string(str))
 					}
 					continue
 				default:

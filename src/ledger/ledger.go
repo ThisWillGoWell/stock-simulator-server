@@ -62,6 +62,7 @@ func MakeLedgerEntry(uuid, portfolioId, stockId string, amount float64) *Entry {
 		EntriesStockPortfolio[stockId] = make(map[string]*Entry)
 	}
 	EntriesStockPortfolio[stockId][portfolioId] = entry
+	entry.UpdateChannel.EnableCopyMode()
 	EntriesUpdate.RegisterInput(entry.UpdateChannel.GetOutput())
 	EntriesUpdate.Offer(entry)
 	return entry

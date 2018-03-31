@@ -100,6 +100,7 @@ func MakeStock(uuid, tickerID, name string, startPrice, openShares float64, runI
 	}
 	go stock.stockUpdateRoutine()
 	Stocks[uuid] = stock
+	stock.UpdateChannel.EnableCopyMode()
 	ValuableUpdateChannel.RegisterInput(stock.UpdateChannel.GetOutput())
 	ValuableUpdateChannel.Offer(stock)
 	//NewStockChannel.Offer(stock)

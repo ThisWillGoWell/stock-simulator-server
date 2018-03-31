@@ -113,8 +113,10 @@ func getValue(o interface{}, name string) interface{} {
 }
 
 func StartDetectChanges() {
-	SubscribeUpdateInputs.EnableCopyMode()
+	//SubscribeUpdateInputs.EnableCopyMode()
 	SubscribeUpdateOutput.EnableCopyMode()
+	SubscribeUpdateInputs.EnableDebug()
+	SubscribeUpdateOutput.EnableDebug()
 	subscribeUpdateChannel := SubscribeUpdateInputs.GetBufferedOutput(100)
 	go func() {
 		for updateObj := range subscribeUpdateChannel {

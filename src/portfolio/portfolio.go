@@ -62,6 +62,7 @@ func MakePortfolio(uuid, name string, wallet float64) (*Portfolio, error) {
 			UpdateInput:   duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-valueable-update", uuid)),
 		}
 	Portfolios[uuid] = port
+	port.UpdateChannel.EnableCopyMode()
 	PortfoliosUpdateChannel.RegisterInput(port.UpdateChannel.GetOutput())
 	go port.valuableUpdate()
 	//NewPortfolioChannel.Offer(port)

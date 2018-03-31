@@ -24,6 +24,7 @@ var clientsLock = lock.NewLock("clients-lock")
 var BroadcastMessages = duplicator.MakeDuplicator("client-broadcast-messages")
 
 func BroadcastMessageBuilder() {
+	BroadcastMessages.EnableDebug()
 	updates := change.SubscribeUpdateOutput.GetBufferedOutput(100)
 	go func() {
 		for update := range updates {
