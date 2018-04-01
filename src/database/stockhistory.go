@@ -14,7 +14,7 @@ var (
 		`current_price numeric(16, 4),` +
 		`open_shares int` +
 		`); `
-	stocksHistoryTSInit = `SELECT create_hypertable('` + stocksHistoryTableName + `', 'time');`
+	stocksHistoryTSInit = `CREATE EXTENSION timescaledb; SELECT create_hypertable('` + stocksHistoryTableName + `', 'time');`
 
 	stocksHistoryTableUpdateInsert = `INSERT INTO ` + stocksHistoryTableName + `(uuid, time, current_price, open_shares) values ($1, NOW(), $2, $3)`
 
@@ -30,8 +30,7 @@ func initStocksHistory() {
 	}
 	_, err = tx.Exec(stocksHistoryTableCreateStatement)
 	if err != nil {
-		tx.Rollback()
-		panic("error occurred while creating metrics table " + err.Error())
+
 	}
 	tx.Commit()
 	tx, err = ts.Begin()
@@ -43,7 +42,7 @@ func initStocksHistory() {
 	_, err = tx.Exec(stocksHistoryTableCreateStatement)
 }
 
-func runStockHistroyUpdate() {
+func runStockHistoryUpdate() {
 	stockUpdateChannel := valuable.ValuableUpdateChannel.GetBufferedOutput(100)
 	go func() {
 		for stockUpdated := range stockUpdateChannel {

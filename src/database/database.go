@@ -41,5 +41,5 @@ func InitDatabase() {
 	runLedgerUpdate()
 	runStockUpdate()
 	runPortfolioUpdate()
-	runStockHistroyUpdate()
+	runStockHistoryUpdate()
 }
