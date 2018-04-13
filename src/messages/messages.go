@@ -5,8 +5,6 @@ import (
 	"errors"
 )
 
-
-
 type Message interface {
 	message()
 }
@@ -16,9 +14,7 @@ type BaseMessage struct {
 	Msg    interface{} `json:"msg"`
 }
 
-
 type BatchMessage []BaseMessage
-
 
 func (baseMessage *BaseMessage) UnmarshalJSON(data []byte) error {
 	//start with a generic string -> interface map
@@ -53,6 +49,8 @@ func (baseMessage *BaseMessage) UnmarshalJSON(data []byte) error {
 		message = &UpdateMessage{}
 	case NewAccountAction:
 		message = &NewAccountMessage{}
+	case QueryAction:
+
 	}
 
 	str, _ := json.Marshal(obj["msg"])

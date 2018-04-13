@@ -8,15 +8,14 @@ var (
 	stocksHistoryTableName            = `stocks_history`
 	stocksHistoryTableCreateStatement = `CREATE TABLE IF NOT EXISTS ` + stocksHistoryTableName +
 		`( ` +
-		`id serial,` +
 		`time TIMESTAMPTZ NOT NULL,` +
 		`uuid text NOT NULL,` +
-		`current_price numeric(16, 4),` +
-		`open_shares int` +
-		`); `
-	stocksHistoryTSInit = `CREATE EXTENSION timescaledb; SELECT create_hypertable('` + stocksHistoryTableName + `', 'time');`
+		`current_price numeric(16, 4) NULL,` +
+		`open_shares int NULL` +
+		`);`
+	stocksHistoryTSInit = `CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE; SELECT create_hypertable('` + stocksHistoryTableName + `', 'time');`
 
-	stocksHistoryTableUpdateInsert = `INSERT INTO ` + stocksHistoryTableName + `(uuid, time, current_price, open_shares) values ($1, NOW(), $2, $3)`
+	stocksHistoryTableUpdateInsert = `INSERT INTO ` + stocksHistoryTableName + `(time, uuid, current_price, open_shares) values (NOW(),$1, $2, $3)`
 
 	stocksHistroyTableQueryStatement = "SELECT * FROM " + stocksHistoryTableName
 	//getCurrentPrice()
@@ -36,10 +35,9 @@ func initStocksHistory() {
 	tx, err = ts.Begin()
 	_, err = tx.Exec(stocksHistoryTSInit)
 	if err != nil {
-		tx.Rollback()
-		panic("error occurred while creating metrics table " + err.Error())
+
 	}
-	_, err = tx.Exec(stocksHistoryTableCreateStatement)
+	tx.Commit()
 }
 
 func runStockHistoryUpdate() {
