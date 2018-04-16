@@ -21,7 +21,7 @@ Represents a unique individual of the system
 */
 type User struct {
 	UserName      string     `json:"-"`
-	password      string     `json:"-"`
+	Password      string     `json:"-"`
 	DisplayName   string     `json:"display_name" change:"-"`
 	Uuid          string     `json:"-"`
 	Active        bool       `json:"active" change:"-"`
@@ -30,8 +30,8 @@ type User struct {
 }
 
 /**
-Return a user provided the username and password
-If the password is correct return user, else return err
+Return a user provided the username and Password
+If the Password is correct return user, else return err
 */
 func GetUser(username, password string) (*User, error) {
 	userListLock.Acquire("get-user")
@@ -41,8 +41,8 @@ func GetUser(username, password string) (*User, error) {
 		return nil, errors.New("user does not exist")
 	}
 	user := userList[userUuid]
-	if user.password != password {
-		return nil, errors.New("password is incorrect")
+	if user.Password != password {
+		return nil, errors.New("Password is incorrect")
 	}
 	user.Active = true
 	change.SubscribeUpdateInputs.Offer(user)
@@ -51,29 +51,34 @@ func GetUser(username, password string) (*User, error) {
 
 /**
 Build a new user
-set their password to that provided
+set their Password to that provided
 */
 func NewUser(username, password string) (*User, error) {
+	uuid := utils.PseudoUuid()
+	return MakeUser(uuid, username, username, password)
+}
+
+func MakeUser(uuid, username, displayName, password string) (*User, error) {
 	userListLock.Acquire("new-user")
 	defer userListLock.Release()
 	_, userNameExists := uuidList[username]
 	if userNameExists {
 		return nil, errors.New("username already exists")
 	}
-	uuid := utils.PseudoUuid()
-
 	uuidList[username] = uuid
 	portfolio.NewPortfolio(uuid, username)
 	userList[uuid] = &User{
 		UserName:    username,
-		DisplayName: username,
-		password:    password,
+		DisplayName: displayName,
+		Password:    password,
 		Uuid:        uuid,
 		Lock:        lock.NewLock("user"),
 		Active:      true,
 	}
 	change.NewSubscribeCreated.Offer(userList[uuid])
+	utils.RegisterUuid(uuid, userList[uuid])
 	return userList[uuid], nil
+
 }
 
 /**

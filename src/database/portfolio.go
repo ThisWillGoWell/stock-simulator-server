@@ -17,7 +17,7 @@ var (
 		`);`
 
 	portfolioTableUpdateInsert = `INSERT into ` + portfolioTableName + `(uuid, name, wallet) values($1, $2, $3) ` +
-		`ON CONFLICT (uuid) DO UPDATE SET wallet=EXCLUDED.wallet`
+		`ON CONFLICT (uuid) DO UPDATE SET wallet=EXCLUDED.wallet;`
 
 	portfolioTableQueryStatement = "SELECT * FROM " + portfolioTableName + `;`
 	//getCurrentPrice()

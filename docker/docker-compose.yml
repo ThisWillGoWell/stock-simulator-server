@@ -10,8 +10,8 @@ services:
         - ${FILE_SERVE}:/opt/server/static/
     environment:
       FILE_SERVE: opt/server/static
-      DB_URI: host=db port=5432 user=starket password=password dbname=metrics_db sslmode=disable
-      DB_URI: host=db port=5431 user=starket password=password dbname=metrics_ts sslmode=disable
+      DB_URI: host=db port=5432 user=starket password=wordpass dbname=starket_db sslmode=disable
+      TS_URI: host=db port=5431 user=starket password=wordpass dbname=starket_ts sslmode=disable
   db:
     image: postgres
     restart: always

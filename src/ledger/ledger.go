@@ -19,6 +19,13 @@ var EntriesPortfolioStock = make(map[string]map[string]*Entry)
 var EntriesLock = lock.NewLock("ledger-entries-lock")
 var EntriesUpdate = duplicator.MakeDuplicator("ledger-entries-update")
 
+/**
+Ledgers store who owns what stock
+They are all done though uuid strings since that's all that's required
+They are stored in two maps
+1) given a stock uuid, get all portfolios that own it
+2) given a portfolio uuid, get all stocks it owns
+*/
 type Entry struct {
 	Lock          *lock.Lock                    `json:"-"`
 	Uuid          string                        `json:"uuid"`
@@ -28,8 +35,12 @@ type Entry struct {
 	UpdateChannel *duplicator.ChannelDuplicator `json:"-"`
 }
 
-func NewLedgerEntry(portfolioId, stockId string, lockAquired bool) *Entry {
-	if !lockAquired {
+/**
+build a new ledger entry and generate a new uuid for it
+takes in the lock acquired since trade already owns the lock for the entries
+*/
+func NewLedgerEntry(portfolioId, stockId string, lockAcquired bool) *Entry {
+	if !lockAcquired {
 		EntriesLock.Acquire("make ledger entry")
 		defer EntriesLock.Release()
 	}
@@ -62,9 +73,13 @@ func MakeLedgerEntry(uuid, portfolioId, stockId string, amount float64) *Entry {
 
 	change.NewSubscribeCreated.Offer(entry)
 	EntriesUpdate.RegisterInput(entry.UpdateChannel.GetOutput())
+	utils.RegisterUuid(uuid, entry)
 	return entry
 }
 
+/**
+remove a ledger form both maps
+*/
 func RemoveLedgerEntry(uuid string) {
 	entry := Entries[uuid]
 
@@ -81,6 +96,9 @@ func RemoveLedgerEntry(uuid string) {
 	duplicator.UnlinkDouplicator(EntriesUpdate, entry.UpdateChannel)
 }
 
+/**
+get All ledgers so they can be sent on connection
+*/
 func GetAllLedgers() []*Entry {
 	EntriesLock.Acquire("get-all-ledgers")
 	defer EntriesLock.Release()

@@ -1,5 +1,8 @@
 package order
 
+/**
+Purchase order represents a single order
+*/
 type PurchaseOrder struct {
 	ValuableID      string                  `json:"stock_id"`
 	PortfolioID     string                  `json:"portfolio"`
@@ -14,7 +17,7 @@ type PurchasedResponse struct {
 	Err     string         `json:"err"`
 }
 
-// note this does not validate if the stock exists or not, thats done in the trade() funciton
+// note this does not validate if the stock exists or not, that's done in the trade() function
 func BuildPurchaseOrder(valuableID, portfolioUUID string, amount float64) *PurchaseOrder {
 	return &PurchaseOrder{
 		//ExchangeID:      exchangeID,

@@ -99,6 +99,8 @@ func MakeStock(uuid, tickerID, name string, startPrice, openShares float64, runI
 	ValuableUpdateChannel.RegisterInput(stock.UpdateChannel.GetOutput())
 	ValuableUpdateChannel.Offer(stock)
 	//NewStockChannel.Offer(stock)
+	utils.RegisterUuid(uuid, stock)
+
 	return stock, nil
 }
 
@@ -173,8 +175,14 @@ func (randPrice *RandomPrice) changeValues() {
 
 	// get what the upper and lower bounds in % of the current price
 	window := utils.MapNum(randPrice.Volatility, volatilityMin, volatilityMax, 0, 0.3)
-	// select a random number on +- that %
+	// select a random number on +- that
 	newTarget := utils.MapNum(rand.Float64(), 0, 1, randPrice.TargetPrice*(1-window), randPrice.TargetPrice*(1+window))
+	// this is to prevent all the stocks to becoming 1.231234e-14
+	if newTarget < 3 {
+		if rand.Float64() < randPrice.PercentToChangeTarget {
+			newTarget = 10
+		}
+	}
 	//need to deiced if the floor should happen before or after
 	if newTarget < 0 {
 		newTarget = 0

@@ -1,5 +1,7 @@
 package messages
 
+import "time"
+
 const QueryAction = "query"
 
 func (baseMessage *BaseMessage) IsQuery() bool {
@@ -7,16 +9,9 @@ func (baseMessage *BaseMessage) IsQuery() bool {
 }
 
 type QueryMessage struct {
-	QueryUUID string `query_id`
-	Type      string `json:"historical"`
+	QueryUUID string    `json:"uuid"`
+	StartTime time.Time `json:"start"`
+	EndTime   time.Time `json:"end"`
 }
 
 func (*QueryMessage) message() { return }
-
-func NewQueryResponse([]) *QueryMessage {
-	return &QueryMessage{
-		Type:      "query_response",
-		Alert:     err,
-		Timestamp: 0,
-	}
-}

@@ -5,11 +5,18 @@ import (
 	"time"
 
 	"encoding/json"
+	"github.com/stock-simulator-server/src/deepcopy"
 	"github.com/stock-simulator-server/src/lock"
 	"reflect"
-	"github.com/stock-simulator-server/src/deepcopy"
 )
 
+/**
+Channel Duplicators are a core part of the design and are used to link together the pipeline of the program
+They basically just a fan-in -> fan-out channel
+inputs get fanned onto the transfer channel, then out to each listening.
+This makes linking different parts of the program together super easy since you can tie outputs to inputs.
+
+*/
 type ChannelDuplicator struct {
 	transfer  chan interface{}
 	outputs   []chan interface{}
@@ -20,6 +27,12 @@ type ChannelDuplicator struct {
 	lock      *lock.Lock
 }
 
+/**
+name is only used for debugging, that's honestly the worst part of this design choice
+Tracing out a rouge message is impossible without this (cant really break on a line of code being called
+multiple times for each event)
+
+*/
 func MakeDuplicator(name string) *ChannelDuplicator {
 	chDoup := &ChannelDuplicator{
 		lock:      lock.NewLock("channel-duplicator"),
@@ -34,10 +47,17 @@ func MakeDuplicator(name string) *ChannelDuplicator {
 
 	return chDoup
 }
+
+/**
+Copy mode is
+*/
 func (ch *ChannelDuplicator) EnableCopyMode() {
 	ch.copy = true
 }
 
+/**
+a lot of printing but uuids make is not to bad to trace though whats happening
+*/
 func (ch *ChannelDuplicator) EnableDebug() {
 	ch.debug = true
 }
@@ -46,6 +66,9 @@ func (ch *ChannelDuplicator) SetName(name string) {
 	ch.debugName = name
 }
 
+/**
+Return a new output channel that is being fan-out from the transfer
+*/
 func (ch *ChannelDuplicator) GetOutput() chan interface{} {
 	ch.lock.Acquire("getOutput")
 	defer ch.lock.Release()
@@ -58,6 +81,12 @@ func (ch *ChannelDuplicator) GetOutput() chan interface{} {
 	return newOutput
 }
 
+/**
+Return a new buffered output
+essentially used where ever you can have different levels of processing at each end
+(a socket would need a bufferd since you can add messages quicker than you can send them)
+
+*/
 func (ch *ChannelDuplicator) GetBufferedOutput(buffSize int64) chan interface{} {
 	// make a channel with a 10 buffer size
 	if ch.debug {
@@ -68,7 +97,12 @@ func (ch *ChannelDuplicator) GetBufferedOutput(buffSize int64) chan interface{} 
 	return newOutput
 }
 
+/**
+remove a channel
+*/
 func (ch *ChannelDuplicator) UnregisterOutput(remove chan interface{}) {
+	ch.lock.Acquire("remove-output")
+	defer ch.lock.Release()
 	var removeIndex int
 	for i, channel := range ch.outputs {
 		if channel == remove {
@@ -80,6 +114,9 @@ func (ch *ChannelDuplicator) UnregisterOutput(remove chan interface{}) {
 	ch.outputs = ch.outputs[:len(ch.outputs)-1]
 }
 
+/**
+Register a input to be fanned onto the transfer
+*/
 func (ch *ChannelDuplicator) RegisterInput(inputChannel <-chan interface{}) {
 	ch.inputs = append(ch.inputs, inputChannel)
 	go func() {
@@ -104,6 +141,9 @@ func (ch *ChannelDuplicator) RegisterInput(inputChannel <-chan interface{}) {
 
 }
 
+/**
+offer a single value directly onto the transfer
+*/
 func (ch *ChannelDuplicator) Offer(value interface{}) {
 	if ch.debug {
 		fmt.Println("offering to transfer", ch.debugName)
@@ -125,6 +165,9 @@ func (ch *ChannelDuplicator) Offer(value interface{}) {
 	}
 }
 
+/**
+Start running the fan out from transfer to all outputs
+*/
 func (ch *ChannelDuplicator) startDuplicator() {
 	go func() {
 		for nextValue := range ch.transfer {
@@ -152,6 +195,9 @@ func (ch *ChannelDuplicator) startDuplicator() {
 
 }
 
+/**
+Unlink two duplicators from each other
+*/
 func UnlinkDouplicator(input, output *ChannelDuplicator) {
 	for _, inputCh := range input.inputs {
 		for _, outputCh := range output.outputs {
@@ -164,6 +210,18 @@ func UnlinkDouplicator(input, output *ChannelDuplicator) {
 	}
 }
 
+/**
+test function
+will print:
+
+received: hello
+received: hello
+received: hello
+received: world
+received: world
+received: world
+
+*/
 func main() {
 	input1 := make(chan interface{})
 	input2 := make(chan interface{})

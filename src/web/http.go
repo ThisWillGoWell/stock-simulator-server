@@ -1,14 +1,14 @@
 package web
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"github.com/stock-simulator-server/src/client"
+	"github.com/stock-simulator-server/src/messages"
 	"log"
 	"net/http"
 	"os"
-	"github.com/stock-simulator-server/src/messages"
-	"encoding/json"
 )
 
 var clients = make(map[*websocket.Conn]http.Client) // connected clients
@@ -52,9 +52,9 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 			ws.WriteMessage(websocket.TextMessage, []byte(err.Error()))
 			continue
 		}
-		loginErr := client.InitialRecieve(string(msg), socketTX, socketRX)
+		loginErr := client.InitialReceive(string(msg), socketTX, socketRX)
 		if err != loginErr {
-			val, _ :=json.Marshal(messages.FailedLogin(loginErr))
+			val, _ := json.Marshal(messages.FailedLogin(loginErr))
 			ws.WriteMessage(websocket.TextMessage, val)
 			return
 		} else {

@@ -1,14 +1,17 @@
 package valuable
 
 import (
-	"github.com/stock-simulator-server/src/lock"
 	"github.com/stock-simulator-server/src/duplicator"
+	"github.com/stock-simulator-server/src/lock"
 )
 
 var ValuablesLock = lock.NewLock("valuables")
-var ValuableUpdateChannel = duplicator.MakeDuplicator("valueable-update")
-var NewValuableChannel = duplicator.MakeDuplicator("new-vauleuable")
+var ValuableUpdateChannel = duplicator.MakeDuplicator("valuable-update")
+var NewValuableChannel = duplicator.MakeDuplicator("new-valuable")
 
+/**
+Valuable was an old thing that i used to abstract stocks one more level but just became cumbersome
+*/
 type Valuable interface {
 	GetId() string
 	GetName() string

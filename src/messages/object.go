@@ -6,7 +6,7 @@ const ObjectAction = "object"
 
 type ObjectMessage struct {
 	Type string `json:"type"`
-	Id string `json:"id"`
+	Id string `json:"uuid"`
 	Value change.Identifiable `json:"object"`
 }
 func (*ObjectMessage) message() { return }

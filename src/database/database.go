@@ -33,7 +33,7 @@ func InitDatabase() {
 	initStocks()
 	initPortfolio()
 	initStocksHistory()
-
+	initPortfolioHistory()
 	//populateLedger()
 	//populateStocks()
 	//populatePortfolios()
@@ -42,4 +42,5 @@ func InitDatabase() {
 	runStockUpdate()
 	runPortfolioUpdate()
 	runStockHistoryUpdate()
+	runPortfolioHistoryUpdate()
 }

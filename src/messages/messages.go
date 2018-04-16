@@ -16,6 +16,9 @@ type BaseMessage struct {
 
 type BatchMessage []BaseMessage
 
+/**
+custom unmarshal for json data since the action depends on what the lower level msg is
+*/
 func (baseMessage *BaseMessage) UnmarshalJSON(data []byte) error {
 	//start with a generic string -> interface map
 	var obj map[string]interface{}
@@ -50,6 +53,7 @@ func (baseMessage *BaseMessage) UnmarshalJSON(data []byte) error {
 	case NewAccountAction:
 		message = &NewAccountMessage{}
 	case QueryAction:
+		message = &QueryMessage{}
 
 	}
 

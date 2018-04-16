@@ -55,7 +55,7 @@ const (
 )
 
 var (
-	//subscribeables is something that can be subscribed to
+	// subscribeables is something that can be subscribed to
 	subscribeables        = make(map[string]*SubscribeUpdate)
 	subscribeablesLock    = lock.NewLock("subscribeables")
 	SubscribeUpdateInputs = duplicator.MakeDuplicator("subscribe-update-input")
@@ -169,7 +169,7 @@ type ChangeField struct {
 
 type ChangeNotify struct {
 	Type    string         `json:"type"`
-	Id      string         `json:"id"`
+	Id      string         `json:"uuid"`
 	Changes []*ChangeField `json:"changes"`
 }
 

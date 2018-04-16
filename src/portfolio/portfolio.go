@@ -19,6 +19,9 @@ var PortfoliosLock = lock.NewLock("portfolios")
 var PortfoliosUpdateChannel = duplicator.MakeDuplicator("portfolio-update")
 var NewPortfolioChannel = duplicator.MakeDuplicator("new-portfolio")
 
+/**
+Portfolios are the $$$ part of a user
+*/
 type Portfolio struct {
 	Name     string  `json:"name"`
 	UUID     string  `json:"uuid"`
@@ -72,6 +75,10 @@ func MakePortfolio(uuid, name string, wallet float64) (*Portfolio, error) {
 	return port, nil
 }
 
+/**
+async code that gets called whenever a stock or a ledger that the portfolio owns changes
+This then triggers a recalc of net worth and offers its self up as a update
+*/
 func (port *Portfolio) valuableUpdate() {
 	updateChannel := port.UpdateInput.GetOutput()
 

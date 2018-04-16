@@ -15,9 +15,9 @@ var (
 		`);`
 	stocksHistoryTSInit = `CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE; SELECT create_hypertable('` + stocksHistoryTableName + `', 'time');`
 
-	stocksHistoryTableUpdateInsert = `INSERT INTO ` + stocksHistoryTableName + `(time, uuid, current_price, open_shares) values (NOW(),$1, $2, $3)`
+	stocksHistoryTableUpdateInsert = `INSERT INTO ` + stocksHistoryTableName + `(time, uuid, current_price, open_shares) values (NOW(),$1, $2, $3);`
 
-	stocksHistroyTableQueryStatement = "SELECT * FROM " + stocksHistoryTableName
+	stocksHistroyTableQueryStatement = "SELECT * FROM " + stocksHistoryTableName + " WHERE uuid=$1"
 	//getCurrentPrice()
 )
 
@@ -41,7 +41,16 @@ func initStocksHistory() {
 }
 
 func runStockHistoryUpdate() {
+	newStockChannel := valuable.NewStockChannel.GetBufferedOutput(10)
 	stockUpdateChannel := valuable.ValuableUpdateChannel.GetBufferedOutput(100)
+
+	go func() {
+		for stockNew := range newStockChannel {
+			stock := stockNew.(*valuable.Stock)
+			updateStockHistory(stock)
+		}
+	}()
+
 	go func() {
 		for stockUpdated := range stockUpdateChannel {
 			stock := stockUpdated.(*valuable.Stock)
