@@ -1,4 +1,5 @@
 package messages
+
 const AlertAction = "alert"
 
 func (baseMessage *BaseMessage) IsAlert() bool {
@@ -6,18 +7,17 @@ func (baseMessage *BaseMessage) IsAlert() bool {
 }
 
 type AlertMessage struct {
-	Alert   interface{} `json:"alert"`
-	Type    string `json:"type"`
-	Timestamp int64  `json:"timestamp"`
+	Alert     interface{} `json:"alert"`
+	Type      string      `json:"type"`
+	Timestamp int64       `json:"timestamp"`
 }
-func (*AlertMessage) message() { return }
 
+func (*AlertMessage) message() { return }
 
 func NewErrorMessage(err string) *AlertMessage {
 	return &AlertMessage{
-		Type: "error",
-		Alert: err,
+		Type:      "error",
+		Alert:     err,
 		Timestamp: 0,
 	}
 }
-

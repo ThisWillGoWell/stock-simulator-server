@@ -4,8 +4,8 @@ const UpdateAction = "update"
 
 type UpdateMessage struct {
 }
-func (*UpdateMessage) message() { return }
 
+func (*UpdateMessage) message() { return }
 
 func BuildUpdateMessage(obj interface{}) *BaseMessage {
 	return &BaseMessage{
