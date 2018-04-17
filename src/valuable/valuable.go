@@ -6,8 +6,8 @@ import (
 )
 
 var ValuablesLock = lock.NewLock("valuables")
-var ValuableUpdateChannel = duplicator.MakeDuplicator("valuable-update")
-var NewValuableChannel = duplicator.MakeDuplicator("new-valuable")
+var UpdateChannel = duplicator.MakeDuplicator("valuable-update")
+var NewObjectChannel = duplicator.MakeDuplicator("new-valuable")
 
 /**
 Valuable was an old thing that i used to abstract stocks one more level but just became cumbersome

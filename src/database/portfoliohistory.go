@@ -40,26 +40,7 @@ func initPortfolioHistory() {
 	tx.Commit()
 }
 
-func runPortfolioHistoryUpdate() {
-	portfolioUpdateChannel := portfolio.PortfoliosUpdateChannel.GetBufferedOutput(100)
-	portfolioNewChannel := portfolio.NewPortfolioChannel.GetBufferedOutput(10)
-
-	go func() {
-		for portfolioNew := range portfolioNewChannel {
-			port := portfolioNew.(*portfolio.Portfolio)
-			updatePortfolioHistory(port)
-		}
-	}()
-
-	go func() {
-		for portfolioUpdate := range portfolioUpdateChannel {
-			port := portfolioUpdate.(*portfolio.Portfolio)
-			updatePortfolioHistory(port)
-		}
-	}()
-}
-
-func updatePortfolioHistory(port *portfolio.Portfolio) {
+func writePortfolioHistory(port *portfolio.Portfolio) {
 	tx, err := ts.Begin()
 	if err != nil {
 		ts.Close()

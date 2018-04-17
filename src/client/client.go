@@ -25,19 +25,22 @@ var clientsLock = lock.NewLock("clients-lock")
 
 var BroadcastMessages = duplicator.MakeDuplicator("client-broadcast-messages")
 
+var Updates = duplicator.MakeDuplicator("Client Updates")
+var NewObjects = duplicator.MakeDuplicator("Client New Objects")
+
 /*
 This is responsive for accepting message duplicators and converting those objects
 into messages to then be fanned out to all clients
 */
 func BroadcastMessageBuilder() {
 	//BroadcastMessages.EnableDebug()
-	updates := change.SubscribeUpdateOutput.GetBufferedOutput(100)
+	updates := Updates.GetBufferedOutput(100)
 	go func() {
 		for update := range updates {
 			BroadcastMessages.Offer(messages.BuildUpdateMessage(update))
 		}
 	}()
-	newObjects := change.NewSubscribeCreated.GetBufferedOutput(100)
+	newObjects := NewObjects.GetBufferedOutput(100)
 	go func() {
 		for newObject := range newObjects {
 			BroadcastMessages.Offer(messages.NewObjectMessage(newObject.(change.Identifiable)))
@@ -190,7 +193,7 @@ func (client *Client) processChatMessage(message messages.Message) {
 
 func (client *Client) processTradeMessage(message messages.Message) {
 	tradeMessage := message.(*messages.TradeMessage)
-	po := order.BuildPurchaseOrder(tradeMessage.StockId, client.user.Uuid, tradeMessage.Amount)
+	po := order.BuildPurchaseOrder(tradeMessage.StockId, client.user.PortfolioId, tradeMessage.Amount)
 	trade.Trade(po)
 	go func() {
 		response := <-po.ResponseChannel

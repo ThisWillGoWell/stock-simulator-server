@@ -19,7 +19,7 @@ var (
 	portfolioTableUpdateInsert = `INSERT into ` + portfolioTableName + `(uuid, name, wallet) values($1, $2, $3) ` +
 		`ON CONFLICT (uuid) DO UPDATE SET wallet=EXCLUDED.wallet;`
 
-	portfolioTableQueryStatement = "SELECT * FROM " + portfolioTableName + `;`
+	portfolioTableQueryStatement = "SELECT uuid, name, wallet FROM " + portfolioTableName + `;`
 	//getCurrentPrice()
 )
 
@@ -37,18 +37,7 @@ func initPortfolio() {
 	tx.Commit()
 }
 
-func runPortfolioUpdate() {
-	portfolioUpdateChannel := portfolio.PortfoliosUpdateChannel.GetBufferedOutput(100)
-	go func() {
-		for portfolioUpdated := range portfolioUpdateChannel {
-			port := portfolioUpdated.(*portfolio.Portfolio)
-			updatePortfolio(port)
-		}
-	}()
-
-}
-
-func updatePortfolio(port *portfolio.Portfolio) {
+func writePortfolio(port *portfolio.Portfolio) {
 	dbLock.Acquire("update-stock")
 	defer dbLock.Release()
 	tx, err := db.Begin()
@@ -57,7 +46,7 @@ func updatePortfolio(port *portfolio.Portfolio) {
 		db.Close()
 		panic("could not begin stocks init")
 	}
-	_, err = tx.Exec(portfolioTableUpdateInsert, port.UUID, port.Name, port.Wallet)
+	_, err = tx.Exec(portfolioTableUpdateInsert, port.UUID, port.UserUUID, port.Wallet)
 	if err != nil {
 		tx.Rollback()
 		panic("error occurred while insert stock in table " + err.Error())
@@ -66,7 +55,7 @@ func updatePortfolio(port *portfolio.Portfolio) {
 }
 
 func populatePortfolios() {
-	var uuid, name string
+	var uuid, userUuid string
 	var wallet float64
 
 	rows, err := db.Query(portfolioTableQueryStatement)
@@ -76,11 +65,11 @@ func populatePortfolios() {
 	}
 	defer rows.Close()
 	for rows.Next() {
-		err := rows.Scan(&uuid, &name, &wallet)
+		err := rows.Scan(&uuid, &userUuid, &wallet)
 		if err != nil {
 			log.Fatal(err)
 		}
-		portfolio.MakePortfolio(uuid, name, wallet)
+		portfolio.MakePortfolio(uuid, userUuid, wallet)
 	}
 	err = rows.Err()
 	if err != nil {

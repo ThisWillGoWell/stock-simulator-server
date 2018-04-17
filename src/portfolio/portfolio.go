@@ -3,10 +3,10 @@ package portfolio
 import (
 	"errors"
 	"fmt"
-	"github.com/stock-simulator-server/src/change"
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/ledger"
 	"github.com/stock-simulator-server/src/lock"
+	"github.com/stock-simulator-server/src/utils"
 	"github.com/stock-simulator-server/src/valuable"
 )
 
@@ -16,14 +16,14 @@ const (
 
 var Portfolios = make(map[string]*Portfolio)
 var PortfoliosLock = lock.NewLock("portfolios")
-var PortfoliosUpdateChannel = duplicator.MakeDuplicator("portfolio-update")
-var NewPortfolioChannel = duplicator.MakeDuplicator("new-portfolio")
+var UpdateChannel = duplicator.MakeDuplicator("portfolio-update")
+var NewObjectChannel = duplicator.MakeDuplicator("new-portfolio")
 
 /**
 Portfolios are the $$$ part of a user
 */
 type Portfolio struct {
-	Name     string  `json:"name"`
+	UserUUID string  `json:"user_uuid"`
 	UUID     string  `json:"uuid"`
 	Wallet   float64 `json:"wallet" change:"-"`
 	NetWorth float64 `json:"net_worth" change:"-"`
@@ -45,32 +45,34 @@ func (port *Portfolio) GetType() string {
 	return ObjectType
 }
 
-func NewPortfolio(userUUID, name string) (*Portfolio, error) {
-	return MakePortfolio(userUUID, name, 1000)
+func NewPortfolio(userUUID string) (*Portfolio, error) {
+	uuid := utils.PseudoUuid()
+	return MakePortfolio(uuid, userUUID, 1000)
 }
 
-func MakePortfolio(uuid, name string, wallet float64) (*Portfolio, error) {
+func MakePortfolio(uuid, userUUID string, wallet float64) (*Portfolio, error) {
 	//PortfoliosUpdateChannel.EnableDebug("port update")
 	PortfoliosLock.Acquire("new-portfolio")
 	defer PortfoliosLock.Release()
 	if _, exists := Portfolios[uuid]; exists {
+		utils.RemoveUuid(uuid)
 		return nil, errors.New("portfolio uuid already Exists")
 	}
 	port :=
 		&Portfolio{
-			Name:          name,
+			UserUUID:      userUUID,
 			UUID:          uuid,
 			Wallet:        wallet,
 			UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-update", uuid)),
-			Lock:          lock.NewLock(fmt.Sprintf("portfolio-%s", name)),
+			Lock:          lock.NewLock(fmt.Sprintf("portfolio-%s", uuid)),
 			UpdateInput:   duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-valueable-update", uuid)),
 		}
 	Portfolios[uuid] = port
 
 	port.UpdateChannel.EnableCopyMode()
-	change.NewSubscribeCreated.Offer(port)
-	PortfoliosUpdateChannel.RegisterInput(port.UpdateChannel.GetOutput())
-
+	NewObjectChannel.Offer(port)
+	UpdateChannel.RegisterInput(port.UpdateChannel.GetOutput())
+	utils.RegisterUuid(uuid, port)
 	go port.valuableUpdate()
 	return port, nil
 }

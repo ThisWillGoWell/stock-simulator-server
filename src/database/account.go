@@ -14,13 +14,14 @@ var (
 		`name text NOT NULL,` +
 		`display_name text NOT NULL,` +
 		`password text NOT NULL,` +
+		`portfolio_uuid text NOT NULL,` +
 		`PRIMARY KEY(uuid)` +
 		`);`
 
-	accountTableUpdateInsert = `INSERT into ` + accountTableName + `(uuid, name, display_name, password) values($1, $2, $3) ` +
+	accountTableUpdateInsert = `INSERT into ` + accountTableName + `(uuid, name, display_name, password, portfolio_uuid) values($1, $2, $3, $4, $5) ` +
 		`ON CONFLICT (uuid) DO UPDATE SET display_name=EXCLUDED.display_name, password=EXCLUDED.password;`
 
-	accountTableQueryStatement = "SELECT * FROM " + accountTableName + `;`
+	accountTableQueryStatement = "SELECT uuid, name, display_name, password, portfolio_uuid FROM " + accountTableName + `;`
 	//getCurrentPrice()
 )
 
@@ -38,7 +39,7 @@ func initAccount() {
 	tx.Commit()
 }
 
-func AddUser(user *account.User) {
+func writeUser(user *account.User) {
 	dbLock.Acquire("add user")
 	defer dbLock.Release()
 	tx, err := db.Begin()
@@ -47,16 +48,16 @@ func AddUser(user *account.User) {
 		db.Close()
 		panic("could not begin stocks init")
 	}
-	_, err = tx.Exec(portfolioTableUpdateInsert, user.Uuid, user.DisplayName, user.Password)
+	_, err = tx.Exec(accountTableUpdateInsert, user.Uuid, user.UserName, user.DisplayName, user.Password, user.PortfolioId)
 	if err != nil {
 		tx.Rollback()
-		panic("error occurred while insert stock in table " + err.Error())
+		panic("error occurred while insert account in table " + err.Error())
 	}
 	tx.Commit()
 }
 
 func populateUsers() {
-	var uuid, name, displayName, password string
+	var uuid, name, displayName, password, portfolioId string
 
 	rows, err := db.Query(accountTableQueryStatement)
 	if err != nil {
@@ -65,11 +66,11 @@ func populateUsers() {
 	}
 	defer rows.Close()
 	for rows.Next() {
-		err := rows.Scan(&uuid, &name, &displayName, &password)
+		err := rows.Scan(&uuid, &name, &displayName, &password, &portfolioId)
 		if err != nil {
 			log.Fatal(err)
 		}
-		account.MakeUser(uuid, name, displayName, password)
+		account.MakeUser(uuid, name, displayName, password, portfolioId)
 	}
 	err = rows.Err()
 	if err != nil {

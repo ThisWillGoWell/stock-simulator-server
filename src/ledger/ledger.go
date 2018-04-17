@@ -2,7 +2,6 @@ package ledger
 
 import (
 	"fmt"
-	"github.com/stock-simulator-server/src/change"
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
 	"github.com/stock-simulator-server/src/utils"
@@ -17,7 +16,9 @@ var EntriesPortfolioStock = make(map[string]map[string]*Entry)
 
 // map of stock_uuid -> open shares
 var EntriesLock = lock.NewLock("ledger-entries-lock")
-var EntriesUpdate = duplicator.MakeDuplicator("ledger-entries-update")
+
+var UpdateChannel = duplicator.MakeDuplicator("ledger-entries-update")
+var NewObjectChannel = duplicator.MakeDuplicator("leger-entries-new")
 
 /**
 Ledgers store who owns what stock
@@ -71,31 +72,12 @@ func MakeLedgerEntry(uuid, portfolioId, stockId string, amount float64) *Entry {
 	EntriesStockPortfolio[stockId][portfolioId] = entry
 	entry.UpdateChannel.EnableCopyMode()
 
-	change.NewSubscribeCreated.Offer(entry)
-	EntriesUpdate.RegisterInput(entry.UpdateChannel.GetOutput())
+	UpdateChannel.RegisterInput(entry.UpdateChannel.GetOutput())
 	utils.RegisterUuid(uuid, entry)
 	return entry
 }
 
-/**
-remove a ledger form both maps
-*/
-func RemoveLedgerEntry(uuid string) {
-	entry := Entries[uuid]
-
-	delete(EntriesStockPortfolio[entry.StockId], entry.PortfolioId)
-	if len(EntriesStockPortfolio[entry.StockId]) == 0 {
-		delete(EntriesStockPortfolio, entry.StockId)
-	}
-
-	delete(EntriesPortfolioStock[entry.PortfolioId], entry.StockId)
-	if len(EntriesPortfolioStock[entry.PortfolioId]) == 0 {
-		delete(EntriesPortfolioStock, entry.PortfolioId)
-	}
-	delete(Entries, entry.Uuid)
-	duplicator.UnlinkDouplicator(EntriesUpdate, entry.UpdateChannel)
-}
-
+/*
 /**
 get All ledgers so they can be sent on connection
 */

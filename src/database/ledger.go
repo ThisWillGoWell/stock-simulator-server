@@ -20,7 +20,7 @@ var (
 	ledgerTableUpdateInsert = `INSERT into ` + ledgerTableName + `(uuid, portfolio_id, stock_id, amount) values($1, $2, $3, $4) ` +
 		`ON CONFLICT (uuid) DO UPDATE SET amount=EXCLUDED.amount`
 
-	ledgerTableQueryStatement = "SELECT * FROM " + ledgerTableName + `;`
+	ledgerTableQueryStatement = "SELECT uuid, portfolio_id, stock_id, amount FROM " + ledgerTableName + `;`
 	//getCurrentPrice()
 )
 
@@ -38,18 +38,7 @@ func initLedger() {
 	tx.Commit()
 }
 
-func runLedgerUpdate() {
-	ledgerUpdateChannel := ledger.EntriesUpdate.GetBufferedOutput(10)
-	go func() {
-		for portfolioUpdated := range ledgerUpdateChannel {
-			entry := portfolioUpdated.(*ledger.Entry)
-			updateLedger(entry)
-		}
-	}()
-
-}
-
-func updateLedger(entry *ledger.Entry) {
+func writeLedger(entry *ledger.Entry) {
 	dbLock.Acquire("update-ledger")
 	defer dbLock.Release()
 	tx, err := db.Begin()
@@ -70,16 +59,16 @@ func populateLedger() {
 	var uuid, portfolioId, stockId string
 	var amount float64
 
-	rows, err := db.Query(portfolioTableQueryStatement)
+	rows, err := db.Query(ledgerTableQueryStatement)
 	if err != nil {
 		log.Fatal("error quiering databse")
 		panic("could not populate portfolios: " + err.Error())
 	}
 	defer rows.Close()
 	for rows.Next() {
-		err := rows.Scan(&uuid, &portfolioId, &stockId, amount)
+		err := rows.Scan(&uuid, &portfolioId, &stockId, &amount)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("error in querying ledger: ", err)
 		}
 		ledger.MakeLedgerEntry(uuid, portfolioId, stockId, amount)
 	}

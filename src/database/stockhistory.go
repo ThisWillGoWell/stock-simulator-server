@@ -40,26 +40,7 @@ func initStocksHistory() {
 	tx.Commit()
 }
 
-func runStockHistoryUpdate() {
-	newStockChannel := valuable.NewStockChannel.GetBufferedOutput(10)
-	stockUpdateChannel := valuable.ValuableUpdateChannel.GetBufferedOutput(100)
-
-	go func() {
-		for stockNew := range newStockChannel {
-			stock := stockNew.(*valuable.Stock)
-			updateStockHistory(stock)
-		}
-	}()
-
-	go func() {
-		for stockUpdated := range stockUpdateChannel {
-			stock := stockUpdated.(*valuable.Stock)
-			updateStockHistory(stock)
-		}
-	}()
-}
-
-func updateStockHistory(stock *valuable.Stock) {
+func writeStockHistory(stock *valuable.Stock) {
 	tx, err := ts.Begin()
 	if err != nil {
 		ts.Close()

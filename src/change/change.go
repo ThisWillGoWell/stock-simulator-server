@@ -60,7 +60,6 @@ var (
 	subscribeablesLock    = lock.NewLock("subscribeables")
 	SubscribeUpdateInputs = duplicator.MakeDuplicator("subscribe-update-input")
 	SubscribeUpdateOutput = duplicator.MakeDuplicator("subscribe-update-output")
-	NewSubscribeCreated   = duplicator.MakeDuplicator("subscribe-created")
 )
 
 func registerChangeDetect(o Identifiable) *SubscribeUpdate {
@@ -115,7 +114,6 @@ func getValue(o interface{}, name string) interface{} {
 
 func StartDetectChanges() {
 	//SubscribeUpdateInputs.EnableCopyMode()
-	SubscribeUpdateOutput.EnableCopyMode()
 	//SubscribeUpdateInputs.EnableDebug()
 	//SubscribeUpdateOutput.EnableDebug()
 	subscribeUpdateChannel := SubscribeUpdateInputs.GetBufferedOutput(100)
@@ -171,6 +169,14 @@ type ChangeNotify struct {
 	Type    string         `json:"type"`
 	Id      string         `json:"uuid"`
 	Changes []*ChangeField `json:"changes"`
+}
+
+func (cn *ChangeNotify) GetId() string {
+	return cn.Id
+}
+
+func (cn *ChangeNotify) GetType() string {
+	return "Change-Notify"
 }
 
 func GetCurrentValues() []*ChangeNotify {

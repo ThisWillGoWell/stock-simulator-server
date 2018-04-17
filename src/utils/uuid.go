@@ -52,3 +52,11 @@ func RegisterUuid(uuid string, val interface{}) {
 	defer uuidLock.Release()
 	uuidMap[uuid] = val
 }
+
+func RemoveUuid(uuid string) {
+	uuidLock.Acquire("free-uuid")
+	defer uuidLock.Release()
+	if _, exists := uuidMap[uuid]; exists {
+		delete(uuidMap, uuid)
+	}
+}

@@ -2,7 +2,7 @@ package account
 
 import (
 	"errors"
-	"github.com/stock-simulator-server/src/change"
+	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
 	"github.com/stock-simulator-server/src/portfolio"
 	"github.com/stock-simulator-server/src/utils"
@@ -14,6 +14,9 @@ var userList = make(map[string]*User)
 // keep the username to uuid list
 var uuidList = make(map[string]string)
 var userListLock = lock.NewLock("user-list")
+
+var NewObjectChannel = duplicator.MakeDuplicator("New User")
+var UpdateChannel = duplicator.MakeDuplicator("User Update")
 
 /*
 User Object
@@ -27,6 +30,7 @@ type User struct {
 	Active        bool       `json:"active" change:"-"`
 	ActiveClients int64      `json:"-"`
 	Lock          *lock.Lock `json:"-"`
+	PortfolioId   string     `json:"portfolio_uuid"`
 }
 
 /**
@@ -45,7 +49,7 @@ func GetUser(username, password string) (*User, error) {
 		return nil, errors.New("Password is incorrect")
 	}
 	user.Active = true
-	change.SubscribeUpdateInputs.Offer(user)
+	UpdateChannel.Offer(user)
 	return user, nil
 }
 
@@ -55,10 +59,17 @@ set their Password to that provided
 */
 func NewUser(username, password string) (*User, error) {
 	uuid := utils.PseudoUuid()
-	return MakeUser(uuid, username, username, password)
+	user, err := MakeUser(uuid, username, username, password, "")
+	if err != nil {
+		utils.RemoveUuid(uuid)
+		return nil, err
+	}
+	port, _ := portfolio.NewPortfolio(uuid)
+	user.PortfolioId = port.UUID
+	return user, nil
 }
 
-func MakeUser(uuid, username, displayName, password string) (*User, error) {
+func MakeUser(uuid, username, displayName, password, portfolioUUID string) (*User, error) {
 	userListLock.Acquire("new-user")
 	defer userListLock.Release()
 	_, userNameExists := uuidList[username]
@@ -66,16 +77,16 @@ func MakeUser(uuid, username, displayName, password string) (*User, error) {
 		return nil, errors.New("username already exists")
 	}
 	uuidList[username] = uuid
-	portfolio.NewPortfolio(uuid, username)
 	userList[uuid] = &User{
 		UserName:    username,
 		DisplayName: displayName,
 		Password:    password,
 		Uuid:        uuid,
+		PortfolioId: portfolioUUID,
 		Lock:        lock.NewLock("user"),
 		Active:      true,
 	}
-	change.NewSubscribeCreated.Offer(userList[uuid])
+	NewObjectChannel.Offer(userList[uuid])
 	utils.RegisterUuid(uuid, userList[uuid])
 	return userList[uuid], nil
 
@@ -94,7 +105,7 @@ func (user *User) LogoutUser() {
 	if user.ActiveClients == 0 {
 		user.Active = false
 	}
-	change.SubscribeUpdateInputs.Offer(user)
+	UpdateChannel.Offer(user)
 }
 
 func (user *User) GetId() string {

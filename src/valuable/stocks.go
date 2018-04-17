@@ -25,7 +25,6 @@ const (
 var timeSimulation = duplicator.MakeDuplicator("time-sim")
 
 var Stocks = make(map[string]*Stock)
-var NewStockChannel = duplicator.MakeDuplicator("new-stock-channel")
 
 func StartStockStimulation() {
 	ticker := time.NewTicker(timeSimulationPeriod)
@@ -96,8 +95,7 @@ func MakeStock(uuid, tickerID, name string, startPrice, openShares float64, runI
 	go stock.stockUpdateRoutine()
 	Stocks[uuid] = stock
 	stock.UpdateChannel.EnableCopyMode()
-	ValuableUpdateChannel.RegisterInput(stock.UpdateChannel.GetOutput())
-	ValuableUpdateChannel.Offer(stock)
+	UpdateChannel.RegisterInput(stock.UpdateChannel.GetOutput())
 	//NewStockChannel.Offer(stock)
 	utils.RegisterUuid(uuid, stock)
 

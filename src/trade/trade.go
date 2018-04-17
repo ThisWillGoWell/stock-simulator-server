@@ -1,7 +1,6 @@
 package trade
 
 import (
-	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/ledger"
 	"github.com/stock-simulator-server/src/order"
 	"github.com/stock-simulator-server/src/portfolio"
@@ -58,13 +57,6 @@ func trade(o *order.PurchaseOrder) {
 		ledgerEntry = ledger.NewLedgerEntry(o.PortfolioID, o.ValuableID, true)
 		port.UpdateInput.RegisterInput(ledgerEntry.UpdateChannel.GetBufferedOutput(10))
 	}
-	// remove the ledger at the end if the amount is 0
-	defer func() {
-		if ledgerEntry.Amount == 0 {
-			ledger.RemoveLedgerEntry(ledgerEntry.Uuid)
-			duplicator.UnlinkDouplicator(port.UpdateInput, ledgerEntry.UpdateChannel)
-		}
-	}()
 
 	if o.Amount > 0 {
 		//we have a buy

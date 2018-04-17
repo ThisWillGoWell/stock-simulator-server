@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
+	"github.com/stock-simulator-server/src/app"
 	"github.com/stock-simulator-server/src/client"
 	"github.com/stock-simulator-server/src/messages"
 	"log"
@@ -21,7 +22,10 @@ func StartHandlers() {
 
 	fmt.Println(shareDir)
 	var fs = http.FileServer(http.Dir(shareDir))
+
 	http.Handle("/", fs)
+	http.HandleFunc("/load", func(w http.ResponseWriter, r *http.Request) { app.LoadVars() })
+
 	http.HandleFunc("/ws", handleConnections)
 	err := http.ListenAndServe(":8000", nil)
 	if err != nil {
