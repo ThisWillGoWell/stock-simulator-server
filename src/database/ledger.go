@@ -33,7 +33,7 @@ func initLedger() {
 	_, err = tx.Exec(ledgerTableCreateStatement)
 	if err != nil {
 		tx.Rollback()
-		panic("error occurred while creating metrics table " + err.Error())
+		panic("error occurred while creating leger table " + err.Error())
 	}
 	tx.Commit()
 }

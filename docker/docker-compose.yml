@@ -4,14 +4,17 @@ services:
     restart: always
     build: .
     container_name: starket_server
+    depends_on:
+      - db
+      - ts
     ports:
-      - "8000:8000"
+      - 8000:8000
     volumes:
         - ${FILE_SERVE}:/opt/server/static/
     environment:
       FILE_SERVE: opt/server/static
       DB_URI: host=db port=5432 user=starket password=wordpass dbname=starket_db sslmode=disable
-      TS_URI: host=db port=5431 user=starket password=wordpass dbname=starket_ts sslmode=disable
+      TS_URI: host=ts port=5432 user=starket password=wordpass dbname=starket_ts sslmode=disable
   db:
     image: postgres
     restart: always
@@ -22,8 +25,8 @@ services:
       POSTGRES_PASSWORD: wordpass
       POSTGRES_USER: starket
       B_PATH: /opt/server/database/
-    volumes:
-      - ${DB_FOLDER}:/opt/server/database/
+    #volumes:
+    #  - ${DB_FOLDER}:/opt/server/database/
   ts:
     restart: always
     image: timescale/timescaledb:latest
@@ -34,5 +37,5 @@ services:
       POSTGRES_PASSWORD: wordpass
       POSTGRES_USER: starket
       B_PATH: /opt/server/database/
-    volumes:
-      - ${TS_FOLDER}:/opt/server/database/
+    #volumes:
+    #  - ${TS_FOLDER}:/opt/server/database/
