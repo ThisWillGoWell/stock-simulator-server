@@ -172,7 +172,7 @@ func LoadVars() {
 	portfolio.Portfolios[acc.PortfolioId].Wallet = 1000000
 
 	for id, _ := range valuable.Stocks {
-		po2 := order.BuildPurchaseOrder(id, acc.Uuid, 5)
+		po2 := order.BuildPurchaseOrder(id, acc.PortfolioId, 5)
 		trade.Trade(po2)
 		client.BroadcastMessages.Offer(<-po2.ResponseChannel)
 		<-time.After(time.Second * 10)
