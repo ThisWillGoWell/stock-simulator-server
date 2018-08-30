@@ -2,7 +2,6 @@
 echo hello world
 pwd=$(pwd)
 export FILE_SERVE=$(pwd)/debug_frontend
-
 #if [ "$HOSTNAME" = high-in-the-clouds ]; then
 
 #else
