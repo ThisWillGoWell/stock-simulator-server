@@ -4,6 +4,6 @@ echo git commit -a -m "$message"
 git commit -a -m "message"
 echo 'ssh'
 command="cd starket/stock-simulator-server && git pull"
-run="cd /root/starket/stock-simulator-server/etc && echo here && ./run-server.sh"
+run="cd /root/starket/stock-simulator-server/etc && echo here && run-server.sh"
 #ssh root@159.89.154.221 $command
 ssh root@159.89.154.221 $run
