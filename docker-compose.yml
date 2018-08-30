@@ -11,7 +11,7 @@ services:
     ports:
       - 8000:8000
     volumes:
-        - c:/Users/Willi/Dropbox/workspace/go/src/github.com/stock-simulator-server/debug_frontend:/opt/server/static/
+        - ${FILE_SERVE}:/opt/server/static/
     environment:
       FILE_SERVE: opt/server/static
       DB_URI: host=db port=5432 user=starket password=wordpass dbname=starket_db sslmode=disable
