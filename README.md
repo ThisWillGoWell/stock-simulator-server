@@ -1,1 +1,0 @@
-# stock-simulator-server
