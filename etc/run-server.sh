@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
-
-cd docker
-export DB_FOLDER=$(pwd)
-export TS_FOLDER=$(pwd)
+echo hello world
 pwd=$(pwd)
-cd ${pwd:0:$(echo `expr "$pwd" :  '.*stock-simulator-server'`)}
-
 export FILE_SERVE=$(pwd)/debug_frontend
 
 #if [ "$HOSTNAME" = high-in-the-clouds ]; then
@@ -13,10 +8,7 @@ export FILE_SERVE=$(pwd)/debug_frontend
 #else
 #
 #fi
-
-cd docker
 echo $FILE_SERVE
-docker-compose rm -f server
-docker-compose build
+docker-compose build --no-caches
 docker-compose up -d
 docker-compose logs -f
