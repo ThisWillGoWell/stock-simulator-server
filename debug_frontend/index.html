@@ -74,23 +74,32 @@
     }
 }
      */
+    // map[uuid]-> object
     var all_objects = {}
+    // uuid -> type string
+    var uuid_map = {}
 
     function get_stock_name_ledger(ledger_object){
         return all_objects[stock_object.ledger.object.stock_id].object.name
     }
-    function new_obect(object_message){
-        all_objects[object_message.msg.uuid] = object_message.msg
+    function new_object(object_message){
+        all_objects[object.message.type][object_message.msg.uuid] = object_message.msg
+        var all_stocks = all_objects['stocks']
+        all_objects[uuid_map['uuid']]['uuid']
+        // map stock_uuids -> stock objects
     }
 
     function  object_update(update_msg){
         all_objects[update_msg.msg.uuid][update_msg.msg.field] = update_msg.msg.value
     }
 
+    function purchase_order_response(purchase_response){}
+
+
     function onEvent(message){
         var router = {
             'login': login_message,
-            'object': new_obect,
+            'object': new_object,
             'update': object_update
         }
         //router[message.action](message)
