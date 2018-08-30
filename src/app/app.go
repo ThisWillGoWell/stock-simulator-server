@@ -145,6 +145,7 @@ func LoadVars() {
 	account.NewUser("Mike", "pass")
 	account.NewUser("Will", "pass")
 	account.NewUser("Luke", "pass")
+	account.NewUser("Chunt", "whip")
 
 	go func() {
 		return
@@ -171,7 +172,7 @@ func LoadVars() {
 	acc, _ := account.GetUser("Will", "pass")
 	portfolio.Portfolios[acc.PortfolioId].Wallet = 1000000
 
-	for id, _ := range valuable.Stocks {
+	for id := range valuable.Stocks {
 		po2 := order.BuildPurchaseOrder(id, acc.PortfolioId, 5)
 		trade.Trade(po2)
 		client.BroadcastMessages.Offer(<-po2.ResponseChannel)

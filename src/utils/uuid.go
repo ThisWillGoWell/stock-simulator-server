@@ -41,7 +41,7 @@ func PseudoUuid() string {
 }
 
 func GetVal(uuid string) (interface{}, bool) {
-	uuidLock.Acquire("uuid register")
+	uuidLock.Acquire("uuid get")
 	defer uuidLock.Release()
 	val, exists := uuidMap[uuid]
 	return val, exists
