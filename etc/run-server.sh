@@ -9,6 +9,6 @@ export FILE_SERVE=$(pwd)/debug_frontend
 #
 #fi
 echo $FILE_SERVE
-docker-compose build --no-caches
+docker-compose build --no-cache
 docker-compose up -d
 docker-compose logs -f
