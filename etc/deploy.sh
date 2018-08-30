@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 message=$1
 echo git commit -a -m "$message"
+git push
 git commit -a -m "message"
 echo 'ssh'
 command="git -C /root/starket/stock-simulator-server status"
