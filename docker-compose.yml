@@ -1,0 +1,46 @@
+version: '2'
+services:
+  server:
+    restart: always
+    build:
+       context: docker
+    container_name: starket_server
+    depends_on:
+      - db
+      - ts
+    ports:
+      - 8000:8000
+    volumes:
+        - c:/Users/Willi/Dropbox/workspace/go/src/github.com/stock-simulator-server/debug_frontend:/opt/server/static/
+    environment:
+      FILE_SERVE: opt/server/static
+      DB_URI: host=db port=5432 user=starket password=wordpass dbname=starket_db sslmode=disable
+      TS_URI: host=ts port=5432 user=starket password=wordpass dbname=starket_ts sslmode=disable
+  db:
+    image: postgres
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: starket_db
+      POSTGRES_PASSWORD: wordpass
+      POSTGRES_USER: starket
+      B_PATH: /opt/server/database/
+    volumes:
+      - db_volume:/opt/server/database/
+  ts:
+    restart: always
+    image: timescale/timescaledb:latest
+    ports:
+      - 5431:5432
+    environment:
+      POSTGRES_DB: starket_ts
+      POSTGRES_PASSWORD: wordpass
+      POSTGRES_USER: starket
+      B_PATH: /opt/server/database/
+    volumes:
+      - ts_volume:/opt/server/database/
+
+volumes:
+  ts_volume:
+  db_volume:

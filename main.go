@@ -30,11 +30,14 @@ func main() {
 		}
 		defer pprof.StopCPUProfile()
 	}
+	disableDb := os.Getenv("DISABLE_DB") == "True"
 
 	//start DB
-	database.InitDatabase()
+	if !disableDb {
+		database.InitDatabase()
+	}
 	//Wiring of system
-	wires.ConnectWires()
+	wires.ConnectWires(disableDb)
 	//this takes the subscribe output and converts it to a message
 	client.BroadcastMessageBuilder()
 	change.StartDetectChanges()

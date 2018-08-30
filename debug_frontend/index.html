@@ -55,7 +55,46 @@
         onEvent("Disconnected");
     }
 
+    function login_message(login_message){
+        /// ????????????????
+    }
+    // map[uuid] -> object {}
+    /*
+    {
+    "action": "object",
+    "msg": {
+        "type": "ledger",
+        "uuid": "10CC90568D47C5",
+        "object": {
+            "uuid": "10CC90568D47C5",
+            "portfolio_id": "7AB098B953D711",
+            "stock_id": "02E1E73E2DA8E9",
+            "amount": 5
+        }
+    }
+}
+     */
+    var all_objects = {}
+
+    function get_stock_name_ledger(ledger_object){
+        return all_objects[stock_object.ledger.object.stock_id].object.name
+    }
+    function new_obect(object_message){
+        all_objects[object_message.msg.uuid] = object_message.msg
+    }
+
+    function  object_update(update_msg){
+        all_objects[update_msg.msg.uuid][update_msg.msg.field] = update_msg.msg.value
+    }
+
     function onEvent(message){
+        var router = {
+            'login': login_message,
+            'object': new_obect,
+            'update': object_update
+        }
+        //router[message.action](message)
+
         writeToScreen('<span style="color: darkorange;">'+ message+'</span>')
     }
 

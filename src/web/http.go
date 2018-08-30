@@ -39,13 +39,19 @@ func StartHandlers() {
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+
 }
 
 func handleConnections(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("got Upgrade")
 	//first upgrade the connection
 	ws, err := upgrader.Upgrade(w, r, nil)
 	defer ws.Close()
 	if err != nil {
+		fmt.Println(err)
 		return
 	}
 	socketRX := make(chan string)

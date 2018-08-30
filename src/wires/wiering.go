@@ -11,7 +11,7 @@ import (
 	"github.com/stock-simulator-server/src/valuable"
 )
 
-func ConnectWires() {
+func ConnectWires(diableDb bool) {
 	// Enable Copy Mode on all the global new input channels
 	account.NewObjectChannel.EnableCopyMode()
 	valuable.NewObjectChannel.EnableCopyMode()
@@ -30,7 +30,9 @@ func ConnectWires() {
 	newObjectChannels.RegisterInput(ledger.NewObjectChannel.GetOutput())
 
 	client.Updates.RegisterInput(newObjectChannels.GetOutput())
-	database.DatabseWriter.RegisterInput(newObjectChannels.GetOutput())
+	if !diableDb {
+		database.DatabseWriter.RegisterInput(newObjectChannels.GetOutput())
+	}
 
 	// register changes to change detector
 	change.SubscribeUpdateInputs.RegisterInput(portfolio.UpdateChannel.GetOutput())
@@ -40,6 +42,8 @@ func ConnectWires() {
 
 	//register output
 	client.Updates.RegisterInput(change.SubscribeUpdateOutput.GetOutput())
-	database.DatabseWriter.RegisterInput(change.SubscribeUpdateOutput.GetOutput())
+	if !diableDb {
+		database.DatabseWriter.RegisterInput(change.SubscribeUpdateOutput.GetOutput())
+	}
 
 }

@@ -27,6 +27,10 @@ var timeSimulation = duplicator.MakeDuplicator("time-sim")
 var Stocks = make(map[string]*Stock)
 
 func StartStockStimulation() {
+	/*
+	when simulation gets emitted, it will trigger all the tings listening to it
+	to run a session
+	 */
 	ticker := time.NewTicker(timeSimulationPeriod)
 	simulation := make(chan interface{})
 	timeSimulation.RegisterInput(simulation)

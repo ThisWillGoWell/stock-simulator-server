@@ -79,6 +79,8 @@ func InitDatabase() {
 func databaseWriter() {
 	write := DatabseWriter.GetBufferedOutput(1000)
 	for obj := range write {
+		// pull from uuid map since change-detect come across as change,
+		//todo fix race condition from update and pulling current val
 		val, exists := utils.GetVal(obj.(change.Identifiable).GetId())
 		if !exists {
 			panic("db write for uuid not in uuidmap: " + obj.(change.Identifiable).GetId())
