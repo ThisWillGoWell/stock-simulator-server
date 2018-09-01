@@ -55,7 +55,7 @@ type Stock struct {
 	Name          string                        `json:"name"`
 	TickerId      string                        `json:"ticker_id"`
 	CurrentPrice  float64                       `json:"current_price" change:"-"`
-	OpenShares    float64                       `json:"open_shares"`
+	OpenShares    float64                       `json:"open_shares" change:"-"`
 	PriceChanger  PriceChange                   `json:"-"`
 	UpdateChannel *duplicator.ChannelDuplicator `json:"-"`
 	lock          *lock.Lock                    `json:"-"`

@@ -178,6 +178,8 @@ func (client *Client) rx() {
 		}
 	}
 	client.active = false
+	clientsLock.Acquire("remove uuid from connections")
+	defer clientsLock.Release()
 	delete(connections[client.user.Uuid], client.clientNum)
 	if len(connections[client.user.Uuid]) == 0{
 		delete(connections, client.user.Uuid)
