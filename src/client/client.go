@@ -8,7 +8,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/stock-simulator-server/src/account"
 	"github.com/stock-simulator-server/src/change"
-	"github.com/stock-simulator-server/src/database"
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/histroy"
 	"github.com/stock-simulator-server/src/ledger"
@@ -22,9 +21,9 @@ import (
 
 var clients = make(map[*Client]bool)
 var clientsLock = lock.NewLock("clients-lock")
-
+var connections = make(map[string]map[int]*Client)
 var BroadcastMessages = duplicator.MakeDuplicator("client-broadcast-messages")
-
+var currentId = 1
 var Updates = duplicator.MakeDuplicator("Client Updates")
 var NewObjects = duplicator.MakeDuplicator("Client New Objects")
 
@@ -76,7 +75,7 @@ to the client that sent it
 type Client struct {
 	socketRx chan string
 	socketTx chan string
-
+	clientNum int
 	messageSender *duplicator.ChannelDuplicator
 
 	broadcastTx chan messages.Message
@@ -88,11 +87,25 @@ type Client struct {
 	active bool
 }
 
+func SendToUser(uuid string, value interface{} ){
+	clientsLock.Acquire("send-to-clients")
+	defer clientsLock.Release()
+	clients, exist := connections[uuid]
+	if !exist {
+		return
+	}
+	for i := range clients{
+		connections[uuid][i].messageSender.Offer(value)
+	}
+}
+
 /**
 Because for some reason, the js web socket class does not have headers,
 We accept all connections and pull the initial payload as a login/account create command
 */
 func InitialReceive(initialPayload string, tx, rx chan string) error {
+	clientsLock.Acquire("initial received of new client")
+	defer clientsLock.Release()
 	initialMessage := new(messages.BaseMessage)
 	unmarshalErr := initialMessage.UnmarshalJSON([]byte(initialPayload))
 
@@ -115,12 +128,20 @@ func InitialReceive(initialPayload string, tx, rx chan string) error {
 	}
 
 	client := &Client{
+		clientNum: currentId,
 		user:          user,
 		socketRx:      rx,
 		socketTx:      tx,
 		messageSender: duplicator.MakeDuplicator("client-" + user.Uuid + "-message"),
 		active:        true,
 	}
+	currentId += 1
+	_, exists := connections[user.Uuid]
+	if !exists{
+		connections[user.Uuid] = make(map[int]*Client)
+	}
+	connections[user.Uuid][client.clientNum] = client
+
 	client.tx()
 	go client.rx()
 	go client.initSession()
@@ -132,8 +153,8 @@ func InitialReceive(initialPayload string, tx, rx chan string) error {
 go routine for handling the rx portion of the socket
 */
 func (client *Client) rx() {
-
 	for messageString := range client.socketRx {
+		fmt.Println("MSG: " + messageString)
 		message := new(messages.BaseMessage)
 		//attempt to
 		err := message.UnmarshalJSON([]byte(messageString))
@@ -150,12 +171,17 @@ func (client *Client) rx() {
 		case messages.UpdateAction:
 			client.initSession()
 		case messages.QueryAction:
+			client.processQueryMessage(message.Msg.(messages.Message))
 
 		default:
 			client.messageSender.Offer(messages.NewErrorMessage("action is not known"))
 		}
 	}
 	client.active = false
+	delete(connections[client.user.Uuid], client.clientNum)
+	if len(connections[client.user.Uuid]) == 0{
+		delete(connections, client.user.Uuid)
+	}
 	client.user.LogoutUser()
 }
 
@@ -187,7 +213,8 @@ func (client *Client) processChatMessage(message messages.Message) {
 	chatMessage := message.(*messages.ChatMessage)
 	chatMessage.Author = client.user.Uuid
 	chatMessage.Timestamp = time.Now()
-	database.SaveChatMessage(chatMessage.Author, chatMessage.Message)
+	//database.SaveChatMessage(chatMessage.Author, chatMessage.Message)
+	print("offer")
 	BroadcastMessages.Offer(chatMessage)
 }
 
@@ -197,21 +224,16 @@ func (client *Client) processTradeMessage(message messages.Message) {
 	trade.Trade(po)
 	go func() {
 		response := <-po.ResponseChannel
-		client.sendMessage(messages.BuildPurchaseResponse(response))
+		SendToUser(client.user.Uuid, messages.BuildPurchaseResponse(response))
 	}()
 }
 
 func (client *Client) processQueryMessage(message messages.Message) {
 	queryMessage := message.(*messages.QueryMessage)
-	go func() {
-		query, err := histroy.Query(queryMessage.QueryUUID, queryMessage.StartTime, queryMessage.EndTime)
-		if err != nil {
-			client.sendMessage(messages.NewErrorMessage(err.Error()))
-			return
-		}
-		client.sendMessage(query)
+	q := histroy.MakeQuery(queryMessage)
+	go func(){
+		client.sendMessage(<- q.ResponseChannel )
 	}()
-
 }
 
 /**

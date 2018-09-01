@@ -66,6 +66,7 @@ func MakePortfolio(uuid, userUUID string, wallet float64) (*Portfolio, error) {
 			UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-update", uuid)),
 			Lock:          lock.NewLock(fmt.Sprintf("portfolio-%s", uuid)),
 			UpdateInput:   duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-valueable-update", uuid)),
+			NetWorth: wallet,
 		}
 	Portfolios[uuid] = port
 
@@ -83,14 +84,17 @@ This then triggers a recalc of net worth and offers its self up as a update
 */
 func (port *Portfolio) valuableUpdate() {
 	updateChannel := port.UpdateInput.GetOutput()
-
 	for range updateChannel {
-		port.Lock.Acquire("portfolio-update")
-		newNetWorth := port.calculateNetWorth()
-		port.NetWorth = newNetWorth
-		port.UpdateChannel.Offer(port)
-		port.Lock.Release()
+		port.Update()
 	}
+}
+
+func (port *Portfolio) Update(){
+	port.Lock.Acquire("portfolio-update")
+	newNetWorth := port.calculateNetWorth()
+	port.NetWorth = newNetWorth
+	port.UpdateChannel.Offer(port)
+	port.Lock.Release()
 }
 
 func GetPortfolio(userUUID string) (*Portfolio, error) {

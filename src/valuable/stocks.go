@@ -6,6 +6,7 @@ import (
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
 	"github.com/stock-simulator-server/src/utils"
+	"math"
 	"math/rand"
 	"reflect"
 	"time"
@@ -164,7 +165,7 @@ func (randPrice *RandomPrice) change(stock *Stock) {
 	//can make this a lot more interesting, like adding in the ability for it to drop
 	change := (randPrice.TargetPrice - stock.CurrentPrice) /
 		utils.MapNum(randPrice.Volatility, volatilityMin, volatilityMax, volatilityMinTurns, volatilityMaxTurns)
-
+	change = math.Floor(change*100)/100
 	stock.CurrentPrice = stock.CurrentPrice + change
 
 	stock.UpdateChannel.Offer(stock)

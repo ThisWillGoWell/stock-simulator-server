@@ -52,8 +52,8 @@ func trade(o *order.PurchaseOrder) {
 
 	port.Lock.Acquire("trade")
 	defer port.Lock.Release()
-	ledgerEntry, ok := ledger.EntriesStockPortfolio[o.ValuableID][o.PortfolioID]
-	if !ok {
+	ledgerEntry, ledgerExists := ledger.EntriesStockPortfolio[o.ValuableID][o.PortfolioID]
+	if !ledgerExists {
 		ledgerEntry = ledger.NewLedgerEntry(o.PortfolioID, o.ValuableID, true)
 		port.UpdateInput.RegisterInput(ledgerEntry.UpdateChannel.GetBufferedOutput(10))
 	}
@@ -80,9 +80,7 @@ func trade(o *order.PurchaseOrder) {
 		// Update the portfolio with the new ledgerEntry
 		port.Wallet -= costOfTrade
 		// update the ledger entry to trigger update
-		ledgerEntry.UpdateChannel.Offer(ledgerEntry)
 		order.SuccessOrder(o)
-
 	} else {
 		// we have a sell
 		//make sure they have that many shares
@@ -102,8 +100,12 @@ func trade(o *order.PurchaseOrder) {
 		costOfTrade := o.Amount * value.GetValue()
 		port.Wallet += costOfTrade
 		order.SuccessOrder(o)
+
+		}
+	if !ledgerExists{
+		ledger.NewObjectChannel.Offer(ledgerEntry)
+	} else{
 		ledgerEntry.UpdateChannel.Offer(ledgerEntry)
-
 	}
-
+	go port.Update()
 }

@@ -1,6 +1,7 @@
 package database
 
 import (
+	"errors"
 	"github.com/stock-simulator-server/src/portfolio"
 )
 
@@ -19,6 +20,10 @@ var (
 
 	portfolioHistroyTableQueryStatement = "SELECT * FROM " + portfolioHistoryTableName + " WHERE uuid"
 	//getCurrentPrice()
+	validPortfolioFields = map[string]bool{
+		"wallet": true,
+		"net_worth": true,
+	}
 )
 
 func initPortfolioHistory() {
@@ -52,4 +57,18 @@ func writePortfolioHistory(port *portfolio.Portfolio) {
 		panic("error occurred while insert portfolio in table " + err.Error())
 	}
 	tx.Commit()
+}
+func MakePorfolioHistoryTimeQuery( uuid,timeLength, field, intervalLength string)([][]interface{}, error){
+	if _, valid := validPortfolioFields[field]; !valid{
+		return nil, errors.New("not valid choice")
+	}
+	return MakeHistoryTimeQuery(portfolioHistoryTableName, uuid, timeLength, field, intervalLength)
+
+}
+
+func MakePortfolioHistoryLimitQuery(uuid, field string, limit int)([][]interface{}, error){
+	if _, valid := validPortfolioFields[field]; !valid{
+		return nil, errors.New("not valid choice")
+	}
+	return MakeHistoryLimitQuery(portfolioHistoryTableName, uuid, field, limit)
 }

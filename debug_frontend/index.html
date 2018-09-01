@@ -46,7 +46,8 @@
         onEvent("Connected");
         //doSend('{"container_type": "register", "register_action": "register", "device_type": "test", "device_name":"' + window.prompt("device_name","test")  + '"}');
         doSend('{"action": "login", "msg": {"username": "Will", "password":"pass"}}');
-
+        doSend('{"action": "query", "msg": {"uuid": "E72295C50A1652", "field":"net_worth", "num_points":10}}')
+        doSend('{"action": "chat", "msg": {"message_body": "FUCK YEAH"}}')
         //doSend('{"op":"subscribe","type":"alert", "system":"irRemote"}');
     }
 
@@ -129,8 +130,12 @@
         });
     }
 
-    function putScren(inp) {
-        document.body.appendChild(document.createElement('pre')).innerHTML = inp;
+    function putScreen(inp) {
+        var para = document.createElement("pre");
+        para.innerHTML = inp
+
+        var element = document.getElementById("output");
+        element.insertBefore(para, element.firstChild);
     }
 
     function syntaxHighlight(json) {
@@ -157,7 +162,7 @@
     {
         //writeToScreen(syntaxHighlight(evt.data));
         var str = JSON.stringify(JSON.parse(evt.data), undefined, 4);
-        putScren(syntaxHighlight(str));
+        putScreen(syntaxHighlight(str));
     }
 
     function onSend(message)
@@ -176,7 +181,6 @@
         onSend(message)
         webSocket.send(message);
     }
-
     function writeToScreen(message)
     {
         var pre = document.createElement("p");
@@ -192,5 +196,6 @@
 </script>
 
 <h2 style="color: white">WebSocket Test</h2>
+
 
 <div id="output"></div>

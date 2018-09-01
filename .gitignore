@@ -5,6 +5,7 @@
 *.dylib
 .idea/
 venv
+mockstarket-front-end
 
 
 # Test binary, build with `go test -c`

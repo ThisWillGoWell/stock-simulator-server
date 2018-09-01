@@ -29,7 +29,7 @@ func ConnectWires(diableDb bool) {
 	newObjectChannels.RegisterInput(portfolio.NewObjectChannel.GetOutput())
 	newObjectChannels.RegisterInput(ledger.NewObjectChannel.GetOutput())
 
-	client.Updates.RegisterInput(newObjectChannels.GetOutput())
+	client.NewObjects.RegisterInput(newObjectChannels.GetOutput())
 	if !diableDb {
 		database.DatabseWriter.RegisterInput(newObjectChannels.GetOutput())
 	}
