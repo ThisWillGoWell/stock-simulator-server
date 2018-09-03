@@ -5,7 +5,7 @@ const TradeAction = "trade"
 type TradeMessage struct {
 	StockId    string  `json:"stock_id"`
 	ExchangeID string  `json:"exchange_id"`
-	Amount     float64 `json:"amount"`
+	Amount     int64 `json:"amount"`
 }
 
 func (*TradeMessage) message() { return }

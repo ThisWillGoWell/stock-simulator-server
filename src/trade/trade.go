@@ -94,9 +94,6 @@ func trade(o *order.PurchaseOrder) {
 		value.OpenShares += o.Amount
 		// remove from ledger
 		ledgerEntry.Amount -= o.Amount
-		if ledgerEntry.Amount < 0.001 {
-			ledgerEntry.Amount = 0
-		}
 		costOfTrade := o.Amount * value.GetValue()
 		port.Wallet += costOfTrade
 		order.SuccessOrder(o)

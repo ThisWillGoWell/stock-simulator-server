@@ -32,7 +32,7 @@ type Entry struct {
 	Uuid          string                        `json:"uuid"`
 	PortfolioId   string                        `json:"portfolio_id"`
 	StockId       string                        `json:"stock_id"`
-	Amount        float64                       `json:"amount" change:"-"`
+	Amount        int64                       `json:"amount" change:"-"`
 	UpdateChannel *duplicator.ChannelDuplicator `json:"-"`
 }
 
@@ -50,7 +50,7 @@ func NewLedgerEntry(portfolioId, stockId string, lockAcquired bool) *Entry {
 	return MakeLedgerEntry(uuid, portfolioId, stockId, 0)
 }
 
-func MakeLedgerEntry(uuid, portfolioId, stockId string, amount float64) *Entry {
+func MakeLedgerEntry(uuid, portfolioId, stockId string, amount int64) *Entry {
 
 	entry := &Entry{
 		Uuid:          uuid,

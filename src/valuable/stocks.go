@@ -6,7 +6,6 @@ import (
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
 	"github.com/stock-simulator-server/src/utils"
-	"math"
 	"math/rand"
 	"reflect"
 	"time"
@@ -54,8 +53,8 @@ type Stock struct {
 	Uuid          string                        `json:"uuid"`
 	Name          string                        `json:"name"`
 	TickerId      string                        `json:"ticker_id"`
-	CurrentPrice  float64                       `json:"current_price" change:"-"`
-	OpenShares    float64                       `json:"open_shares" change:"-"`
+	CurrentPrice  int64                 	    `json:"current_price" change:"-"`
+	OpenShares    int64                      	`json:"open_shares" change:"-"`
 	PriceChanger  PriceChange                   `json:"-"`
 	UpdateChannel *duplicator.ChannelDuplicator `json:"-"`
 	lock          *lock.Lock                    `json:"-"`
@@ -65,7 +64,7 @@ func (stock *Stock) GetType() string {
 	return ObjectType
 }
 
-func NewStock(tickerID, name string, startPrice float64, runInterval time.Duration) (*Stock, error) {
+func NewStock(tickerID, name string, startPrice int64, runInterval time.Duration) (*Stock, error) {
 	// Acquire the valuableMapLock so no one can add a new entry till we are done
 	ValuablesLock.Acquire("new-stock")
 	defer ValuablesLock.Release()
@@ -75,7 +74,7 @@ func NewStock(tickerID, name string, startPrice float64, runInterval time.Durati
 	return MakeStock(uuidString, tickerID, name, startPrice, 100, runInterval)
 }
 
-func MakeStock(uuid, tickerID, name string, startPrice, openShares float64, runInterval time.Duration) (*Stock, error) {
+func MakeStock(uuid, tickerID, name string, startPrice, openShares int64, runInterval time.Duration) (*Stock, error) {
 	for _, s := range Stocks {
 		if s.TickerId == tickerID {
 			return nil, errors.New("tickerID is already taken by another valuable")
@@ -106,7 +105,7 @@ func MakeStock(uuid, tickerID, name string, startPrice, openShares float64, runI
 	return stock, nil
 }
 
-func (stock *Stock) GetValue() float64 {
+func (stock *Stock) GetValue() int64 {
 	return stock.CurrentPrice
 }
 
@@ -145,7 +144,7 @@ type PriceChange interface {
 // Random Price implements priceChange
 type RandomPrice struct {
 	RunPercent            float64 `json:"run_percent"`
-	TargetPrice           float64 `json:"target_price"`
+	TargetPrice           int64 `json:"target_price"`
 	PercentToChangeTarget float64 `json:"change_percent"`
 	Volatility            float64 `json:"volatility"`
 }
@@ -163,12 +162,11 @@ func (randPrice *RandomPrice) change(stock *Stock) {
 	}
 
 	//can make this a lot more interesting, like adding in the ability for it to drop
-	change := (randPrice.TargetPrice - stock.CurrentPrice) /
+	change := float64(randPrice.TargetPrice - stock.CurrentPrice) /
 		utils.MapNum(randPrice.Volatility, volatilityMin, volatilityMax, volatilityMinTurns, volatilityMaxTurns)
-	change = math.Floor(change*100)/100
-	stock.CurrentPrice = stock.CurrentPrice + change
 
-	stock.UpdateChannel.Offer(stock)
+	stock.CurrentPrice = stock.CurrentPrice + int64(change)
+		stock.UpdateChannel.Offer(stock)
 
 }
 
@@ -178,7 +176,7 @@ func (randPrice *RandomPrice) changeValues() {
 	// get what the upper and lower bounds in % of the current price
 	window := utils.MapNum(randPrice.Volatility, volatilityMin, volatilityMax, 0, 0.3)
 	// select a random number on +- that
-	newTarget := utils.MapNum(rand.Float64(), 0, 1, randPrice.TargetPrice*(1-window), randPrice.TargetPrice*(1+window))
+	newTarget := utils.MapNum(rand.Float64(), 0, 1, float64(randPrice.TargetPrice)*(1-window), float64(randPrice.TargetPrice)*(1+window))
 	// this is to prevent all the stocks to becoming 1.231234e-14
 	if newTarget < 3 {
 		if rand.Float64() < randPrice.PercentToChangeTarget {
@@ -190,7 +188,7 @@ func (randPrice *RandomPrice) changeValues() {
 		newTarget = 0
 	}
 
-	randPrice.TargetPrice = newTarget
+	randPrice.TargetPrice = int64(newTarget)
 	randPrice.Volatility = utils.RandRange(volatilityMin, volatilityMax)
 }
 

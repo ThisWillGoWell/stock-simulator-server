@@ -13,7 +13,7 @@ var (
 		`uuid text NOT NULL,` +
 		`portfolio_id text NOT NULL,` +
 		`stock_id text NOT NULL,` +
-		`amount numeric(16, 4) NOT NULL,` +
+		`amount int NOT NULL,` +
 		`PRIMARY KEY(uuid)` +
 		`);`
 
@@ -57,7 +57,7 @@ func writeLedger(entry *ledger.Entry) {
 
 func populateLedger() {
 	var uuid, portfolioId, stockId string
-	var amount float64
+	var amount int64
 
 	rows, err := db.Query(ledgerTableQueryStatement)
 	if err != nil {

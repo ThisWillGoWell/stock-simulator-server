@@ -12,7 +12,7 @@ var (
 		`id serial,` +
 		`uuid text NOT NULL,` +
 		`name text NOT NULL,` +
-		`wallet numeric(16, 4) NOT NULL,` +
+		`wallet int NOT NULL,` +
 		`PRIMARY KEY(uuid)` +
 		`);`
 
@@ -56,7 +56,7 @@ func writePortfolio(port *portfolio.Portfolio) {
 
 func populatePortfolios() {
 	var uuid, userUuid string
-	var wallet float64
+	var wallet int64
 
 	rows, err := db.Query(portfolioTableQueryStatement)
 	if err != nil {

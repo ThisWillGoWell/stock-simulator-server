@@ -27,7 +27,8 @@ func StartHandlers() {
 
 	http.Handle("/", fs)
 	http.HandleFunc("/load", func(w http.ResponseWriter, r *http.Request) {
-		app.LoadVars()
+		go app.LoadVars()
+		<- time.After(time.Second)
 		http.Redirect(w, r, "/", 200)
 	})
 	http.HandleFunc("/new", func(w http.ResponseWriter, r *http.Request) { account.NewUser("Will", "pass") })

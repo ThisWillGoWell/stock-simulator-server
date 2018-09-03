@@ -11,7 +11,7 @@ var (
 		`( ` +
 		`time TIMESTAMPTZ NOT NULL,` +
 		`uuid text NOT NULL,` +
-		`current_price numeric(16, 4) NULL,` +
+		`current_price int NULL,` +
 		`open_shares int NULL` +
 		`);`
 	stocksHistoryTSInit = `CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE; SELECT create_hypertable('` + stocksHistoryTableName + `', 'time');`

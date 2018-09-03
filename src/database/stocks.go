@@ -14,7 +14,7 @@ var (
 		`uuid text NOT NULL,` +
 		`ticker_id text NOT NULL,` +
 		`name text NOT NULL,` +
-		`current_price numeric(16, 4),` +
+		`current_price int,` +
 		`open_shares int,` +
 		`PRIMARY KEY(uuid)` +
 		`);`
@@ -59,7 +59,7 @@ func writeStock(stock *valuable.Stock) {
 
 func populateStocks() {
 	var uuid, name, tickerId string
-	var currentPrice, openShares float64
+	var currentPrice, openShares int64
 
 	rows, err := db.Query(stocksTableQueryStatement)
 	if err != nil {

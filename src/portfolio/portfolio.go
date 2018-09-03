@@ -25,8 +25,8 @@ Portfolios are the $$$ part of a user
 type Portfolio struct {
 	UserUUID string  `json:"user_uuid"`
 	UUID     string  `json:"uuid"`
-	Wallet   float64 `json:"wallet" change:"-"`
-	NetWorth float64 `json:"net_worth" change:"-"`
+	Wallet   int64 `json:"wallet" change:"-"`
+	NetWorth int64 `json:"net_worth" change:"-"`
 
 	//keeps track of how much $$$ they own, used for some slight optomization on calc networth
 	// stock_uuid -> ledgerObject
@@ -50,7 +50,7 @@ func NewPortfolio(userUUID string) (*Portfolio, error) {
 	return MakePortfolio(uuid, userUUID, 1000)
 }
 
-func MakePortfolio(uuid, userUUID string, wallet float64) (*Portfolio, error) {
+func MakePortfolio(uuid, userUUID string, wallet int64) (*Portfolio, error) {
 	//PortfoliosUpdateChannel.EnableDebug("port update")
 	PortfoliosLock.Acquire("new-portfolio")
 	defer PortfoliosLock.Release()
@@ -106,10 +106,10 @@ func GetPortfolio(userUUID string) (*Portfolio, error) {
 }
 
 //update the current net worth. NOT THREAD SAFE
-func (port *Portfolio) calculateNetWorth() float64 {
+func (port *Portfolio) calculateNetWorth() int64 {
 	ledger.EntriesLock.Acquire("calculate-worth")
 	defer ledger.EntriesLock.Release()
-	sum := 0.0
+	sum := int64(0)
 	for valueStr, entry := range ledger.EntriesPortfolioStock[port.UUID] {
 		value := valuable.Stocks[valueStr]
 		sum += value.GetValue() * entry.Amount
