@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 echo hello world
 pwd=$(pwd)
-export FILE_SERVE=$(pwd)/debug_frontend
+export FILE_SERVE=$(pwd)/front_end
 #if [ "$HOSTNAME" = high-in-the-clouds ]; then
 
 #else
