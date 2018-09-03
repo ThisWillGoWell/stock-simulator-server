@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>MockStarket</title>
+		<meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
+        <link href="https://fonts.googleapis.com/css?family=Mukta+Vaani:300,400,500,700" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:100,300,400,500" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet">
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+      rel="stylesheet">
+
+        <link rel="stylesheet" href="../css/main.css">
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <!-- <script src="../scripts/particles.min.js"></script> -->
+        <script src="../scripts/dashboard.js"></script>
+        
+
+    </head>
+
+	<body>
+		<div class="app--container">
+			<section id="side-menu--container">
+				<div class="logo-mark">MOCKSTARKET</div>
+				<div class="timer-container">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 75 75"><defs><style></style></defs><title>Timer Circler</title><g id="Layer_2" data-name="Layer 2"><g id="Layer_1-2" data-name="Layer 1"><path class="circle-timer" stroke="#ffffff" stroke-width="2px" stroke-alignment="inner" d="M37.5,1A36.5,36.5,0,1,1,1,37.5,36.54,36.54,0,0,1,37.5,1m0-1A37.5"/></g></g></svg>
+				</div>
+				<ul>
+					<li>
+						<button>
+							<i class="material-icons menu-icon">business_center</i>
+							<div class="menu-item-title">Portfolio</div>
+							<i class="material-icons right-arrow">keyboard_arrow_right</i>
+						</button>
+					</li>
+					<li>
+						<button>
+							<i class="material-icons menu-icon">store_mall_directory</i>
+							<div class="menu-item-title">Business</div>
+							<i class="material-icons right-arrow">keyboard_arrow_right</i>
+						</button>
+					</li>
+					<li>
+						<button>
+							<i class="material-icons menu-icon">trending_up</i>
+							<div class="menu-item-title">Stocks</div>
+							<i class="material-icons right-arrow">keyboard_arrow_right</i>
+						</button>
+					</li>
+					<li>
+						<button>
+							<i class="material-icons menu-icon">account_box</i>
+							<div class="menu-item-title">Investors</div>
+							<i class="material-icons right-arrow">keyboard_arrow_right</i>
+						</button>
+					</li>
+					<li>
+						<button>
+							<i class="material-icons menu-icon">swap_horiz</i>
+							<div class="menu-item-title">Futures</div>
+							<i class="material-icons right-arrow">keyboard_arrow_right</i>
+						</button>
+					</li>
+					<li>
+						<button>
+							<i class="material-icons menu-icon">local_atm</i>
+							<div class="menu-item-title">Store</div>
+							<i class="material-icons right-arrow">keyboard_arrow_right</i>
+						</button>
+					</li>
+					<li>
+						<button class="debug-btn red">
+							<i class="material-icons menu-icon">build</i>
+							<div class="menu-item-title">Debug</div>
+							<i class="material-icons right-arrow">keyboard_arrow_right</i>
+						</button>
+					</li>
+				</ul>
+			</section>
+			<section id="top-bar--container">
+				<div class="current-view">Dashboard</div>
+				<div class="account-settings-btn">
+					<span></span>
+					<span></span>
+					<span></span>	
+				</div>
+				<div class="account-settings-menu--container">
+					<i id="account-settings-menu-close-btn" class="material-icons">close</i>
+					<ul>
+						<li>
+							<button>Logout</button>
+						</li>
+					</ul>
+				</div>
+			</section>
+			<section id="main-content--container" class="">
+				<div class="flex-grid--container">
+					<div class="flex-column-100">
+						<div class="card"></div>
+					</div>
+					<div class="flex-column-50">
+						<div class="card"></div>
+						<div class="card"></div>
+					</div>
+
+					<div class="flex-column-50">
+						<div class="card"></div>
+						<div class="card"></div>
+					</div>
+				</div>
+			</section>
+			<section id="chat-module--container" class="closed">
+				<div class="chat-title-bar">
+					<span>All Chat</span>
+					<button></button>
+				</div>
+
+				<!-- 
+					Make Chat resizable
+					Make user's own messages show differently 
+				-->
+				<ul class="chat-message--list">
+					
+				</ul>
+				<textarea id="chat-text-input" placeholder="Say anything..."></textarea>
+			</section>
+			<section id="debug-module--container" class="closed">
+				<div class="debug-title-bar">
+					<span>Server Log</span>
+					<button></button>
+				</div>
+
+				<!-- 
+					Make Chat resizable
+					Make user's own messages show differently 
+				-->
+				<ul class="debug-message--list">
+					
+				</ul>
+				
+			</section>
+		</div>
+	</body>
+	
+</html>
