@@ -1,4 +1,10 @@
-$( document ).ready(function() {
+
+// ADDED THIS BLOCK FOR AUTH - TELL JAKE
+let authenticated = sessionStorage.getItem('authenticated');
+
+if(authenticated) {
+	// Get saved data from sessionStorage
+	$( document ).ready(function() {
 
 	let sampleMessages = [
 		{
@@ -376,12 +382,12 @@ $( document ).ready(function() {
     //     output.appendChild(pre);
     // }
 
-
     window.addEventListener("load", init, false);
+	});
 
+} else {
 
-    
+	window.location.href = "/";
 
-	
+}
 
-});

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 	<head>
 
 		<meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
@@ -72,200 +73,181 @@
 	</body>
 	
 </html>
-=======
-<head>
-    <style>
-        body {
-            background-color: #1F1F1F;
-            color: #f7f7f7;
-        }
-        pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
-        .string { color: green; }
-        .number { color: darkorange; }
-        .boolean { color: blue; }
-        .null { color: magenta; }
-        .key { color: red; }
-    </style>
-</head>
-</html>
 
 
 <script language="javascript" type="text/javascript">
-    var wsUri = "ws://"+ window.location.host + "/ws";
-    var output;
-    var webSocket;
+//     var wsUri = "ws://"+ window.location.host + "/ws";
+//     var output;
+//     var webSocket;
 
-    function init()
-    {
-        output = document.getElementById("output");
-        testWebSocket();
-    }
+//     function init()
+//     {
+//         output = document.getElementById("output");
+//         testWebSocket();
+//     }
 
-    function testWebSocket()
-    {
-        webSocket = new WebSocket(wsUri);
-        webSocket.onopen = function(evt) { onOpen(evt) };
-        webSocket.onclose = function(evt) { onClose(evt) };
-        webSocket.onmessage = function(evt) { onMessage(evt) };
-        webSocket.onerror = function(evt) { onError(evt) };
-    }
+//     function testWebSocket()
+//     {
+//         webSocket = new WebSocket(wsUri);
+//         webSocket.onopen = function(evt) { onOpen(evt) };
+//         webSocket.onclose = function(evt) { onClose(evt) };
+//         webSocket.onmessage = function(evt) { onMessage(evt) };
+//         webSocket.onerror = function(evt) { onError(evt) };
+//     }
 
-    function onOpen(evt)
-    {
-        onEvent("Connected");
-        //doSend('{"container_type": "register", "register_action": "register", "device_type": "test", "device_name":"' + window.prompt("device_name","test")  + '"}');
-        doSend('{"action": "login", "msg": {"username": "Will", "password":"pass"}}');
-        doSend('{"action": "query", "msg": {"uuid": "E72295C50A1652", "field":"net_worth", "num_points":10}}')
-        doSend('{"action": "chat", "msg": {"message_body": "FUCK YEAH"}}')
-        //doSend('{"op":"subscribe","type":"alert", "system":"irRemote"}');
-    }
+//     function onOpen(evt)
+//     {
+//         onEvent("Connected");
+//         //doSend('{"container_type": "register", "register_action": "register", "device_type": "test", "device_name":"' + window.prompt("device_name","test")  + '"}');
+//         doSend('{"action": "login", "msg": {"username": "Will", "password":"pass"}}');
+//         doSend('{"action": "query", "msg": {"uuid": "E72295C50A1652", "field":"net_worth", "num_points":10}}')
+//         doSend('{"action": "chat", "msg": {"message_body": "FUCK YEAH"}}')
+//         //doSend('{"op":"subscribe","type":"alert", "system":"irRemote"}');
+//     }
 
-    function onClose(evt)
-    {
-        onEvent("Disconnected");
-    }
+//     function onClose(evt)
+//     {
+//         onEvent("Disconnected");
+//     }
 
-    function login_message(login_message){
-        /// ????????????????
-    }
-    // map[uuid] -> object {}
-    /*
-    {
-    "action": "object",
-    "msg": {
-        "type": "ledger",
-        "uuid": "10CC90568D47C5",
-        "object": {
-            "uuid": "10CC90568D47C5",
-            "portfolio_id": "7AB098B953D711",
-            "stock_id": "02E1E73E2DA8E9",
-            "amount": 5
-        }
-    }
-}
-     */
-    // map[uuid]-> object
-    var all_objects = {}
-    // uuid -> type string
-    var uuid_map = {}
+//     function login_message(login_message){
+//         /// ????????????????
+//     }
+//     // map[uuid] -> object {}
+//     /*
+//     {
+//     "action": "object",
+//     "msg": {
+//         "type": "ledger",
+//         "uuid": "10CC90568D47C5",
+//         "object": {
+//             "uuid": "10CC90568D47C5",
+//             "portfolio_id": "7AB098B953D711",
+//             "stock_id": "02E1E73E2DA8E9",
+//             "amount": 5
+//         }
+//     }
+// }
+//      */
+//     // map[uuid]-> object
+//     var all_objects = {}
+//     // uuid -> type string
+//     var uuid_map = {}
 
-    function get_stock_name_ledger(ledger_object){
-        return all_objects[stock_object.ledger.object.stock_id].object.name
-    }
-    function new_object(object_message){
-        all_objects[object.message.type][object_message.msg.uuid] = object_message.msg
-        var all_stocks = all_objects['stocks']
-        all_objects[uuid_map['uuid']]['uuid']
-        // map stock_uuids -> stock objects
-    }
+//     function get_stock_name_ledger(ledger_object){
+//         return all_objects[stock_object.ledger.object.stock_id].object.name
+//     }
+//     function new_object(object_message){
+//         all_objects[object.message.type][object_message.msg.uuid] = object_message.msg
+//         var all_stocks = all_objects['stocks']
+//         all_objects[uuid_map['uuid']]['uuid']
+//         // map stock_uuids -> stock objects
+//     }
 
-    function  object_update(update_msg){
-        all_objects[update_msg.msg.uuid][update_msg.msg.field] = update_msg.msg.value
-    }
+//     function  object_update(update_msg){
+//         all_objects[update_msg.msg.uuid][update_msg.msg.field] = update_msg.msg.value
+//     }
 
-    function purchase_order_response(purchase_response){}
-
-
-    function onEvent(message){
-        var router = {
-            'login': login_message,
-            'object': new_object,
-            'update': object_update
-        }
-        //router[message.action](message)
-
-        writeToScreen('<span style="color: darkorange;">'+ message+'</span>')
-    }
-
-    function syntaxHighlight(json) {
-        if (typeof json != 'string') {
-            json = JSON.stringify(json, undefined, 4);
-        }
-        json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-            var cls = 'number';
-            if (/^"/.test(match)) {
-                if (/:$/.test(match)) {
-                    cls = 'key';
-                } else {
-                    cls = 'string';
-                }
-            } else if (/true|false/.test(match)) {
-                cls = 'boolean';
-            } else if (/null/.test(match)) {
-                cls = 'null';
-            }
-            return '<span class="' + cls + '">' + match + '</span>';
-        });
-    }
-
-    function putScreen(inp) {
-        var para = document.createElement("pre");
-        para.innerHTML = inp
-
-        var element = document.getElementById("output");
-        element.insertBefore(para, element.firstChild);
-    }
-
-    function syntaxHighlight(json) {
-        // https://stackoverflow.com/questions/4810841/how-can-i-pretty-print-json-using-javascript
-        json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-            var cls = 'number';
-            if (/^"/.test(match)) {
-                if (/:$/.test(match)) {
-                    cls = 'key';
-                } else {
-                    cls = 'string';
-                }
-            } else if (/true|false/.test(match)) {
-                cls = 'boolean';
-            } else if (/null/.test(match)) {
-                cls = 'null';
-            }
-            return '<span class="' + cls + '">'  + match + '</span>';
-        });
-    }
-
-    function onMessage(evt)
-    {
-        //writeToScreen(syntaxHighlight(evt.data));
-        var str = JSON.stringify(JSON.parse(evt.data), undefined, 4);
-        putScreen(syntaxHighlight(str));
-    }
-
-    function onSend(message)
-    {
-        writeToScreen('<span style="color: lightblue;">SEND: ' + message +'</span>');
-
-    }
-
-    function onError(evt)
-    {
-        writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
-    }
-
-    function doSend(message)
-    {
-        onSend(message)
-        webSocket.send(message);
-    }
-    function writeToScreen(message)
-    {
-        var pre = document.createElement("p");
-        //pre.style.wordWrap = "break-word";
-        pre.innerHTML = message;
-        output.appendChild(pre);
-    }
+//     function purchase_order_response(purchase_response){}
 
 
+//     function onEvent(message){
+//         var router = {
+//             'login': login_message,
+//             'object': new_object,
+//             'update': object_update
+//         }
+//         //router[message.action](message)
 
-    window.addEventListener("load", init, false);
+//         writeToScreen('<span style="color: darkorange;">'+ message+'</span>')
+//     }
+
+//     function syntaxHighlight(json) {
+//         if (typeof json != 'string') {
+//             json = JSON.stringify(json, undefined, 4);
+//         }
+//         json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+//         return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+//             var cls = 'number';
+//             if (/^"/.test(match)) {
+//                 if (/:$/.test(match)) {
+//                     cls = 'key';
+//                 } else {
+//                     cls = 'string';
+//                 }
+//             } else if (/true|false/.test(match)) {
+//                 cls = 'boolean';
+//             } else if (/null/.test(match)) {
+//                 cls = 'null';
+//             }
+//             return '<span class="' + cls + '">' + match + '</span>';
+//         });
+//     }
+
+//     function putScreen(inp) {
+//         var para = document.createElement("pre");
+//         para.innerHTML = inp
+
+//         var element = document.getElementById("output");
+//         element.insertBefore(para, element.firstChild);
+//     }
+
+//     function syntaxHighlight(json) {
+//         // https://stackoverflow.com/questions/4810841/how-can-i-pretty-print-json-using-javascript
+//         json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+//         return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+//             var cls = 'number';
+//             if (/^"/.test(match)) {
+//                 if (/:$/.test(match)) {
+//                     cls = 'key';
+//                 } else {
+//                     cls = 'string';
+//                 }
+//             } else if (/true|false/.test(match)) {
+//                 cls = 'boolean';
+//             } else if (/null/.test(match)) {
+//                 cls = 'null';
+//             }
+//             return '<span class="' + cls + '">'  + match + '</span>';
+//         });
+//     }
+
+//     function onMessage(evt)
+//     {
+//         //writeToScreen(syntaxHighlight(evt.data));
+//         var str = JSON.stringify(JSON.parse(evt.data), undefined, 4);
+//         putScreen(syntaxHighlight(str));
+//     }
+
+//     function onSend(message)
+//     {
+//         writeToScreen('<span style="color: lightblue;">SEND: ' + message +'</span>');
+
+//     }
+
+//     function onError(evt)
+//     {
+//         writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
+//     }
+
+//     function doSend(message)
+//     {
+//         onSend(message)
+//         webSocket.send(message);
+//     }
+//     function writeToScreen(message)
+//     {
+//         var pre = document.createElement("p");
+//         //pre.style.wordWrap = "break-word";
+//         pre.innerHTML = message;
+//         output.appendChild(pre);
+//     }
+
+
+
+//     window.addEventListener("load", init, false);
 
 </script>
 
-<h2 style="color: white">WebSocket Test</h2>
 
 
-<div id="output"></div>
->>>>>>> 1c4f8b70213287f98af2e2765cb0bc6149b40d76
