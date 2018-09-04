@@ -7,25 +7,12 @@ import (
 	"github.com/stock-simulator-server/src/valuable"
 )
 
-var tradeChannel = make(chan *order.PurchaseOrder, 30)
-
-func Trade(o *order.PurchaseOrder) {
-	tradeChannel <- o
-}
-
-func RunTrader() {
-	go func() {
-		for purchaseOrder := range tradeChannel {
-			trade(purchaseOrder)
-		}
-	}()
-}
 
 // validate and make a trade
 // Purchase Order contains a reference to the order
 // use failureTrade() and successTrade to send response down channel
 // Don't need to a lock around this since the portfolio holds it for that trade
-func trade(o *order.PurchaseOrder) {
+func ExecuteTrade(o *order.PurchaseOrder) {
 	//get the stock if it exists
 	//valuable.ValuablesLock.EnableDebug()
 	//ledger.EntriesLock.EnableDebug()
@@ -40,7 +27,7 @@ func trade(o *order.PurchaseOrder) {
 		order.FailureOrder("asset is not recognized", o)
 		return
 	}
-	//todo possible deadlock
+	//todo possible deadlock idk where though :( #poorCommenting
 	value.GetLock().Acquire("trade")
 	defer value.GetLock().Release()
 

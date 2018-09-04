@@ -11,7 +11,6 @@ import (
 	"github.com/stock-simulator-server/src/account"
 	"github.com/stock-simulator-server/src/client"
 	"github.com/stock-simulator-server/src/order"
-	"github.com/stock-simulator-server/src/trade"
 )
 
 func LoadVars() {
@@ -107,11 +106,12 @@ func LoadVars() {
 	for id := range valuable.Stocks {
 		for i:=0; i<100; i++{
 			portId := accs[i%3]
-			po2 := order.BuildPurchaseOrder(id, portId, 1)
-			trade.Trade(po2)
-
+			po2 := order.MakePurchaseOrder(id, portId, 1)
 			client.SendToUser(users[i%3],messages.BuildPurchaseResponse( <-po2.ResponseChannel))
 			<-time.After(time.Second * 30)
+			to := order.MakeTransferOrder(portId, accs[(i+1)%3], 10)
+			client.SendToUser(users[i%3],messages.BuildPurchaseResponse( <-to.ResponseChannel))
+
 		}
 	}
 

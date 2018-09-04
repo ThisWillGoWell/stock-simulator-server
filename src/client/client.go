@@ -15,7 +15,6 @@ import (
 	"github.com/stock-simulator-server/src/messages"
 	"github.com/stock-simulator-server/src/order"
 	"github.com/stock-simulator-server/src/portfolio"
-	"github.com/stock-simulator-server/src/trade"
 	"github.com/stock-simulator-server/src/valuable"
 )
 
@@ -222,11 +221,19 @@ func (client *Client) processChatMessage(message messages.Message) {
 
 func (client *Client) processTradeMessage(message messages.Message) {
 	tradeMessage := message.(*messages.TradeMessage)
-	po := order.BuildPurchaseOrder(tradeMessage.StockId, client.user.PortfolioId, tradeMessage.Amount)
-	trade.Trade(po)
+	po := order.MakePurchaseOrder(tradeMessage.StockId, client.user.PortfolioId, tradeMessage.Amount)
 	go func() {
 		response := <-po.ResponseChannel
 		SendToUser(client.user.Uuid, messages.BuildPurchaseResponse(response))
+	}()
+}
+
+func (client *Client) processTransferMessage(message messages.Message) {
+	transferMessage := message.(*messages.TransferMessage)
+	 to := order.MakeTransferOrder(client.user.PortfolioId, transferMessage.Recipient, transferMessage.Amount)
+	go func() {
+		response := <-to.ResponseChannel
+		SendToUser(client.user.Uuid, messages.BuildTransferResponse(response))
 	}()
 }
 

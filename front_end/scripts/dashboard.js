@@ -282,6 +282,7 @@ $( document ).ready(function() {
     };
 
     var routeObject = function(msg) {
+
 		switch (msg.msg.type) {
 			case 'portfolio':
 			    Vue.set(vm_portfolios.portfolios, msg.msg.uuid, msg.msg.object);

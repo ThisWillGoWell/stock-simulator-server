@@ -55,6 +55,7 @@ type Stock struct {
 	TickerId      string                        `json:"ticker_id"`
 	CurrentPrice  int64                 	    `json:"current_price" change:"-"`
 	OpenShares    int64                      	`json:"open_shares" change:"-"`
+	ChangeDuration time.Duration				`json:"-"`
 	PriceChanger  PriceChange                   `json:"-"`
 	UpdateChannel *duplicator.ChannelDuplicator `json:"-"`
 	lock          *lock.Lock                    `json:"-"`
@@ -81,6 +82,7 @@ func MakeStock(uuid, tickerID, name string, startPrice, openShares int64, runInt
 		}
 	}
 	stock := &Stock{
+		ChangeDuration: runInterval,
 		OpenShares:    openShares,
 		Uuid:          uuid,
 		lock:          lock.NewLock(fmt.Sprintf("stock-%s", tickerID)),
@@ -92,7 +94,7 @@ func MakeStock(uuid, tickerID, name string, startPrice, openShares int64, runInt
 
 	stock.PriceChanger = &RandomPrice{
 		RunPercent:            timeSimulationPeriod.Seconds() / (runInterval.Seconds() * 1.0),
-		TargetPrice:           100.0,
+		TargetPrice:           10000,
 		PercentToChangeTarget: .1,
 		Volatility:            5,
 	}
@@ -180,7 +182,7 @@ func (randPrice *RandomPrice) changeValues() {
 	// this is to prevent all the stocks to becoming 1.231234e-14
 	if newTarget < 3 {
 		if rand.Float64() < randPrice.PercentToChangeTarget {
-			newTarget = 10
+			newTarget = 10000
 		}
 	}
 	//need to deiced if the floor should happen before or after

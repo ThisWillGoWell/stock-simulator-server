@@ -16,14 +16,15 @@ var (
 		`name text NOT NULL,` +
 		`current_price int,` +
 		`open_shares int,` +
+		`change_interval numeric(16, 4), `+
 		`PRIMARY KEY(uuid)` +
 		`);`
 
-	stocksTableUpdateInsert = `INSERT into ` + stocksTableName + `(uuid, ticker_id, name, current_price, open_shares) values($1, $2, $3, $4, $5) ` +
+	stocksTableUpdateInsert = `INSERT into ` + stocksTableName + `(uuid, ticker_id, name, current_price, open_shares, change_interval) values($1, $2, $3, $4, $5, $6) ` +
 		`ON CONFLICT (uuid) DO UPDATE SET current_price=EXCLUDED.current_price, open_shares=EXCLUDED.open_shares`
 
-	stocksTableQueryStatement = "SELECT uuid, ticker_id, name, current_price, open_shares FROM " + stocksTableName
-	//getCurrentPrice()
+	stocksTableQueryStatement = "SELECT uuid, ticker_id, name, current_price, open_shares, change_interval FROM " + stocksTableName
+	//getCurrentPrice()z
 )
 
 func initStocks() {
@@ -49,7 +50,7 @@ func writeStock(stock *valuable.Stock) {
 		db.Close()
 		panic("could not begin stocks init")
 	}
-	_, err = tx.Exec(stocksTableUpdateInsert, stock.Uuid, stock.TickerId, stock.Name, stock.CurrentPrice, stock.OpenShares)
+	_, err = tx.Exec(stocksTableUpdateInsert, stock.Uuid, stock.TickerId, stock.Name, stock.CurrentPrice, stock.OpenShares, stock.ChangeDuration)
 	if err != nil {
 		tx.Rollback()
 		panic("error occurred while insert stock in table " + err.Error())
@@ -60,6 +61,7 @@ func writeStock(stock *valuable.Stock) {
 func populateStocks() {
 	var uuid, name, tickerId string
 	var currentPrice, openShares int64
+	var changeInterval float64
 
 	rows, err := db.Query(stocksTableQueryStatement)
 	if err != nil {
@@ -68,12 +70,13 @@ func populateStocks() {
 	}
 	defer rows.Close()
 	for rows.Next() {
-		err := rows.Scan(&uuid, &tickerId, &name, &currentPrice, &openShares)
+		err := rows.Scan(&uuid, &tickerId, &name, &currentPrice, &openShares, &changeInterval)
 		if err != nil {
 			panic(err)
 			log.Fatal(err)
 		}
-		valuable.MakeStock(uuid, tickerId, name, currentPrice, openShares, time.Second*60)
+		t := time.Duration(changeInterval)
+		valuable.MakeStock(uuid, tickerId, name, currentPrice, openShares, t)
 	}
 	err = rows.Err()
 	if err != nil {

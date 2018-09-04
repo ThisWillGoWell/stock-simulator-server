@@ -15,6 +15,7 @@ type TradeResponse struct {
 	Response interface{}   `json:"response"`
 }
 
+
 func (*TradeResponse) message() { return }
 
 func (baseMessage *BaseMessage) IsTrade() bool {
@@ -29,5 +30,5 @@ func BuildPurchaseResponse(response interface{}) *BaseMessage {
 			Type:  "trade_response",
 		},
 	}
-
 }
+

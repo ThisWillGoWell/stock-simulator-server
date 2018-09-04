@@ -54,6 +54,8 @@ func (baseMessage *BaseMessage) UnmarshalJSON(data []byte) error {
 		message = &NewAccountMessage{}
 	case QueryAction:
 		message = &QueryMessage{}
+	case TransferAction:
+		message = &TransferMessage{}
 
 	}
 
