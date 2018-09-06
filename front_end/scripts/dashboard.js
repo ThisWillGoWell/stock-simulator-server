@@ -85,7 +85,7 @@ if(authenticated) {
 		  },
 		  methods: {
 			    formatPrice: function(value) {
-			        let val = (value/1).toFixed(2)
+			        let val = (value/1).toFixed(2)/100
 			        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
 			    },
 			    // on column name clicks
@@ -470,7 +470,7 @@ if(authenticated) {
 					// temp var for calculating price
 					var currPrice = vm_stocks.stocks[targetUUID][targetField];
 					// Adding change amount
-					vm_stocks.stocks[targetUUID].change = Math.round((targetChange - currPrice) * 1000)/1000;
+					vm_stocks.stocks[targetUUID].change = Math.round((targetChange - currPrice) * 1000)/100000;
 					// Adding new current price
 					vm_stocks.stocks[targetUUID][targetField] = targetChange;
 
