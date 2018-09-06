@@ -85,7 +85,7 @@ if(authenticated) {
 		  },
 		  methods: {
 			    formatPrice: function(value) {
-			        let val = (value/1).toFixed(2)
+			        let val = (value/1).toFixed(2)/100
 			        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
 			    },
 			    // on column name clicks
