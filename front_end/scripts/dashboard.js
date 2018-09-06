@@ -260,6 +260,12 @@ if(authenticated) {
 	        
 	    });
 
+	    // $('#nav li button').click(function(this) {
+	    
+	    //    $(this).remove();
+	        
+	    // });
+
 	    $('thead tr th').click(function(event) {
 	    	
 	    	// //let targetElem = this.find('.material-icon').first();

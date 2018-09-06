@@ -563,6 +563,11 @@ input[type=password]:focus ~ .input-focus-border{
     padding-bottom: 25px;
 }
 
+#user-info-container p{
+    font-size: 18px;
+    color: #B0BEC5;
+}
+
 
 
 
