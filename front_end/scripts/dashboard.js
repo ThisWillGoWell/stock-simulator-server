@@ -86,7 +86,7 @@ if(authenticated) {
 		  methods: {
 			    formatPrice: function(value) {
 			        let val = (value/1).toFixed(2)/100
-			        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+			        return val.toLocaleString("en-US", {style:"currency", currency:"USD"}).substring(1);
 			    },
 			    // on column name clicks
 			    sortCol(col) {
@@ -204,7 +204,7 @@ if(authenticated) {
 			if (fromMe) {
 				isMe = "is-me";
 			}
-			let msg_text = msg.body;
+			let msg_text = cleanMessage(msg.body);
 			let msg_author_display_name = msg.author_display_name;
 			let msg_author_uuid = msg.author_uuid;
 			let msg_timestamp = formatDate12Hour(new Date($.now()));
@@ -216,6 +216,10 @@ if(authenticated) {
 			chat_feed.append(msg_template);
 			chat_feed.animate({scrollTop: chat_feed.prop("scrollHeight")}, $('#chat-module--container .chat-message--list').height());
 
+		}
+
+		const cleanMessage = (msg) => {
+		    return $('<div/>').text(msg).html();
 		}
 
 		function appendNewServerMessage(msg){
@@ -476,7 +480,7 @@ if(authenticated) {
 					// temp var for calculating price
 					var currPrice = vm_stocks.stocks[targetUUID][targetField];
 					// Adding change amount
-					vm_stocks.stocks[targetUUID].change = Math.round((targetChange - currPrice) * 1000)/100000;
+					vm_stocks.stocks[targetUUID].change = Math.round((targetChange - currPrice) * 1000)/1000;
 					// Adding new current price
 					vm_stocks.stocks[targetUUID][targetField] = targetChange;
 
