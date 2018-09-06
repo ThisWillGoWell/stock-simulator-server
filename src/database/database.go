@@ -65,7 +65,10 @@ func InitDatabase() {
 	initPortfolio()
 	initStocksHistory()
 	initPortfolioHistory()
+
+	initLedgerHistory()
 	initAccount()
+
 
 	populateLedger()
 	populateStocks()
@@ -93,6 +96,7 @@ func databaseWriter() {
 			writeUser(val.(*account.User))
 		case *ledger.Entry:
 			writeLedger(val.(*ledger.Entry))
+			writeLedgerHistory(val.(*ledger.Entry))
 		case *valuable.Stock:
 			writeStock(val.(*valuable.Stock))
 			writeStockHistory(val.(*valuable.Stock))

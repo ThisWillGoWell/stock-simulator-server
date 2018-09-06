@@ -216,7 +216,7 @@ func (client *Client) processChatMessage(message messages.Message) {
 	chatMessage.Timestamp = time.Now()
 	//database.SaveChatMessage(chatMessage.Author, chatMessage.Message)
 	print("offer")
-	BroadcastMessages.Offer(chatMessage)
+	BroadcastMessages.Offer(messages.BuildChatMessage(message.(*messages.ChatMessage)))
 }
 
 func (client *Client) processTradeMessage(message messages.Message) {

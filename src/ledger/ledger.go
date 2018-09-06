@@ -32,7 +32,7 @@ type Entry struct {
 	Uuid          string                        `json:"uuid"`
 	PortfolioId   string                        `json:"portfolio_id"`
 	StockId       string                        `json:"stock_id"`
-	Amount        int64                       `json:"amount" change:"-"`
+	Amount        int64                         `json:"amount" change:"-"`
 	UpdateChannel *duplicator.ChannelDuplicator `json:"-"`
 }
 

@@ -4,7 +4,7 @@ const TradeAction = "trade"
 
 type TradeMessage struct {
 	StockId    string  `json:"stock_id"`
-	ExchangeID string  `json:"exchange_id"`
+	ExchangeID string  `json:"-"`
 	Amount     int64 `json:"amount"`
 }
 

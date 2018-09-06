@@ -23,7 +23,7 @@ func LoadVars() {
 		duration time.Duration
 	}
 	stockConfigs := append(make([]stockConfig, 0),
-		stockConfig{"AAPL", "Apple Inc.", 1000, time.Minute * 10 },
+		stockConfig{"CHUNT", "Slut Hut", 1000, time.Second * 20 },
 		stockConfig{"ABBV", "AbbVie Inc.", 1000, time.Minute * 10 },
 		stockConfig{"ABT", "Abbott Laboratories", 1000, time.Minute * 10 },
 		stockConfig{"ACN", "Accenture plc", 1000, time.Minute * 10 },
@@ -110,7 +110,7 @@ func LoadVars() {
 			client.SendToUser(users[i%3],messages.BuildPurchaseResponse( <-po2.ResponseChannel))
 			<-time.After(time.Second * 30)
 			to := order.MakeTransferOrder(portId, accs[(i+1)%3], 10)
-			client.SendToUser(users[i%3],messages.BuildPurchaseResponse( <-to.ResponseChannel))
+			client.SendToUser(users[i%3],messages.BuildTransferResponse( <-to.ResponseChannel))
 
 		}
 	}

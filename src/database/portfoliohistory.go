@@ -18,7 +18,6 @@ var (
 
 	portfolioHistoryTableUpdateInsert = `INSERT INTO ` + portfolioHistoryTableName + `(time, uuid, net_worth, wallet) values (NOW(),$1, $2, $3)`
 
-	portfolioHistroyTableQueryStatement = "SELECT * FROM " + portfolioHistoryTableName + " WHERE uuid"
 	//getCurrentPrice()
 	validPortfolioFields = map[string]bool{
 		"wallet": true,

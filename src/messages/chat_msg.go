@@ -15,3 +15,10 @@ func (*ChatMessage) message() { return }
 func (baseMessage *BaseMessage) IsChat() bool {
 	return baseMessage.Action == "chat"
 }
+
+func BuildChatMessage(message *ChatMessage)*BaseMessage{
+	return &BaseMessage{
+		Action: ChatAction,
+		Msg:message,
+	}
+}

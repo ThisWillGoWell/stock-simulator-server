@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/stock-simulator-server/src/database"
+	"github.com/stock-simulator-server/src/ledger"
 	"github.com/stock-simulator-server/src/messages"
 	"github.com/stock-simulator-server/src/portfolio"
 	"github.com/stock-simulator-server/src/utils"
@@ -88,6 +89,14 @@ func makeQuery(query *Query ) {
 		case "limit":
 			vals, err = database.MakePortfolioHistoryLimitQuery(query.QueryUUID, query.QueryField, query.Limit)
 		}
+	case *ledger.Entry:
+		switch query.Type {
+		case "time":
+			vals, err = database.MakeLedgerHistoryTimeQuery(query.QueryUUID, query.TimeLength, query.QueryField, query.TimeInterval)
+		case "limit":
+			vals, err = database.MakeLedgerHistoryLimitQuery(query.QueryUUID, query.QueryField, query.Limit)
+		}
+
 	default:
 		fmt.Printf("%T", v)
 	}
