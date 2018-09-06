@@ -11,14 +11,17 @@ $( document ).ready(function() {
     let wsUri = "ws://"+ externalServer + "/ws";
     var output;
     var webSocket;
+    var auth_token = {
+        "uid": 0,
+        "pw": "",
+    };
 
     function init()
     {
-        output = document.getElementById("output");
-        testWebSocket();
+        refreshSocket();
     }
 
-    function testWebSocket()
+    function refreshSocket()
     {
         webSocket = new WebSocket(wsUri);
         webSocket.onopen = function(evt) { onOpen(evt) };
@@ -34,6 +37,7 @@ $( document ).ready(function() {
         //doSend('{"action": "login", "msg": {"username": "Will", "password":"pass"}}');
 
         //doSend('{"op":"subscribe","type":"alert", "system":"irRemote"}');
+        //doSend('{"action": "new_account", "msg": {"username": "Brennan", "password":"pass", "display_name":"Brennan"}}');
     }
 
     function onClose(evt)
@@ -59,7 +63,7 @@ $( document ).ready(function() {
         
     }
 
-    ////
+    
 
     function onMessage(evt)
     {
@@ -83,6 +87,7 @@ $( document ).ready(function() {
         if(msg.msg.success) {
             // Save data to sessionStorage
             sessionStorage.setItem("authenticated", msg.msg.uuid);
+            sessionStorage.setItem("auth_obj", JSON.stringify(auth_token));
             window.location.href = "/dashboard.html";
 
         } else {
@@ -148,6 +153,8 @@ $( document ).ready(function() {
 				        	"password": input_pw_trimmed
 				        }
 				    };
+            auth_token["uid"] = input_uid_trimmed;
+            auth_token["pw"] = input_pw_trimmed;
     	}
 
     	console.log(auth_msg);
@@ -155,6 +162,7 @@ $( document ).ready(function() {
     	try {
     		
 	  		doSend(JSON.stringify(auth_msg));
+
             //doSend('{"action": "login", "msg": {"username": "Will", "password":"pass"}}');
 		}
 
@@ -171,6 +179,15 @@ $( document ).ready(function() {
         console.log("login clicked");
         
     });
+
+    $(document).keypress(function(e) {
+        
+            if(e.which == 13) {
+                attemptLogin();
+
+            }
+        
+        });
 
 	window.addEventListener("load", init, false);
 
