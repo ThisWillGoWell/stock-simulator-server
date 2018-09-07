@@ -36,6 +36,7 @@ func main() {
 	if !disableDb {
 		database.InitDatabase()
 	}
+	valuable.ValuablesLock.EnableDebug()
 	//Wiring of system
 	wires.ConnectWires(disableDb)
 	//this takes the subscribe output and converts it to a message
