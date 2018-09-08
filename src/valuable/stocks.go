@@ -91,6 +91,7 @@ func MakeStock(uuid, tickerID, name string, startPrice, openShares int64, runInt
 		CurrentPrice:  startPrice,
 		UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("stock-%s-update", tickerID)),
 	}
+	stock.lock.EnableDebug()
 
 	stock.PriceChanger = &RandomPrice{
 		RunPercent:            timeSimulationPeriod.Seconds() / (runInterval.Seconds() * 1.0),

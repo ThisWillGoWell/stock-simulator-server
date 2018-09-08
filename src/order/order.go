@@ -138,6 +138,7 @@ func executeTrade(o *PurchaseOrder) {
 		port.UpdateInput.RegisterInput(ledgerEntry.UpdateChannel.GetBufferedOutput(10))
 	}
 
+
 	if o.Amount > 0 {
 		//we have a buy
 		// are there enough shares
