@@ -529,57 +529,15 @@ input[type=password]:focus ~ .input-focus-border{
     width: 4px;
 }
 
-.nav-list {
-    position: absolute;
-    top: 0;
-    right: 0;
-    height: 100%;
-    margin-bottom: 0;
-    list-style-type: none;
-}
-.nav-list li{
-    display: inline-block;
-    padding: 0 15px;
-    min-width: 120px;
-    height: 100%;
+.timer-container {
+
+    padding: 20px 100px;
 }
 
-.nav-list li div {
-
-}
-
-.timer-container{
-    text-align: left;
-    
-    
-   
-}
-
-
-.timer-container p{
-    
-    color: #fff;
-
-}
-
-#user-info-container {
-    
-}
-
-#user-info-container p{
-    font-size: 18px;
-    color: #B0BEC5;
-}
-
-
-
-
-
-/*
 .timer-container path.circle-timer {
     stroke-dasharray: 230 !important;
     fill: transparent !important;
-}*/
+}
 
 .right-arrow {
     float: right;
@@ -630,14 +588,13 @@ input[type=password]:focus ~ .input-focus-border{
 }
 
 #top-bar--container .account-settings-btn{
-    
+    position: absolute;
     display: block;
-    float: right;
+    right: 0;
     padding-top: 28px;
     height: 80px;
     background-color: transparent;
     padding-right: 50px;
-    padding-left: 50px;
     font-size: 20px;
     line-height: 80px;
     color: #617D8A;
@@ -1210,297 +1167,18 @@ input[type=password]:focus ~ .input-focus-border{
     box-shadow: 0 13px 15px rgba(0,0,0,0.001), 0 3px 5px rgba(0,0,0,0.05);
 }
 
-.card.stock-list{
-    
-    padding: 0px;
-    
-}
-
-table.table thead tr {
-    border-bottom: #607d8b solid 3px;
-    height: 50px;
-    
-}
-
-
-table.table tbody tr:hover {
-    cursor: pointer;
-    background-color: #EEEEEE;
-}
-
-table.table thead tr th{
-    font-size: 16px;
-    font-weight: 300;
-    text-align: right;
-    color: #1a1a1a;
-    padding-bottom: 12px;
-    cursor: pointer;
-}
-
-table.table thead tr th:hover{
-    background-color: #EEEEEE;
-}
-
-tr, th, .stock-change i {
+tr {
     -moz-transition: all ease-in-out 0.13s;
     -o-transition: all ease-in-out 0.13s;
     -webkit-transition: all ease-in-out 0.13s;
     transition: all ease-in-out 0.13s;
-
-}
-
-table tbody tr th{
-    padding: 15px 25px !important;
-}
-
-table.table tbody tr td{
-    padding: 15px 0px;
 }
 
 .updated {
     background-color: #546E7A;
-    color: #fff !important;
-}
-
-.stock-display-name {
-    color: #bdbdbd;
-    font-size: 8px;
-}
-
-.stock-ticker-id {
-    color: #616161;
-    font-size: 14px;
-    padding-top: 3px;
-}
-
-.stock-open-shares, .stock-change, .stock-price {
-    color: #616161;
-    font-size: 14px;
-    font-weight: 100;
-    line-height: 40px !important;
-    text-align: right;
-}
-
-.stock-change.rising {
-    color: #1abc9c;
-    
-}
-
-.stock-change.rising i {
-    color: #1abc9c;
-    transform: rotate(180deg);
-}
-
-.stock-change.falling {
-    color: #f44336;
-    
-}
-
-.stock-change.falling i{
-    color: #f44336;
-    transform: rotate(0deg);
-    
-}
-
-.stock-change i{
-    color: #ececec;
-    transform: rotate(-90deg);
-    margin-top: -1px;
-}
-
-.material-icons {
-    -moz-transition: all ease-in-out 0.33s;
-    -o-transition: all ease-in-out 0.33s;
-    -webkit-transition: all ease-in-out 0.33s;
-    transition: all ease-in-out 0.33s;
-}
-
-.material-icons.stock, .material-icons.open-shares, .material-icons.change, .material-icons.cost {
-    
-    opacity: 0;
-}
-
-.material-icons.stock.shown, .material-icons.open-shares.shown, .material-icons.change.shown, .material-icons.cost.shown {
-    transform: rotate(0deg);
-    opacity: 1;
-}
-
-.material-icons.stock.shown.flipped, .material-icons.open-shares.shown.flipped, .material-icons.change.shown.flipped, .material-icons.cost.shown.flipped {
-    transform: rotate(180deg);
-    opacity: 1;
-}
-
-/*.material-icons {
-    transform: rotate(180deg);
-}*/
-
-/*.material-icons.stock.dsc {
-    transform: rotate(-180deg);
-}*/
-
-#modal--container{
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 20;
-    opacity: 0;
-    background-color: rgba(0,0,0,0.2);
-    display: none;
-}
-
-#modal--container.open {
-    
-    opacity: 1;
-    
-}
-
-#modal--container .modal-card{
-    position: absolute;
-    height: 300px;
-    width: 400px;
-    background-color: #fff;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 20;
-    margin: auto;
-    border-radius: 2px;
-    
-    box-shadow: 0 3px 5px rgba(0,0,0,0.10), 0 3px 5px rgba(0,0,0,0.15);
-}
-
-#modal--container .modal-card{
-    position: absolute;
-    height: 300px;
-    width: 400px;
-    background-color: #fff;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 20;
-    margin: auto;
-    
-    border-radius: 2px;
-    box-shadow: 0 3px 5px rgba(0,0,0,0.10), 0 3px 5px rgba(0,0,0,0.15);
-}
-
-#modal--container .modal-card button{
-    position: absolute;
-    height: 40px;
-    width: 40px;
-    background-color: #fff;
-    border-radius: 50%;
-    top: 8px;
-    color: #4d4d4d;
-    right: 8px;
-    z-index: 20px;
-    border: none;
-}
-
-#modal--container .modal-card button:hover{
-    
-    
-    background-color: #9e9e9e;
     color: #fff;
-    
-    
-    
 }
 
-#modal--container .modal-card button i{
-    font-size: 22px;
-}
-
-/* DASHBOARD VIEWS */
-
-.view-container {
-    position: relative;
-}
-
-#dashboard--view, #business--view, #stocks--view, #investors--view, #futures--view, #store--view{
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
-    opacity: 0;
-    transform: translateY(20px);
-    -moz-transition: all ease-in-out 0.23s;
-    -o-transition: all ease-in-out 0.23s;
-    -webkit-transition: all ease-in-out 0.23s;
-    transition: all ease-in-out 0.23s;
-}
-
-#dashboard--view.active, #business--view.active, #stocks--view.active, #investors--view.active, #futures--view.active, #store--view.active {
-    opacity: 1;
-    z-index: 110;
-    transform: translateY(0px);
-}
-
-.username-text {
-    position: absolute;
-    right: 135px;
-    top: 26px;
-    font-size: 20px;
-    font-weight: 100;
-    color: #78909C;
-}
-
-.level-circle {
-    height: 38px;
-    width: 38px;
-    border-radius: 75px;
-    background-color: #4d4d4d;
-    color: #fff;
-    text-align: center;
-    line-height: 38px;
-    font-weight: 600;
-
-    position: absolute;
-        right: 220px;
-    top: 20px;
-   
-}
-
-#stats--view {
-    width: 100%;
-    
-    background-color: #34495e;
-    color: #fff;
-    font-weight: 500;
-    font-size: 14px;
-    line-height: 60px;
-    padding-left: 35px;
-    padding-right: 25px;
-    -moz-transition: all ease-in-out 0.17s;
-    -o-transition: all ease-in-out 0.17s;
-    -webkit-transition: all ease-in-out 0.17s;
-    transition: all ease-in-out 0.17s;
-    overflow: hidden;
-    position: relative;
-}
-.card .stat-value i{
-    font-size: 50px;
-}
-
-.stat-value i{
-    font-size: 24px;
-}
-.stat-value.blue i {
-    color: #4dd0e1;
-}
-
-.stat-value.green i {
-    color: #1abc9c;
-}
-
-.stat-value.orange i {
-    color: #ffb74d;
-}
 
 /* MEDIA QUERIES */
 
