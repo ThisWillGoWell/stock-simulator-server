@@ -529,38 +529,41 @@ input[type=password]:focus ~ .input-focus-border{
     width: 4px;
 }
 
+.nav-list {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    margin-bottom: 0;
+    list-style-type: none;
+}
+.nav-list li{
+    display: inline-block;
+    padding: 0 15px;
+    min-width: 120px;
+    height: 100%;
+}
+
+.nav-list li div {
+
+}
+
 .timer-container{
     text-align: left;
-    width: 100%;
+    
     
    
 }
 
-.level-circle {
-    height: 50px;
-    width: 50px;
-    border-radius: 75px;
-    background-color: #fff;
-    color: #4d4d4d;
-    text-align: center;
-    line-height: 50px;
-    font-weight: 600;
-    margin-left: 35px;
-    float: left;
-    font-size: 26px;
-}
+
 .timer-container p{
-    margin-left: 15px;
-    padding-top: 17px;
-    display: inline-block;
+    
     color: #fff;
 
 }
 
 #user-info-container {
-    display: block;
-    padding-top: 25px;
-    padding-bottom: 25px;
+    
 }
 
 #user-info-container p{
@@ -627,13 +630,14 @@ input[type=password]:focus ~ .input-focus-border{
 }
 
 #top-bar--container .account-settings-btn{
-    position: absolute;
+    
     display: block;
-    right: 0;
+    float: right;
     padding-top: 28px;
     height: 80px;
     background-color: transparent;
     padding-right: 50px;
+    padding-left: 50px;
     font-size: 20px;
     line-height: 80px;
     color: #617D8A;
@@ -1411,6 +1415,92 @@ table.table tbody tr td{
     font-size: 22px;
 }
 
+/* DASHBOARD VIEWS */
+
+.view-container {
+    position: relative;
+}
+
+#dashboard--view, #business--view, #stocks--view, #investors--view, #futures--view, #store--view{
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    opacity: 0;
+    transform: translateY(20px);
+    -moz-transition: all ease-in-out 0.23s;
+    -o-transition: all ease-in-out 0.23s;
+    -webkit-transition: all ease-in-out 0.23s;
+    transition: all ease-in-out 0.23s;
+}
+
+#dashboard--view.active, #business--view.active, #stocks--view.active, #investors--view.active, #futures--view.active, #store--view.active {
+    opacity: 1;
+    z-index: 110;
+    transform: translateY(0px);
+}
+
+.username-text {
+    position: absolute;
+    right: 135px;
+    top: 26px;
+    font-size: 20px;
+    font-weight: 100;
+    color: #78909C;
+}
+
+.level-circle {
+    height: 38px;
+    width: 38px;
+    border-radius: 75px;
+    background-color: #4d4d4d;
+    color: #fff;
+    text-align: center;
+    line-height: 38px;
+    font-weight: 600;
+
+    position: absolute;
+        right: 220px;
+    top: 20px;
+   
+}
+
+#stats--view {
+    width: 100%;
+    
+    background-color: #34495e;
+    color: #fff;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 60px;
+    padding-left: 35px;
+    padding-right: 25px;
+    -moz-transition: all ease-in-out 0.17s;
+    -o-transition: all ease-in-out 0.17s;
+    -webkit-transition: all ease-in-out 0.17s;
+    transition: all ease-in-out 0.17s;
+    overflow: hidden;
+    position: relative;
+}
+.card .stat-value i{
+    font-size: 50px;
+}
+
+.stat-value i{
+    font-size: 24px;
+}
+.stat-value.blue i {
+    color: #4dd0e1;
+}
+
+.stat-value.green i {
+    color: #1abc9c;
+}
+
+.stat-value.orange i {
+    color: #ffb74d;
+}
 
 /* MEDIA QUERIES */
 

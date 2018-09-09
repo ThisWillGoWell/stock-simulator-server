@@ -242,8 +242,8 @@ if(authenticated) {
 	        //$('#debug-text-input').focus();
 	    });
 
-	    $('#top-bar--container .account-settings-btn').click(function() {
-	    
+	    $('.account-settings-btn').click(function() {
+	    	console.log("clicked");
 	        $('#top-bar--container .account-settings-menu--container').toggleClass('open');
 	        
 	    });
@@ -554,29 +554,49 @@ if(authenticated) {
 	        console.log("modal show");	
 	    }
 
+	    var allViews = $('.view');
+	    var dashboardView = $('#dashboard--view');
+	    var businessView = $('#business--view');
+	    var stocksView = $('#stocks--view');
+	    var investorsView = $('#investors--view');
+	    var futuresView = $('#futures--view');
+	    var storeView = $('#store--view');
+
 	    function renderContent(route) {
 	    	switch (route) {
 				case 'dashboard':
+						allViews.removeClass('active');
+						dashboardView.addClass('active');
 				    	console.log("show dashboard");
 				    break;
 
 				case 'business':
+						allViews.removeClass('active');
+						businessView.addClass('active');
 			  			console.log("show business");
 				  	break;
 
 				case 'stocks':
+						allViews.removeClass('active');
+						stocksView.addClass('active');
 						console.log("show stocks");
 				    break;
 
 				case 'investors':
+						allViews.removeClass('active');
+						investorsView.addClass('active');
 						console.log("show investors");
 				    break;
 
 				case 'futures':
+						allViews.removeClass('active');
+						futuresView.addClass('active');
 						console.log("show futures");
 				    break;
 
 				case 'perks':
+						allViews.removeClass('active');
+						storeView.addClass('active');
 						console.log("show perks");
 				    break;
 			}
