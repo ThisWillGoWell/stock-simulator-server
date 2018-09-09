@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>MockStarket</title>
+		<meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
+        <link href="https://fonts.googleapis.com/css?family=Mukta+Vaani:300,400,500,700" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:100,300,400,500" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet">
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+      rel="stylesheet">
+
+        <link rel="stylesheet" href="css/main.css">
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+        <script src="scripts/dashboard.js"></script>
+        
+
+    </head>
+
+	<body>
+
+		<div class="app--container">
+			<section id="modal--container">
+
+				<div class="modal-card">
+					<button><i class="material-icons">close</i></button>
+				</div>
+			</section>
+			<section id="side-menu--container">
+				<div class="logo-mark">MOCKSTARKET</div>
+				<div id="user-info-container" class="timer-container">
+					<div class="level-circle">1</div>
+					<p v-if="getCurrentUser(activeUsers)">{{ getCurrentUser(activeUsers) }}</p>
+				</div>
+				<ul id="nav">
+					<li>
+						<button v-on:click="nav">
+							<i class="material-icons menu-icon">business_center</i>
+							<div class="menu-item-title">Portfolio</div>
+							<i class="material-icons right-arrow">keyboard_arrow_right</i>
+						</button>
+					</li>
+					<li>
+						<button v-on:click="nav">
+							<i class="material-icons menu-icon">store_mall_directory</i>
+							<div class="menu-item-title">Business</div>
+							<i class="material-icons right-arrow">keyboard_arrow_right</i>
+						</button>
+					</li>
+					<li>
+						<button v-on:click="nav">
+							<i class="material-icons menu-icon">trending_up</i>
+							<div class="menu-item-title">Stocks</div>
+							<i class="material-icons right-arrow">keyboard_arrow_right</i>
+						</button>
+					</li>
+					<li>
+						<button v-on:click="nav">
+							<i class="material-icons menu-icon">account_box</i>
+							<div class="menu-item-title">Investors</div>
+							<i class="material-icons right-arrow">keyboard_arrow_right</i>
+						</button>
+					</li>
+					<li>
+						<button v-on:click="nav">
+							<i class="material-icons menu-icon">swap_horiz</i>
+							<div class="menu-item-title">Futures</div>
+							<i class="material-icons right-arrow">keyboard_arrow_right</i>
+						</button>
+					</li>
+					<li>
+						<button v-on:click="nav">
+							<i class="material-icons menu-icon">local_atm</i>
+							<div class="menu-item-title">Store</div>
+							<i class="material-icons right-arrow">keyboard_arrow_right</i>
+						</button>
+					</li>
+					<li>
+						<button class="debug-btn red" v-on:click="nav">
+							<i class="material-icons menu-icon">build</i>
+							<div class="menu-item-title">Debug</div>
+							<i class="material-icons right-arrow">keyboard_arrow_right</i>
+						</button>
+					</li>
+				</ul>
+			</section>
+			<section id="top-bar--container">
+				<div class="current-view">Dashboard</div>
+				<div class="account-settings-btn">
+					<span></span>
+					<span></span>
+					<span></span>	
+				</div>
+				<div class="account-settings-menu--container">
+					<i id="account-settings-menu-close-btn" class="material-icons">close</i>
+					<ul>
+						<li>
+							<button id="btn-logout" v-on:click="logout">Logout</button>
+						</li>
+					</ul>
+				</div>
+			</section>
+			<section id="main-content--container" class="">
+				<div class="flex-grid--container">
+					<div class="flex-column-100">
+						<div class="card stock-list">
+							<div id="stock-list">
+								<table class="table">
+								  <thead>
+								    <tr>
+								      <th scope="col" v-on:click="sortCol('ticker_id')" style="text-align: left; padding-left: 25px;">Stock</th>
+								      <th scope="col" v-on:click="sortCol('open_shares')">Open Shares</th>
+								      <th scope="col" v-on:click="sortCol('change')">Change</th>
+								      <th scope="col" v-on:click="sortCol('current_price')" style="padding-right: 25px;">Cost</th>
+								    </tr>
+								  </thead>
+								  <tbody>
+								  	<!-- https://vuejs.org/v2/guide/list.html :key is recommended in v.fors, not sure why yet -->
+								    <tr class="clickable" v-for="stock in sortStocks(stocks)" :key='stock.uuid' v-bind:uuid="stock.uuid">
+								      <th scope="row">
+								      	<div class="stock-ticker-id">{{ stock.ticker_id }}</div>
+								      	<div class="stock-display-name">{{ stock.name }}</div>
+								      </th>
+								      <td class="stock-open-shares">{{ stock.open_shares }}</td>
+								      <td class="stock-change">
+								      	{{ stock.change }}
+								      	<i class="material-icons">arrow_drop_down</i>
+								      </td>
+								      <td class="stock-price" style="padding-right: 25px;">
+								      {{ formatPrice(stock.current_price) }}</td>
+								    </tr>
+								    
+								  </tbody>
+								</table>
+						
+							</div>
+						</div>
+					</div>
+
+					<div class="flex-column-50" id="portfolio-list">
+						<div class="card" v-for="portfolio in portfolios" :key="portfolio.uuid">
+							<table class="table">
+								<thead>
+							    	<tr>
+							    	  <th scope="col">portfolioUUID</th>
+							    	  <th scope="col">userUUID</th>
+							    	  <th scope="col">wallet</th>
+							    	  <th scope="col">net worth</th>
+							    	</tr>
+								</thead>
+								<tbody>
+								    <tr class="clickable">
+								    	<th scope="row">{{ portfolio.uuid }}</th>
+								    	<td>{{ portfolio.user_uuid }}</td>
+								    	<td>{{ portfolio.wallet }}</td>
+								    	<td>{{ portfolio.net_worth }}</td>
+								    </tr>
+							  </tbody>
+							</table>
+							<table class="table">
+								<thead>
+							    	<tr>
+							    	  <th scope="col">Stock</th>
+							    	  <th scope="col">Amount Owned</th>
+							    	  <th scope="col">Cost</th>
+							    	  <th scope="col">Value</th>
+							    	</tr>
+								</thead>
+								<tbody>
+								    <tr class="clickable" v-for="stock in getPortfolioStocks(portfolio.uuid)">
+								    	<th scope="row">{{ stock.ticker_id }}</th>
+								    	<td>{{ stock.amount }}</td>
+								    	<td>{{ stock.current_price }}</td>
+								    	<td>{{ stock.amount * stock.current_price }}</td>
+								    </tr>
+							  </tbody>
+							</table>
+							<!-- <stock-portfolio :portfoliouuid="portfolio.uuid"></stock-portfolio> -->
+						</div>
+					</div>
+
+					<div class="flex-column-50" id="ledger-list">
+						<div class="card" v-for="item in ledger" :key="item.uuid">
+							<table class="table">
+								  <thead>
+								    <tr>
+								      <th scope="col">ledgerItemUUID</th>
+								      <th scope="col">portfolioUUID</th>
+								      <th scope="col">stockUUID</th>
+								      <th scope="col">amount</th>
+								    </tr>
+								  </thead>
+								  <tbody>
+								    <tr>
+								    	<th scope="row">{{ item.uuid }}</th>
+								    	<td>{{ item.portfolio_id }}</td>
+								    	<td>{{ item.stock_id }}</td>
+								    	<td>{{ item.amount }}</td>
+								    </tr>
+								  </tbody>
+								</table>
+						</div>
+					</div>
+
+					<div class="flex-column-50">
+						<div class="card"></div>
+						<div class="card"></div>
+					</div>
+
+					<div class="flex-column-50">
+						<div class="card"></div>
+						<div class="card"></div>
+					</div>
+				</div>
+			</section>
+			<section id="chat-module--container" class="closed">
+				<div class="chat-title-bar">
+					<span>All Chat</span>
+					<button></button>
+				</div>
+
+				<!-- 
+					Make Chat resizable
+					Make user's own messages show differently 
+				-->
+				<ul class="chat-message--list">
+					
+				</ul>
+				<textarea id="chat-text-input" placeholder="Say anything..."></textarea>
+			</section>
+			<section id="debug-module--container" class="closed">
+				<div class="debug-title-bar">
+					<span>Server Log</span>
+					<button></button>
+				</div>
+
+				<!-- 
+					Make Chat resizable
+					Make user's own messages show differently 
+				-->
+				<ul class="debug-message--list">
+					
+				</ul>
+				
+			</section>
+		</div>
+	</body>
+	
+</html>
