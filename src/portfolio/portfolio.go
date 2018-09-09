@@ -69,7 +69,7 @@ func MakePortfolio(uuid, userUUID string, wallet int64) (*Portfolio, error) {
 			NetWorth: wallet,
 		}
 	Portfolios[uuid] = port
-
+	port.Lock.EnableDebug()
 	port.UpdateChannel.EnableCopyMode()
 	NewObjectChannel.Offer(port)
 	UpdateChannel.RegisterInput(port.UpdateChannel.GetOutput())
@@ -90,6 +90,9 @@ func (port *Portfolio) valuableUpdate() {
 }
 
 func (port *Portfolio) Update(){
+	// need to acquire here or else deadlock on the trade
+	ledger.EntriesLock.Acquire("portfolio-update")
+	defer ledger.EntriesLock.Release()
 	port.Lock.Acquire("portfolio-update")
 	newNetWorth := port.calculateNetWorth()
 	port.NetWorth = newNetWorth
@@ -107,8 +110,7 @@ func GetPortfolio(userUUID string) (*Portfolio, error) {
 
 //update the current net worth. NOT THREAD SAFE
 func (port *Portfolio) calculateNetWorth() int64 {
-	ledger.EntriesLock.Acquire("calculate-worth")
-	defer ledger.EntriesLock.Release()
+
 	sum := int64(0)
 	for valueStr, entry := range ledger.EntriesPortfolioStock[port.UUID] {
 		value := valuable.Stocks[valueStr]

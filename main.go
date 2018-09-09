@@ -5,6 +5,7 @@ import (
 	"github.com/stock-simulator-server/src/change"
 	"github.com/stock-simulator-server/src/client"
 	"github.com/stock-simulator-server/src/database"
+	"github.com/stock-simulator-server/src/ledger"
 	"github.com/stock-simulator-server/src/order"
 	"github.com/stock-simulator-server/src/valuable"
 	"github.com/stock-simulator-server/src/web"
@@ -36,6 +37,9 @@ func main() {
 	if !disableDb {
 		database.InitDatabase()
 	}
+	valuable.ValuablesLock.EnableDebug()
+	ledger.EntriesLock.EnableDebug()
+	
 	//Wiring of system
 	wires.ConnectWires(disableDb)
 	//this takes the subscribe output and converts it to a message

@@ -39,7 +39,7 @@ func initLedgerHistory() {
 	tx, err = ts.Begin()
 	_, err = tx.Exec(ledgerHistoryTSInit)
 	if err != nil {
-		panic(err)
+
 	}
 	tx.Commit()
 }

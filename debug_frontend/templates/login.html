@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+	<head>
+
+		<meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
+        <link href="https://fonts.googleapis.com/css?family=Mukta+Vaani:300,400,500,700" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet">
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+      rel="stylesheet">
+
+        <link rel="stylesheet" href="../css/main.css">
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script src="../scripts/particles.min.js"></script>
+        <script src="../scripts/main.js"></script>
+        <title>MockStarket</title>
+
+    </head>
+
+	<body class="bg-dark-gradient">
+		<div id="particles-js"></div>
+		<div class="flex--container">
+
+			<div id="login-container" class="flex--center-vert-horiz">
+				<div class="card-title-panel">
+    				<div class="card-title">Create Account</div>
+    				<i id="menu-close-btn" class="material-icons">close</i>
+    			</div>
+				<div class="card-group">
+					<div class="input-grp">
+						<div class="input-name">Username</div>
+						<input type="text" id="login-uid" class="input-full-width" name="uid" required>
+						<span class="input-focus-border"></span>
+					</div>
+					<div class="input-grp">
+						<div class="input-name">Password</div>
+						<input type="password" id="login-pw" class="input-full-width" name="ps" required>
+						<span class="input-focus-border"></span>
+					</div>
+
+					<input id="input-login-submit" type="submit" value="LOGIN" class="input-full-width">
+		    		
+		    		<a href="#" class="create-account-btn not-active hanger-anim create-active">create account</a>
+		    		
+		    		<!-- 
+						Make inputs disabled unless you are viewing them
+						Change Easing on "create account clicked" 
+					-->
+		    		<div id="create-account--container">
+		    			
+		    			<div class="input-grp">
+							<div class="input-name">Username</div>
+							<input type="text" id="create-uid" class="input-full-width" name="create-uid" required disabled>
+							<span class="input-focus-border"></span>
+						</div>
+						<div class="input-grp">
+							<div class="input-name" disabled>Password <span>(Pro tip: Make up one just for MockStarket)</span></div>
+							<input type="password" id="create-pw" class="input-full-width" name="create-ps" required disabled>
+							<span class="input-focus-border"></span>
+						</div>
+
+						<input id="input-create-submit" type="submit" value="CREATE ACCOUNT" class="input-full-width" disabled>
+		    		</div>
+	    		</div>
+			</div>
+			
+
+		</div>
+	</body>
+	
+</html>
