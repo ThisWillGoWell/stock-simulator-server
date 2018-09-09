@@ -2,7 +2,7 @@ package messages
 
 const LoginAction = "login"
 const NewAccountAction = "new_account"
-
+const RenewAction = "renew"
 type LoginMessage struct {
 	UserName string `json:"username"`
 	Password string `json:"password"`
@@ -12,6 +12,14 @@ func (*LoginMessage) message() { return }
 
 func (baseMessage *BaseMessage) IsAccountCreate() bool {
 	return baseMessage.Action == NewAccountAction
+}
+
+type RenewMessage struct {
+	SessionToken string `json:"token"`
+}
+func (*RenewMessage) message(){ return }
+func (baseMessage *BaseMessage) IsRenew() bool {
+	return baseMessage.Action == RenewAction
 }
 
 type NewAccountMessage struct {
@@ -28,17 +36,19 @@ func (baseMessage *BaseMessage) IsLogin() bool {
 
 type AccountResponseMessage struct {
 	Success bool   `json:"success"`
+	SessionToken string `json:"token"`
 	Uuid    string `json:"uuid"`
 	Err     string `json:"err"`
 }
 
 func (*AccountResponseMessage) message() { return }
 
-func SuccessLogin(userGuid string) *BaseMessage {
+func SuccessLogin(userGuid, token string) *BaseMessage {
 	return &BaseMessage{
 		Action: LoginAction,
 		Msg: &AccountResponseMessage{
 			Success: true,
+			SessionToken: token,
 			Uuid:    userGuid,
 			Err:     "",
 		},

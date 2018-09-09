@@ -7,6 +7,7 @@ import (
 	"github.com/stock-simulator-server/src/database"
 	"github.com/stock-simulator-server/src/ledger"
 	"github.com/stock-simulator-server/src/order"
+	"github.com/stock-simulator-server/src/session"
 	"github.com/stock-simulator-server/src/valuable"
 	"github.com/stock-simulator-server/src/web"
 	"github.com/stock-simulator-server/src/wires"
@@ -45,6 +46,7 @@ func main() {
 	//this takes the subscribe output and converts it to a message
 	client.BroadcastMessageBuilder()
 	change.StartDetectChanges()
+	session.StartSessionCleaner()
 
 	order.Run()
 	valuable.StartStockStimulation()

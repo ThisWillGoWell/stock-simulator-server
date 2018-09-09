@@ -154,12 +154,11 @@ type RandomPrice struct {
 
 //change the stock using the changer
 func (randPrice *RandomPrice) change(stock *Stock) {
-	stock.lock.Acquire("change-stock")
-	defer stock.lock.Release()
-
 	if rand.Float64() >= randPrice.RunPercent {
 		return
 	}
+	stock.lock.Acquire("change-stock")
+	defer stock.lock.Release()
 	if rand.Float64() <= randPrice.PercentToChangeTarget {
 		randPrice.changeValues()
 	}

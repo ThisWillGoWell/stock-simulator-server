@@ -56,7 +56,8 @@ func (baseMessage *BaseMessage) UnmarshalJSON(data []byte) error {
 		message = &QueryMessage{}
 	case TransferAction:
 		message = &TransferMessage{}
-
+	case RenewAction:
+		message = &RenewMessage{}
 	}
 
 	str, _ := json.Marshal(obj["msg"])

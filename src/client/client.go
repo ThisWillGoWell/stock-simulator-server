@@ -3,6 +3,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/stock-simulator-server/src/session"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -112,18 +113,29 @@ func InitialReceive(initialPayload string, tx, rx chan string) error {
 		return unmarshalErr
 	}
 	user := new(account.User)
+	var sessionToken string
+
 	if initialMessage.IsAccountCreate() {
 		userTemp, err := account.NewUser(initialMessage.Msg.(*messages.NewAccountMessage).UserName, initialMessage.Msg.(*messages.NewAccountMessage).Password)
 		if err != nil {
 			return err
 		}
 		user = userTemp
+		sessionToken = session.NewSessionToken(user.Uuid)
 	} else if initialMessage.IsLogin() {
 		userTemp, err := account.GetUser(initialMessage.Msg.(*messages.LoginMessage).UserName, initialMessage.Msg.(*messages.LoginMessage).Password)
 		if err != nil {
 			return err
 		}
 		user = userTemp
+		sessionToken = session.NewSessionToken(user.Uuid)
+	} else if initialMessage.IsRenew(){
+		userTemp, err := account.RenewUser(initialMessage.Msg.(*messages.RenewMessage).SessionToken)
+		if err != nil {
+			return err
+		}
+		user = userTemp
+		sessionToken = initialMessage.Msg.(*messages.RenewMessage).SessionToken
 	}
 
 	client := &Client{
@@ -141,7 +153,10 @@ func InitialReceive(initialPayload string, tx, rx chan string) error {
 	}
 	connections[user.Uuid][client.clientNum] = client
 
+
+
 	client.tx()
+	go client.sendMessage(messages.SuccessLogin(client.user.Uuid, sessionToken))
 	go client.rx()
 	go client.initSession()
 	return nil
@@ -249,8 +264,6 @@ func (client *Client) processQueryMessage(message messages.Message) {
 When a session is started, loop though all current cache and send them to the client
 */
 func (client *Client) initSession() {
-
-	client.sendMessage(messages.SuccessLogin(client.user.Uuid))
 	for _, v := range account.GetAllUsers() {
 		client.sendMessage(messages.NewObjectMessage(v))
 	}

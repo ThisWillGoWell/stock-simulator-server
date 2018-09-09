@@ -5,6 +5,7 @@ import (
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
 	"github.com/stock-simulator-server/src/portfolio"
+	"github.com/stock-simulator-server/src/session"
 	"github.com/stock-simulator-server/src/utils"
 )
 
@@ -47,6 +48,22 @@ func GetUser(username, password string) (*User, error) {
 	user := userList[userUuid]
 	if user.Password != password {
 		return nil, errors.New("Password is incorrect")
+	}
+	user.Active = true
+	UpdateChannel.Offer(user)
+	return user, nil
+}
+
+func RenewUser(sessionToken string)(*User, error) {
+	userId, err := session.GetUserId(sessionToken)
+	if err != nil{
+		return nil, err
+	}
+	userListLock.Acquire("renew-user")
+	defer userListLock.Release()
+	user, exists := userList[userId]
+	if !exists{
+		return nil, errors.New("user found in session list but not in current users")
 	}
 	user.Active = true
 	UpdateChannel.Offer(user)
