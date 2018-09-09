@@ -99,7 +99,10 @@
 						<span></span>
 						<span></span>	
 					</div>
-				<div id="user-info-container" v-if="getCurrentUser(activeUsers)"class="nav-list">
+
+				<div id="user-info-container" v-if="getCurrentUser(activeUsers)" class="nav-list">
+				<!-- TODO:  Above line could be the line beneath-->
+				<!-- <div id="user-info-container" class="nav-list"> -->
 					<!-- <div class="level-circle">1</div> -->
 					<div class="username-text">{{ getCurrentUser(activeUsers) }}</div>
 					
@@ -148,6 +151,13 @@
 									<h1>BUSINESS</h1>
 								</div>
 							</div>
+								First name:<br>
+								<input type="text" name="firstname" value="Mickey">
+								<br>
+								Last name:<br>
+								<input type="text" name="lastname" value="Mouse">
+								<br><br>
+								<input type="submit" id="btnTradeRequest" value="Submit" >
 						</div>
 					</div>
 					<div id="stocks--view" class="view">
