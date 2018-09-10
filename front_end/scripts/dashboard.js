@@ -260,6 +260,17 @@ if(authenticated) {
 	        
 	    });
 
+	    $('.calc-btn').click(function() {
+	    
+	        
+	        
+	    });
+
+	    $('table').on('click', 'tr.clickable' , function (event) {
+		    toggleModal();
+
+        });
+
 	    // $('#nav li button').click(function(this) {
 	    
 	    //    $(this).remove();
@@ -337,7 +348,7 @@ if(authenticated) {
 
 
 		/*  WEBSOCKETS */
-		let externalServer = "bookingsgolf.com:8000";
+		let externalServer = "159.89.154.221:8000";
 		let localServer = window.location.host;
 		let wsUri = "ws://"+ externalServer + "/ws";
 	    let output;
@@ -543,7 +554,7 @@ if(authenticated) {
 
 	    $('.modal-card button').click(function() {
 	    
-	        $('#modal--container').toggleClass('open');
+	        toggleModal();
 	        
 	    });
 
