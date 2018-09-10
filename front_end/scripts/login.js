@@ -6,7 +6,7 @@ $( document ).ready(function() {
 
 	/*  WEBSOCKETS */
 
-	let externalServer = "159.89.154.221:8000";
+	let externalServer = "159.89.154.221";
     let localServer = window.location.host;
     let wsUri = "ws://"+ externalServer + "/ws";
     var output;
