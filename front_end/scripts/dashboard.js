@@ -348,7 +348,7 @@ if(authenticated) {
 
 
 		/*  WEBSOCKETS */
-		let externalServer = "159.89.154.221";
+		let externalServer = "mockstarket.com";
 		let localServer = window.location.host;
 		let wsUri = "wss://"+ externalServer + "/ws";
 	    let output;
