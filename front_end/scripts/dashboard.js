@@ -93,7 +93,7 @@ if(authenticated) {
 			    	// If sorting by selected column
 			    	if (this.sortBy == col) {
 			    		// Change sort direction
-			    		console.log(col);
+			    		// console.log(col);
 			    		vm_stocks.sortDesc = -vm_stocks.sortDesc;
 			    	} else {
 			    		// Change sorted column
@@ -243,7 +243,7 @@ if(authenticated) {
 	    });
 
 	    $('.account-settings-btn').click(function() {
-	    	console.log("clicked");
+	    	// console.log("clicked");
 	        $('#top-bar--container .account-settings-menu--container').toggleClass('open');
 	        
 	    });
@@ -285,7 +285,7 @@ if(authenticated) {
 	    	
 	    	if($(event.currentTarget).find('i').hasClass("shown")) {
 	    		$(event.currentTarget).find('i').toggleClass("flipped");
-	    		console.log("is asc");
+	    		// console.log("is asc");
 	    	} else {
 	    		$('thead tr th i').removeClass("shown");
 	    		$(event.currentTarget).find('i').addClass("shown");
@@ -335,8 +335,17 @@ if(authenticated) {
 	    $(document).keypress(function(e) {
 	    	if($('#chat-module--container textarea').val()) {
 			    if(e.which == 13) {
+
 			    	let message_body = $('#chat-module--container textarea').val();
-				    doSend('{"action": "chat", "msg": {"message_body": "'+message_body+'"}}');
+					
+					var msg = {
+						'action': 'chat',
+						'msg': {
+							'message_body': message_body,
+						}	
+					};
+
+					doSend(JSON.stringify(msg))
 			        
 			        $('#chat-module--container textarea').val().replace(/\n/g, "");
 			        $('#chat-module--container textarea').val('');
@@ -372,14 +381,18 @@ if(authenticated) {
 
 	    function onOpen(evt)
 	    {
-
+	    	var msg = {
+	    		'action': 'login',
+	    		'msg' : {
+	    			'username': auth_uid,
+	    			'password': auth_pw
+	    		}
+	    	}	    	
+	        
+	        doSend(JSON.stringify(msg));
+	        
 	        onEvent("Connected");
-	        //doSend('{"container_type": "register", "register_action": "register", "device_type": "test", "device_name":"' + window.prompt("device_name","test")  + '"}');
-	        doSend('{"action": "login", "msg": {"username": "'+ auth_uid +'", "password":"'+ auth_pw +'"}}');
-	        // if(authenticated) {
 
-	        // }
-	        //doSend('{"op":"subscribe","type":"alert", "system":"irRemote"}');
 	    }
 
 	    function onClose(evt)
@@ -395,13 +408,12 @@ if(authenticated) {
 	    function onMessage(evt)
 	    {
 	        var msg = JSON.parse(evt.data);
-	        console.log(msg);
+	        // console.log(msg);
 	    	var router = {
 	    		'login': routeLogin,
 	    		'object': routeObject,
 	    		'update': routeUpdate,
 	    		'alert': alertUpdate,
-	    		// TODO chatUpdate
 	    		'chat': chatUpdate,
 	    	};
 
@@ -409,7 +421,12 @@ if(authenticated) {
     		if (msg.action) {
     			router[msg.action](msg);
     		} else {
+    			if (msg.type == "error") {
+    				console.log("ERROR")
+    				console.log(msg);
+    			}
     			console.log("No message action");
+    			console.log(console.log(msg));
     			
     		}
     		
@@ -506,6 +523,7 @@ if(authenticated) {
 				    break;
 
 				case 'ledger':
+					console.log(msg.msg)
 					// Variables needed to update the ledger item
 					var targetUUID = msg.msg.uuid;
 					var targetField = msg.msg.changes[0].field;
@@ -533,20 +551,51 @@ if(authenticated) {
 	    	formatChatMessage(msg);
 	    }
 
-	    function onSend(message)
-	    {
-	        // writeToScreen('<span style="color: lightblue;">SEND: ' + message +'</span>');
 
-	    }
+
+
+	    /* Sending trade requests */
+
+	    document.getElementById("btnTradeRequest").addEventListener("click", sendTradeOptions, false);
+	    
+	    function sendTradeOptions() {
+	    	
+	    	// Get request parameters
+	    	var stockTickerId = "HON"; // TODO: get from UI
+	    	var amount = 10; // TODO: get from UI
+
+	    	//Get stockid from ticker
+	    	var focusStock = Object.values(vm_stocks.stocks).filter(
+	    		function(stock) {
+	    			return stock.ticker_id === stockTickerId;
+	    		})[0];
+	    	// Creating message for the trade request
+	    	var options = {
+	    		'action': "trade",
+	    		'msg': {
+	    			'stock_id': focusStock.uuid,
+	    			'amount': amount,
+	    		}
+	    	};
+
+	    	// Sending through websocket
+	    	doSend(JSON.stringify(options));
+
+	    };
+
+	   	/* End sending trade requests */
+
+
+
 
 	    function onError(evt)
 	    {
+	    	console.log(evt);
 	        // writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
 	    }
 
 	    function doSend(message)
 	    {
-	        onSend(message)
 	        webSocket.send(message);
 	    }
 
@@ -562,7 +611,7 @@ if(authenticated) {
 
 	    function toggleModal() {
 	    	$('#modal--container').toggleClass('open');
-	        console.log("modal show");	
+	        // console.log("modal show");	
 	    }
 
 	    var allViews = $('.view');
@@ -578,37 +627,37 @@ if(authenticated) {
 				case 'dashboard':
 						allViews.removeClass('active');
 						dashboardView.addClass('active');
-				    	console.log("show dashboard");
+				    	// console.log("show dashboard");
 				    break;
 
 				case 'business':
 						allViews.removeClass('active');
 						businessView.addClass('active');
-			  			console.log("show business");
+			  			// console.log("show business");
 				  	break;
 
 				case 'stocks':
 						allViews.removeClass('active');
 						stocksView.addClass('active');
-						console.log("show stocks");
+						// console.log("show stocks");
 				    break;
 
 				case 'investors':
 						allViews.removeClass('active');
 						investorsView.addClass('active');
-						console.log("show investors");
+						// console.log("show investors");
 				    break;
 
 				case 'futures':
 						allViews.removeClass('active');
 						futuresView.addClass('active');
-						console.log("show futures");
+						// console.log("show futures");
 				    break;
 
 				case 'perks':
 						allViews.removeClass('active');
 						storeView.addClass('active');
-						console.log("show perks");
+						// console.log("show perks");
 				    break;
 			}
 	    }
