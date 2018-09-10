@@ -32,6 +32,17 @@ $( document ).ready(function() {
 
     function onOpen(evt)
     {
+        console.log(sessionStorage.getItem('authenticated'))
+        if (sessionStorage.getItem('authenticated') !== null) {
+            var loginMessage = {
+                'action': 'renew',
+                'msg': {
+                    'token': sessionStorage.getItem('authenticated'),
+                    // 'uuid': sessionStorage.getItem('uuid'),
+                }
+            };
+            doSend(JSON.stringify(loginMessage));
+        }
         onEvent("Connected");
         //doSend('{"container_type": "register", "register_action": "register", "device_type": "test", "device_name":"' + window.prompt("device_name","test")  + '"}');
         //doSend('{"action": "login", "msg": {"username": "Will", "password":"pass"}}');
@@ -78,6 +89,9 @@ $( document ).ready(function() {
         router[msg.action](msg);
     };
 
+
+    // TODO this code isnt ever hit
+    // Login message goes out 
     var routeLogin = function(msg) {
         console.log("login recieved");
 
@@ -85,8 +99,12 @@ $( document ).ready(function() {
         console.log(msg.msg.success);
 
         if(msg.msg.success) {
+
             // Save data to sessionStorage
-            sessionStorage.setItem("authenticated", msg.msg.uuid);
+            console.log(msg)
+            console.log("msg")
+            sessionStorage.setItem("authenticated", msg.msg.token);
+            sessionStorage.setItem("uuid", msg.msg.uuid);
             sessionStorage.setItem("auth_obj", JSON.stringify(auth_token));
             window.location.href = "/dashboard.html";
 
@@ -142,6 +160,9 @@ $( document ).ready(function() {
     	let input_uid = $('#login-uid').val();
 		let input_pw = $('#login-pw').val();
 		let auth_msg = {};
+
+        // TODO add token logging in 
+
 
     	if(input_uid != '' && input_pw != '') {
             input_uid_trimmed = input_uid.trim();
