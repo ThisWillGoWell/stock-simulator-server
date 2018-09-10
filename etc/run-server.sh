@@ -8,6 +8,6 @@ export FILE_SERVE=$(pwd)/front_end
 #
 #fi
 echo $FILE_SERVE
-docker-compose build --no-cache
+docker-compose build server --no-cache
 docker-compose up -d
 docker-compose logs -f

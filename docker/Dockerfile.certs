@@ -8,4 +8,4 @@ RUN apt-get update \
   && openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -keyout /etc/letsencrypt/live/mockstarket.com/privkey.pem \
     -out /etc/letsencrypt/live/mockstarket.com/fullchain.pem \
-    -subj /CN=my.example.org
+    -subj /CN=mockstarket.com
