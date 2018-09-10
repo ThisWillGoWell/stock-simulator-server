@@ -156,9 +156,8 @@ func InitialReceive(initialPayload string, tx, rx chan string) error {
 
 
 	client.tx()
-	go client.sendMessage(messages.SuccessLogin(client.user.Uuid, sessionToken))
 	go client.rx()
-	go client.initSession()
+	go client.initSession(sessionToken)
 	return nil
 
 }
@@ -182,8 +181,6 @@ func (client *Client) rx() {
 			client.processChatMessage(message.Msg.(messages.Message))
 		case messages.TradeAction:
 			client.processTradeMessage(message.Msg.(messages.Message))
-		case messages.UpdateAction:
-			client.initSession()
 		case messages.QueryAction:
 			client.processQueryMessage(message.Msg.(messages.Message))
 
@@ -263,7 +260,9 @@ func (client *Client) processQueryMessage(message messages.Message) {
 /**
 When a session is started, loop though all current cache and send them to the client
 */
-func (client *Client) initSession() {
+func (client *Client) initSession(sessionToken string ) {
+	client.sendMessage(messages.SuccessLogin(client.user.Uuid, sessionToken))
+
 	for _, v := range account.GetAllUsers() {
 		client.sendMessage(messages.NewObjectMessage(v))
 	}
