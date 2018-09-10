@@ -27,6 +27,53 @@
 
 				<div class="modal-card">
 					<button><i class="material-icons">close</i></button>
+					<div id="trade--view">
+						<div class="stock-id">KING</div>
+						<div class="flex-grid--container no-padding">
+							<div class="flex-column-50">
+								<div class="card calc-btn no-fill green">BUY</div>
+							</div>
+							<div class="flex-column-50">
+								<div class="card calc-btn no-fill red">SELL</div>
+							</div>
+							<div class="flex-column-50">
+								<div class="card calc-btn">1</div>
+							</div>
+							<div class="flex-column-50">
+								<div class="card calc-btn">5</div>
+							</div>
+							<div class="flex-column-50">
+								<div class="card calc-btn">25</div>
+							</div>
+							<div class="flex-column-50">
+								<div class="card calc-btn">100</div>
+							</div>
+							<div class="flex-column-50">
+								<div class="card calc-btn">CUSTOM</div>
+							</div>
+							<div class="flex-column-50">
+								<div class="card calc-btn">MAX</div>
+							</div>
+							<table class="table">
+								<thead>
+
+									<tr>
+										<th>Price</th>
+										<th>Amount</th>
+										<th>Total</th>	
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>$299</td>
+										<td>3</td>
+										<td>$897</td>
+									</tr>
+								</tbody>
+							</table>
+							<input id="input-login-submit" type="submit" value="CONFIRM" class="input-full-width">
+							
+					</div>
 				</div>
 			</section>
 			<section id="side-menu--container">
@@ -36,14 +83,14 @@
 					<p v-if="getCurrentUser(activeUsers)">{{ getCurrentUser(activeUsers) }}</p>
 				</div> -->
 				<div id="stats--view">
-					<div class="stat-value blue"><i class="material-icons menu-icon">business_center</i>$10000</div>
+					<div class="stat-value blue"><i class="material-icons menu-icon">business</i>$10000</div>
 					<div class="stat-value green"><i class="material-icons menu-icon">local_atm</i>$10000</div>
 					<div class="stat-value orange"><i class="material-icons menu-icon">trending_up</i>$10000</div>
 				</div>
 				<ul id="nav">
 					<li>
 						<button v-on:click="nav" data-route="dashboard">
-							<i class="material-icons menu-icon">business_center</i>
+							<i class="material-icons menu-icon">business</i>
 							<div class="menu-item-title">Dashboard</div>
 							<i class="material-icons right-arrow">keyboard_arrow_right</i>
 						</button>
@@ -122,20 +169,36 @@
 					<div id="dashboard--view" class="active view">
 						<div class="flex-grid--container">
 							<div class="flex-column-33">
-								<div class="card">
-									<div class="stat-value blue"><i class="material-icons menu-icon">business</i>$10000</div>
+								<div class="card small">
+									<div class="stat-value blue">
+										<i class="material-icons menu-icon">business</i>
+										<div class="card-details">
+											<div class="card-category">NETWORTH</div>
+											<p>$10000</p>
+										</div>
+									</div>
 					
 					
 								</div>
 							</div>
 							<div class="flex-column-33">
-								<div class="card">
-									<div class="stat-value green"><i class="material-icons menu-icon">local_atm</i>$10000</div>
+								<div class="card small">
+									<div class="stat-value green">
+										<i class="material-icons menu-icon">local_atm</i><div class="card-details">
+											<div class="card-category">CASH</div>
+											<p>$10000</p>
+										</div>
+									</div>
 								</div>
 							</div>
 							<div class="flex-column-33">
-								<div class="card">
-									<div class="stat-value orange"><i class="material-icons menu-icon">trending_up</i>$10000</div>
+								<div class="card small">
+									<div class="stat-value orange">
+										<i class="material-icons menu-icon">trending_up</i><div class="card-details">
+											<div class="card-category">INVESTMENTS</div>
+											<p>$10000</p>
+										</div>
+									</div>
 								</div>
 							</div>
 							
@@ -152,11 +215,41 @@
 					</div>
 					<div id="stocks--view" class="view">
 						<div class="flex-grid--container">
-							<div class="flex-column-100">
-								<div class="card">
-									<h1>STOCKS</h1>
+							
+							<div class="flex-column-33">
+								<div class="card small">
+									<div class="stat-value blue">
+										<i class="material-icons menu-icon">business</i>
+										<div class="card-details">
+											<div class="card-category">MOST EXPENSIVE</div>
+											<p>IBM</p>
+										</div>
+									</div>
+					
+					
 								</div>
 							</div>
+							<div class="flex-column-33">
+								<div class="card small">
+									<div class="stat-value green">
+										<i class="material-icons menu-icon">local_atm</i><div class="card-details">
+											<div class="card-category">HIGHEST GROWTH</div>
+											<p>APPL</p>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="flex-column-33">
+								<div class="card small">
+									<div class="stat-value orange">
+										<i class="material-icons menu-icon">trending_up</i><div class="card-details">
+											<div class="card-category">MOST SHARES</div>
+											<p>GE</p>
+										</div>
+									</div>
+								</div>
+							</div>
+
 							<div class="flex-column-100">
 								<div class="card stock-list">
 									<div id="stock-list">

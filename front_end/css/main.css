@@ -211,7 +211,7 @@ input[type=submit] {
     color: #fff;
     background-color: #DADFE1; 
     border: 1px solid #DADFE1;
-    margin-top: 30px;
+    /*margin-top: 30px;*/
     -moz-transition: all ease-in-out 0.13s;
     -o-transition: all ease-in-out 0.13s;
     -webkit-transition: all ease-in-out 0.13s;
@@ -1179,6 +1179,14 @@ input[type=password]:focus ~ .input-focus-border{
     
 }
 
+.flex-grid--container.no-padding {
+    padding-top: 0px;
+    padding-bottom: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
+    
+}
+
 .flex-grid--container .flex-column-33 {
     -ms-flex-preferred-size: 33.3%;
     flex-basis: 33.3%;
@@ -1208,6 +1216,12 @@ input[type=password]:focus ~ .input-focus-border{
     margin-top: 25px;
     padding: 15px 10px;
     box-shadow: 0 13px 15px rgba(0,0,0,0.001), 0 3px 5px rgba(0,0,0,0.05);
+}
+
+.card.small {
+        padding-left: 25px;
+    padding-top: 20px;
+    padding-bottom: 3px;
 }
 
 .card.stock-list{
@@ -1344,49 +1358,40 @@ table.table tbody tr td{
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: 20;
+    z-index: -20;
     opacity: 0;
-    background-color: rgba(0,0,0,0.2);
-    display: none;
+    background-color: rgba(0,0,0,0.8);
+    -moz-transition: all ease-in-out 0.23s;
+    -o-transition: all ease-in-out 0.23s;
+    -webkit-transition: all ease-in-out 0.23s;
+    transition: all ease-in-out 0.23s;
+    
 }
 
 #modal--container.open {
     
     opacity: 1;
-    
+    z-index: 100;
 }
 
 #modal--container .modal-card{
     position: absolute;
-    height: 300px;
-    width: 400px;
-    background-color: #fff;
+    height: 80%;
+    width: 500px;
+    background-color: transparent;
+    border: 1px solid #fff;
     top: 0;
     bottom: 0;
     left: 0;
     right: 0;
     z-index: 20;
     margin: auto;
-    border-radius: 2px;
+    /*border-radius: 2px;*/
     
-    box-shadow: 0 3px 5px rgba(0,0,0,0.10), 0 3px 5px rgba(0,0,0,0.15);
+    /*box-shadow: 0 3px 5px rgba(0,0,0,0.10), 0 3px 5px rgba(0,0,0,0.15);*/
 }
 
-#modal--container .modal-card{
-    position: absolute;
-    height: 300px;
-    width: 400px;
-    background-color: #fff;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 20;
-    margin: auto;
-    
-    border-radius: 2px;
-    box-shadow: 0 3px 5px rgba(0,0,0,0.10), 0 3px 5px rgba(0,0,0,0.15);
-}
+
 
 #modal--container .modal-card button{
     position: absolute;
@@ -1474,8 +1479,7 @@ table.table tbody tr td{
     font-weight: 500;
     font-size: 14px;
     line-height: 60px;
-    padding-left: 35px;
-    padding-right: 25px;
+    
     -moz-transition: all ease-in-out 0.17s;
     -o-transition: all ease-in-out 0.17s;
     -webkit-transition: all ease-in-out 0.17s;
@@ -1483,12 +1487,48 @@ table.table tbody tr td{
     overflow: hidden;
     position: relative;
 }
+#stats--view .stat-value {
+    background-color: #1c2732;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    text-align: left;
+    padding-left: 41px;
+
+
+
+}
 .card .stat-value i{
     font-size: 50px;
+    margin-right: 15px;
+    vertical-align: text-bottom;
+
+    
 }
 
-.stat-value i{
+.stat-value .card-category {
+    font-size: 18px;
+    line-height: 16px;
+    color: rgba(0,0,0,0.15);
+}
+
+.stat-value .card-details {
+    display: inline-block;
+}
+
+.stat-value .card-details p{
+    font-size: 28px;
+
+    color: rgba(0,0,0,0.55);
+}
+
+#stats--view .stat-value i{
     font-size: 24px;
+    margin-right: 25px;
+    vertical-align: text-bottom;
+}
+#stats--view .stat-value {
+    font-weight: 100;
+    text-shadow: 2px 2px 3px rgba(0,0,0,0.3);
 }
 .stat-value.blue i {
     color: #4dd0e1;
@@ -1500,6 +1540,50 @@ table.table tbody tr td{
 
 .stat-value.orange i {
     color: #ffb74d;
+}
+
+#trade--view {
+    
+    padding-bottom: 25px;
+}
+
+#trade--view .stock-id{
+    font-size: 96px;
+    letter-spacing: 3px;
+    color: #fff;
+    font-weight: 500;
+    text-align: left;
+}
+
+#trade--view table.table th, #trade--view table.table td{
+    color: #fff;
+    text-align: left !important;
+}
+
+.calc-btn {
+    text-align: center;
+    background-color: #90A4AE;
+    color: #fff;
+    cursor: pointer;
+}
+
+.calc-btn.no-fill {
+    background-color: transparent;
+    border: #fff;
+}
+
+.calc-btn.no-fill.red {
+    background-color: #f44336;
+    border: #fff;
+}
+
+.calc-btn.no-fill.green {
+    background-color: #1abc9c;
+    border: #fff;
+}
+
+#trade-view table.table thead tr th {
+    
 }
 
 /* MEDIA QUERIES */
