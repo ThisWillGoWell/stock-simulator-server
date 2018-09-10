@@ -4,7 +4,9 @@ let authenticated = sessionStorage.getItem('authenticated');
 let auth_obj = $.parseJSON(sessionStorage.getItem('auth_obj'));
 let auth_uid = auth_obj.uid;
 let auth_pw = auth_obj.pw;
+console.log(auth_obj);
 //let authenticated = sessionStorage.getItem('authenticated');
+
 
 
 if(authenticated) {
@@ -381,16 +383,28 @@ if(authenticated) {
 
 	    function onOpen(evt)
 	    {
-	    	var msg = {
-	    		'action': 'login',
-	    		'msg' : {
-	    			'username': auth_uid,
-	    			'password': auth_pw
-	    		}
-	    	}	    	
-	        
-	        doSend(JSON.stringify(msg));
-	        
+	    	console.log("Hello moto");
+	    	// if (sessionStorage.getItem('authenticated') !== null) {
+	     //        var loginMessage = {
+	     //            'action': 'renew',
+	     //            'msg': {
+	     //                'token': sessionStorage.getItem('authenticated')
+	     //            }
+	     //        };
+	     //        doSend(JSON.stringify(loginMessage));
+	     //    } else {
+		    // 	var msg = {
+		    // 		'action': 'login',
+		    // 		'msg' : {
+		    // 			'username': auth_uid,
+		    // 			'password': auth_pw
+		    // 		}
+		    // 	}	    	
+		        
+		    //     doSend(JSON.stringify(msg));
+		        
+	        	
+	     //    }
 	        onEvent("Connected");
 
 	    }
@@ -440,9 +454,11 @@ if(authenticated) {
 	        console.log(msg.msg.success);
 	        console.log("login recieved");
 
+
+
 	        if(msg.msg.success) {
 	            // Save data to sessionStorage
-	            sessionStorage.setItem("authenticated", msg.msg.uuid);
+	            // sessionStorage.setItem("authenticated", msg.msg.uuid);
 	            // window.location.href = "/dashboard.html";
 
 	        } else {
@@ -523,7 +539,7 @@ if(authenticated) {
 				    break;
 
 				case 'ledger':
-					console.log(msg.msg)
+					console.log(msg.msg);
 					// Variables needed to update the ledger item
 					var targetUUID = msg.msg.uuid;
 					var targetField = msg.msg.changes[0].field;
@@ -556,13 +572,13 @@ if(authenticated) {
 
 	    /* Sending trade requests */
 
-	    document.getElementById("btnTradeRequest").addEventListener("click", sendTradeOptions, false);
+	    document.getElementById("trade-request-submit").addEventListener("click", sendTradeOptions, false);
 	    
 	    function sendTradeOptions() {
 	    	
 	    	// Get request parameters
 	    	var stockTickerId = "HON"; // TODO: get from UI
-	    	var amount = 10; // TODO: get from UI
+	    	var amount = 1; // TODO: get from UI
 
 	    	//Get stockid from ticker
 	    	var focusStock = Object.values(vm_stocks.stocks).filter(
