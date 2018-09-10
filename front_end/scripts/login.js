@@ -38,7 +38,7 @@ $( document ).ready(function() {
                 'action': 'renew',
                 'msg': {
                     'token': sessionStorage.getItem('authenticated'),
-                    'uuid': sessionStorage.getItem('uuid'),
+                    // 'uuid': sessionStorage.getItem('uuid'),
                 }
             };
             doSend(JSON.stringify(loginMessage));
@@ -104,6 +104,7 @@ $( document ).ready(function() {
             console.log(msg)
             console.log("msg")
             sessionStorage.setItem("authenticated", msg.msg.token);
+            sessionStorage.setItem("uuid", msg.msg.uuid);
             sessionStorage.setItem("auth_obj", JSON.stringify(auth_token));
             window.location.href = "/dashboard.html";
 

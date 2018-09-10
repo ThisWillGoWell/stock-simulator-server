@@ -169,7 +169,8 @@ if(authenticated) {
 		  methods: {
 		  	getCurrentUser : function() {
 		  		// Get userUUID of the person that is logged in
-		  		var currentUser = sessionStorage.getItem('authenticated');
+		  		var currentUser = sessionStorage.getItem('uuid');
+		  		console.log()
 		  		// Have they been added to the users object yet?
 		  		if (this.activeUsers[currentUser]) {
 		  			return this.activeUsers[currentUser].display_name;
@@ -383,28 +384,27 @@ if(authenticated) {
 
 	    function onOpen(evt)
 	    {
-	    	console.log("Hello moto");
-	    	// if (sessionStorage.getItem('authenticated') !== null) {
-	     //        var loginMessage = {
-	     //            'action': 'renew',
-	     //            'msg': {
-	     //                'token': sessionStorage.getItem('authenticated')
-	     //            }
-	     //        };
-	     //        doSend(JSON.stringify(loginMessage));
-	     //    } else {
-		    // 	var msg = {
-		    // 		'action': 'login',
-		    // 		'msg' : {
-		    // 			'username': auth_uid,
-		    // 			'password': auth_pw
-		    // 		}
-		    // 	}	    	
+	    	if (sessionStorage.getItem('authenticated') !== null) {
+	            var loginMessage = {
+	                'action': 'renew',
+	                'msg': {
+	                    'token': sessionStorage.getItem('authenticated')
+	                }
+	            };
+	            doSend(JSON.stringify(loginMessage));
+	        } else {
+		    	var msg = {
+		    		'action': 'login',
+		    		'msg' : {
+		    			'username': auth_uid,
+		    			'password': auth_pw
+		    		}
+		    	}	    	
 		        
-		    //     doSend(JSON.stringify(msg));
+		        doSend(JSON.stringify(msg));
 		        
 	        	
-	     //    }
+	        }
 	        onEvent("Connected");
 
 	    }
@@ -466,7 +466,7 @@ if(authenticated) {
 	            console.log(err_msg);
 	            // $('.login-err').text("Username or password is incorrect");
 	            //$('.login-err').text(err_msg);
-	        }   
+	        }
 	        
 	        console.log(msg.msg.uuid);
 	    };
@@ -578,7 +578,7 @@ if(authenticated) {
 	    	
 	    	// Get request parameters
 	    	var stockTickerId = "HON"; // TODO: get from UI
-	    	var amount = 1; // TODO: get from UI
+	    	var amount = 100; // TODO: get from UI
 
 	    	//Get stockid from ticker
 	    	var focusStock = Object.values(vm_stocks.stocks).filter(
