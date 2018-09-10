@@ -9,7 +9,7 @@ services:
       - db
       - ts
     ports:
-      - 8000:8000
+      - 80:8000
     volumes:
         - ${FILE_SERVE}:/opt/server/static/
     environment:

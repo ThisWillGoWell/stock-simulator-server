@@ -46,7 +46,8 @@ func GetUser(username, password string) (*User, error) {
 		return nil, errors.New("user does not exist")
 	}
 	user := userList[userUuid]
-	if user.Password != password {
+
+	if comparePasswords(user.PortfolioId, password) {
 		return nil, errors.New("Password is incorrect")
 	}
 	user.Active = true
@@ -76,7 +77,8 @@ set their Password to that provided
 */
 func NewUser(username, password string) (*User, error) {
 	uuid := utils.PseudoUuid()
-	user, err := MakeUser(uuid, username, username, password, "")
+	hashedPassword := hashAndSalt(password)
+	user, err := MakeUser(uuid, username, username, hashedPassword, "")
 	if err != nil {
 		utils.RemoveUuid(uuid)
 		return nil, err
