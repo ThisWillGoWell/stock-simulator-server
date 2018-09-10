@@ -10,22 +10,20 @@ import (
 	"github.com/stock-simulator-server/src/messages"
 	"log"
 	"net/http"
-	"os"
 	"time"
 )
 
 var clients = make(map[*websocket.Conn]http.Client) // connected clients
 
 func StartHandlers() {
-	shareDir := os.Getenv("FILE_SERVE")
-	if shareDir == "" {
-		shareDir = "static"
-	}
+	//shareDir := os.Getenv("FILE_SERVE")
+	//if shareDir == "" {
+	//	shareDir = "static"
+	//}
+	//fmt.Println(shareDir)
+	//var fs = http.FileServer(http.Dir(shareDir))
 
-	fmt.Println(shareDir)
-	var fs = http.FileServer(http.Dir(shareDir))
-
-	http.Handle("/", fs)
+	//http.Handle("/", fs)
 	http.HandleFunc("/load", func(w http.ResponseWriter, r *http.Request) {
 		go app.LoadVars()
 		<- time.After(time.Second)

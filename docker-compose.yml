@@ -8,10 +8,6 @@ services:
     depends_on:
       - db
       - ts
-    ports:
-      - 80:8000
-    volumes:
-        - ${FILE_SERVE}:/opt/server/static/
     environment:
       FILE_SERVE: opt/server/static
       DB_URI: host=db port=5432 user=starket password=wordpass dbname=starket_db sslmode=disable
@@ -41,6 +37,37 @@ services:
     volumes:
       - ts_volume:/opt/server/database/
 
+  proxy:
+    build:
+        context: docker
+        dockerfile: Dockerfile.proxy
+    volumes:
+    - letsencrypt_certs:/etc/nginx/certs
+    - letsencrypt_www:/var/www/letsencrypt
+
+    ports:
+    - "80:80"
+    - "443:443"
+    restart: always
+
+  web:
+    build:
+      context: docker
+      dockerfile: Dockerfile.web
+    volumes:
+      - ${FILE_SERVE}:/usr/share/nginx/html
+
+  letsencrypt:
+    build:
+      context: docker
+      dockerfile: Dockerfile.certs
+    command: /bin/true
+    volumes:
+    - letsencrypt_certs:/etc/letsencrypt
+    - letsencrypt_www:/var/www/letsencrypt
+
 volumes:
   ts_volume:
   db_volume:
+  letsencrypt_certs:
+  letsencrypt_www:

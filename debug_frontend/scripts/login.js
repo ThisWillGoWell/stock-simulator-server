@@ -37,7 +37,7 @@ $( document ).ready(function() {
 
 	/*  WEBSOCKETS */
 
-	var wsUri = "ws://"+ window.location.host + "/ws";
+	var wsUri = "wss://"+ window.location.host + "/ws";
     var output;
     var webSocket;
 

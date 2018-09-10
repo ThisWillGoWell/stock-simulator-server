@@ -248,7 +248,7 @@ $( document ).ready(function() {
 	/*  WEBSOCKETS */
 	let externalServer = "bookingsgolf.com:8000";
 	let localServer = window.location.host;
-	let wsUri = "ws://"+ externalServer + "/ws";
+	let wsUri = "wss://"+ externalServer + "/ws";
     let output;
     let webSocket;
 

@@ -8,7 +8,7 @@ $( document ).ready(function() {
 
 	let externalServer = "159.89.154.221";
     let localServer = window.location.host;
-    let wsUri = "ws://"+ externalServer + "/ws";
+    let wsUri = "wss://"+ externalServer + "/ws";
     var output;
     var webSocket;
     var auth_token = {
