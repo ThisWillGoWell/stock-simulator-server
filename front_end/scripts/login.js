@@ -9,7 +9,6 @@ $( document ).ready(function() {
 	let externalServer = "mockstarket.com";
     let localServer = window.location.host;
     let wsUri = "wss://"+ externalServer + "/ws";
-    var output;
     var webSocket;
     var auth_token = {
         "uid": 0,
@@ -96,13 +95,9 @@ $( document ).ready(function() {
         console.log("login recieved");
 
         // if success if true -> set cookie and forward to dashboard
-        console.log(msg.msg.success);
-
         if(msg.msg.success) {
 
             // Save data to sessionStorage
-            console.log(msg)
-            console.log("msg")
             sessionStorage.setItem("authenticated", msg.msg.token);
             sessionStorage.setItem("uuid", msg.msg.uuid);
             sessionStorage.setItem("auth_obj", JSON.stringify(auth_token));
@@ -111,10 +106,8 @@ $( document ).ready(function() {
         } else {
             let err_msg = msg.msg.err;
             $('.login-err').text("Username or password is incorrect");
-            //$('.login-err').text(err_msg);
         }   
         
-        console.log(msg.msg.uuid);
     };
 
     var routeObject = function(msg) {
@@ -141,10 +134,6 @@ $( document ).ready(function() {
         
     }
 
-    
-
-
-    /////
 
 
     function doSend(message)
