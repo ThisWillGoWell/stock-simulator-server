@@ -22,7 +22,6 @@ if(authenticated) {
 					// console.log("Click on " + route);
 					
 					renderContent(route);
-			    
 			    }
 			}
 		});
@@ -391,10 +390,9 @@ if(authenticated) {
 	    		'login': routeLogin,
 	    		'object': routeObject,
 	    		'update': routeUpdate,
-	    		'alert': alertUpdate,
-	    		'chat': chatUpdate,
+	    		'alert': routeAlert,
+	    		'chat': routeChat,
 	    	};
-
 	    	
     		if (msg.action) {
     			router[msg.action](msg);
@@ -404,12 +402,8 @@ if(authenticated) {
     				console.log(msg);
     			}
     			console.log("No message action");
-    			console.log(console.log(msg));
-    			
+    			console.log(console.log(msg));	
     		}
-    		
-    		
-    	
 	    };
 
 	    var routeLogin = function(msg) {
@@ -417,8 +411,6 @@ if(authenticated) {
 	        // if success if true -> set cookie and forward to dashboard
 	        console.log(msg.msg.success);
 	        console.log("login recieved");
-
-
 
 	        if(msg.msg.success) {
 	            // Save data to sessionStorage
@@ -464,7 +456,7 @@ if(authenticated) {
 	    let logDataOnce = true;
 
 	    var routeUpdate = function(msg) {
-	    	/* ledgers or portfolios. ledgers can build the portfolio object */
+	    	// REMOVE LATER
 	    	if (logDataOnce) {
 	    		console.log("------ STOCKS ------");
 	    		console.log(vm_stocks.stocks);
@@ -474,59 +466,100 @@ if(authenticated) {
 	    		console.log(vm_portfolios.portfolios);
 	    		logDataOnce = false;
 	    	}
-			switch (msg.msg.type) {
-				case 'stock':
-					// Variables needed to update the stocks
-					var targetUUID = msg.msg.uuid;
-					var targetField = msg.msg.changes[0].field;
-					var targetChange = msg.msg.changes[0].value;
+	    	// ^^^ REMOVE LATER ^^^
+	    	console.log(msg);
+	    	var updateRouter = {
+	    		'stock': stockUpdate,
+	    		'ledger': ledgerUpdate,
+	    		'portfolio': portfolioUpdate,
+	    		'user': userUpdate,
+	    	};
+	    	updateRouter[msg.msg.type](msg);
+	    };
 
-					// console.log("stock update");
-					// console.log(msg);
+	    var stockUpdate = function(msg) {
+			msg.msg.changes.forEach(function(changeObject){
+				console.log(msg.msg);
+				// Variables needed to update the stocks
+				var targetUUID = msg.msg.uuid;
+				var targetField = changeObject.field;
+				var targetChange = changeObject.value;
 
+				// if value to update is current price, calculate change
+				if (targetField === "current_price") {
 					// temp var for calculating price
 					var currPrice = vm_stocks.stocks[targetUUID][targetField];
 					// Adding change amount
 					vm_stocks.stocks[targetUUID].change = Math.round((targetChange - currPrice) * 1000)/100000;
-					// Adding new current price
-					vm_stocks.stocks[targetUUID][targetField] = targetChange;
-
+					
 					// helper to color rows in the stock table 
 					var targetElem = $("tr[uuid=\x22" + targetUUID + "\x22]");
 					var targetChangeElem = $("tr[uuid=\x22" + targetUUID + "\x22] > td.stock-change");
-
-					if((targetChange - currPrice) > 0) {
+					
+					if ((targetChange - currPrice) > 0) {
 						targetChangeElem.removeClass("falling");
 						targetChangeElem.addClass("rising");
 					} else {
 						targetChangeElem.removeClass("rising");
 						targetChangeElem.addClass("falling");
 					}
-					// targetElem.addClass("updated");
-				    break;
+				}
 
-				case 'ledger':
-					console.log(msg.msg);
-					// Variables needed to update the ledger item
-					var targetUUID = msg.msg.uuid;
-					var targetField = msg.msg.changes[0].field;
-					var targetChange = msg.msg.changes[0].value;
+				// Adding new current price
+				vm_stocks.stocks[targetUUID][targetField] = targetChange;
 
-					// Update ledger item
-					vm_ledger.ledger[targetUUID][targetField] = targetChange;
-				    break;
-			}
 
-				if (msg.msg.type == "stock") {
-		
-			}
+			})
 	    };
 
-	    var alertUpdate = function(msg) {
+	    var ledgerUpdate = function(msg) {
+			msg.msg.changes.forEach(function(changeObject){
+
+				// Variables needed to update the ledger item
+				var targetUUID = msg.msg.uuid;
+				var targetField = changeObject.field;
+				var targetChange = changeObject.value;
+
+				// Update ledger item
+				vm_ledger.ledger[targetUUID][targetField] = targetChange;
+			})
+	    };
+
+	    var portfolioUpdate = function(msg) {
+			
+			msg.msg.changes.forEach(function(changeObject){
+
+		    	console.log("IMPLEMENT PORTFOLIO UPDATES");
+				// Variables needed to update the ledger item
+				var targetUUID = msg.msg.uuid;
+				var targetField = msg.msg.changes[0].field;
+				var targetChange = msg.msg.changes[0].value;
+
+				// Update ledger item
+				vm_portfolios.portfolios[targetUUID][targetField] = targetChange;
+			})
+	    };
+
+	    var userUpdate = function(msg) {
+
+			msg.msg.changes.forEach(function(changeObject){
+			
+				// Variables needed to update the ledger item
+				var targetUUID = msg.msg.uuid;
+				var targetField = changeObject.field;
+				var targetChange = changeObject.value;
+
+				// Update ledger item
+				vm_users.activeUsers[targetUUID][targetField] = targetChange;
+			})
+	    }
+
+
+	    var routeAlert = function(msg) {
 	    	console.log(msg);
 	    }
 
-	    var chatUpdate = function(msg) {
+	    var routeChat = function(msg) {
 	    	
 	    	console.log("----- CHAT -----");
 	    	console.log(msg);
@@ -543,7 +576,7 @@ if(authenticated) {
 	    function sendTradeOptions() {
 	    	
 	    	// Get request parameters
-	    	var stockTickerId = "BIIB"; // TODO: get from UI
+	    	var stockTickerId = "BA"; // TODO: get from UI
 	    	var amount = 1; // TODO: get from UI
 
 	    	//Get stockid from ticker
