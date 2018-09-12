@@ -8,43 +8,9 @@ console.log(auth_obj);
 //let authenticated = sessionStorage.getItem('authenticated');
 
 
-
 if(authenticated) {
 	// Get saved data from sessionStorage
 	$( document ).ready(function() {
-
-		let sampleMessages = [
-			{
-		        id: 0,
-		        author_display_name: 'Matty Ice',
-		        timestamp:'11:38am',
-		        body:"Hi bb gurl. @Lisa",
-		    },
-		    {
-		        id: 1,
-		        author_display_name: 'Lisa',
-		        timestamp:'11:41am',
-		        body:"Matt I told you not to talk dirty to me in this chat. Save it for the DM's when they are finally implemented.",
-		    },
-		    {
-		        id: 2,
-		        author_display_name: 'Matty Ice',
-		        timestamp:'11:44am',
-		        body:"Ohh srry bb. I nvr meant to hurt u 💖",
-		    },
-		    {
-		        id: 3,
-		        author_display_name: 'Andys Woody',
-		        timestamp:'11:46am',
-		        body:"Lisa, would you like to model for a new Rustangelo painting I'm working on?",
-		    },
-		    {
-		        id: 4,
-		        author_display_name: 'Lisa',
-		        timestamp:'11:51am',
-		        body:"Absolutely! want me to come over to your place? xD",
-		    },
-		];
 
 
 		let vm_nav = new Vue({
@@ -167,7 +133,7 @@ if(authenticated) {
 		    activeUsers: {},
 		  },
 		  methods: {
-		  	getCurrentUser : function() {
+		  	getCurrentUser: function() {
 		  		// Get userUUID of the person that is logged in
 		  		var currentUser = sessionStorage.getItem('uuid');
 		  		console.log()
@@ -319,8 +285,6 @@ if(authenticated) {
 	    });
 
 	    function formatChatMessage(msg) {
-			// console.log("from me");
-	  //   	console.log(msg);
 	    	let timestamp = formatDate12Hour(new Date($.now()));
 	    	// let message_body = $('#chat-module--container textarea').val();
 	    	let message_body = msg.msg.message_body;
@@ -517,6 +481,9 @@ if(authenticated) {
 					var targetField = msg.msg.changes[0].field;
 					var targetChange = msg.msg.changes[0].value;
 
+					// console.log("stock update");
+					// console.log(msg);
+
 					// temp var for calculating price
 					var currPrice = vm_stocks.stocks[targetUUID][targetField];
 					// Adding change amount
@@ -547,7 +514,6 @@ if(authenticated) {
 
 					// Update ledger item
 					vm_ledger.ledger[targetUUID][targetField] = targetChange;
-
 				    break;
 			}
 
@@ -572,13 +538,13 @@ if(authenticated) {
 
 	    /* Sending trade requests */
 
-	    document.getElementById("trade-request-submit").addEventListener("click", sendTradeOptions, false);
+	    document.getElementById("btnTradeRequest").addEventListener("click", sendTradeOptions, false);
 	    
 	    function sendTradeOptions() {
 	    	
 	    	// Get request parameters
-	    	var stockTickerId = "HON"; // TODO: get from UI
-	    	var amount = 100; // TODO: get from UI
+	    	var stockTickerId = "BIIB"; // TODO: get from UI
+	    	var amount = 1; // TODO: get from UI
 
 	    	//Get stockid from ticker
 	    	var focusStock = Object.values(vm_stocks.stocks).filter(
@@ -593,8 +559,8 @@ if(authenticated) {
 	    			'amount': amount,
 	    		}
 	    	};
-
 	    	// Sending through websocket
+	    	console.log("SEND TRADE");
 	    	doSend(JSON.stringify(options));
 
 	    };
