@@ -80,7 +80,7 @@
 				<div class="logo-mark">MOCKSTARKET</div>
 				<!-- <div id="user-info-container" class="timer-container">
 					<div class="level-circle">1</div>
-					<p v-if="getCurrentUser(activeUsers)">{{ getCurrentUser(activeUsers) }}</p>
+					<p v-if="getCurrentUser(users)">{{ getCurrentUser(users) }}</p>
 				</div> -->
 				<div id="stats--view">
 					<div class="stat-value blue"><i class="material-icons menu-icon">business</i>$10000</div>
@@ -147,11 +147,11 @@
 						<span></span>	
 					</div>
 
-				<div id="user-info-container" v-if="getCurrentUser(activeUsers)" class="nav-list">
+				<div id="user-info-container" v-if="getCurrentUser(users)" class="nav-list">
 				<!-- TODO:  Above line could be the line beneath-->
 				<!-- <div id="user-info-container" class="nav-list"> -->
 					<!-- <div class="level-circle">1</div> -->
-					<div class="username-text">{{ getCurrentUser(activeUsers) }}</div>
+					<div class="username-text">{{ getCurrentUser(users) }}</div>
 					
 					
 				

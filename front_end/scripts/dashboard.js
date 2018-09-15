@@ -26,7 +26,7 @@ if(authenticated) {
 			}
 		});
 
-		
+
 		let vm_popout_menu = new Vue({
 			el: '#btn-logout',
 			methods: {
@@ -126,10 +126,11 @@ if(authenticated) {
 			}
 		});
 
+		
 		let vm_users = new Vue({
 		  el: '#user-info-container',
 		  data: {
-		    activeUsers: {},
+		    users: {},
 		  },
 		  methods: {
 		  	getCurrentUser: function() {
@@ -137,8 +138,8 @@ if(authenticated) {
 		  		var currentUser = sessionStorage.getItem('uuid');
 		  		console.log()
 		  		// Have they been added to the users object yet?
-		  		if (this.activeUsers[currentUser]) {
-		  			return this.activeUsers[currentUser].display_name;
+		  		if (vm_users.users[currentUser]) {
+		  			return vm_users.users[currentUser].display_name;
 		  		} else {
 		  			return "";
 		  		}
@@ -290,7 +291,7 @@ if(authenticated) {
 	    	var currentUser = msg.msg.author;
 	    	let temp_msg = {
 		        author_uuid: currentUser,
-		        author_display_name: vm_users.activeUsers[currentUser].display_name,
+		        author_display_name: vm_users.users[currentUser].display_name,
 		        timestamp: timestamp,
 		        body: message_body,
 		    };
@@ -333,7 +334,7 @@ if(authenticated) {
 	    {
 	        testWebSocket();
 
-	        console.log(vm_users.activeUsers);
+	        console.log(vm_users.users);
 	    }
 
 	    function testWebSocket()
@@ -447,7 +448,7 @@ if(authenticated) {
 
 				case 'user':
 					/* Add owner names to portfolio uuid */
-				    Vue.set(vm_users.activeUsers, msg.msg.uuid, msg.msg.object);
+				    Vue.set(vm_users.users, msg.msg.uuid, msg.msg.object);
 				    break;
 
 			}
@@ -550,7 +551,7 @@ if(authenticated) {
 				var targetChange = changeObject.value;
 
 				// Update ledger item
-				vm_users.activeUsers[targetUUID][targetField] = targetChange;
+				vm_users.users[targetUUID][targetField] = targetChange;
 			})
 	    }
 
