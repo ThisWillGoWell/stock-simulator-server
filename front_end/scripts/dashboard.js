@@ -45,14 +45,16 @@ if(authenticated) {
 			}
 		});
 
-		var STOCKS = {}; 
-		setTimeout(function() {
-			var stock_array = Object.values(STOCKS).map((d) => d);
-			console.log(stock_array);
-			var vm_stocks = new Vue({
+		// 1. Data loads into global object
+		// 2. Create Vue objects 
+		//		-must be once all object are stored
+		// 3. Load html
+		//		-cant be done until vue objects have been created in case vue methods are called in the html
+		var STOCKS = {};
+		var vm_stocks = new Vue({
 			  el: '#stock-list',
 			  data: {
-			    stocks: stock_array,
+			    stocks: {},
 			    sortBy: 'ticker_id',
 			    sortDesc: 1,
 			  },
@@ -62,135 +64,158 @@ if(authenticated) {
 				        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
 				    },
 				    // on column name clicks
-				    sortCol(col) {
+				    sortCol: function(col) {
 				    	// If sorting by selected column
 				    	if (this.sortBy == col) {
 				    		// Change sort direction
 				    		// console.log(col);
-				    		vm_stocks.sortDesc = -vm_stocks.sortDesc;
+				    		this.sortDesc = -this.sortDesc;
 				    	} else {
 				    		// Change sorted column
-				    		vm_stocks.sortBy = col;
+				    		this.sortBy = col;
 				    		
 				    	}
-
-				    	// Sorting
-				    	if (Object.keys(vm_stocks.stocks).length === 0) {
-
-				    	}
-			    	  	// Turn to array and sort 
-				    	var stock_array = Object.values(vm_stocks.stocks).map((d) => d );
-				    	// Sorting array
-				    	stock_array = stock_array.sort(function(a,b) {
-				    		if (a[vm_stocks.sortBy] > b[vm_stocks.sortBy]) {
-				    			return -vm_stocks.sortDesc;
-				    		} 
-				    		if (a[vm_stocks.sortBy] < b[vm_stocks.sortBy]) {
-
-				    			return vm_stocks.sortDesc;
-				    		}
-				    		return 0;
-				    	})
-				    	vm_stocks.stocks = stock_array;
 				    },
+				},
+				computed:{
+					sortedStocks: function() {
+			    		if (Object.keys(this.stocks).length === 0) {
+				    		return [];
+				    	} else {
+				    	  	// Turn to array and sort 
+					    	var stock_array = Object.values(vm_stocks.stocks).map(function(d){ return d; });
+
+					    	// Sorting array
+					    	stock_array = stock_array.sort(function(a,b) {
+					    		if (a[vm_stocks.sortBy] > b[vm_stocks.sortBy]) {
+					    			return -vm_stocks.sortDesc;
+					    		} 
+					    		if (a[vm_stocks.sortBy] < b[vm_stocks.sortBy]) {
+
+					    			return vm_stocks.sortDesc;
+					    		}
+					    		return 0;
+					    	})
+					    	console.log(stock_array);
+					    	return stock_array;
+				    	}
+					}
 				}
 			});
-			console.log("------ STOCKS ------");
-			console.log(vm_stocks.stocks);
-		}, 1000)
+			
+
+		console.log("------ STOCKS ------");
+		console.log(vm_stocks.stocks);
 
 		var LEDGER = {};
-		setTimeout(function() {
 			var vm_ledger = new Vue({
 			  el: '#ledger-list',
 			  data: {
-			    ledger: LEDGER,
+			    ledger: {},
 			  }
 			});
 			console.log("------ LEDGER ------");
 			console.log(vm_ledger.ledger);
-		}, 1000)
 
 		var PORTFOLIOS = {};
-		setTimeout(function() {
-			var vm_portfolios = new Vue({
-				el: '#portfolio-list',
-				data: {
-					portfolios: PORTFOLIOS,
-				},
-				methods: {
-					getPortfolioStocks: function(portfolioUUID) {
-						// List of all ledger items
-						var stocks = Object.keys(vm_ledger.ledger).map(function(key){
-							return vm_ledger.ledger[key];
-						});
-						// Ledger items of interest
-						stocks = stocks.filter(function(d) {
-							return d.portfolio_id == portfolioUUID;
-						});
-						// Grabbing additional info from stock objects
-						stocks = stocks.map(function(d) {
-							d.ticker_id = vm_stocks.stocks[d.stock_id].ticker_id;
-							d.stock_name = vm_stocks.stocks[d.stock_id].name;
-							d.current_price = vm_stocks.stocks[d.stock_id].current_price;
-							return d;
-						});
-						return stocks;
-					}
+		var vm_portfolios = new Vue({
+			el: '#portfolio-list',
+			data: {
+				portfolios: {},
+			},
+			methods: {
+				getPortfolioStocks: function(portfolioUUID) {
+					// List of all ledger items
+					var stocks = Object.keys(vm_ledger.ledger).map(function(key){
+						return vm_ledger.ledger[key];
+					});
+					// Ledger items of interest
+					stocks = stocks.filter(function(d) {
+						return d.portfolio_id == portfolioUUID;
+					});
+					// Grabbing additional info from stock objects
+					stocks = stocks.map(function(d) {
+						d.ticker_id = vm_stocks.stocks[d.stock_id].ticker_id;
+						d.stock_name = vm_stocks.stocks[d.stock_id].name;
+						d.current_price = vm_stocks.stocks[d.stock_id].current_price;
+						return d;
+					});
+					return stocks;
 				}
-			});
-			console.log("------ PORTFOLIOS ------");
-			console.log(vm_portfolios.portfolios);
-		}, 1000);
+			}
+		});
+		console.log("------ PORTFOLIOS ------");
+		console.log(vm_portfolios.portfolios);
 
+		$('#user-info-container .username-text').text(auth_uid)
 		var USERS = {};
-		setTimeout(function() {
-			var vm_users = new Vue({
-			  el: '#user-info-container',
-			  data: {
-			    users: USERS,//{},//
-			  },
-			  methods: {
-			  	getCurrentUser: function() {
-			  		// Get userUUID of the person that is logged in
-			  		var currentUser = sessionStorage.getItem('uuid');
-			  		console.log()
-			  		// Have they been added to the users object yet?
-			  		if (this.users[currentUser]) {
-			  			return this.users[currentUser].display_name;
-			  		} else {
-			  			return "";
-			  		}
-			  	}
-			  }
-			});
-			console.log("----- USERS -----");
-			console.log(vm_users.users);
+		var vm_users = new Vue({
+		  el: '#user-info-container',
+		  data: {
+		    users: {},
+		    currentUser: auth_uid,
+		  },
+		  methods: {
+		  	getCurrentUser: function() {
+		  		// Get userUUID of the person that is logged in
+		  		var currentUser = sessionStorage.getItem('uuid');
+		  		console.log()
+		  		// Have they been added to the users object yet?
+		  		if (this.users[currentUser]) {
+		  			return this.users[currentUser].display_name;
+		  		} else {
+		  			return "";
+		  		}
+		  	}
+		  }
+		});
+		console.log("----- USERS -----");
+		console.log(vm_users.users);
 
-		}, 1000)
+		var getHighestStock = function(stocks) {
+			stocks = Object.values(stocks).map((d) => d);
+			var highestStock = stocks.reduce(function(a, b){ return a.current_price > b.current_price ? a : b });
+			return highestStock;
+		};
+		var getMoverStock = function(stocks) {
+			stocks = Object.values(stocks).map((d) => d);
+			var mover = stocks.reduce((a, b) => a.change > b.change ? a : b);
+			return mover;
+		}
 
-
-		// let vm_users = new Vue({
-		//   el: '#user-info-container',
-		//   data: {
-		//     users: USERS,//{},
-		//   },
-		//   methods: {
-		//   	getCurrentUser: function() {
-		//   		// Get userUUID of the person that is logged in
-		//   		var currentUser = sessionStorage.getItem('uuid');
-		//   		console.log()
-		//   		// Have they been added to the users object yet?
-		//   		if (this.users[currentUser]) {
-		//   			return this.users[currentUser].display_name;
-		//   		} else {
-		//   			return "";
-		//   		}
-		//   	}
-		//   }
-		// });
-
-
+		var superlativeStocks = new Vue({
+			el: '#stockSuperlatives',
+			computed: {
+				highestStock: function() {
+					if (Object.values(vm_stocks.stocks).length === 0) {
+						return "";
+					} else {
+						stocks = Object.values(vm_stocks.stocks).map((d) => d);
+						var highestStock = stocks.reduce(function(a, b){ return a.current_price > b.current_price ? a : b });
+						return highestStock.ticker_id;
+					}
+				},
+				mostChange: function() {
+					if (Object.values(vm_stocks.stocks).length === 0) {
+						return "";
+					} else {
+						stocks = Object.values(vm_stocks.stocks).map((d) => d);
+						var mover = stocks.reduce((a, b) => a.change > b.change ? a : b);
+						return mover.ticker_id;
+					}
+				},
+				mostShares: function() {
+					if (Object.values(vm_stocks.stocks).length === 0) {
+						return "";
+					} else {
+						stocks = Object.values(vm_stocks.stocks).map((d) => d);
+						var mover = stocks.reduce((a, b) => a.open_shares > b.open_shares ? a : b);
+						return mover.ticker_id;
+					}
+				},
+			}
+		});
+		
 		$(document).scroll(function() {
 			scrollVal = $(document).scrollTop();
 		    //console.log("SCROLL: "+scrollVal);
@@ -281,14 +306,11 @@ if(authenticated) {
 
 
 // TODO: find a better spot for this
-setTimeout(function(){
 
 	    $('#stock-list').on('click', 'tr.clickable' , function (event) {
 		    toggleModal();
 
         });
-
-	},5001)
 
 
 
@@ -482,27 +504,29 @@ setTimeout(function(){
 			switch (msg.msg.type) {
 				case 'portfolio':
 				    PORTFOLIOS[msg.msg.uuid] = msg.msg.object;
-				    // Vue.set(vm_portfolios.portfolios, msg.msg.uuid, msg.msg.object);
+			  		// Give the vue object reactivity with PORTFOLIOS
+				    Vue.set(vm_portfolios.portfolios, msg.msg.uuid, PORTFOLIOS[msg.msg.uuid]);
 				    break;
 
 				case 'stock':
 			  		// Add variables for stocks for vue module initialization 
 			  		msg.msg.object.change = 0;
-			  		// New - cannot add to vm_stocks.stocks directly (https://vuejs.org/v2/guide/reactivity.html in Change Detection Caveats section)
+			  		// Add object
 				    STOCKS[msg.msg.uuid] = msg.msg.object;
-			  		// Vue.set(vm_stocks.stocks, msg.msg.uuid, msg.msg.object);
+			  		// Give the vue object reactivity with STOCKS
+			  		Vue.set(vm_stocks.stocks, msg.msg.uuid, STOCKS[msg.msg.uuid]);
 				  	break;
 
 				case 'ledger':
-					/* Add owner names to portfolio uuid */
 				    LEDGER[msg.msg.uuid] = msg.msg.object;
-				    // Vue.set(vm_ledger.ledger, msg.msg.uuid, msg.msg.object);
+			  		// Give the vue object reactivity with LEDGER
+				    Vue.set(vm_ledger.ledger, msg.msg.uuid, LEDGER[msg.msg.uuid]);
 				    break;
 
 				case 'user':
-					/* Add owner names to portfolio uuid */
 					USERS[msg.msg.uuid] = msg.msg.object;
-				    // Vue.set(vm_users.users, msg.msg.uuid, msg.msg.object);
+			  		// Give the vue object reactivity with USERS
+				    Vue.set(vm_users.users, msg.msg.uuid, USERS[msg.msg.uuid]);
 				    break;
 
 			}
@@ -525,7 +549,7 @@ setTimeout(function(){
 				var targetUUID = msg.msg.uuid;
 				var targetField = changeObject.field;
 				var targetChange = changeObject.value;
-
+				
 				// if value to update is current price, calculate change
 				if (targetField === "current_price") {
 					// temp var for calculating price
@@ -549,7 +573,6 @@ setTimeout(function(){
 
 				// Adding new current price
 				STOCKS[targetUUID][targetField] = targetChange;
-				// vm_stocks.stocks[targetUUID][targetField] = targetChange;
 
 
 			})
@@ -565,7 +588,6 @@ setTimeout(function(){
 
 				// Update ledger item
 				LEDGER[targetUUID][targetField] = targetChange;
-				// vm_ledger.ledger[targetUUID][targetField] = targetChange;
 			})
 	    };
 
@@ -581,7 +603,6 @@ setTimeout(function(){
 
 				// Update ledger item
 				PORTFOLIOS[targetUUID][targetField] = targetChange;
-				// vm_portfolios.portfolios[targetUUID][targetField] = targetChange;
 			})
 	    };
 
@@ -596,7 +617,6 @@ setTimeout(function(){
 
 				// Update ledger item
 				USERS[targetUUID][targetField] = targetChange;
-				// vm_users.users[targetUUID][targetField] = targetChange;
 			})
 	    }
 
