@@ -16,13 +16,19 @@
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
         <script src="scripts/dashboard.js"></script>
-        
 
     </head>
 
 	<body>
 
-		<div class="app--container">
+		<div class="app--container" id="app--container">
+        <!-- <script>
+		  var content = document.getElementById("app--container");
+		  content.style.display="none";
+		  setTimeout(function(){
+		    content.style.display="block";
+		  }, 2000);
+		</script> -->
 			<section id="modal--container">
 
 				<div class="modal-card">
@@ -147,11 +153,12 @@
 						<span></span>	
 					</div>
 
-				<div id="user-info-container" v-if="getCurrentUser(users)" class="nav-list">
+				<div id="user-info-container" class="nav-list">
 				<!-- TODO:  Above line could be the line beneath-->
 				<!-- <div id="user-info-container" class="nav-list"> -->
 					<!-- <div class="level-circle">1</div> -->
-					<div class="username-text">{{ getCurrentUser(users) }}</div>
+					<!-- <currentUser allUsers=users></currentUser> -->
+					<div class="username-text"><!-- {{ currentUser }} --></div>
 					
 					
 				
@@ -224,37 +231,37 @@
 						</div>
 					</div>
 					<div id="stocks--view" class="view">
-						<div class="flex-grid--container">
-							
-							<div class="flex-column-33">
-								<div class="card small">
-									<div class="stat-value blue">
-										<i class="material-icons menu-icon">business</i>
-										<div class="card-details">
-											<div class="card-category">MOST EXPENSIVE</div>
-											<p>IBM</p>
+						<div class="flex-grid--container" id="stockSuperlatives">
+								<div class="flex-column-33">
+									<div class="card small">
+										<div class="stat-value blue">
+											<i class="material-icons menu-icon">business</i>
+											<div class="card-details">
+												<div class="card-category">MOST EXPENSIVE</div>
+												<p>{{ highestStock }}</p>
+											</div>
 										</div>
-									</div>
-					
-					
-								</div>
-							</div>
-							<div class="flex-column-33">
-								<div class="card small">
-									<div class="stat-value green">
-										<i class="material-icons menu-icon">local_atm</i><div class="card-details">
-											<div class="card-category">HIGHEST GROWTH</div>
-											<p>APPL</p>
-										</div>
+						
+						
 									</div>
 								</div>
-							</div>
-							<div class="flex-column-33">
-								<div class="card small">
-									<div class="stat-value orange">
-										<i class="material-icons menu-icon">trending_up</i><div class="card-details">
-											<div class="card-category">MOST SHARES</div>
-											<p>GE</p>
+								<div class="flex-column-33">
+									<div class="card small">
+										<div class="stat-value green">
+											<i class="material-icons menu-icon">local_atm</i><div class="card-details">
+												<div class="card-category">HIGHEST GROWTH</div>
+												<p>{{ mostChange }}</p>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="flex-column-33">
+									<div class="card small">
+										<div class="stat-value orange">
+											<i class="material-icons menu-icon">trending_up</i><div class="card-details">
+												<div class="card-category">MOST SHARES</div>
+												<p>{{ mostShares }}</p>
+											</div>
 										</div>
 									</div>
 								</div>
@@ -274,7 +281,7 @@
 										  </thead>
 										  <tbody>
 										  	<!-- https://vuejs.org/v2/guide/list.html :key is recommended in v.fors, not sure why yet -->
-										    <tr class="clickable" v-for="stock in stocks" :key='stock.uuid' v-bind:uuid="stock.uuid">
+										    <tr class="clickable" v-for="stock in sortedStocks" :key='stock.uuid' v-bind:uuid="stock.uuid">
 										    <!-- <tr class="clickable" v-for="stock in sortStocks(stocks)" :key='stock.uuid' v-bind:uuid="stock.uuid"> -->
 										      <th scope="row">
 										      	<div class="stock-ticker-id">{{ stock.ticker_id }}</div>
