@@ -61,7 +61,7 @@ if(authenticated) {
 			  methods: {
 				    formatPrice: function(value) {
 				        let val = (value/1).toFixed(2)/100
-				        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+				        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 				    },
 				    // on column name clicks
 				    sortCol: function(col) {
@@ -96,7 +96,6 @@ if(authenticated) {
 					    		}
 					    		return 0;
 					    	})
-					    	console.log(stock_array);
 					    	return stock_array;
 				    	}
 					}
@@ -305,11 +304,18 @@ if(authenticated) {
 
 
 
-// TODO: find a better spot for this
+		// TODO: find a better spot for this
 
 	    $('#stock-list').on('click', 'tr.clickable' , function (event) {
-		    toggleModal();
+	    	// TODO: get all data elements
+		    var ticker_id = this.getElementsByClassName('stock-ticker-id')[0].innerHTML;
+		    var current_price = this.getElementsByClassName('stock-price')[0].innerHTML;
+		    
+		    //TODO: update all data elements in the modal
+		    $('#modal--container .modal-stock-id').html(ticker_id);
+		    $('#modal--container .modal-stock-price').html('$' + current_price);
 
+		    toggleModal();
         });
 
 
@@ -544,7 +550,6 @@ if(authenticated) {
 
 	    var stockUpdate = function(msg) {
 			msg.msg.changes.forEach(function(changeObject){
-				console.log(msg.msg);
 				// Variables needed to update the stocks
 				var targetUUID = msg.msg.uuid;
 				var targetField = changeObject.field;
@@ -680,15 +685,19 @@ if(authenticated) {
 	        webSocket.send(message);
 	    }
 
-	    
+
+	    // update
+		Vue.component('buySellModal', {
+		  template: '#modal--container'
+		});
+
 
 	    $('.modal-card button').click(function() {
-	    
+	    	console.log(this);
 	        toggleModal();
 	        
 	    });
 
-	    
 
 	    function toggleModal() {
 	    	$('#modal--container').toggleClass('open');

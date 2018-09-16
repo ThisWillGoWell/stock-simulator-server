@@ -22,19 +22,12 @@
 	<body>
 
 		<div class="app--container" id="app--container">
-        <!-- <script>
-		  var content = document.getElementById("app--container");
-		  content.style.display="none";
-		  setTimeout(function(){
-		    content.style.display="block";
-		  }, 2000);
-		</script> -->
+			
 			<section id="modal--container">
-
 				<div class="modal-card">
 					<button><i class="material-icons">close</i></button>
 					<div id="trade--view">
-						<div class="stock-id">KING</div>
+						<div class="modal-stock-id">KING</div>
 						<div class="flex-grid--container no-padding">
 							<div class="flex-column-50">
 								<div class="card calc-btn no-fill green">BUY</div>
@@ -71,7 +64,7 @@
 								</thead>
 								<tbody>
 									<tr>
-										<td>$299</td>
+										<td class='modal-stock-price'>$299</td>
 										<td>3</td>
 										<td>$897</td>
 									</tr>
@@ -82,6 +75,7 @@
 					</div>
 				</div>
 			</section>
+			
 			<section id="side-menu--container">
 				<div class="logo-mark">MOCKSTARKET</div>
 				<!-- <div id="user-info-container" class="timer-container">
@@ -231,6 +225,7 @@
 						</div>
 					</div>
 					<div id="stocks--view" class="view">
+						
 						<div class="flex-grid--container" id="stockSuperlatives">
 								<div class="flex-column-33">
 									<div class="card small">

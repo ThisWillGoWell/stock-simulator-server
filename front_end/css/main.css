@@ -1547,7 +1547,7 @@ table.table tbody tr td{
     padding-bottom: 25px;
 }
 
-#trade--view .stock-id{
+#trade--view .modal-stock-id{
     font-size: 96px;
     letter-spacing: 3px;
     color: #fff;
