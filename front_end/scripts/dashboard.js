@@ -180,7 +180,7 @@ if(authenticated) {
 			stocks = Object.values(stocks).map((d) => d);
 			var mover = stocks.reduce((a, b) => a.change > b.change ? a : b);
 			return mover;
-		}
+		};
 
 		var superlativeStocks = new Vue({
 			el: '#stockSuperlatives',
@@ -512,6 +512,7 @@ if(authenticated) {
 				    PORTFOLIOS[msg.msg.uuid] = msg.msg.object;
 			  		// Give the vue object reactivity with PORTFOLIOS
 				    Vue.set(vm_portfolios.portfolios, msg.msg.uuid, PORTFOLIOS[msg.msg.uuid]);
+
 				    break;
 
 				case 'stock':
@@ -533,6 +534,11 @@ if(authenticated) {
 					USERS[msg.msg.uuid] = msg.msg.object;
 			  		// Give the vue object reactivity with USERS
 				    Vue.set(vm_users.users, msg.msg.uuid, USERS[msg.msg.uuid]);
+				    // TODO remove
+				    // Setting up current user portfolio	    				
+				    // if (msg.msg.object.uuid == sessionStorage.getItem('uuid')) {
+				    // 	createCurrentUser(msg.msg.object.portfolio_uuid);
+				    // }
 				    break;
 
 			}
@@ -637,17 +643,36 @@ if(authenticated) {
 	    	formatChatMessage(msg);
 	    }
 
-
+	    var currUser = new Vue({
+	    	el: '#app--container',
+	    	computed: {
+	    		currUserPortfolio: function() {
+	    			var currUser = sessionStorage.getItem('uuid');
+	    			if (vm_users.users[currUser] === undefined) {
+	    				return {};
+	    			} else {
+		    			var currUserFolioUUID = USERS[currUser].portfolio_uuid;
+	    				if (vm_portfolios.portfolios[currUserFolioUUID] === undefined) {
+	    					return {};
+		    			} else {
+			    			var folio = vm_portfolios.portfolios[currUserFolioUUID];
+			    			return folio;
+		    			}
+		    		}
+		    	}
+	    	}
+	    });
 
 
 	    /* Sending trade requests */
 
-	    document.getElementById("btnTradeRequest").addEventListener("click", sendTradeOptions, false);
+	    document.getElementById("trade-request-submit").addEventListener("click", sendTradeOptions, false);
 	    
 	    function sendTradeOptions() {
 	    	
 	    	// Get request parameters
-	    	var stockTickerId = "BA"; // TODO: get from UI
+		    
+		    var stockTickerId = $('#modal--container .modal-stock-id').html();
 	    	var amount = 1; // TODO: get from UI
 
 	    	//Get stockid from ticker
