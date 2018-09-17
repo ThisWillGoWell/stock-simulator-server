@@ -212,74 +212,71 @@
 						</div>
 					</div>
 					<div id="stocks--view" class="view">
-						
 						<div class="flex-grid--container" id="stockSuperlatives">
-								<div class="flex-column-33">
-									<div class="card small">
-										<div class="stat-value blue">
-											<i class="material-icons menu-icon">business</i>
-											<div class="card-details">
-												<div class="card-category">MOST EXPENSIVE</div>
-												<p>{{ highestStock }}</p>
-											</div>
-										</div>
-									</div>
-								</div>
-								<div class="flex-column-33">
-									<div class="card small">
-										<div class="stat-value green">
-											<i class="material-icons menu-icon">local_atm</i><div class="card-details">
-												<div class="card-category">HIGHEST GROWTH</div>
-												<p>{{ mostChange }}</p>
-											</div>
-										</div>
-									</div>
-								</div>
-								<div class="flex-column-33">
-									<div class="card small">
-										<div class="stat-value orange">
-											<i class="material-icons menu-icon">trending_up</i><div class="card-details">
-												<div class="card-category">MOST SHARES</div>
-												<p>{{ mostShares }}</p>
-											</div>
+							<div class="flex-column-33">
+								<div class="card small">
+									<div class="stat-value blue">
+										<i class="material-icons menu-icon">business</i>
+										<div class="card-details">
+											<div class="card-category">MOST EXPENSIVE</div>
+											<p>{{ highestStock }}</p>
 										</div>
 									</div>
 								</div>
 							</div>
-
-							<div class="flex-column-100">
-								<div class="card stock-list">
-									<div id="stock-list">
-										<table class="table">
-										  <thead>
-										    <tr>
-										      <th scope="col" v-on:click="sortCol('ticker_id')" style="text-align: left; padding-left: 25px;">Stock <i class="material-icons stock">arrow_drop_down</i></th>
-										      <th scope="col" v-on:click="sortCol('open_shares')">Open Shares <i class="material-icons open-shares">arrow_drop_down</i></th>
-										      <th scope="col" v-on:click="sortCol('change')">Change <i class="material-icons change">arrow_drop_down</i></th>
-										      <th scope="col" v-on:click="sortCol('current_price')" style="padding-right: 25px;">Cost <i class="material-icons cost">arrow_drop_down</i></th>
-										    </tr>
-										  </thead>
-										  <tbody>
-										  	<!-- https://vuejs.org/v2/guide/list.html :key is recommended in v.fors, not sure why yet -->
-										    <tr class="clickable" v-for="stock in sortedStocks" :key='stock.uuid' v-bind:uuid="stock.uuid">
-										    <!-- <tr class="clickable" v-for="stock in sortStocks(stocks)" :key='stock.uuid' v-bind:uuid="stock.uuid"> -->
-										      <th scope="row">
-										      	<div class="stock-ticker-id">{{ stock.ticker_id }}</div>
-										      	<div class="stock-display-name">{{ stock.name }}</div>
-										      </th>
-										      <td class="stock-open-shares">{{ stock.open_shares }}</td>
-										      <td class="stock-change">
-										      	{{ stock.change }}
-										      	<i class="material-icons">arrow_drop_down</i>
-										      </td>
-										      <td class="stock-price" style="padding-right: 25px;">
-										      {{ formatPrice(stock.current_price) }}</td>
-										    </tr>
-										    
-										  </tbody>
-										</table>
-								
+							<div class="flex-column-33">
+								<div class="card small">
+									<div class="stat-value green">
+										<i class="material-icons menu-icon">local_atm</i><div class="card-details">
+											<div class="card-category">HIGHEST GROWTH</div>
+											<p>{{ mostChange }}</p>
+										</div>
 									</div>
+								</div>
+							</div>
+							<div class="flex-column-33">
+								<div class="card small">
+									<div class="stat-value orange">
+										<i class="material-icons menu-icon">trending_up</i><div class="card-details">
+											<div class="card-category">MOST SHARES</div>
+											<p>{{ mostShares }}</p>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="flex-column-100">
+							<div class="card stock-list">
+								<div id="stock-list">
+									<table class="table">
+									  <thead>
+									    <tr>
+									      <th scope="col" v-on:click="sortCol('ticker_id')" style="text-align: left; padding-left: 25px;">Stock <i class="material-icons stock">arrow_drop_down</i></th>
+									      <th scope="col" v-on:click="sortCol('open_shares')">Open Shares <i class="material-icons open-shares">arrow_drop_down</i></th>
+									      <th scope="col" v-on:click="sortCol('change')">Change <i class="material-icons change">arrow_drop_down</i></th>
+									      <th scope="col" v-on:click="sortCol('current_price')" style="padding-right: 25px;">Cost <i class="material-icons cost">arrow_drop_down</i></th>
+									    </tr>
+									  </thead>
+									  <tbody>
+									  	<!-- https://vuejs.org/v2/guide/list.html :key is recommended in v.fors, not sure why yet -->
+									    <tr class="clickable" v-for="stock in sortedStocks" :key='stock.uuid' v-bind:uuid="stock.uuid">
+									    <!-- <tr class="clickable" v-for="stock in sortStocks(stocks)" :key='stock.uuid' v-bind:uuid="stock.uuid"> -->
+									      <th scope="row">
+									      	<div class="stock-ticker-id">{{ stock.ticker_id }}</div>
+									      	<div class="stock-display-name">{{ stock.name }}</div>
+									      </th>
+									      <td class="stock-open-shares">{{ stock.open_shares }}</td>
+									      <td class="stock-change">
+									      	{{ stock.change }}
+									      	<i class="material-icons">arrow_drop_down</i>
+									      </td>
+									      <td class="stock-price" style="padding-right: 25px;">
+									      {{ formatPrice(stock.current_price) }}</td>
+									    </tr>
+									    
+									  </tbody>
+									</table>
+							
 								</div>
 							</div>
 						</div>
