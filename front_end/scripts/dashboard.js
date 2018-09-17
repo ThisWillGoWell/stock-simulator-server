@@ -1,10 +1,7 @@
 
 // ADDED THIS BLOCK FOR AUTH - TELL JAKE
 let authenticated = sessionStorage.getItem('authenticated');
-let auth_obj = $.parseJSON(sessionStorage.getItem('auth_obj'));
-let auth_uid = auth_obj.uid;
-let auth_pw = auth_obj.pw;
-console.log(auth_obj);
+let auth_uid = sessionStorage.getItem('uid');
 
 var vm_portfolios, vm_ledger, vm_stocks, vm_users;
 
@@ -434,20 +431,8 @@ if(authenticated) {
 	                }
 	            };
 	            doSend(JSON.stringify(loginMessage));
-	        } else {
-		    	var msg = {
-		    		'action': 'login',
-		    		'msg' : {
-		    			'username': auth_uid,
-		    			'password': auth_pw
-		    		}
-		    	}	    	
-		        
-		        doSend(JSON.stringify(msg));
-		        
-	        	
-	        }
-	        onEvent("Connected");
+	        }   
+			onEvent("Connected");
 
 	    }
 
@@ -606,7 +591,6 @@ if(authenticated) {
 			
 			msg.msg.changes.forEach(function(changeObject){
 
-		    	console.log("IMPLEMENT PORTFOLIO UPDATES");
 				// Variables needed to update the ledger item
 				var targetUUID = msg.msg.uuid;
 				var targetField = msg.msg.changes[0].field;
@@ -712,14 +696,8 @@ if(authenticated) {
 	    }
 
 
-	    // update
-		Vue.component('buySellModal', {
-		  template: '#modal--container'
-		});
-
 
 	    $('.modal-card button').click(function() {
-	    	console.log(this);
 	        toggleModal();
 	        
 	    });

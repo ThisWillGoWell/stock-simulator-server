@@ -10,10 +10,7 @@ $( document ).ready(function() {
     let localServer = window.location.host;
     let wsUri = "wss://"+ externalServer + "/ws";
     var webSocket;
-    var auth_token = {
-        "uid": 0,
-        "pw": "",
-    };
+    var uid = "";
 
     function init()
     {
@@ -31,7 +28,6 @@ $( document ).ready(function() {
 
     function onOpen(evt)
     {
-        console.log(sessionStorage.getItem('authenticated'))
         if (sessionStorage.getItem('authenticated') !== null) {
             var loginMessage = {
                 'action': 'renew',
@@ -100,7 +96,7 @@ $( document ).ready(function() {
             // Save data to sessionStorage
             sessionStorage.setItem("authenticated", msg.msg.token);
             sessionStorage.setItem("uuid", msg.msg.uuid);
-            sessionStorage.setItem("auth_obj", JSON.stringify(auth_token));
+            sessionStorage.setItem("uid", uid);
             window.location.href = "/dashboard.html";
 
         } else {
@@ -132,7 +128,7 @@ $( document ).ready(function() {
 
     var alertUpdate = function(msg) {
         
-    }
+    };
 
 
 
@@ -163,8 +159,7 @@ $( document ).ready(function() {
 				        	"password": input_pw_trimmed
 				        }
 				    };
-            auth_token["uid"] = input_uid_trimmed;
-            auth_token["pw"] = input_pw_trimmed;
+            uid = input_uid_trimmed;
     	}
 
     	console.log(auth_msg);
