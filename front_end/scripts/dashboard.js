@@ -4,45 +4,16 @@ let authenticated = sessionStorage.getItem('authenticated');
 let auth_obj = $.parseJSON(sessionStorage.getItem('auth_obj'));
 let auth_uid = auth_obj.uid;
 let auth_pw = auth_obj.pw;
+console.log(auth_obj);
+
+var vm_portfolios, vm_ledger, vm_stocks, vm_users;
+
 //let authenticated = sessionStorage.getItem('authenticated');
 
 
 if(authenticated) {
 	// Get saved data from sessionStorage
 	$( document ).ready(function() {
-
-		let sampleMessages = [
-			{
-		        id: 0,
-		        author_display_name: 'Matty Ice',
-		        timestamp:'11:38am',
-		        body:"Hi bb gurl. @Lisa",
-		    },
-		    {
-		        id: 1,
-		        author_display_name: 'Lisa',
-		        timestamp:'11:41am',
-		        body:"Matt I told you not to talk dirty to me in this chat. Save it for the DM's when they are finally implemented.",
-		    },
-		    {
-		        id: 2,
-		        author_display_name: 'Matty Ice',
-		        timestamp:'11:44am',
-		        body:"Ohh srry bb. I nvr meant to hurt u 💖",
-		    },
-		    {
-		        id: 3,
-		        author_display_name: 'Andys Woody',
-		        timestamp:'11:46am',
-		        body:"Lisa, would you like to model for a new Rustangelo painting I'm working on?",
-		    },
-		    {
-		        id: 4,
-		        author_display_name: 'Lisa',
-		        timestamp:'11:51am',
-		        body:"Absolutely! want me to come over to your place? xD",
-		    },
-		];
 
 
 		let vm_nav = new Vue({
@@ -54,12 +25,11 @@ if(authenticated) {
 					// console.log("Click on " + route);
 					
 					renderContent(route);
-			    
 			    }
 			}
 		});
 
-		
+
 		let vm_popout_menu = new Vue({
 			el: '#btn-logout',
 			methods: {
@@ -75,64 +45,79 @@ if(authenticated) {
 			}
 		});
 
+		// 1. Data loads into global object
+		// 2. Create Vue objects 
+		//		-must be once all object are stored
+		// 3. Load html
+		//		-cant be done until vue objects have been created in case vue methods are called in the html
+		var STOCKS = {};
+		var vm_stocks = new Vue({
+			  el: '#stock-list',
+			  data: {
+			    stocks: {},
+			    sortBy: 'ticker_id',
+			    sortDesc: 1,
+			  },
+			  methods: {
+				    formatPrice: function(value) {
+				        let val = (value/1).toFixed(2)/100
+				        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+				    },
+				    // on column name clicks
+				    sortCol: function(col) {
+				    	// If sorting by selected column
+				    	if (this.sortBy == col) {
+				    		// Change sort direction
+				    		// console.log(col);
+				    		this.sortDesc = -this.sortDesc;
+				    	} else {
+				    		// Change sorted column
+				    		this.sortBy = col;
+				    		
+				    	}
+				    },
+				},
+				computed:{
+					sortedStocks: function() {
+			    		if (Object.keys(this.stocks).length === 0) {
+				    		return [];
+				    	} else {
+				    	  	// Turn to array and sort 
+					    	var stock_array = Object.values(vm_stocks.stocks).map(function(d){ return d; });
 
-		let vm_stocks = new Vue({
-		  el: '#stock-list',
-		  data: {
-		    stocks: {},
-		    sortBy: 'ticker_id',
-		    sortDesc: 1,
-		  },
-		  methods: {
-			    formatPrice: function(value) {
-			        let val = (value/1).toFixed(2)/100
-			        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-			    },
-			    // on column name clicks
-			    sortCol(col) {
-			    	// If sorting by selected column
-			    	if (this.sortBy == col) {
-			    		// Change sort direction
-			    		// console.log(col);
-			    		vm_stocks.sortDesc = -vm_stocks.sortDesc;
-			    	} else {
-			    		// Change sorted column
-			    		vm_stocks.sortBy = col;
-			    		
-			    	}
-			    },
-			    sortStocks(data) {
-			    	if (Object.keys(data).length === 0) {
-			    		return data;
-			    	}
-		    	  	// Turn to array and sort 
-			    	var stock_array = Object.keys(data).map(function(key) {
-			    		return data[key];
-			    	})
-			    	// Sorting array
-			    	stock_array = stock_array.sort(function(a,b) {
-			    		if (a[vm_stocks.sortBy] > b[vm_stocks.sortBy]) {
-			    			return -vm_stocks.sortDesc;
-			    		} 
-			    		if (a[vm_stocks.sortBy] < b[vm_stocks.sortBy]) {
+					    	// Sorting array
+					    	stock_array = stock_array.sort(function(a,b) {
+					    		if (a[vm_stocks.sortBy] > b[vm_stocks.sortBy]) {
+					    			return -vm_stocks.sortDesc;
+					    		} 
+					    		if (a[vm_stocks.sortBy] < b[vm_stocks.sortBy]) {
 
-			    			return vm_stocks.sortDesc;
-			    		}
-			    		return 0;
-			    	})
-			    	return stock_array;
-			    }
-			}
-		});
+					    			return vm_stocks.sortDesc;
+					    		}
+					    		return 0;
+					    	})
+					    	return stock_array;
+				    	}
+					}
+				}
+			});
+			
 
-		let vm_ledger = new Vue({
-		  el: '#ledger-list',
-		  data: {
-		    ledger: {}
-		  }
-		});
+		console.log("------ STOCKS ------");
+		console.log(vm_stocks.stocks);
 
-		let vm_portfolios = new Vue({
+		var LEDGER = {};
+			var vm_ledger = new Vue({
+			  el: '#ledger-list',
+			  data: {
+			    ledger: {},
+			  }
+			});
+			console.log("------ LEDGER ------");
+			console.log(vm_ledger.ledger);
+
+		var PORTFOLIOS = {};
+		var vm_portfolios = new Vue({
 			el: '#portfolio-list',
 			data: {
 				portfolios: {},
@@ -158,27 +143,78 @@ if(authenticated) {
 				}
 			}
 		});
+		console.log("------ PORTFOLIOS ------");
+		console.log(vm_portfolios.portfolios);
 
-		let vm_users = new Vue({
+		$('#user-info-container .username-text').text(auth_uid)
+		var USERS = {};
+		var vm_users = new Vue({
 		  el: '#user-info-container',
 		  data: {
-		    activeUsers: {},
+		    users: {},
+		    currentUser: auth_uid,
 		  },
 		  methods: {
-		  	getCurrentUser : function() {
+		  	getCurrentUser: function() {
 		  		// Get userUUID of the person that is logged in
-		  		var currentUser = sessionStorage.getItem('authenticated');
+		  		var currentUser = sessionStorage.getItem('uuid');
+		  		console.log()
 		  		// Have they been added to the users object yet?
-		  		if (this.activeUsers[currentUser]) {
-		  			return this.activeUsers[currentUser].display_name;
+		  		if (this.users[currentUser]) {
+		  			return this.users[currentUser].display_name;
 		  		} else {
 		  			return "";
 		  		}
 		  	}
 		  }
 		});
+		console.log("----- USERS -----");
+		console.log(vm_users.users);
 
+		var getHighestStock = function(stocks) {
+			stocks = Object.values(stocks).map((d) => d);
+			var highestStock = stocks.reduce(function(a, b){ return a.current_price > b.current_price ? a : b });
+			return highestStock;
+		};
+		var getMoverStock = function(stocks) {
+			stocks = Object.values(stocks).map((d) => d);
+			var mover = stocks.reduce((a, b) => a.change > b.change ? a : b);
+			return mover;
+		};
 
+		var superlativeStocks = new Vue({
+			el: '#stockSuperlatives',
+			computed: {
+				highestStock: function() {
+					if (Object.values(vm_stocks.stocks).length === 0) {
+						return "";
+					} else {
+						stocks = Object.values(vm_stocks.stocks).map((d) => d);
+						var highestStock = stocks.reduce(function(a, b){ return a.current_price > b.current_price ? a : b });
+						return highestStock.ticker_id;
+					}
+				},
+				mostChange: function() {
+					if (Object.values(vm_stocks.stocks).length === 0) {
+						return "";
+					} else {
+						stocks = Object.values(vm_stocks.stocks).map((d) => d);
+						var mover = stocks.reduce((a, b) => a.change > b.change ? a : b);
+						return mover.ticker_id;
+					}
+				},
+				mostShares: function() {
+					if (Object.values(vm_stocks.stocks).length === 0) {
+						return "";
+					} else {
+						stocks = Object.values(vm_stocks.stocks).map((d) => d);
+						var mover = stocks.reduce((a, b) => a.open_shares > b.open_shares ? a : b);
+						return mover.ticker_id;
+					}
+				},
+			}
+		});
+		
 		$(document).scroll(function() {
 			scrollVal = $(document).scrollTop();
 		    //console.log("SCROLL: "+scrollVal);
@@ -266,10 +302,23 @@ if(authenticated) {
 	        
 	    });
 
-	    $('table').on('click', 'tr.clickable' , function (event) {
-		    toggleModal();
 
+
+		// TODO: find a better spot for this
+
+	    $('#stock-list').on('click', 'tr.clickable' , function (event) {
+	    	// TODO: get all data elements
+		    var ticker_id = this.getElementsByClassName('stock-ticker-id')[0].innerHTML;
+		    var current_price = this.getElementsByClassName('stock-price')[0].innerHTML;
+		    
+		    //TODO: update all data elements in the modal
+		    $('#modal--container .modal-stock-id').html(ticker_id);
+		    $('#modal--container .modal-stock-price').html('$' + current_price);
+
+		    toggleModal();
         });
+
+
 
 	    // $('#nav li button').click(function(this) {
 	    
@@ -316,15 +365,13 @@ if(authenticated) {
 	    });
 
 	    function formatChatMessage(msg) {
-			// console.log("from me");
-	  //   	console.log(msg);
 	    	let timestamp = formatDate12Hour(new Date($.now()));
 	    	// let message_body = $('#chat-module--container textarea').val();
 	    	let message_body = msg.msg.message_body;
 	    	var currentUser = msg.msg.author;
 	    	let temp_msg = {
 		        author_uuid: currentUser,
-		        author_display_name: vm_users.activeUsers[currentUser].display_name,
+		        author_display_name: vm_users.users[currentUser].display_name,
 		        timestamp: timestamp,
 		        body: message_body,
 		    };
@@ -366,8 +413,6 @@ if(authenticated) {
 	    function init()
 	    {
 	        testWebSocket();
-
-	        console.log(vm_users.activeUsers);
 	    }
 
 	    function testWebSocket()
@@ -381,16 +426,27 @@ if(authenticated) {
 
 	    function onOpen(evt)
 	    {
-	    	var msg = {
-	    		'action': 'login',
-	    		'msg' : {
-	    			'username': auth_uid,
-	    			'password': auth_pw
-	    		}
-	    	}	    	
-	        
-	        doSend(JSON.stringify(msg));
-	        
+	    	if (sessionStorage.getItem('authenticated') !== null) {
+	            var loginMessage = {
+	                'action': 'renew',
+	                'msg': {
+	                    'token': sessionStorage.getItem('authenticated')
+	                }
+	            };
+	            doSend(JSON.stringify(loginMessage));
+	        } else {
+		    	var msg = {
+		    		'action': 'login',
+		    		'msg' : {
+		    			'username': auth_uid,
+		    			'password': auth_pw
+		    		}
+		    	}	    	
+		        
+		        doSend(JSON.stringify(msg));
+		        
+	        	
+	        }
 	        onEvent("Connected");
 
 	    }
@@ -413,10 +469,9 @@ if(authenticated) {
 	    		'login': routeLogin,
 	    		'object': routeObject,
 	    		'update': routeUpdate,
-	    		'alert': alertUpdate,
-	    		'chat': chatUpdate,
+	    		'alert': routeAlert,
+	    		'chat': routeChat,
 	    	};
-
 	    	
     		if (msg.action) {
     			router[msg.action](msg);
@@ -426,12 +481,8 @@ if(authenticated) {
     				console.log(msg);
     			}
     			console.log("No message action");
-    			console.log(console.log(msg));
-    			
+    			console.log(console.log(msg));	
     		}
-    		
-    		
-    	
 	    };
 
 	    var routeLogin = function(msg) {
@@ -442,7 +493,7 @@ if(authenticated) {
 
 	        if(msg.msg.success) {
 	            // Save data to sessionStorage
-	            sessionStorage.setItem("authenticated", msg.msg.uuid);
+	            // sessionStorage.setItem("authenticated", msg.msg.uuid);
 	            // window.location.href = "/dashboard.html";
 
 	        } else {
@@ -450,7 +501,7 @@ if(authenticated) {
 	            console.log(err_msg);
 	            // $('.login-err').text("Username or password is incorrect");
 	            //$('.login-err').text(err_msg);
-	        }   
+	        }
 	        
 	        console.log(msg.msg.uuid);
 	    };
@@ -458,111 +509,172 @@ if(authenticated) {
 	    var routeObject = function(msg) {
 			switch (msg.msg.type) {
 				case 'portfolio':
-				    Vue.set(vm_portfolios.portfolios, msg.msg.uuid, msg.msg.object);
+				    PORTFOLIOS[msg.msg.uuid] = msg.msg.object;
+			  		// Give the vue object reactivity with PORTFOLIOS
+				    Vue.set(vm_portfolios.portfolios, msg.msg.uuid, PORTFOLIOS[msg.msg.uuid]);
+
 				    break;
 
 				case 'stock':
 			  		// Add variables for stocks for vue module initialization 
 			  		msg.msg.object.change = 0;
-			  		// New - cannot add to vm_stocks.stocks directly (https://vuejs.org/v2/guide/reactivity.html in Change Detection Caveats section)
-			  		Vue.set(vm_stocks.stocks, msg.msg.uuid, msg.msg.object);
+			  		// Add object
+				    STOCKS[msg.msg.uuid] = msg.msg.object;
+			  		// Give the vue object reactivity with STOCKS
+			  		Vue.set(vm_stocks.stocks, msg.msg.uuid, STOCKS[msg.msg.uuid]);
 				  	break;
 
 				case 'ledger':
-					/* Add owner names to portfolio uuid */
-				    Vue.set(vm_ledger.ledger, msg.msg.uuid, msg.msg.object);
+				    LEDGER[msg.msg.uuid] = msg.msg.object;
+			  		// Give the vue object reactivity with LEDGER
+				    Vue.set(vm_ledger.ledger, msg.msg.uuid, LEDGER[msg.msg.uuid]);
 				    break;
 
 				case 'user':
-					/* Add owner names to portfolio uuid */
-				    Vue.set(vm_users.activeUsers, msg.msg.uuid, msg.msg.object);
+					USERS[msg.msg.uuid] = msg.msg.object;
+			  		// Give the vue object reactivity with USERS
+				    Vue.set(vm_users.users, msg.msg.uuid, USERS[msg.msg.uuid]);
+				    // TODO remove
+				    // Setting up current user portfolio	    				
+				    // if (msg.msg.object.uuid == sessionStorage.getItem('uuid')) {
+				    // 	createCurrentUser(msg.msg.object.portfolio_uuid);
+				    // }
 				    break;
 
 			}
 	    };
-	    // TODO remove later debugging purposes only
-	    let logDataOnce = true;
 
 	    var routeUpdate = function(msg) {
-	    	/* ledgers or portfolios. ledgers can build the portfolio object */
-	    	if (logDataOnce) {
-	    		console.log("------ STOCKS ------");
-	    		console.log(vm_stocks.stocks);
-	    		console.log("------ LEDGER ------");
-	    		console.log(vm_ledger.ledger);
-	    		console.log("------ PORTFOLIOS ------");
-	    		console.log(vm_portfolios.portfolios);
-	    		logDataOnce = false;
-	    	}
-			switch (msg.msg.type) {
-				case 'stock':
-					// Variables needed to update the stocks
-					var targetUUID = msg.msg.uuid;
-					var targetField = msg.msg.changes[0].field;
-					var targetChange = msg.msg.changes[0].value;
+	    	var updateRouter = {
+	    		'stock': stockUpdate,
+	    		'ledger': ledgerUpdate,
+	    		'portfolio': portfolioUpdate,
+	    		'user': userUpdate,
+	    	};
+	    	updateRouter[msg.msg.type](msg);
+	    };
 
+	    var stockUpdate = function(msg) {
+			msg.msg.changes.forEach(function(changeObject){
+				// Variables needed to update the stocks
+				var targetUUID = msg.msg.uuid;
+				var targetField = changeObject.field;
+				var targetChange = changeObject.value;
+				
+				// if value to update is current price, calculate change
+				if (targetField === "current_price") {
 					// temp var for calculating price
-					var currPrice = vm_stocks.stocks[targetUUID][targetField];
+					var currPrice = STOCKS[targetUUID][targetField];
 					// Adding change amount
-					vm_stocks.stocks[targetUUID].change = Math.round((targetChange - currPrice) * 1000)/100000;
-					// Adding new current price
-					vm_stocks.stocks[targetUUID][targetField] = targetChange;
-
+					STOCKS[targetUUID].change = Math.round((targetChange - currPrice) * 1000)/100000;
+					// vm_stocks.stocks[targetUUID].change = Math.round((targetChange - currPrice) * 1000)/100000;
+					
 					// helper to color rows in the stock table 
 					var targetElem = $("tr[uuid=\x22" + targetUUID + "\x22]");
 					var targetChangeElem = $("tr[uuid=\x22" + targetUUID + "\x22] > td.stock-change");
-
-					if((targetChange - currPrice) > 0) {
+					
+					if ((targetChange - currPrice) > 0) {
 						targetChangeElem.removeClass("falling");
 						targetChangeElem.addClass("rising");
 					} else {
 						targetChangeElem.removeClass("rising");
 						targetChangeElem.addClass("falling");
 					}
-					// targetElem.addClass("updated");
-				    break;
+				}
 
-				case 'ledger':
-					console.log(msg.msg)
-					// Variables needed to update the ledger item
-					var targetUUID = msg.msg.uuid;
-					var targetField = msg.msg.changes[0].field;
-					var targetChange = msg.msg.changes[0].value;
+				// Adding new current price
+				STOCKS[targetUUID][targetField] = targetChange;
 
-					// Update ledger item
-					vm_ledger.ledger[targetUUID][targetField] = targetChange;
 
-				    break;
-			}
-
-				if (msg.msg.type == "stock") {
-		
-			}
+			})
 	    };
 
-	    var alertUpdate = function(msg) {
+	    var ledgerUpdate = function(msg) {
+			msg.msg.changes.forEach(function(changeObject){
+
+				// Variables needed to update the ledger item
+				var targetUUID = msg.msg.uuid;
+				var targetField = changeObject.field;
+				var targetChange = changeObject.value;
+
+				// Update ledger item
+				LEDGER[targetUUID][targetField] = targetChange;
+			})
+	    };
+
+	    var portfolioUpdate = function(msg) {
+			
+			msg.msg.changes.forEach(function(changeObject){
+
+		    	console.log("IMPLEMENT PORTFOLIO UPDATES");
+				// Variables needed to update the ledger item
+				var targetUUID = msg.msg.uuid;
+				var targetField = msg.msg.changes[0].field;
+				var targetChange = msg.msg.changes[0].value;
+
+				// Update ledger item
+				PORTFOLIOS[targetUUID][targetField] = targetChange;
+			})
+	    };
+
+	    var userUpdate = function(msg) {
+
+			msg.msg.changes.forEach(function(changeObject){
+			
+				// Variables needed to update the ledger item
+				var targetUUID = msg.msg.uuid;
+				var targetField = changeObject.field;
+				var targetChange = changeObject.value;
+
+				// Update ledger item
+				USERS[targetUUID][targetField] = targetChange;
+			})
+	    }
+
+
+	    var routeAlert = function(msg) {
 	    	console.log(msg);
 	    }
 
-	    var chatUpdate = function(msg) {
+	    var routeChat = function(msg) {
 	    	
 	    	console.log("----- CHAT -----");
 	    	console.log(msg);
 	    	formatChatMessage(msg);
 	    }
 
-
+	    var currUser = new Vue({
+	    	el: '#dashboard--view',
+	    	// el: '#app--container',
+	    	computed: {
+	    		currUserPortfolio: function() {
+	    			var currUser = sessionStorage.getItem('uuid');
+	    			if (vm_users.users[currUser] === undefined) {
+	    				return {};
+	    			} else {
+		    			var currUserFolioUUID = USERS[currUser].portfolio_uuid;
+	    				if (vm_portfolios.portfolios[currUserFolioUUID] === undefined) {
+	    					return {};
+		    			} else {
+			    			var folio = vm_portfolios.portfolios[currUserFolioUUID];
+			    			return folio;
+		    			}
+		    		}
+		    	}
+	    	}
+	    });
 
 
 	    /* Sending trade requests */
 
-	    document.getElementById("btnTradeRequest").addEventListener("click", sendTradeOptions, false);
+	    document.getElementById("trade-request-submit").addEventListener("click", sendTradeOptions, false);
 	    
 	    function sendTradeOptions() {
 	    	
 	    	// Get request parameters
-	    	var stockTickerId = "HON"; // TODO: get from UI
-	    	var amount = 10; // TODO: get from UI
+		    
+		    var stockTickerId = $('#modal--container .modal-stock-id').html();
+	    	var amount = 1; // TODO: get from UI
 
 	    	//Get stockid from ticker
 	    	var focusStock = Object.values(vm_stocks.stocks).filter(
@@ -577,8 +689,8 @@ if(authenticated) {
 	    			'amount': amount,
 	    		}
 	    	};
-
 	    	// Sending through websocket
+	    	console.log("SEND TRADE");
 	    	doSend(JSON.stringify(options));
 
 	    };
@@ -599,15 +711,19 @@ if(authenticated) {
 	        webSocket.send(message);
 	    }
 
-	    
+
+	    // update
+		Vue.component('buySellModal', {
+		  template: '#modal--container'
+		});
+
 
 	    $('.modal-card button').click(function() {
-	    
+	    	console.log(this);
 	        toggleModal();
 	        
 	    });
 
-	    
 
 	    function toggleModal() {
 	    	$('#modal--container').toggleClass('open');
