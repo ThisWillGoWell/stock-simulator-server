@@ -644,7 +644,8 @@ if(authenticated) {
 	    }
 
 	    var currUser = new Vue({
-	    	el: '#app--container',
+	    	el: '#dashboard--view',
+	    	// el: '#app--container',
 	    	computed: {
 	    		currUserPortfolio: function() {
 	    			var currUser = sessionStorage.getItem('uuid');
