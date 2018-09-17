@@ -4,6 +4,7 @@
 *.so
 *.dylib
 .idea/
+__MACOSX
 venv
 mockstarket-front-end
 
