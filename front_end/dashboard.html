@@ -284,6 +284,7 @@
 							</div>
 						</div>
 					</div>
+					<!-- TODO: this tab collides with the sidebar -->
 					<div id="investors--view" class="view">
 						<div class="flex-grid--container">
 							<div class="flex-column-100">
@@ -303,7 +304,7 @@
 									    	</tr>
 										</thead>
 										<tbody>
-										    <tr class="clickable" v-for="portfolio in portfolios" :key="portfolio.uuid">
+										    <tr v-for="portfolio in portfolios" :key="portfolio.uuid">
 										    	<th scope="row">{{ portfolio.uuid }}</th>
 										    	<td>{{ portfolio.user_uuid }}</td>
 										    	<td>{{ portfolio.wallet }}</td>
@@ -356,6 +357,8 @@
 							</div> -->
 						</div>
 					</div>
+
+					<!-- TODO: this tab collides with the sidebar -->
 					<div id="futures--view" class="view">
 						<div class="flex-grid--container">
 							<div class="flex-column-100">
@@ -365,6 +368,7 @@
 							</div>
 						</div>
 					</div>
+					<!-- TODO: this tab collides with the sidebar -->
 					<div id="store--view" class="view">
 						<div class="flex-grid--container">
 							<div class="flex-column-100">
