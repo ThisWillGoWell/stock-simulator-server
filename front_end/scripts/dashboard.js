@@ -217,6 +217,11 @@ if(authenticated) {
 		    //console.log("SCROLL: "+scrollVal);
 		});
 
+		function formatPrice(value) {
+				        let val = (value/1).toFixed(2)/100
+				        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+				    }
+
 		function formatDate12Hour(date) {
 		  	let hours = date.getHours();
 			let minutes = date.getMinutes();
@@ -306,7 +311,9 @@ if(authenticated) {
 	    $('#stock-list').on('click', 'tr.clickable' , function (event) {
 	    	// TODO: get all data elements
 		    var ticker_id = this.getElementsByClassName('stock-ticker-id')[0].innerHTML;
-		    var current_price = this.getElementsByClassName('stock-price')[0].innerHTML;
+	    	var stock = Object.values(vm_stocks.stocks).filter((d) => d.ticker_id === ticker_id)[0];
+		    console.log(stock);
+		    var current_price = formatPrice(stock.current_price);
 		    
 		    //TODO: update all data elements in the modal
 		    $('#modal--container .modal-stock-id').html(ticker_id);
@@ -473,22 +480,13 @@ if(authenticated) {
 	    var routeLogin = function(msg) {
 
 	        // if success if true -> set cookie and forward to dashboard
-	        console.log(msg.msg.success);
 	        console.log("login recieved");
 
-	        if(msg.msg.success) {
-	            // Save data to sessionStorage
-	            // sessionStorage.setItem("authenticated", msg.msg.uuid);
-	            // window.location.href = "/dashboard.html";
-
-	        } else {
+	        if(!msg.msg.success) {
 	            let err_msg = msg.msg.err;
 	            console.log(err_msg);
-	            // $('.login-err').text("Username or password is incorrect");
-	            //$('.login-err').text(err_msg);
 	        }
 	        
-	        console.log(msg.msg.uuid);
 	    };
 
 	    var routeObject = function(msg) {
