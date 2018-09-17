@@ -18,4 +18,5 @@ type Valuable interface {
 	GetValue() float64
 	GetLock() *lock.Lock
 	GetUpdateChannel() *duplicator.ChannelDuplicator
+	Update()
 }

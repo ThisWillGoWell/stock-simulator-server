@@ -206,6 +206,10 @@ func GetAllStocks() []*Stock {
 	return v
 }
 
+func (s *Stock) Update(){
+	s.UpdateChannel.Offer(s)
+}
+
 /** ########################################
 *           Math Helper Functions
 *   ########################################

@@ -185,6 +185,7 @@ func executeTrade(o *PurchaseOrder) {
 	} else{
 		ledgerEntry.UpdateChannel.Offer(ledgerEntry)
 	}
+	go value.Update()
 	go port.Update()
 }
 
