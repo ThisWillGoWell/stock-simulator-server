@@ -83,9 +83,9 @@
 					<p v-if="getCurrentUser(users)">{{ getCurrentUser(users) }}</p>
 				</div> -->
 				<div id="stats--view">
-					<div class="stat-value blue"><i class="material-icons menu-icon">business</i>$10000</div>
-					<div class="stat-value green"><i class="material-icons menu-icon">local_atm</i>$10000</div>
-					<div class="stat-value orange"><i class="material-icons menu-icon">trending_up</i>$10000</div>
+					<div class="stat-value blue"><i class="material-icons menu-icon">business</i>{{ currUserPortfolio.net_worth }}</div>
+					<div class="stat-value green"><i class="material-icons menu-icon">local_atm</i>{{ currUserPortfolio.wallet }}</div>
+					<div class="stat-value orange"><i class="material-icons menu-icon">trending_up</i>{{ currUserPortfolio.user_uuid }}</div>
 				</div>
 				<ul id="nav">
 					<li>
@@ -175,7 +175,6 @@
 										<div class="card-details">
 											<div class="card-category">NETWORTH</div>
 											<p> {{ currUserPortfolio.net_worth }}</p>
-											<!-- <user-networth networth={{ currUserPortfolio }}></user-networth> -->
 										</div>
 									</div>
 								</div>
@@ -195,10 +194,30 @@
 									<div class="stat-value orange">
 										<i class="material-icons menu-icon">trending_up</i><div class="card-details">
 											<div class="card-category">INVESTMENTS</div>
-											<p> {{ currUserPortfolio }}</p>
+											<p> {{ currUserPortfolio.user_uuid }}</p>
 										</div>
 									</div>
 								</div>
+							</div>
+							<div>
+								<table class="table">
+									<thead>
+								    	<tr>
+									    	<th scope="col">Stock</th>
+									    	<th scope="col">Amount Owned</th>
+									    	<th scope="col">Cost</th>
+									    	<th scope="col">Value</th>
+									    </tr>
+									</thead>
+									<tbody>
+										<tr v-for="stock in currUserStocks">
+											<th scope="row">{{ stock.stock_ticker }}</th>
+											<td>{{ stock.amount }}</td>
+											<td>{{ stock.stock_price }}</td>
+											<td>{{ stock.amount * stock.stock_price }}</td>
+										</tr>
+									</tbody>
+								</table>
 							</div>
 						</div>
 					</div>
@@ -319,7 +338,7 @@
 									    	</tr>
 										</thead>
 										<tbody>
-										    <tr class="clickable" v-for="stock in getPortfolioStocks(portfolio.uuid)">
+										    <tr v-for="stock in portfolioStocks">
 										    	<th scope="row">{{ stock.ticker_id }}</th>
 										    	<td>{{ stock.amount }}</td>
 										    	<td>{{ stock.current_price }}</td>

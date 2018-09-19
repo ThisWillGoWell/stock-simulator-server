@@ -119,8 +119,10 @@ if(authenticated) {
 			data: {
 				portfolios: {},
 			},
-			methods: {
-				getPortfolioStocks: function(portfolioUUID) {
+			computed: {
+				//TODO IMPLEMENT
+				portfolioStocks: function() {
+
 					// List of all ledger items
 					var stocks = Object.keys(vm_ledger.ledger).map(function(key){
 						return vm_ledger.ledger[key];
@@ -168,6 +170,7 @@ if(authenticated) {
 		console.log("----- USERS -----");
 		console.log(vm_users.users);
 
+
 		var getHighestStock = function(stocks) {
 			stocks = Object.values(stocks).map((d) => d);
 			var highestStock = stocks.reduce(function(a, b){ return a.current_price > b.current_price ? a : b });
@@ -211,16 +214,83 @@ if(authenticated) {
 				},
 			}
 		});
+
+
+	    var currUser = new Vue({
+	    	el: '#dashboard--view',
+	    	computed: {
+	    		currUserPortfolio: function() {
+	    			var currUser = sessionStorage.getItem('uuid');
+	    			if (vm_users.users[currUser] !== undefined) {
+		    			var currUserFolioUUID = USERS[currUser].portfolio_uuid;
+	    				if (vm_portfolios.portfolios[currUserFolioUUID] !== undefined) {
+			    			var folio = vm_portfolios.portfolios[currUserFolioUUID];
+			    			return folio;
+		    			}
+		    		}
+		    		return {};
+		    	},
+		    	currUserStocks: function() {
+		    		var currUser = sessionStorage.getItem('uuid');
+	    			if (vm_users.users[currUser] !== undefined) {
+		    			
+		    			// Current users portfolio uuid
+		    			var portfolio_uuid = USERS[currUser].portfolio_uuid;
+	    				
+	    				// If objects are in ledger
+	    				if (Object.keys(vm_ledger.ledger).length !== 0) {
+	    					
+	    					var ownedStocks = Object.values(LEDGER).filter((d) => d.portfolio_id === portfolio_uuid);
+	    					
+	    					// Augmenting owned stocks
+	    					ownedStocks = ownedStocks.map(function(d) {
+	    						d.stock_ticker = STOCKS[d.stock_id].ticker_id;
+	    						d.stock_price = STOCKS[d.stock_id].current_price;
+	    						d.stock_value = Number(d.stock_price * d.amount);
+
+	    						// Formatting to dollars
+	    						d.stock_price = formatPrice(d.stock_price);
+	    						d.stock_value = formatPrice(d.stock_value);
+	    						return d;
+	    					})
+	    					return ownedStocks;
+	    				}
+		    		} else {
+		    			return [];
+		    		}
+		    	}
+	    	}
+	    });
+
+	    var sidebarCurrUser = new Vue({
+	    	el: '#stats--view',
+	    	computed: {
+	    		currUserPortfolio: function() {
+	    			var currUser = sessionStorage.getItem('uuid');
+	    			if (vm_users.users[currUser] === undefined) {
+	    				return {};
+	    			} else {
+		    			var currUserFolioUUID = USERS[currUser].portfolio_uuid;
+	    				if (vm_portfolios.portfolios[currUserFolioUUID] === undefined) {
+	    					return {};
+		    			} else {
+			    			var folio = vm_portfolios.portfolios[currUserFolioUUID];
+			    			return folio;
+		    			}
+		    		}
+		    	}
+	    	}
+	    });
+
 		
 		$(document).scroll(function() {
 			scrollVal = $(document).scrollTop();
-		    //console.log("SCROLL: "+scrollVal);
 		});
 
 		function formatPrice(value) {
-				        let val = (value/1).toFixed(2)/100
-				        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-				    }
+	        let val = value.toFixed(2)/100
+	        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+	    }
 
 		function formatDate12Hour(date) {
 		  	let hours = date.getHours();
@@ -625,27 +695,6 @@ if(authenticated) {
 	    	formatChatMessage(msg);
 	    }
 
-	    var currUser = new Vue({
-	    	el: '#dashboard--view',
-	    	// el: '#app--container',
-	    	computed: {
-	    		currUserPortfolio: function() {
-	    			var currUser = sessionStorage.getItem('uuid');
-	    			if (vm_users.users[currUser] === undefined) {
-	    				return {};
-	    			} else {
-		    			var currUserFolioUUID = USERS[currUser].portfolio_uuid;
-	    				if (vm_portfolios.portfolios[currUserFolioUUID] === undefined) {
-	    					return {};
-		    			} else {
-			    			var folio = vm_portfolios.portfolios[currUserFolioUUID];
-			    			return folio;
-		    			}
-		    		}
-		    	}
-	    	}
-	    });
-
 
 	    /* Sending trade requests */
 
@@ -696,8 +745,9 @@ if(authenticated) {
 
 
 	    $('.modal-card button').click(function() {
+
 	        toggleModal();
-	        
+
 	    });
 
 
