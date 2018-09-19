@@ -312,7 +312,6 @@ if(authenticated) {
 	    	// TODO: get all data elements
 		    var ticker_id = this.getElementsByClassName('stock-ticker-id')[0].innerHTML;
 	    	var stock = Object.values(vm_stocks.stocks).filter((d) => d.ticker_id === ticker_id)[0];
-		    console.log(stock);
 		    var current_price = formatPrice(stock.current_price);
 		    
 		    //TODO: update all data elements in the modal
@@ -517,11 +516,6 @@ if(authenticated) {
 					USERS[msg.msg.uuid] = msg.msg.object;
 			  		// Give the vue object reactivity with USERS
 				    Vue.set(vm_users.users, msg.msg.uuid, USERS[msg.msg.uuid]);
-				    // TODO remove
-				    // Setting up current user portfolio	    				
-				    // if (msg.msg.object.uuid == sessionStorage.getItem('uuid')) {
-				    // 	createCurrentUser(msg.msg.object.portfolio_uuid);
-				    // }
 				    break;
 
 			}
