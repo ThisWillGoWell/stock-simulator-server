@@ -120,7 +120,7 @@ if(authenticated) {
 				portfolios: {},
 			},
 			computed: {
-				//TODO IMPLEMENT
+				//TODO IMPLEMENT ALL USER PORTFOLIOS
 				portfolioStocks: function() {
 
 					// List of all ledger items
@@ -249,6 +249,7 @@ if(authenticated) {
 	    						d.stock_value = Number(d.stock_price * d.amount);
 
 	    						// Formatting to dollars
+
 	    						d.stock_price = formatPrice(d.stock_price);
 	    						d.stock_value = formatPrice(d.stock_value);
 	    						return d;
@@ -287,6 +288,7 @@ if(authenticated) {
 			scrollVal = $(document).scrollTop();
 		});
 
+		// FIX THIS
 		function formatPrice(value) {
 	        let val = value.toFixed(2)/100
 	        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
