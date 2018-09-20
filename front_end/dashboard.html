@@ -83,7 +83,7 @@
 					<p v-if="getCurrentUser(users)">{{ getCurrentUser(users) }}</p>
 				</div> -->
 				<div id="stats--view">
-					<div class="stat-value blue"><i class="material-icons menu-icon">business</i>{{ currUserPortfolio.net_worth }}</div>
+					<div class="stat-value blue"><i class="material-icons menu-icon">business</i>$ {{ toPrice(currUserPortfolio.net_worth) }}</div>
 					<div class="stat-value green"><i class="material-icons menu-icon">local_atm</i>{{ currUserPortfolio.wallet }}</div>
 					<div class="stat-value orange"><i class="material-icons menu-icon">trending_up</i>{{ currUserPortfolio.user_uuid }}</div>
 				</div>
@@ -213,8 +213,9 @@
 										<tr v-for="stock in currUserStocks">
 											<th scope="row">{{ stock.stock_ticker }}</th>
 											<td>{{ stock.amount }}</td>
-											<td>{{ stock.stock_price }}</td>
-											<td>{{ stock.amount * stock.stock_price }}</td>
+											<!-- Brennan these tds should use onclick idk how we have been implementing that -->
+											<td class="price-alter">{{ stock.stock_price }}</td>
+											<td class="price-alter">{{ stock.stock_value }}</td>
 										</tr>
 									</tbody>
 								</table>
@@ -277,7 +278,7 @@
 									    </tr>
 									  </thead>
 									  <tbody>
-									  	<!-- https://vuejs.org/v2/guide/list.html :key is recommended in v.fors, not sure why yet -->
+									  	<!-- https://vuejs.org/v2/guide/list.html :key is recommended in v.fors -->
 									    <tr class="clickable" v-for="stock in sortedStocks" :key='stock.uuid' v-bind:uuid="stock.uuid">
 									    <!-- <tr class="clickable" v-for="stock in sortStocks(stocks)" :key='stock.uuid' v-bind:uuid="stock.uuid"> -->
 									      <th scope="row">
@@ -290,9 +291,8 @@
 									      	<i class="material-icons">arrow_drop_down</i>
 									      </td>
 									      <td class="stock-price" style="padding-right: 25px;">
-									      {{ formatPrice(stock.current_price) }}</td>
+									      {{ stock.stock_price }}</td>
 									    </tr>
-									    
 									  </tbody>
 									</table>
 							
