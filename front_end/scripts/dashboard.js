@@ -7,7 +7,6 @@ var vm_portfolios, vm_ledger, vm_stocks, vm_users;
 
 //let authenticated = sessionStorage.getItem('authenticated');
 
-
 if(authenticated) {
 	// Get saved data from sessionStorage
 	$( document ).ready(function() {
@@ -17,9 +16,8 @@ if(authenticated) {
 			el: '#nav',
 			methods: {
 				nav: function (event) {
-					//console.log(event.currentTarget.getAttribute('data-route'));
+
 					route = event.currentTarget.getAttribute('data-route');
-					// console.log("Click on " + route);
 					
 					renderContent(route);
 			    }
@@ -49,69 +47,72 @@ if(authenticated) {
 		//		-cant be done until vue objects have been created in case vue methods are called in the html
 		var STOCKS = {};
 		var vm_stocks = new Vue({
-			  el: '#stock-list',
-			  data: {
-			    stocks: {},
-			    sortBy: 'ticker_id',
-			    sortDesc: 1,
-			  },
-			  methods: {
-				    formatPrice: function(value) {
-				        let val = (value/1).toFixed(2)/100
-				        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-				    },
-				    // on column name clicks
-				    sortCol: function(col) {
-				    	// If sorting by selected column
-				    	if (this.sortBy == col) {
-				    		// Change sort direction
-				    		// console.log(col);
-				    		this.sortDesc = -this.sortDesc;
-				    	} else {
-				    		// Change sorted column
-				    		this.sortBy = col;
-				    		
-				    	}
-				    },
-				},
-				computed:{
-					sortedStocks: function() {
-			    		if (Object.keys(this.stocks).length === 0) {
-				    		return [];
-				    	} else {
-				    	  	// Turn to array and sort 
-					    	var stock_array = Object.values(vm_stocks.stocks).map(function(d){ return d; });
+			el: '#stock-list',
+			data: {
+			  stocks: {},
+			  sortBy: 'ticker_id',
+			  sortDesc: 1,
+			},
+			methods: {
+			toPrice: function(price) {
+				return formatPrice(price);
+			},
+		    // on column name clicks
+		    sortCol: function(col) {
+		    	// If sorting by selected column
+		    	if (this.sortBy == col) {
+		    		// Change sort direction
+		    		// console.log(col);
+		    		this.sortDesc = -this.sortDesc;
+			    	} else {
+			    		// Change sorted column
+			    		this.sortBy = col;
+			    		
+			    	}
+			    },
+			},
+			computed:{
+				sortedStocks: function() {
+		    		if (Object.keys(this.stocks).length === 0) {
+			    		return [];
+			    	} else {
+			    	  	// Turn to array and sort 
+				    	var stock_array = Object.values(vm_stocks.stocks).map(
+				    		function(d) {
+				    			d.stock_price = formatPrice(d.current_price);
+				    			return d;
+				    		});
 
-					    	// Sorting array
-					    	stock_array = stock_array.sort(function(a,b) {
-					    		if (a[vm_stocks.sortBy] > b[vm_stocks.sortBy]) {
-					    			return -vm_stocks.sortDesc;
-					    		} 
-					    		if (a[vm_stocks.sortBy] < b[vm_stocks.sortBy]) {
+				    	// Sorting array
+				    	stock_array = stock_array.sort(function(a,b) {
+				    		if (a[vm_stocks.sortBy] > b[vm_stocks.sortBy]) {
+				    			return -vm_stocks.sortDesc;
+				    		} 
+				    		if (a[vm_stocks.sortBy] < b[vm_stocks.sortBy]) {
 
-					    			return vm_stocks.sortDesc;
-					    		}
-					    		return 0;
-					    	})
-					    	return stock_array;
-				    	}
-					}
+				    			return vm_stocks.sortDesc;
+				    		}
+				    		return 0;
+				    	})
+				    	return stock_array;
+			    	}
 				}
-			});
-			
+			}
+		});
+		
 
 		console.log("------ STOCKS ------");
 		console.log(vm_stocks.stocks);
 
 		var LEDGER = {};
-			var vm_ledger = new Vue({
-			  el: '#ledger-list',
-			  data: {
-			    ledger: {},
-			  }
-			});
-			console.log("------ LEDGER ------");
-			console.log(vm_ledger.ledger);
+		var vm_ledger = new Vue({
+		  el: '#ledger-list',
+		  data: {
+		    ledger: {},
+		  }
+		});
+		console.log("------ LEDGER ------");
+		console.log(vm_ledger.ledger);
 
 		var PORTFOLIOS = {};
 		var vm_portfolios = new Vue({
@@ -148,24 +149,24 @@ if(authenticated) {
 		$('#user-info-container .username-text').text(auth_uid)
 		var USERS = {};
 		var vm_users = new Vue({
-		  el: '#user-info-container',
-		  data: {
-		    users: {},
-		    currentUser: auth_uid,
-		  },
-		  methods: {
-		  	getCurrentUser: function() {
-		  		// Get userUUID of the person that is logged in
-		  		var currentUser = sessionStorage.getItem('uuid');
-		  		console.log()
-		  		// Have they been added to the users object yet?
-		  		if (this.users[currentUser]) {
-		  			return this.users[currentUser].display_name;
-		  		} else {
-		  			return "";
+			el: '#user-info-container',
+			data: {
+			  users: {},
+			  currentUser: auth_uid,
+			},
+			methods: {
+		  		getCurrentUser: function() {
+		  			// Get userUUID of the person that is logged in
+		  			var currentUser = sessionStorage.getItem('uuid');
+		  			console.log()
+		  			// Have they been added to the users object yet?
+		  			if (this.users[currentUser]) {
+		  				return this.users[currentUser].display_name;
+		  			} else {
+		  				return "";
+		  			}
 		  		}
-		  	}
-		  }
+		  	},
 		});
 		console.log("----- USERS -----");
 		console.log(vm_users.users);
@@ -176,6 +177,7 @@ if(authenticated) {
 			var highestStock = stocks.reduce(function(a, b){ return a.current_price > b.current_price ? a : b });
 			return highestStock;
 		};
+
 		var getMoverStock = function(stocks) {
 			stocks = Object.values(stocks).map((d) => d);
 			var mover = stocks.reduce((a, b) => a.change > b.change ? a : b);
@@ -246,12 +248,12 @@ if(authenticated) {
 	    					ownedStocks = ownedStocks.map(function(d) {
 	    						d.stock_ticker = STOCKS[d.stock_id].ticker_id;
 	    						d.stock_price = STOCKS[d.stock_id].current_price;
-	    						d.stock_value = Number(d.stock_price * d.amount);
+	    						d.stock_value = Number(d.stock_price) * Number(d.amount);
 
 	    						// Formatting to dollars
-
 	    						d.stock_price = formatPrice(d.stock_price);
 	    						d.stock_value = formatPrice(d.stock_value);
+
 	    						return d;
 	    					})
 	    					return ownedStocks;
@@ -290,8 +292,10 @@ if(authenticated) {
 
 		// FIX THIS
 		function formatPrice(value) {
-	        let val = value.toFixed(2)/100
-	        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+			// TODO if value is greater than something abbreviate
+			let val = (value/100).toFixed(2).toString();
+			val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+			return val;
 	    }
 
 		function formatDate12Hour(date) {
