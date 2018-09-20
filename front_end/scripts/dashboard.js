@@ -54,9 +54,6 @@ if(authenticated) {
 			  sortDesc: 1,
 			},
 			methods: {
-			toPrice: function(price) {
-				return formatPrice(price);
-			},
 		    // on column name clicks
 		    sortCol: function(col) {
 		    	// If sorting by selected column
@@ -265,8 +262,29 @@ if(authenticated) {
 	    	}
 	    });
 
+		// FIX THIS
+		var formatPrice = function(value) {
+			// TODO if value is greater than something abbreviate
+			if (value < 1000000) {
+				let val = (value/100).toFixed(2).toString();
+				val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+				return val;
+			} else if (value < 100000000) {
+				let val = ((value/100)/1000).toFixed(2).toString();
+				val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+				return val + "K";
+			} else {
+				let val = (value/100).toFixed(2).toString();
+				val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+				return val;
+			}
+	    }
+
 	    var sidebarCurrUser = new Vue({
 	    	el: '#stats--view',
+	    	methods: {
+	    		toPrice: formatPrice,
+	    	},
 	    	computed: {
 	    		currUserPortfolio: function() {
 	    			var currUser = sessionStorage.getItem('uuid');
@@ -289,14 +307,6 @@ if(authenticated) {
 		$(document).scroll(function() {
 			scrollVal = $(document).scrollTop();
 		});
-
-		// FIX THIS
-		function formatPrice(value) {
-			// TODO if value is greater than something abbreviate
-			let val = (value/100).toFixed(2).toString();
-			val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-			return val;
-	    }
 
 		function formatDate12Hour(date) {
 		  	let hours = date.getHours();
