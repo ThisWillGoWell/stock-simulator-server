@@ -83,8 +83,8 @@
 					<p v-if="getCurrentUser(users)">{{ getCurrentUser(users) }}</p>
 				</div> -->
 				<div id="stats--view">
-					<div class="stat-value blue"><i class="material-icons menu-icon">business</i>$ {{ toPrice(currUserPortfolio.net_worth) }}</div>
-					<div class="stat-value green"><i class="material-icons menu-icon">local_atm</i>{{ currUserPortfolio.wallet }}</div>
+					<div class="stat-value blue"><i class="material-icons menu-icon">business</i>${{ toPrice(currUserPortfolio.net_worth) }}</div>
+					<div class="stat-value green"><i class="material-icons menu-icon">local_atm</i>${{ toPrice(currUserPortfolio.wallet) }}</div>
 					<div class="stat-value orange"><i class="material-icons menu-icon">trending_up</i>{{ currUserPortfolio.user_uuid }}</div>
 				</div>
 				<ul id="nav">
@@ -174,7 +174,7 @@
 										<i class="material-icons menu-icon">business</i>
 										<div class="card-details">
 											<div class="card-category">NETWORTH</div>
-											<p> {{ currUserPortfolio.net_worth }}</p>
+											<p> ${{ toPrice(currUserPortfolio.net_worth) }}</p>
 										</div>
 									</div>
 								</div>
@@ -184,7 +184,7 @@
 									<div class="stat-value green">
 										<i class="material-icons menu-icon">local_atm</i><div class="card-details">
 											<div class="card-category">CASH</div>
-											<p> {{ currUserPortfolio.wallet }}</p>
+											<p> ${{ toPrice(currUserPortfolio.wallet) }}</p>
 										</div>
 									</div>
 								</div>
