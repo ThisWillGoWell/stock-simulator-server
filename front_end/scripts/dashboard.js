@@ -217,6 +217,24 @@ if(authenticated) {
 			}
 		});
 
+		// FIX THIS
+		var formatPrice = function(value) {
+			// TODO if value is greater than something abbreviate
+			if (value < 1000000) {
+				let val = (value/100).toFixed(2).toString();
+				val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+				return val;
+			} else if (value < 100000000) {
+				let val = ((value/100)/1000).toFixed(2).toString();
+				val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+				return val + "K";
+			} else {
+				let val = (value/100).toFixed(2).toString();
+				val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+				return val;
+			}
+	    }
+
 
 	    var currUser = new Vue({
 	    	el: '#dashboard--view',
@@ -701,7 +719,7 @@ if(authenticated) {
 	    	// Get request parameters
 		    
 		    var stockTickerId = $('#modal--container .modal-stock-id').html();
-	    	var amount = 1; // TODO: get from UI
+	    	var amount = -1; // TODO: get from UI
 
 	    	//Get stockid from ticker
 	    	var focusStock = Object.values(vm_stocks.stocks).filter(

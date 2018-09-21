@@ -120,7 +120,7 @@ func executeTrade(o *PurchaseOrder) {
 		failureOrder("asset is not recognized", o)
 		return
 	}
-	//todo possible deadlock idk where though :( #poorCommenting
+
 	value.GetLock().Acquire("trade")
 	defer value.GetLock().Release()
 
@@ -133,11 +133,6 @@ func executeTrade(o *PurchaseOrder) {
 	port.Lock.Acquire("trade")
 	defer port.Lock.Release()
 	ledgerEntry, ledgerExists := ledger.EntriesStockPortfolio[o.ValuableID][o.PortfolioID]
-	if !ledgerExists {
-		ledgerEntry = ledger.NewLedgerEntry(o.PortfolioID, o.ValuableID, true)
-		port.UpdateInput.RegisterInput(ledgerEntry.UpdateChannel.GetBufferedOutput(10))
-	}
-
 
 	if o.Amount > 0 {
 		//we have a buy
@@ -156,26 +151,37 @@ func executeTrade(o *PurchaseOrder) {
 		// make the trade
 		// subtract from open shares
 		value.OpenShares -= o.Amount
-		//add the holder amount
-		ledgerEntry.Amount += o.Amount
 		// Update the portfolio with the new ledgerEntry
 		port.Wallet -= costOfTrade
 		// update the ledger entry to trigger update
+		if !ledgerExists {
+			ledgerEntry = ledger.NewLedgerEntry(o.PortfolioID, o.ValuableID, true)
+			port.UpdateInput.RegisterInput(ledgerEntry.UpdateChannel.GetBufferedOutput(10))
+		}
+		//add the holder amount
+		ledgerEntry.Amount += o.Amount
 		successOrder(o)
 	} else {
-		// we have a sell
-		//make sure they have that many shares
-
-		if ledgerEntry.Amount < o.Amount {
+		if !ledgerExists {
 			failureOrder("not enough shares", o)
 			return
 		}
+
+		// we have a sell
+		//make sure they have that many shares
+
+		amount := o.Amount * -1
+		if ledgerEntry.Amount < amount {
+			failureOrder("not enough shares", o)
+			return
+		}
+
 		// make trade
 		// add to open shares
-		value.OpenShares += o.Amount
+		value.OpenShares += amount
 		// remove from ledger
-		ledgerEntry.Amount -= o.Amount
-		costOfTrade := o.Amount * value.GetValue()
+		ledgerEntry.Amount -= amount
+		costOfTrade := amount * value.GetValue()
 		port.Wallet += costOfTrade
 		successOrder(o)
 
@@ -192,7 +198,7 @@ func executeTrade(o *PurchaseOrder) {
 
 
 
-func executeTransfer(o *TransferOrder){
+func executeTransfer(o *TransferOrder) {
 	portfolio.PortfoliosLock.Acquire("moneyTransfer")
 	defer portfolio.PortfoliosLock.Release()
 	port, exists := portfolio.Portfolios[o.PortfolioID]

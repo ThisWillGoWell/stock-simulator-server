@@ -69,7 +69,7 @@ func MakePortfolio(uuid, userUUID string, wallet int64) (*Portfolio, error) {
 			NetWorth: wallet,
 		}
 	Portfolios[uuid] = port
-	port.Lock.EnableDebug()
+	//port.Lock.EnableDebug()
 	port.UpdateChannel.EnableCopyMode()
 	NewObjectChannel.Offer(port)
 	UpdateChannel.RegisterInput(port.UpdateChannel.GetOutput())
