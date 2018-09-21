@@ -16,7 +16,8 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
-        <script src="scripts/dashboard.js"></script>
+		<script src="scripts/dashboard.js"></script>
+		<script src="scripts/stock_Vue.js"></script>
 
     </head>
 
@@ -265,38 +266,36 @@
 									</div>
 								</div>
 							</div>
-						</div>
-						<div class="flex-column-100">
-							<div class="card stock-list">
-								<div id="stock-list">
-									<table class="table">
-									  <thead>
-									    <tr>
-									      <th scope="col" v-on:click="sortCol('ticker_id')" style="text-align: left; padding-left: 25px;">Stock <i class="material-icons stock">arrow_drop_down</i></th>
-									      <th scope="col" v-on:click="sortCol('open_shares')">Open Shares <i class="material-icons open-shares">arrow_drop_down</i></th>
-									      <th scope="col" v-on:click="sortCol('change')">Change <i class="material-icons change">arrow_drop_down</i></th>
-									      <th scope="col" v-on:click="sortCol('current_price')" style="padding-right: 25px;">Cost <i class="material-icons cost">arrow_drop_down</i></th>
-									    </tr>
-									  </thead>
-									  <tbody>
-									  	<!-- https://vuejs.org/v2/guide/list.html :key is recommended in v.fors -->
-									    <tr class="clickable" v-for="stock in sortedStocks" :key='stock.uuid' v-bind:uuid="stock.uuid">
-									    <!-- <tr class="clickable" v-for="stock in sortStocks(stocks)" :key='stock.uuid' v-bind:uuid="stock.uuid"> -->
-									      <th scope="row">
-									      	<div class="stock-ticker-id">{{ stock.ticker_id }}</div>
-									      	<div class="stock-display-name">{{ stock.name }}</div>
-									      </th>
-									      <td class="stock-open-shares">{{ stock.open_shares }}</td>
-									      <td class="stock-change">
-									      	{{ toPrice(stock.change) }}
-									      	<i class="material-icons">arrow_drop_down</i>
-									      </td>
-									      <td class="stock-price" style="padding-right: 25px;">
-									      {{ toPrice(stock.stock_price) }}</td>
-									    </tr>
-									  </tbody>
-									</table>
-							
+							<div class="flex-column-100">
+								<div class="card stock-list">
+									<div id="stock-list">
+										<table class="table">
+										  <thead>
+											<tr>
+											  <th scope="col" v-on:click="sortCol('ticker_id')" style="text-align: left; padding-left: 25px;">Stock <i class="material-icons stock">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('open_shares')">Open Shares <i class="material-icons open-shares">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('change')">Change <i class="material-icons change">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('current_price')" style="padding-right: 25px;">Cost <i class="material-icons cost">arrow_drop_down</i></th>
+											</tr>
+										  </thead>
+										  <tbody>
+											  <!-- https://vuejs.org/v2/guide/list.html :key is recommended in v.fors -->
+											<tr class="clickable" v-for="stock in sortedStocks" :key='stock.uuid' v-bind:uuid="stock.uuid">
+											  <th scope="row">
+												  <div class="stock-ticker-id">{{ stock.ticker_id }}</div>
+												  <div class="stock-display-name">{{ stock.name }}</div>
+											  </th>
+											  <td class="stock-open-shares">{{ stock.open_shares }}</td>
+											  <td class="stock-change">
+												  {{ toPrice(stock.change) }}
+												  <i class="material-icons">arrow_drop_down</i>
+											  </td>
+											  <td class="stock-price" style="padding-right: 25px;">
+											  {{ toPrice(stock.current_price) }}</td>
+											</tr>
+										  </tbody>
+										</table>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -321,11 +320,11 @@
 									    	</tr>
 										</thead>
 										<tbody>
-										    <tr v-for="portfolio in portfolios" :key="portfolio.uuid">
-										    	<th scope="row">{{ portfolio.uuid }}</th>
-										    	<td>{{ portfolio.user_uuid }}</td>
-										    	<td>{{ toPrice(portfolio.wallet) }}</td>
-										    	<td>{{ toPrice(portfolio.net_worth) }}</td>
+										    <tr v-for="investor in investors" :key="investor.uuid">
+										    	<th scope="row">{{ investor.uuid }}</th>
+										    	<td>{{ investor.user_uuid }}</td>
+										    	<td>{{ toPrice(investor.wallet) }}</td>
+										    	<td>{{ toPrice(investor.net_worth) }}</td>
 										    </tr>
 									  </tbody>
 									</table>
