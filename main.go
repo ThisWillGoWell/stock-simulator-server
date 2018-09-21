@@ -5,7 +5,6 @@ import (
 	"github.com/stock-simulator-server/src/change"
 	"github.com/stock-simulator-server/src/client"
 	"github.com/stock-simulator-server/src/database"
-	"github.com/stock-simulator-server/src/ledger"
 	"github.com/stock-simulator-server/src/order"
 	"github.com/stock-simulator-server/src/session"
 	"github.com/stock-simulator-server/src/valuable"
@@ -38,8 +37,8 @@ func main() {
 	if !disableDb {
 		database.InitDatabase()
 	}
-	valuable.ValuablesLock.EnableDebug()
-	ledger.EntriesLock.EnableDebug()
+	//valuable.ValuablesLock.EnableDebug()
+	//ledger.EntriesLock.EnableDebug()
 	
 	//Wiring of system
 	wires.ConnectWires(disableDb)
