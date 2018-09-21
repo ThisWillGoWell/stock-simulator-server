@@ -232,7 +232,7 @@ if(authenticated) {
 			}
 	    }
 
-	    
+
 	    var currUser = new Vue({
 	    	el: '#dashboard--view',
 	    	methods: {
@@ -720,7 +720,7 @@ if(authenticated) {
 	    	// Get request parameters
 		    
 		    var stockTickerId = $('#modal--container .modal-stock-id').html();
-	    	var amount = 1; // TODO: get from UI
+	    	var amount = -1; // TODO: get from UI
 
 	    	//Get stockid from ticker
 	    	var focusStock = Object.values(vm_stocks.stocks).filter(
