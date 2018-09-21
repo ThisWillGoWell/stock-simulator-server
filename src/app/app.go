@@ -98,7 +98,10 @@ func LoadVars() {
 	account.NewUser("Luke", "password")
 	account.NewUser("Chunt", "password")
 
-	acc, _ := account.GetUser("Will", "password")
+	acc, err := account.GetUser("Will", "password")
+	if err != nil{
+		fmt.Printf(err.Error())
+	}
 	portfolio.Portfolios[acc.PortfolioId].Wallet = 100000
 	acc2, _ := account.GetUser("Jake", "password")
 	portfolio.Portfolios[acc2.PortfolioId].Wallet = 1000000
