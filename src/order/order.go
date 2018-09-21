@@ -134,6 +134,7 @@ func executeTrade(o *PurchaseOrder) {
 	defer port.Lock.Release()
 	ledgerEntry, ledgerExists := ledger.EntriesStockPortfolio[o.ValuableID][o.PortfolioID]
 	if !ledgerExists {
+		//todo don't make ledger on any failure trade
 		if o.Amount < 0 {
 			failureOrder("not enough shares", o)
 			return
