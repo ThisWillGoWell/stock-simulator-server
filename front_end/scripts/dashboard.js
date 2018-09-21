@@ -57,6 +57,8 @@ if(authenticated) {
 		console.log("------ PORTFOLIOS ------");
 		console.log(vm_portfolios.portfolios);
 
+
+
 		/* Vues that are used to display data */
 
 		// Vue for sidebar navigation
@@ -72,7 +74,6 @@ if(authenticated) {
 			}
 		});
 
-	
 		// Vue for any sidebar data
 	    var sidebarCurrUser = new Vue({
 	    	el: '#stats--view',
@@ -97,7 +98,6 @@ if(authenticated) {
 	    	}
 		});
 		
-
 		// Vue for all options data 
 		let vm_popout_menu = new Vue({
 			el: '#btn-logout',
@@ -114,10 +114,8 @@ if(authenticated) {
 			}
 		});
 
-
 		// setting username in top right
 		$('#user-info-container .username-text').text(auth_uid)
-
 
 		// Vue for all dashboard data
 	    var currUser = new Vue({
@@ -172,7 +170,6 @@ if(authenticated) {
 				}
 	    	}
 	    });
-
 
 		// Vue for all stocks tab data 
 		var vm_stocks_tab = new Vue({
@@ -247,38 +244,46 @@ if(authenticated) {
 				},
 			}
 		});
-		
-		
+
 		// Vue for all investors tab data
 		var vm_investors_tab = new Vue({
 			el: '#investors--view',
 			methods: {
 				toPrice: formatPrice,
-			},
-			computed: {
-				investors: function() {
-					return vm_portfolios.portfolios;
-				},
-				//TODO IMPLEMENT ALL USER PORTFOLIOS
-				portfolioStocks: function() {
+				investorStocks: function(portfolio_uuid) {
 
-					// List of all ledger items
-					var stocks = Object.keys(vm_ledger.ledger).map(function(key){
-						return vm_ledger.ledger[key];
-					});
 					// Ledger items of interest
 					stocks = stocks.filter(function(d) {
-						return d.portfolio_id == portfolioUUID;
+						return d.portfolio_id === portfolio_uuid;
 					});
 					// Grabbing additional info from stock objects
 					stocks = stocks.map(function(d) {
+						console.log(d);
 						d.ticker_id = vm_stocks.stocks[d.stock_id].ticker_id;
 						d.stock_name = vm_stocks.stocks[d.stock_id].name;
 						d.current_price = vm_stocks.stocks[d.stock_id].current_price;
+						d.value = d.current_price * d.amount;
 						return d;
 					});
 					return stocks;
 				}
+			},
+			computed: {
+				investors: function() {
+					var investors = Object.values(vm_portfolios.portfolios);
+					// List of all ledger items
+					var ledgerItems = Object.values(vm_ledger.ledger);
+
+
+					investors.map(function(d) {
+						console.log(d);
+						d.name = vm_users.users[d.user_uuid].display_name;
+						d.stocks = ledgerItems.filter(l => l.portfolio_id === d.uuid);
+						return d;
+					})
+					return investors;
+				},
+				//TODO IMPLEMENT ALL USER PORTFOLIOS
 			}
 		});
 
