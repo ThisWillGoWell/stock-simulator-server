@@ -134,6 +134,10 @@ func executeTrade(o *PurchaseOrder) {
 	defer port.Lock.Release()
 	ledgerEntry, ledgerExists := ledger.EntriesStockPortfolio[o.ValuableID][o.PortfolioID]
 	if !ledgerExists {
+		if o.Amount < 0 {
+			failureOrder("not enough shares", o)
+			return
+		}
 		ledgerEntry = ledger.NewLedgerEntry(o.PortfolioID, o.ValuableID, true)
 		port.UpdateInput.RegisterInput(ledgerEntry.UpdateChannel.GetBufferedOutput(10))
 	}
