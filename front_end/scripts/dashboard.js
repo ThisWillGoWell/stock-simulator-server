@@ -164,9 +164,8 @@ if(authenticated) {
 							})
 							return ownedStocks;
 						}
-					} else {
-						return [];
 					}
+					return [];
 				}
 	    	}
 	    });
@@ -258,7 +257,6 @@ if(authenticated) {
 					});
 					// Grabbing additional info from stock objects
 					stocks = stocks.map(function(d) {
-						console.log(d);
 						d.ticker_id = vm_stocks.stocks[d.stock_id].ticker_id;
 						d.stock_name = vm_stocks.stocks[d.stock_id].name;
 						d.current_price = vm_stocks.stocks[d.stock_id].current_price;
@@ -276,7 +274,6 @@ if(authenticated) {
 
 
 					investors.map(function(d) {
-						console.log(d);
 						d.name = vm_users.users[d.user_uuid].display_name;
 						d.stocks = ledgerItems.filter(l => l.portfolio_id === d.uuid);
 						return d;
@@ -587,9 +584,10 @@ if(authenticated) {
 	    };
 
 	    var stockUpdate = function(msg) {
+	    	console.log(msg)
+			var targetUUID = msg.msg.uuid;
 			msg.msg.changes.forEach(function(changeObject){
 				// Variables needed to update the stocks
-				var targetUUID = msg.msg.uuid;
 				var targetField = changeObject.field;
 				var targetChange = changeObject.value;
 				
@@ -621,10 +619,10 @@ if(authenticated) {
 	    };
 
 	    var ledgerUpdate = function(msg) {
-			msg.msg.changes.forEach(function(changeObject){
+			var targetUUID = msg.msg.uuid;
 
+			msg.msg.changes.forEach(function(changeObject){
 				// Variables needed to update the ledger item
-				var targetUUID = msg.msg.uuid;
 				var targetField = changeObject.field;
 				var targetChange = changeObject.value;
 
@@ -634,13 +632,16 @@ if(authenticated) {
 	    };
 
 	    var portfolioUpdate = function(msg) {
+
+	    	console.log("PORTFOLIO UPDATE");
+	    	console.log(msg);
 			
+			var targetUUID = msg.msg.uuid;
 			msg.msg.changes.forEach(function(changeObject){
 
 				// Variables needed to update the ledger item
-				var targetUUID = msg.msg.uuid;
-				var targetField = msg.msg.changes[0].field;
-				var targetChange = msg.msg.changes[0].value;
+				var targetField = changeObject.field;
+				var targetChange = changeObject.value;
 
 				// Update ledger item
 				vm_portfolios.portfolios[targetUUID][targetField] = targetChange;
@@ -649,17 +650,17 @@ if(authenticated) {
 
 	    var userUpdate = function(msg) {
 
+			var targetUUID = msg.msg.uuid;
 			msg.msg.changes.forEach(function(changeObject){
 			
 				// Variables needed to update the ledger item
-				var targetUUID = msg.msg.uuid;
 				var targetField = changeObject.field;
 				var targetChange = changeObject.value;
 
 				// Update ledger item
 				vm_users.users[targetUUID][targetField] = targetChange;
 			})
-	    }
+	    };
 
 
 	    var routeAlert = function(msg) {
@@ -683,7 +684,7 @@ if(authenticated) {
 	    	// Get request parameters
 		    
 		    var stockTickerId = $('#modal--container .modal-stock-id').html();
-	    	var amount = -1; // TODO: get from UI
+	    	var amount = 1; // TODO: get from UI
 
 	    	//Get stockid from ticker
 	    	var focusStock = Object.values(vm_stocks.stocks).filter(
