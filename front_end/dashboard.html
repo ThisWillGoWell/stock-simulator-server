@@ -17,7 +17,6 @@
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
 		<script src="scripts/dashboard.js"></script>
-		<script src="scripts/stock_Vue.js"></script>
 
     </head>
 
@@ -313,39 +312,40 @@
 									<table class="table">
 										<thead>
 									    	<tr>
-									    	  <th scope="col">portfolioUUID</th>
-									    	  <th scope="col">userUUID</th>
+									    	  <th scope="col">Name</th>
 									    	  <th scope="col">wallet</th>
 									    	  <th scope="col">net worth</th>
 									    	</tr>
 										</thead>
 										<tbody>
 										    <tr v-for="investor in investors" :key="investor.uuid">
-										    	<th scope="row">{{ investor.uuid }}</th>
-										    	<td>{{ investor.user_uuid }}</td>
+										    	<td>{{ investor.name }}</td>
+										    	<td>{{ investor.stocks }}</td>
+<!-- 
+													<table class="table">
+														<thead>
+													    	<tr>
+													    	  <th scope="col">Stock</th>
+													    	  <th scope="col">Amount Owned</th>
+													    	  <th scope="col">Cost</th>
+													    	  <th scope="col">Value</th>
+													    	</tr>
+														</thead>
+														<tbody>
+														    <tr v-if = "investor.stocks != undefined" v-for="stock in investor.stocks">
+														    	<th scope="row">{{ stock.ticker_id }}</th>
+														    	<td>{{ stock.amount }}</td>
+														    	<td>{{ stock.current_price }}</td>
+														    	<td>{{ stock.value }}</td>
+														    </tr>
+													  </tbody>
+													</table> -->
+										    	
 										    	<td>{{ toPrice(investor.wallet) }}</td>
 										    	<td>{{ toPrice(investor.net_worth) }}</td>
 										    </tr>
 									  </tbody>
 									</table>
-									<!-- <table class="table">
-										<thead>
-									    	<tr>
-									    	  <th scope="col">Stock</th>
-									    	  <th scope="col">Amount Owned</th>
-									    	  <th scope="col">Cost</th>
-									    	  <th scope="col">Value</th>
-									    	</tr>
-										</thead>
-										<tbody>
-										    <tr v-for="stock in portfolioStocks">
-										    	<th scope="row">{{ stock.ticker_id }}</th>
-										    	<td>{{ stock.amount }}</td>
-										    	<td>{{ stock.current_price }}</td>
-										    	<td>{{ stock.amount * stock.current_price }}</td>
-										    </tr>
-									  </tbody>
-									</table> -->
 									<!-- <stock-portfolio :portfoliouuid="portfolio.uuid"></stock-portfolio> -->
 								</div>
 							</div>
