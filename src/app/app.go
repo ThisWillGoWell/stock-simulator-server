@@ -93,19 +93,16 @@ func LoadVars() {
 	//start the builder
 	//go client.BroadcastMessageBuilder()
 	//build and simulate a client
-	account.NewUser("Mike", "password")
-	account.NewUser("Will", "password")
-	account.NewUser("Luke", "password")
-	account.NewUser("Chunt", "password")
+	account.NewUser("Mike", "pass")
+	account.NewUser("Will", "pass")
+	account.NewUser("Jake", "pass")
+	account.NewUser("Chunt", "pass")
 
-	acc, err := account.GetUser("Will", "password")
-	if err != nil{
-		fmt.Printf("error:", err.Error())
-	}
+	acc, _ := account.GetUser("Will", "pass")
 	portfolio.Portfolios[acc.PortfolioId].Wallet = 100000
-	acc2, _ := account.GetUser("Jake", "password")
+	acc2, _ := account.GetUser("Jake", "pass")
 	portfolio.Portfolios[acc2.PortfolioId].Wallet = 1000000
-	acc3, _ := account.GetUser("Chunt", "password")
+	acc3, _ := account.GetUser("Chunt", "pass")
 	portfolio.Portfolios[acc3.PortfolioId].Wallet = 6942069
 
 	accs := []string{acc.PortfolioId, acc2.PortfolioId, acc3.PortfolioId}
