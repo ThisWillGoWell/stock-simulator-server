@@ -95,7 +95,7 @@ func MakeStock(uuid, tickerID, name string, startPrice, openShares int64, runInt
 
 	stock.PriceChanger = &RandomPrice{
 		RunPercent:            timeSimulationPeriod.Seconds() / (runInterval.Seconds() * 1.0),
-		TargetPrice:           10000,
+		TargetPrice:           int64(rand.Intn(100000)),
 		PercentToChangeTarget: .1,
 		Volatility:            5,
 	}

@@ -170,12 +170,13 @@ func executeTrade(o *PurchaseOrder) {
 			failureOrder("not enough shares", o)
 			return
 		}
+		amount := o.Amount * -1
 		// make trade
 		// add to open shares
-		value.OpenShares += o.Amount
+		value.OpenShares += amount
 		// remove from ledger
-		ledgerEntry.Amount -= o.Amount
-		costOfTrade := o.Amount * value.GetValue()
+		ledgerEntry.Amount -= amount
+		costOfTrade := amount * value.GetValue()
 		port.Wallet += costOfTrade
 		successOrder(o)
 
