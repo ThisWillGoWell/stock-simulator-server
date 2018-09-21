@@ -165,12 +165,12 @@ func executeTrade(o *PurchaseOrder) {
 	} else {
 		// we have a sell
 		//make sure they have that many shares
-
-		if ledgerEntry.Amount < o.Amount {
+		amount := o.Amount * -1
+		if ledgerEntry.Amount < amount {
 			failureOrder("not enough shares", o)
 			return
 		}
-		amount := o.Amount * -1
+
 		// make trade
 		// add to open shares
 		value.OpenShares += amount
