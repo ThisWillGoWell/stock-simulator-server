@@ -288,7 +288,6 @@ if(authenticated) {
 		    	}
 	    	}
 	    });
-
 		
 
 	    var sidebarCurrUser = new Vue({
