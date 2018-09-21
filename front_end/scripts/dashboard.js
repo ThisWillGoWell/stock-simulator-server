@@ -54,13 +54,13 @@ if(authenticated) {
 			  sortDesc: 1,
 			},
 			methods: {
-		    // on column name clicks
-		    sortCol: function(col) {
-		    	// If sorting by selected column
-		    	if (this.sortBy == col) {
-		    		// Change sort direction
-		    		// console.log(col);
-		    		this.sortDesc = -this.sortDesc;
+			    // on column name clicks
+			    sortCol: function(col) {
+			    	// If sorting by selected column
+			    	if (this.sortBy == col) {
+			    		// Change sort direction
+			    		// console.log(col);
+			    		this.sortDesc = -this.sortDesc;
 			    	} else {
 			    		// Change sorted column
 			    		this.sortBy = col;
@@ -76,7 +76,7 @@ if(authenticated) {
 			    	  	// Turn to array and sort 
 				    	var stock_array = Object.values(vm_stocks.stocks).map(
 				    		function(d) {
-				    			d.stock_price = formatPrice(d.current_price);
+				    			d.stock_price = d.current_price;
 				    			return d;
 				    		});
 
@@ -116,6 +116,9 @@ if(authenticated) {
 			el: '#portfolio-list',
 			data: {
 				portfolios: {},
+			},
+			methods: {
+				toPrice: formatPrice,
 			},
 			computed: {
 				//TODO IMPLEMENT ALL USER PORTFOLIOS
@@ -217,6 +220,9 @@ if(authenticated) {
 
 	    var currUser = new Vue({
 	    	el: '#dashboard--view',
+	    	methods: {
+	    		toPrice: formatPrice,
+	    	},
 	    	computed: {
 	    		currUserPortfolio: function() {
 	    			var currUser = sessionStorage.getItem('uuid');
@@ -241,6 +247,9 @@ if(authenticated) {
 	    					
 	    					var ownedStocks = Object.values(LEDGER).filter((d) => d.portfolio_id === portfolio_uuid);
 	    					
+	    					// Remove stocks that user owns 0 of
+	    					ownedStocks = ownedStocks.filter(d => d.amount !== 0);
+
 	    					// Augmenting owned stocks
 	    					ownedStocks = ownedStocks.map(function(d) {
 	    						d.stock_ticker = STOCKS[d.stock_id].ticker_id;
@@ -248,8 +257,8 @@ if(authenticated) {
 	    						d.stock_value = Number(d.stock_price) * Number(d.amount);
 
 	    						// Formatting to dollars
-	    						d.stock_price = formatPrice(d.stock_price);
-	    						d.stock_value = formatPrice(d.stock_value);
+	    						d.stock_price = d.stock_price;
+	    						d.stock_value = d.stock_value;
 
 	    						return d;
 	    					})
@@ -262,23 +271,7 @@ if(authenticated) {
 	    	}
 	    });
 
-		// FIX THIS
-		var formatPrice = function(value) {
-			// TODO if value is greater than something abbreviate
-			if (value < 1000000) {
-				let val = (value/100).toFixed(2).toString();
-				val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-				return val;
-			} else if (value < 100000000) {
-				let val = ((value/100)/1000).toFixed(2).toString();
-				val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-				return val + "K";
-			} else {
-				let val = (value/100).toFixed(2).toString();
-				val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-				return val;
-			}
-	    }
+		
 
 	    var sidebarCurrUser = new Vue({
 	    	el: '#stats--view',
@@ -308,19 +301,13 @@ if(authenticated) {
 			scrollVal = $(document).scrollTop();
 		});
 
-		function formatDate12Hour(date) {
-		  	let hours = date.getHours();
-			let minutes = date.getMinutes();
-			let ampm = hours >= 12 ? 'pm' : 'am';
-			hours = hours % 12;
-			hours = hours ? hours : 12; // the hour '0' should be '12'
-			minutes = minutes < 10 ? '0'+minutes : minutes;
-			let strTime = hours + ':' + minutes + ' ' + ampm;
-			return strTime;
-		}
 
 		let chat_feed = $('#chat-module--container .chat-message--list');
 		let debug_feed = $('#debug-module--container .debug-message--list');
+
+		var cleanInput = (input) => {
+			return $('<div/>').text(input).html();
+		}
 
 		function appendNewMessage(msg, fromMe){
 
@@ -328,7 +315,7 @@ if(authenticated) {
 			if (fromMe) {
 				isMe = "is-me";
 			}
-			let msg_text = msg.body;
+			let msg_text = cleanInput(msg.body);
 			let msg_author_display_name = msg.author_display_name;
 			let msg_author_uuid = msg.author_uuid;
 			let msg_timestamp = formatDate12Hour(new Date($.now()));
@@ -398,7 +385,7 @@ if(authenticated) {
 	    	// TODO: get all data elements
 		    var ticker_id = this.getElementsByClassName('stock-ticker-id')[0].innerHTML;
 	    	var stock = Object.values(vm_stocks.stocks).filter((d) => d.ticker_id === ticker_id)[0];
-		    var current_price = formatPrice(stock.current_price);
+		    var current_price = stock.current_price;
 		    
 		    //TODO: update all data elements in the modal
 		    $('#modal--container .modal-stock-id').html(ticker_id);
@@ -478,7 +465,7 @@ if(authenticated) {
 						'action': 'chat',
 						'msg': {
 							'message_body': message_body,
-						}	
+						}
 					};
 
 					doSend(JSON.stringify(msg))
@@ -647,7 +634,6 @@ if(authenticated) {
 
 				// Adding new current price
 				STOCKS[targetUUID][targetField] = targetChange;
-
 
 			})
 	    };

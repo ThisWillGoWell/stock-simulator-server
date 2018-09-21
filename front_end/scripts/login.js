@@ -58,6 +58,8 @@ $( document ).ready(function() {
 
     var routeLogin = function(msg) {
         console.log("login recieved");
+        console.log(msg);
+
     };
 
 

@@ -15,6 +15,7 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+        <script src="scripts/utils.js"></script>
         <script src="scripts/dashboard.js"></script>
 
     </head>
@@ -83,8 +84,8 @@
 					<p v-if="getCurrentUser(users)">{{ getCurrentUser(users) }}</p>
 				</div> -->
 				<div id="stats--view">
-					<div class="stat-value blue"><i class="material-icons menu-icon">business</i>$ {{ toPrice(currUserPortfolio.net_worth) }}</div>
-					<div class="stat-value green"><i class="material-icons menu-icon">local_atm</i>{{ currUserPortfolio.wallet }}</div>
+					<div class="stat-value blue"><i class="material-icons menu-icon">business</i>${{ toPrice(currUserPortfolio.net_worth) }}</div>
+					<div class="stat-value green"><i class="material-icons menu-icon">local_atm</i>${{ toPrice(currUserPortfolio.wallet) }}</div>
 					<div class="stat-value orange"><i class="material-icons menu-icon">trending_up</i>{{ currUserPortfolio.user_uuid }}</div>
 				</div>
 				<ul id="nav">
@@ -174,7 +175,7 @@
 										<i class="material-icons menu-icon">business</i>
 										<div class="card-details">
 											<div class="card-category">NETWORTH</div>
-											<p> {{ currUserPortfolio.net_worth }}</p>
+											<p> ${{ toPrice(currUserPortfolio.net_worth) }}</p>
 										</div>
 									</div>
 								</div>
@@ -184,7 +185,7 @@
 									<div class="stat-value green">
 										<i class="material-icons menu-icon">local_atm</i><div class="card-details">
 											<div class="card-category">CASH</div>
-											<p> {{ currUserPortfolio.wallet }}</p>
+											<p> ${{ toPrice(currUserPortfolio.wallet) }}</p>
 										</div>
 									</div>
 								</div>
@@ -323,8 +324,8 @@
 										    <tr v-for="portfolio in portfolios" :key="portfolio.uuid">
 										    	<th scope="row">{{ portfolio.uuid }}</th>
 										    	<td>{{ portfolio.user_uuid }}</td>
-										    	<td>{{ portfolio.wallet }}</td>
-										    	<td>{{ portfolio.net_worth }}</td>
+										    	<td>{{ toPrice(portfolio.wallet) }}</td>
+										    	<td>{{ toPrice(portfolio.net_worth) }}</td>
 										    </tr>
 									  </tbody>
 									</table>
