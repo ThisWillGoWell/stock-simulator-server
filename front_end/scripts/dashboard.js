@@ -54,6 +54,7 @@ if(authenticated) {
 			  sortDesc: 1,
 			},
 			methods: {
+				toPrice: formatPrice,
 			    // on column name clicks
 			    sortCol: function(col) {
 			    	// If sorting by selected column
@@ -217,23 +218,23 @@ if(authenticated) {
 			}
 		});
 
-		// FIX THIS
-		var formatPrice = function(value) {
-			// TODO if value is greater than something abbreviate
-			if (value < 1000000) {
-				let val = (value/100).toFixed(2).toString();
-				val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-				return val;
-			} else if (value < 100000000) {
-				let val = ((value/100)/1000).toFixed(2).toString();
-				val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-				return val + "K";
-			} else {
-				let val = (value/100).toFixed(2).toString();
-				val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-				return val;
-			}
-	    }
+		// // FIX THIS
+		// var formatPrice = function(value) {
+		// 	// TODO if value is greater than something abbreviate
+		// 	if (value < 1000000) {
+		// 		let val = (value/100).toFixed(2).toString();
+		// 		val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+		// 		return val;
+		// 	} else if (value < 100000000) {
+		// 		let val = ((value/100)/1000).toFixed(2).toString();
+		// 		val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+		// 		return val + "K";
+		// 	} else {
+		// 		let val = (value/100).toFixed(2).toString();
+		// 		val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+		// 		return val;
+		// 	}
+	    // }
 
 
 	    var currUser = new Vue({
@@ -275,8 +276,8 @@ if(authenticated) {
 	    						d.stock_value = Number(d.stock_price) * Number(d.amount);
 
 	    						// Formatting to dollars
-	    						d.stock_price = d.stock_price;
-	    						d.stock_value = d.stock_value;
+	    						// d.stock_price = d.stock_price;
+	    						// d.stock_value = d.stock_value;
 
 	    						return d;
 	    					})

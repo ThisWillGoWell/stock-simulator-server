@@ -1,4 +1,4 @@
-var formatPrice = function(value) {
+function formatPrice(value) {
 	// TODO if value is greater than something abbreviate
 	if (value < 1000000) {
 		let val = (value/100).toFixed(2).toString();
