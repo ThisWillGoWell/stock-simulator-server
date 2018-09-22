@@ -309,6 +309,27 @@
 							</div>
 							<div class="flex-column-100" id="portfolio-list">
 								<div class="card" >
+
+									<!-- Needs to be some version of this -->
+									<div v-for="investor in investors" :key="investor.uuid">
+
+										<td>{{ investor.name }}</td>
+								    	<td>{{ toPrice(investor.wallet) }}</td>
+								    	<td>{{ toPrice(investor.net_worth) }}</td>
+
+										<!-- Needs to be some version of this -->
+										<div v-for="stock in investor.stocks">
+
+											<td>{{ stock.ticker_id }}</th>
+									    	<td>{{ stock.amount }}</td>
+									    	<td>{{ toPrice(stock.current_price) }}</td>
+									    	<td>{{ toPrice(stock.value) }}</td>
+
+										</div>
+										<br><br>
+									</div>
+
+<!-- 
 									<table class="table">
 										<thead>
 									    	<tr>
@@ -318,59 +339,17 @@
 									    	</tr>
 										</thead>
 										<tbody>
-										    <tr v-for="investor in investors" :key="investor.uuid">
+										    <tr class="investor" v-if="investors.length != 0" v-for="investor in investors" :key="investor.uuid">
 										    	<td>{{ investor.name }}</td>
 										    	<td>{{ investor.stocks }}</td>
-<!-- 
-													<table class="table">
-														<thead>
-													    	<tr>
-													    	  <th scope="col">Stock</th>
-													    	  <th scope="col">Amount Owned</th>
-													    	  <th scope="col">Cost</th>
-													    	  <th scope="col">Value</th>
-													    	</tr>
-														</thead>
-														<tbody>
-														    <tr v-if = "investor.stocks != undefined" v-for="stock in investor.stocks">
-														    	<th scope="row">{{ stock.ticker_id }}</th>
-														    	<td>{{ stock.amount }}</td>
-														    	<td>{{ stock.current_price }}</td>
-														    	<td>{{ stock.value }}</td>
-														    </tr>
-													  </tbody>
-													</table> -->
-										    	
 										    	<td>{{ toPrice(investor.wallet) }}</td>
 										    	<td>{{ toPrice(investor.net_worth) }}</td>
 										    </tr>
-									  </tbody>
+										</tbody>
 									</table>
-									<!-- <stock-portfolio :portfoliouuid="portfolio.uuid"></stock-portfolio> -->
+ -->								
 								</div>
 							</div>
-							<!-- <div class="flex-column-50" id="ledger-list">
-								<div class="card" v-for="item in ledger" :key="item.uuid">
-									<table class="table">
-										  <thead>
-										    <tr>
-										      <th scope="col">ledgerItemUUID</th>
-										      <th scope="col">portfolioUUID</th>
-										      <th scope="col">stockUUID</th>
-										      <th scope="col">amount</th>
-										    </tr>
-										  </thead>
-										  <tbody>
-										    <tr>
-										    	<th scope="row">{{ item.uuid }}</th>
-										    	<td>{{ item.portfolio_id }}</td>
-										    	<td>{{ item.stock_id }}</td>
-										    	<td>{{ item.amount }}</td>
-										    </tr>
-										  </tbody>
-										</table>
-								</div>
-							</div> -->
 						</div>
 					</div>
 
