@@ -83,17 +83,15 @@ if(authenticated) {
 	    	computed: {
 	    		currUserPortfolio: function() {
 	    			var currUser = sessionStorage.getItem('uuid');
-	    			if (vm_users.users[currUser] === undefined) {
-	    				return {};
-	    			} else {
+	    			if (vm_users.users[currUser] !== undefined) {
 		    			var currUserFolioUUID = vm_users.users[currUser].portfolio_uuid;
-	    				if (vm_portfolios.portfolios[currUserFolioUUID] === undefined) {
-	    					return {};
-		    			} else {
+	    				if (vm_portfolios.portfolios[currUserFolioUUID] !== undefined) {
 			    			var folio = vm_portfolios.portfolios[currUserFolioUUID];
+							folio.investments = folio.net_worth - folio.wallet;
 			    			return folio;
 		    			}
 		    		}
+		    		return {};
 		    	}
 	    	}
 		});
@@ -130,6 +128,7 @@ if(authenticated) {
 						var currUserFolioUUID = vm_users.users[currUser].portfolio_uuid;
 	    				if (vm_portfolios.portfolios[currUserFolioUUID] !== undefined) {
 							var folio = vm_portfolios.portfolios[currUserFolioUUID];
+							folio.investments = folio.net_worth - folio.wallet;
 			    			return folio;
 		    			}
 		    		}
