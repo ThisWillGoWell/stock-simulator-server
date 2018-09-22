@@ -12,11 +12,11 @@
 
         <link rel="stylesheet" href="css/main.css">
 
+        <script src="scripts/utils.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
-        <script src="scripts/utils.js"></script>
-        <script src="scripts/dashboard.js"></script>
+		<script src="scripts/dashboard.js"></script>
 
     </head>
 
@@ -52,7 +52,7 @@
 								<div class="card calc-btn" data-val="1">CUSTOM</div>
 							</div>
 							<div class="flex-column-50">
-								<div class="card calc-btn" data-val="MAX">MAX</div>
+							  <div class="card calc-btn" data-val="MAX">MAX</div>
 							</div>
 							<table class="table">
 								<thead>
@@ -91,7 +91,7 @@
 				<div id="stats--view">
 					<div class="stat-value blue"><i class="material-icons menu-icon">business</i>${{ toPrice(currUserPortfolio.net_worth) }}</div>
 					<div class="stat-value green"><i class="material-icons menu-icon">local_atm</i>${{ toPrice(currUserPortfolio.wallet) }}</div>
-					<div class="stat-value orange"><i class="material-icons menu-icon">trending_up</i>{{ currUserPortfolio.user_uuid }}</div>
+					<div class="stat-value orange"><i class="material-icons menu-icon">trending_up</i>${{ toPrice(currUserPortfolio.investments) }}</div>
 				</div>
 				<ul id="nav">
 					<li>
@@ -146,7 +146,7 @@
 				</ul>
 			</section>
 			<section id="top-bar--container">
-				<div class="current-view">Dashboard</div>
+				<div class="current-view" id="current-view">Dashboard</div>
 				<div class="account-settings-btn">
 						<span></span>
 						<span></span>
@@ -154,7 +154,7 @@
 					</div>
 
 				<div id="user-info-container" class="nav-list">
-					<div class="username-text"><!-- Filled out with jQuery from session variables --></div>
+					<div class="username-text">{{ userDisplayName }}</div>
 					
 					
 				
@@ -200,33 +200,31 @@
 									<div class="stat-value orange">
 										<i class="material-icons menu-icon">trending_up</i><div class="card-details">
 											<div class="card-category">INVESTMENTS</div>
-											<p> {{ currUserPortfolio.user_uuid }}</p>
+											<p> ${{ toPrice(currUserPortfolio.investments) }}</p>
 										</div>
 									</div>
 								</div>
 							</div>
-							<div class="flex-column-100">
-								<div class="card stock-list">
-									<table class="table">
-										<thead>
-									    	<tr>
-										    	<th scope="col">Stock</th>
-										    	<th scope="col">Amount Owned</th>
-										    	<th scope="col">Cost</th>
-										    	<th scope="col">Value</th>
-										    </tr>
-										</thead>
-										<tbody>
-											<tr class="clickable" v-for="stock in currUserStocks">
-												<th scope="row stock-ticker-id">{{ stock.stock_ticker }}</th>
-												<td>{{ stock.amount }}</td>
-												<!-- Brennan these tds should use onclick idk how we have been implementing that -->
-												<td class="price-alter">{{ stock.stock_price }}</td>
-												<td class="price-alter">{{ stock.stock_value }}</td>
-											</tr>
-										</tbody>
-									</table>
-								</div>
+							<div>
+								<table class="table">
+									<thead>
+								    	<tr>
+									    	<th scope="col">Stock</th>
+									    	<th scope="col">Amount Owned</th>
+									    	<th scope="col">Cost</th>
+									    	<th scope="col">Value</th>
+									    </tr>
+									</thead>
+									<tbody>
+										<tr v-for="stock in currUserStocks">
+											<th scope="row">{{ stock.stock_ticker }}</th>
+											<td>{{ stock.amount }}</td>
+											<!-- Brennan these tds should use onclick idk how we have been implementing that -->
+											<td class="price-alter">{{ toPrice(stock.stock_price) }}</td>
+											<td class="price-alter">{{ toPrice(stock.stock_value) }}</td>
+										</tr>
+									</tbody>
+								</table>
 							</div>
 						</div>
 					</div>
@@ -272,38 +270,36 @@
 									</div>
 								</div>
 							</div>
-						</div>
-						<div class="flex-column-100">
-							<div class="card stock-list">
-								<div id="stock-list">
-									<table class="table">
-									  <thead>
-									    <tr>
-									      <th scope="col" v-on:click="sortCol('ticker_id')" style="text-align: left; padding-left: 25px;">Stock <i class="material-icons stock">arrow_drop_down</i></th>
-									      <th scope="col" v-on:click="sortCol('open_shares')">Open Shares <i class="material-icons open-shares">arrow_drop_down</i></th>
-									      <th scope="col" v-on:click="sortCol('change')">Change <i class="material-icons change">arrow_drop_down</i></th>
-									      <th scope="col" v-on:click="sortCol('current_price')" style="padding-right: 25px;">Cost <i class="material-icons cost">arrow_drop_down</i></th>
-									    </tr>
-									  </thead>
-									  <tbody>
-									  	<!-- https://vuejs.org/v2/guide/list.html :key is recommended in v.fors -->
-									    <tr class="clickable" v-for="stock in sortedStocks" :key='stock.uuid' v-bind:uuid="stock.uuid">
-									    <!-- <tr class="clickable" v-for="stock in sortStocks(stocks)" :key='stock.uuid' v-bind:uuid="stock.uuid"> -->
-									      <th scope="row">
-									      	<div class="stock-ticker-id">{{ stock.ticker_id }}</div>
-									      	<div class="stock-display-name">{{ stock.name }}</div>
-									      </th>
-									      <td class="stock-open-shares">{{ stock.open_shares }}</td>
-									      <td class="stock-change">
-									      	{{ stock.change }}
-									      	<i class="material-icons">arrow_drop_down</i>
-									      </td>
-									      <td class="stock-price" style="padding-right: 25px;">
-									      {{ stock.stock_price }}</td>
-									    </tr>
-									  </tbody>
-									</table>
-							
+							<div class="flex-column-100">
+								<div class="card stock-list">
+									<div id="stock-list">
+										<table class="table">
+										  <thead>
+											<tr>
+											  <th scope="col" v-on:click="sortCol('ticker_id')" style="text-align: left; padding-left: 25px;">Stock <i class="material-icons stock">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('open_shares')">Open Shares <i class="material-icons open-shares">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('change')">Change <i class="material-icons change">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('current_price')" style="padding-right: 25px;">Cost <i class="material-icons cost">arrow_drop_down</i></th>
+											</tr>
+										  </thead>
+										  <tbody>
+											  <!-- https://vuejs.org/v2/guide/list.html :key is recommended in v.fors -->
+											<tr class="clickable" v-for="stock in sortedStocks" :key='stock.uuid' v-bind:uuid="stock.uuid">
+											  <th scope="row">
+												  <div class="stock-ticker-id">{{ stock.ticker_id }}</div>
+												  <div class="stock-display-name">{{ stock.name }}</div>
+											  </th>
+											  <td class="stock-open-shares">{{ stock.open_shares }}</td>
+											  <td class="stock-change">
+												  {{ toPrice(stock.change) }}
+												  <i class="material-icons">arrow_drop_down</i>
+											  </td>
+											  <td class="stock-price" style="padding-right: 25px;">
+											  {{ toPrice(stock.current_price) }}</td>
+											</tr>
+										  </tbody>
+										</table>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -318,67 +314,47 @@
 							</div>
 							<div class="flex-column-100" id="portfolio-list">
 								<div class="card" >
+
+									<!-- Needs to be some version of this -->
+									<div v-for="investor in investors" :key="investor.uuid">
+
+										<td>{{ investor.name }}</td>
+								    	<td>Wallet: {{ toPrice(investor.wallet) }}</td>
+								    	<td>Net Worth: {{ toPrice(investor.net_worth) }}</td>
+
+										<!-- Needs to be some version of this -->
+										<div v-for="stock in investor.stocks">
+
+											<td>{{ stock.ticker_id }}</th>
+									    	<td>{{ stock.amount }}</td>
+									    	<td>{{ toPrice(stock.current_price) }}</td>
+									    	<td>{{ toPrice(stock.value) }}</td>
+
+										</div>
+										<br><br>
+									</div>
+
+<!-- 
 									<table class="table">
 										<thead>
 									    	<tr>
-									    	  <th scope="col">portfolioUUID</th>
-									    	  <th scope="col">userUUID</th>
+									    	  <th scope="col">Name</th>
 									    	  <th scope="col">wallet</th>
 									    	  <th scope="col">net worth</th>
 									    	</tr>
 										</thead>
 										<tbody>
-										    <tr v-for="portfolio in portfolios" :key="portfolio.uuid">
-										    	<th scope="row">{{ portfolio.uuid }}</th>
-										    	<td>{{ portfolio.user_uuid }}</td>
-										    	<td>{{ toPrice(portfolio.wallet) }}</td>
-										    	<td>{{ toPrice(portfolio.net_worth) }}</td>
+										    <tr class="investor" v-if="investors.length != 0" v-for="investor in investors" :key="investor.uuid">
+										    	<td>{{ investor.name }}</td>
+										    	<td>{{ investor.stocks }}</td>
+										    	<td>{{ toPrice(investor.wallet) }}</td>
+										    	<td>{{ toPrice(investor.net_worth) }}</td>
 										    </tr>
-									  </tbody>
+										</tbody>
 									</table>
-									<!-- <table class="table">
-										<thead>
-									    	<tr>
-									    	  <th scope="col">Stock</th>
-									    	  <th scope="col">Amount Owned</th>
-									    	  <th scope="col">Cost</th>
-									    	  <th scope="col">Value</th>
-									    	</tr>
-										</thead>
-										<tbody>
-										    <tr v-for="stock in portfolioStocks">
-										    	<th scope="row">{{ stock.ticker_id }}</th>
-										    	<td>{{ stock.amount }}</td>
-										    	<td>{{ stock.current_price }}</td>
-										    	<td>{{ stock.amount * stock.current_price }}</td>
-										    </tr>
-									  </tbody>
-									</table> -->
-									<!-- <stock-portfolio :portfoliouuid="portfolio.uuid"></stock-portfolio> -->
+ -->								
 								</div>
 							</div>
-							<!-- <div class="flex-column-50" id="ledger-list">
-								<div class="card" v-for="item in ledger" :key="item.uuid">
-									<table class="table">
-										  <thead>
-										    <tr>
-										      <th scope="col">ledgerItemUUID</th>
-										      <th scope="col">portfolioUUID</th>
-										      <th scope="col">stockUUID</th>
-										      <th scope="col">amount</th>
-										    </tr>
-										  </thead>
-										  <tbody>
-										    <tr>
-										    	<th scope="row">{{ item.uuid }}</th>
-										    	<td>{{ item.portfolio_id }}</td>
-										    	<td>{{ item.stock_id }}</td>
-										    	<td>{{ item.amount }}</td>
-										    </tr>
-										  </tbody>
-										</table>
-								</div>
-							</div> -->
 						</div>
 					</div>
 
