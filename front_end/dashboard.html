@@ -86,7 +86,7 @@
 				<div id="stats--view">
 					<div class="stat-value blue"><i class="material-icons menu-icon">business</i>${{ toPrice(currUserPortfolio.net_worth) }}</div>
 					<div class="stat-value green"><i class="material-icons menu-icon">local_atm</i>${{ toPrice(currUserPortfolio.wallet) }}</div>
-					<div class="stat-value orange"><i class="material-icons menu-icon">trending_up</i>{{ currUserPortfolio.user_uuid }}</div>
+					<div class="stat-value orange"><i class="material-icons menu-icon">trending_up</i>${{ toPrice(currUserPortfolio.investments) }}</div>
 				</div>
 				<ul id="nav">
 					<li>
@@ -195,7 +195,7 @@
 									<div class="stat-value orange">
 										<i class="material-icons menu-icon">trending_up</i><div class="card-details">
 											<div class="card-category">INVESTMENTS</div>
-											<p> {{ currUserPortfolio.user_uuid }}</p>
+											<p> ${{ toPrice(currUserPortfolio.investments) }}</p>
 										</div>
 									</div>
 								</div>
