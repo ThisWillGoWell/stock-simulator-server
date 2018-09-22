@@ -773,6 +773,7 @@ if(authenticated) {
 	    		},
 	    		closeModal: function(){
 	    			toggleModal();
+	    			buySellModal.buySellAmount = 0;
 	    			buySellModal.showModal = false;
 	    		}
 	    	},
