@@ -96,6 +96,20 @@ if(authenticated) {
 	    	}
 		});
 		
+	    // Vue for username top right
+	    let displayName = new Vue({
+	    	el: "#user-info-container",
+			computed: {
+				userDisplayName: function() {
+	    			var currUser = sessionStorage.getItem('uuid');
+	    			if (vm_users.users[currUser] !== undefined) {
+		    			return vm_users.users[currUser].display_name;
+		    		}
+		    		return "";
+				}
+			}
+	    });
+
 		// Vue for all options data 
 		let vm_popout_menu = new Vue({
 			el: '#btn-logout',
@@ -111,9 +125,6 @@ if(authenticated) {
 			    }
 			}
 		});
-
-		// setting username in top right
-		$('#user-info-container .username-text').text(auth_uid)
 
 		// Vue for all dashboard data
 	    var currUser = new Vue({
