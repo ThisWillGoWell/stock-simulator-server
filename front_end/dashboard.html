@@ -25,34 +25,34 @@
 		<div class="app--container" id="app--container">
 			
 			<section id="modal--container">
-				<div class="modal-card">
+				<div class="modal-card" v-if="showModal">
 					<button><i class="material-icons">close</i></button>
 					<div id="trade--view">
-						<div class="modal-stock-id">----</div>
+						<div class="modal-stock-id"> {{ stock.ticker_id }} </div>
 						<div class="flex-grid--container no-padding">
 							<div class="flex-column-50">
-								<div id="calc-btn-buy" class="card calc-btn no-fill green">BUY</div>
+								<div id="calc-btn-buy" class="card calc-btn fill green" v-on:click="setIsBuying(true)">BUY</div>
 							</div>
 							<div class="flex-column-50">
-								<div id="calc-btn-sell" class="card calc-btn no-fill red">SELL</div>
+								<div id="calc-btn-sell" class="card calc-btn red" v-on:click="setIsBuying(false)">SELL</div>
 							</div>
 							<div class="flex-column-50">
-								<div class="card calc-btn" data-val="1">1</div>
+								<div class="card calc-btn" v-on:click="addAmount(1)" data-val="1">1</div>
 							</div>
 							<div class="flex-column-50">
-								<div class="card calc-btn" data-val="5">5</div>
+								<div class="card calc-btn" v-on:click="addAmount(5)" data-val="5">5</div>
 							</div>
 							<div class="flex-column-50">
-								<div class="card calc-btn" data-val="25">25</div>
+								<div class="card calc-btn" v-on:click="addAmount(25)" data-val="25">25</div>
 							</div>
 							<div class="flex-column-50">
-								<div class="card calc-btn" data-val="100">100</div>
+								<div class="card calc-btn" v-on:click="addAmount(100)" data-val="100">100</div>
 							</div>
 							<div class="flex-column-50">
-								<div class="card calc-btn" data-val="1">CUSTOM</div>
+								<div class="card calc-btn" v-on:click="addAmount(0)" data-val="1">CUSTOM</div>
 							</div>
 							<div class="flex-column-50">
-							  <div class="card calc-btn" data-val="MAX">MAX</div>
+							  <div class="card calc-btn" v-on:click="determineMaxAmount()" data-val="MAX">MAX</div>
 							</div>
 							<table class="table">
 								<thead>
@@ -65,17 +65,17 @@
 								</thead>
 								<tbody>
 									<tr>
-										<td class='modal-stock-price'>$299</td>
-										<td>3</td>
-										<td>$897</td>
+										<td class='modal-stock-price'>${{ toPrice(stock.current_price) }}</td>
+										<td>{{ buySellAmount }}</td>
+										<td>${{ toPrice(buySellAmount * stock.current_price) }}</td>
 									</tr>
 								</tbody>
 							</table>
 							<div class="flex-column-50">
-								<div class="card calc-btn red" data-val="0">CLEAR</div>
+								<div class="card calc-btn red" v-on:click="clearAmount()" data-val="0">CLEAR</div>
 							</div>
 							<div class="flex-column-50">
-								<input id="trade-request-submit" type="submit" value="CONFIRM" class="input-full-width">
+								<input id="trade-request-submit" type="submit" value="CONFIRM" class="input-full-width" v-on:click="submitTrade()">
 							</div>
 							
 					</div>

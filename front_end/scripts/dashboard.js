@@ -389,17 +389,16 @@ if(authenticated) {
 
 	    $('table').on('click', 'tr.clickable' , function (event) {
 	    	
+
 	    	// TODO: get all data elements
-		    var ticker_id = this.getElementsByClassName('stock-ticker-id')[0].innerHTML;
 		    var ticker_id = this.getElementsByClassName('stock-ticker-id')[0].innerHTML;
 		    console.log(ticker_id);
 	    	var stock = Object.values(vm_stocks.stocks).filter((d) => d.ticker_id === ticker_id)[0];
-		    var current_price = stock.current_price;
+	    	console.log(stock)
+	    	// Set show modal to true
+	    	buySellModal.showModal = true;
+	    	buySellModal.stock_uuid = stock.uuid;
 		    
-		    //TODO: update all data elements in the modal
-		    $('#modal--container .modal-stock-id').html(ticker_id);
-		    $('#modal--container .modal-stock-price').html('$' + current_price);
-
 		    toggleModal();
         });
 
@@ -694,31 +693,22 @@ if(authenticated) {
 
 	    /* Sending trade requests */
 
-	    document.getElementById("trade-request-submit").addEventListener("click", sendTradeOptions, false);
-	    
-	    function sendTradeOptions() {
+	    function sendTrade() {
 	    	
-	    	// Get request parameters
-		    
-		    var stockTickerId = $('#modal--container .modal-stock-id').html();
-	    	var amount = 100; // TODO: get from UI
-
-	    	//Get stockid from ticker
-	    	var focusStock = Object.values(vm_stocks.stocks).filter(
-	    		function(stock) {
-	    			return stock.ticker_id === stockTickerId;
-	    		})[0];
 	    	// Creating message for the trade request
 	    	var options = {
 	    		'action': "trade",
 	    		'msg': {
-	    			'stock_id': focusStock.uuid,
-	    			'amount': amount,
+	    			'stock_id': buySellModal.stock_uuid,
+	    			'amount': buySellModal.buySellAmount,
 	    		}
 	    	};
 	    	// Sending through websocket
 	    	console.log("SEND TRADE");
 	    	doSend(JSON.stringify(options));
+
+	    	// Reset buy sell amount
+	    	buySellModal.buySellAmount = 0;
 
 	    };
 
@@ -752,32 +742,56 @@ if(authenticated) {
 	        // console.log("modal show");	
 	    }
 
-	    var intentBuy = false;
-	    var intentSell = false;
 
-	    $('#calc-btn-buy').click(function() {
+	    // Vue object for the buy and sell modal
+	    var buySellModal = new Vue({
+	    	el: '#modal--container',
+	    	data: {
+	    		showModal: false,
+	    		buySellAmount: 0,
+	    		isBuying: true,
+	    		stock_uuid: 'OSRS',
+	    	},
+	    	methods: {
+	    		toPrice: formatPrice,
+	    		addAmount: function(amt) {
+	    			buySellModal.buySellAmount += amt; 
+	    		},
+	    		clearAmount: function() {
+	    			buySellModal.buySellAmount = 0;
+	    		},
+	    		determineMax: function() {
+	    			if (buySellModal.isBuying) {
+	    				buySellModal.buySellAmount = buySellModal.stock.open_shares;// find 
+	    			} else {
+	    				//determine current users holdings
+	    			}
+	    		},
+	    		setIsBuying: function(bool) {
+	    			// Change buying or selling
+	    			buySellModal.isBuying = bool;
 
-	        $('#calc-btn-buy').toggleClass("fill");
-	        $('#calc-btn-sell').removeClass("fill");
-	        intentBuy = true;
-	        intentSell = false;
+	    			// Set styling
+			        $('#calc-btn-sell').toggleClass("fill");
+			        $('#calc-btn-buy').toggleClass("fill");
+	    		},
+	    		submitTrade: function() {
+	    			// Change amount depending on buy/sell
+	    			if (!buySellModal.isBuying) {
+	    				buySellModal.buySellAmount *= -1;
+	    			}
+	    			sendTrade();
+	    		}
+	    	},
+	    	computed: {
+	    		stock: function() {
 
+	    			var clickedStock = Object.values(vm_stocks.stocks).filter(d => d.uuid === buySellModal.stock_uuid)[0];
+	    			return clickedStock;
+	    		}
+	    	}
 	    });
 
-	    $('#calc-btn-sell').click(function() {
-
-	        $('#calc-btn-sell').toggleClass("fill");
-	        $('#calc-btn-buy').removeClass("fill");
-	        intentBuy = false;
-	        intentSell = true;
-
-	    });
-
-	    $('.calc-btn').click(function() {
-
-	        console.log($(this).attr("data-val"));
-
-	    });
 
 	    var allViews = $('.view');
 	    var dashboardView = $('#dashboard--view');
