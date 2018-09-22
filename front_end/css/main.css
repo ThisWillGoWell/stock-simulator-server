@@ -1560,6 +1560,10 @@ table.table tbody tr td{
     background-color: #90A4AE;
     color: #fff;
     cursor: pointer;
+    -moz-transition: all ease-in-out 0.17s;
+    -o-transition: all ease-in-out 0.17s;
+    -webkit-transition: all ease-in-out 0.17s;
+    transition: all ease-in-out 0.17s;
 }
 
 .calc-btn.no-fill {
@@ -1568,13 +1572,43 @@ table.table tbody tr td{
 }
 
 .calc-btn.no-fill.red {
-    background-color: #f44336;
-    border: #fff;
+    background-color: transparent;
+    border: solid 2px #f44336;
 }
 
 .calc-btn.no-fill.green {
+    background-color: transparent;
+    border: solid 2px #1abc9c;
+}
+
+.calc-btn.fill.red {
+    background-color: #f44336;
+    border: #f44336;
+}
+
+.calc-btn.fill.green {
     background-color: #1abc9c;
-    border: #fff;
+    border: #1abc9c;
+}
+
+#calc-btn-buy {
+    background-color: transparent;
+    border: solid 2px #1abc9c;
+}
+
+#calc-btn-sell {
+    background-color: transparent;
+    border: solid 2px #f44336;
+}
+
+#calc-btn-buy.fill {
+    background-color: #1abc9c;
+    
+}
+
+#calc-btn-sell.fill {
+    background-color: #f44336;
+    
 }
 
 #trade-view table.table thead tr th {

@@ -399,9 +399,12 @@ if(authenticated) {
 
 		// TODO: find a better spot for this
 
-	    $('#stock-list').on('click', 'tr.clickable' , function (event) {
+	    $('table').on('click', 'tr.clickable' , function (event) {
+	    	
 	    	// TODO: get all data elements
 		    var ticker_id = this.getElementsByClassName('stock-ticker-id')[0].innerHTML;
+		    var ticker_id = this.getElementsByClassName('stock-ticker-id')[0].innerHTML;
+		    console.log(ticker_id);
 	    	var stock = Object.values(vm_stocks.stocks).filter((d) => d.ticker_id === ticker_id)[0];
 		    var current_price = stock.current_price;
 		    
@@ -770,6 +773,33 @@ if(authenticated) {
 	        // console.log("modal show");	
 	    }
 
+	    var intentBuy = false;
+	    var intentSell = false;
+
+	    $('#calc-btn-buy').click(function() {
+
+	        $('#calc-btn-buy').toggleClass("fill");
+	        $('#calc-btn-sell').removeClass("fill");
+	        intentBuy = true;
+	        intentSell = false;
+
+	    });
+
+	    $('#calc-btn-sell').click(function() {
+
+	        $('#calc-btn-sell').toggleClass("fill");
+	        $('#calc-btn-buy').removeClass("fill");
+	        intentBuy = false;
+	        intentSell = true;
+
+	    });
+
+	    $('.calc-btn').click(function() {
+
+	        console.log($(this).attr("data-val"));
+
+	    });
+
 	    var allViews = $('.view');
 	    var dashboardView = $('#dashboard--view');
 	    var businessView = $('#business--view');
@@ -817,6 +847,8 @@ if(authenticated) {
 				    break;
 			}
 	    }
+
+	    
 	    
 
 	    // function writeToScreen(message)
