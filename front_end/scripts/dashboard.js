@@ -249,22 +249,22 @@ if(authenticated) {
 			el: '#investors--view',
 			methods: {
 				toPrice: formatPrice,
-				investorStocks: function(portfolio_uuid) {
+				// investorStocks: function(portfolio_uuid) {
 
-					// Ledger items of interest
-					stocks = stocks.filter(function(d) {
-						return d.portfolio_id === portfolio_uuid;
-					});
-					// Grabbing additional info from stock objects
-					stocks = stocks.map(function(d) {
-						d.ticker_id = vm_stocks.stocks[d.stock_id].ticker_id;
-						d.stock_name = vm_stocks.stocks[d.stock_id].name;
-						d.current_price = vm_stocks.stocks[d.stock_id].current_price;
-						d.value = d.current_price * d.amount;
-						return d;
-					});
-					return stocks;
-				}
+				// 	// Ledger items of interest
+				// 	stocks = stocks.filter(function(d) {
+				// 		return d.portfolio_id === portfolio_uuid;
+				// 	});
+				// 	// Grabbing additional info from stock objects
+				// 	stocks = stocks.map(function(d) {
+				// 		d.ticker_id = vm_stocks.stocks[d.stock_id].ticker_id;
+				// 		d.stock_name = vm_stocks.stocks[d.stock_id].name;
+				// 		d.current_price = vm_stocks.stocks[d.stock_id].current_price;
+				// 		d.value = d.current_price * d.amount;
+				// 		return d;
+				// 	});
+				// 	return stocks;
+				// }
 			},
 			computed: {
 				investors: function() {
@@ -274,13 +274,23 @@ if(authenticated) {
 
 
 					investors.map(function(d) {
+						// Augment investor data
 						d.name = vm_users.users[d.user_uuid].display_name;
-						d.stocks = ledgerItems.filter(l => l.portfolio_id === d.uuid);
+						// Get all stocks
+						d.stocks = ledgerItems.filter(l => (l.portfolio_id === d.uuid) & (l.amount !== 0)); // ledgers can have amount == 0
+						// Augment stock data
+						d.stocks = d.stocks.map(function(d) {
+							d.ticker_id = vm_stocks.stocks[d.stock_id].ticker_id;
+							d.stock_name = vm_stocks.stocks[d.stock_id].name;
+							d.current_price = vm_stocks.stocks[d.stock_id].current_price;
+							d.value = d.current_price * d.amount;
+							return d;
+						});
 						return d;
 					})
+
 					return investors;
 				},
-				//TODO IMPLEMENT ALL USER PORTFOLIOS
 			}
 		});
 
@@ -681,7 +691,7 @@ if(authenticated) {
 	    	// Get request parameters
 		    
 		    var stockTickerId = $('#modal--container .modal-stock-id').html();
-	    	var amount = 1; // TODO: get from UI
+	    	var amount = 11; // TODO: get from UI
 
 	    	//Get stockid from ticker
 	    	var focusStock = Object.values(vm_stocks.stocks).filter(
