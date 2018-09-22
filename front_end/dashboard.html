@@ -314,8 +314,8 @@
 									<div v-for="investor in investors" :key="investor.uuid">
 
 										<td>{{ investor.name }}</td>
-								    	<td>{{ toPrice(investor.wallet) }}</td>
-								    	<td>{{ toPrice(investor.net_worth) }}</td>
+								    	<td>Wallet: {{ toPrice(investor.wallet) }}</td>
+								    	<td>Net Worth: {{ toPrice(investor.net_worth) }}</td>
 
 										<!-- Needs to be some version of this -->
 										<div v-for="stock in investor.stocks">
