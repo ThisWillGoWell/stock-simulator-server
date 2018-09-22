@@ -1407,13 +1407,8 @@ table.table tbody tr td{
 }
 
 #modal--container .modal-card button:hover{
-    
-    
     background-color: #9e9e9e;
-    color: #fff;
-    
-    
-    
+    color: #fff; 
 }
 
 #modal--container .modal-card button i{
@@ -1438,12 +1433,14 @@ table.table tbody tr td{
     -o-transition: all ease-in-out 0.23s;
     -webkit-transition: all ease-in-out 0.23s;
     transition: all ease-in-out 0.23s;
+    display: none;
 }
 
 #dashboard--view.active, #business--view.active, #stocks--view.active, #investors--view.active, #futures--view.active, #store--view.active {
     opacity: 1;
     z-index: 110;
     transform: translateY(0px);
+    display: block;
 }
 
 .username-text {
@@ -1464,11 +1461,9 @@ table.table tbody tr td{
     text-align: center;
     line-height: 38px;
     font-weight: 600;
-
     position: absolute;
-        right: 220px;
-    top: 20px;
-   
+    right: 220px;
+    top: 20px; 
 }
 
 #stats--view {

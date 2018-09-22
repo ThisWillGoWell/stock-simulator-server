@@ -8,6 +8,7 @@ var vm_portfolios, vm_ledger, vm_stocks, vm_users;
 //let authenticated = sessionStorage.getItem('authenticated');
 
 if(authenticated) {
+	
 	// Get saved data from sessionStorage
 	$( document ).ready(function() {
 

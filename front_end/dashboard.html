@@ -200,26 +200,28 @@
 									</div>
 								</div>
 							</div>
-							<div>
-								<table class="table">
-									<thead>
-								    	<tr>
-									    	<th scope="col">Stock</th>
-									    	<th scope="col">Amount Owned</th>
-									    	<th scope="col">Cost</th>
-									    	<th scope="col">Value</th>
-									    </tr>
-									</thead>
-									<tbody>
-										<tr v-for="stock in currUserStocks">
-											<th scope="row">{{ stock.stock_ticker }}</th>
-											<td>{{ stock.amount }}</td>
-											<!-- Brennan these tds should use onclick idk how we have been implementing that -->
-											<td class="price-alter">{{ stock.stock_price }}</td>
-											<td class="price-alter">{{ stock.stock_value }}</td>
-										</tr>
-									</tbody>
-								</table>
+							<div class="flex-column-100">
+								<div class="card stock-list">
+									<table class="table">
+										<thead>
+									    	<tr>
+										    	<th scope="col">Stock</th>
+										    	<th scope="col">Amount Owned</th>
+										    	<th scope="col">Cost</th>
+										    	<th scope="col">Value</th>
+										    </tr>
+										</thead>
+										<tbody>
+											<tr v-for="stock in currUserStocks">
+												<th scope="row">{{ stock.stock_ticker }}</th>
+												<td>{{ stock.amount }}</td>
+												<!-- Brennan these tds should use onclick idk how we have been implementing that -->
+												<td class="price-alter">{{ stock.stock_price }}</td>
+												<td class="price-alter">{{ stock.stock_value }}</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
 							</div>
 						</div>
 					</div>
