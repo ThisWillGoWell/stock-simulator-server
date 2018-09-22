@@ -510,7 +510,6 @@ if(authenticated) {
 	    }
 
 	    function onEvent(message){
-	        // writeToScreen('<span style="color: darkorange;">'+ message+'</span>')
 	        console.log(message);
 	    };
 
@@ -540,7 +539,6 @@ if(authenticated) {
 
 	    var routeLogin = function(msg) {
 
-	        // if success if true -> set cookie and forward to dashboard
 	        console.log("login recieved");
 
 	        if(!msg.msg.success) {
@@ -584,7 +582,6 @@ if(authenticated) {
 	    };
 
 	    var stockUpdate = function(msg) {
-	    	console.log(msg)
 			var targetUUID = msg.msg.uuid;
 			msg.msg.changes.forEach(function(changeObject){
 				// Variables needed to update the stocks
