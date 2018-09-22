@@ -762,9 +762,11 @@ if(authenticated) {
 	    		},
 	    		determineMax: function() {
 	    			if (buySellModal.isBuying) {
-	    				buySellModal.buySellAmount = buySellModal.stock.open_shares;// find 
+	    				buySellModal.buySellAmount = buySellModal.stock.open_shares; 
 	    			} else {
 	    				//determine current users holdings
+	    				let stock = currUser.currUserStocks.filter(d => d.stock_id === buySellModal.stock_uuid)[0];
+	    				buySellModal.buySellAmount = stock.amount;
 	    			}
 	    		},
 	    		setIsBuying: function(bool) {
