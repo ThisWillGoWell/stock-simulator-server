@@ -156,10 +156,6 @@ if(authenticated) {
 								d.stock_price = vm_stocks.stocks[d.stock_id].current_price;
 								d.stock_value = Number(d.stock_price) * Number(d.amount);
 	
-								// Formatting to dollars
-								// d.stock_price = d.stock_price;
-								// d.stock_value = d.stock_value;
-	
 								return d;
 							})
 							return ownedStocks;

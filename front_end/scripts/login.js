@@ -187,14 +187,50 @@ $( document ).ready(function() {
         
     });
 
+     $('#input-create-submit').click(function() {
+    
+        let input_uid = $('#create-uid').val();
+        let input_pw = $('#create-pw').val();
+        let create_auth_msg = {};
+
+        if(input_uid != '' && input_pw != '') {
+            input_uid_trimmed = input_uid.trim();
+            input_pw_trimmed = input_pw.trim();
+            create_auth_msg = {
+                action: "new_account",
+                msg: {
+                    "username": input_uid_trimmed, 
+                    "password": input_pw_trimmed
+                }
+            };
+            uid = input_uid_trimmed;
+        }
+
+        console.log(create_auth_msg);
+
+        try {
+            
+            doSend(JSON.stringify(create_auth_msg));
+
+        }
+
+        catch(error) {
+            console.error(error);
+            $('.login-err').text("Username or password is incorrect");
+        }
+
+        console.log("created account attempting login")
+        
+    });
+
     $(document).keypress(function(e) {
         
-            if(e.which == 13) {
-                attemptLogin();
+        if(e.which == 13) {
+            attemptLogin();
 
-            }
-        
-        });
+        }
+    
+    });
 
 	window.addEventListener("load", init, false);
 
