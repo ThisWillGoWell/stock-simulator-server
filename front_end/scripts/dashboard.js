@@ -697,7 +697,7 @@ if(authenticated) {
 	    	// Get request parameters
 		    
 		    var stockTickerId = $('#modal--container .modal-stock-id').html();
-	    	var amount = 11; // TODO: get from UI
+	    	var amount = 100; // TODO: get from UI
 
 	    	//Get stockid from ticker
 	    	var focusStock = Object.values(vm_stocks.stocks).filter(
@@ -755,42 +755,50 @@ if(authenticated) {
 	    var investorsView = $('#investors--view');
 	    var futuresView = $('#futures--view');
 	    var storeView = $('#store--view');
+	    var currentViewName = $('#current-view');
 
 	    function renderContent(route) {
 	    	switch (route) {
 				case 'dashboard':
 						allViews.removeClass('active');
 						dashboardView.addClass('active');
+						currentViewName[0].innerHTML = "Dashboard";
 				    	// console.log("show dashboard");
 				    break;
 
 				case 'business':
 						allViews.removeClass('active');
 						businessView.addClass('active');
+						console.log(currentViewName)
+						currentViewName[0].innerHTML = "Business";
 			  			// console.log("show business");
 				  	break;
 
 				case 'stocks':
 						allViews.removeClass('active');
 						stocksView.addClass('active');
+						currentViewName[0].innerHTML = "Stocks";
 						// console.log("show stocks");
 				    break;
 
 				case 'investors':
 						allViews.removeClass('active');
 						investorsView.addClass('active');
+						currentViewName[0].innerHTML = "Investors";
 						// console.log("show investors");
 				    break;
 
 				case 'futures':
 						allViews.removeClass('active');
 						futuresView.addClass('active');
+						currentViewName[0].innerHTML = "Futures";
 						// console.log("show futures");
 				    break;
 
 				case 'perks':
 						allViews.removeClass('active');
 						storeView.addClass('active');
+						currentViewName[0].innerHTML = "Perks";
 						// console.log("show perks");
 				    break;
 			}
