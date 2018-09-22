@@ -377,11 +377,6 @@ if(authenticated) {
 	        
 	    });
 
-	    $('.calc-btn').click(function() {
-	    
-	        
-	        
-	    });
 
 
 
@@ -392,9 +387,9 @@ if(authenticated) {
 
 	    	// TODO: get all data elements
 		    var ticker_id = this.getElementsByClassName('stock-ticker-id')[0].innerHTML;
-		    console.log(ticker_id);
-	    	var stock = Object.values(vm_stocks.stocks).filter((d) => d.ticker_id === ticker_id)[0];
-	    	console.log(stock)
+
+	    	var stock = Object.values(vm_stocks.stocks).filter(d => d.ticker_id === ticker_id)[0];
+
 	    	// Set show modal to true
 	    	buySellModal.showModal = true;
 	    	buySellModal.stock_uuid = stock.uuid;
@@ -729,14 +724,6 @@ if(authenticated) {
 	    }
 
 
-
-	    $('.modal-card button').click(function() {
-
-	        toggleModal();
-
-	    });
-
-
 	    function toggleModal() {
 	    	$('#modal--container').toggleClass('open');
 	        // console.log("modal show");	
@@ -783,6 +770,10 @@ if(authenticated) {
 	    				buySellModal.buySellAmount *= -1;
 	    			}
 	    			sendTrade();
+	    		},
+	    		closeModal: function(){
+	    			toggleModal();
+	    			buySellModal.showModal = false;
 	    		}
 	    	},
 	    	computed: {

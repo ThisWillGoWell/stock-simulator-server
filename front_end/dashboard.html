@@ -26,7 +26,7 @@
 			
 			<section id="modal--container">
 				<div class="modal-card" v-if="showModal">
-					<button><i class="material-icons">close</i></button>
+					<button v-on:click="closeModal()"><i class="material-icons">close</i></button>
 					<div id="trade--view">
 						<div class="modal-stock-id"> {{ stock.ticker_id }} </div>
 						<div class="flex-grid--container no-padding">
