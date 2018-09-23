@@ -215,10 +215,10 @@
 									<table class="table">
 										<thead>
 									    	<tr>
-										    	<th scope="col" style="text-align: left; padding-left: 25px;">Stock</th>
-										    	<th scope="col" style="padding-right: 25px;">Amount Owned</th>
-										    	<th scope="col" style="padding-right: 25px;">Cost</th>
-										    	<th scope="col" style="padding-right: 25px;">Value</th>
+										    	<th scope="col" style="text-align: left; padding-left: 25px;" v-on:click="sortCol('stock_ticker')">Stock</th>
+										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('amount')">Amount Owned</th>
+										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('stock_price')">Current Price</th>
+										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('stock_value')">Value</th>
 										    </tr>
 										</thead>
 										<tbody>

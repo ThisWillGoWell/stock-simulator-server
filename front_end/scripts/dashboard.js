@@ -83,9 +83,9 @@ if(authenticated) {
 	    	},
 	    	computed: {
 	    		currUserPortfolio: function() {
-	    			var currUser = sessionStorage.getItem('uuid');
-	    			if (vm_users.users[currUser] !== undefined) {
-		    			var currUserFolioUUID = vm_users.users[currUser].portfolio_uuid;
+	    			var currUserUUID = sessionStorage.getItem('uuid');
+	    			if (vm_users.users[currUserUUID] !== undefined) {
+		    			var currUserFolioUUID = vm_users.users[currUserUUID].portfolio_uuid;
 	    				if (vm_portfolios.portfolios[currUserFolioUUID] !== undefined) {
 			    			var folio = vm_portfolios.portfolios[currUserFolioUUID];
 							folio.investments = folio.net_worth - folio.wallet;
@@ -102,9 +102,9 @@ if(authenticated) {
 	    	el: "#user-info-container",
 			computed: {
 				userDisplayName: function() {
-	    			var currUser = sessionStorage.getItem('uuid');
-	    			if (vm_users.users[currUser] !== undefined) {
-		    			return vm_users.users[currUser].display_name;
+	    			var currUserUUID = sessionStorage.getItem('uuid');
+	    			if (vm_users.users[currUserUUID] !== undefined) {
+		    			return vm_users.users[currUserUUID].display_name;
 		    		}
 		    		return "";
 				}
@@ -128,16 +128,32 @@ if(authenticated) {
 		});
 
 		// Vue for all dashboard data
-	    var currUser = new Vue({
+	    var vm_dash_tab = new Vue({
 	    	el: '#dashboard--view',
+			data: {
+			  sortBy: 'amount',
+			  sortDesc: 1,
+			},
 	    	methods: {
 	    		toPrice: formatPrice,
+	    		// on column name clicks
+			    sortCol: function(col) {
+					// If sorting by selected column
+			    	if (vm_dash_tab.sortBy == col) {
+						// Change sort direction
+			    		// console.log(col);
+			    		vm_dash_tab.sortDesc = -vm_dash_tab.sortDesc;
+			    	} else {
+						// Change sorted column
+			    		vm_dash_tab.sortBy = col;
+			    	}
+			    }
 	    	},
 	    	computed: {
 				currUserPortfolio: function() {
-					var currUser = sessionStorage.getItem('uuid');
-	    			if (vm_users.users[currUser] !== undefined) {
-						var currUserFolioUUID = vm_users.users[currUser].portfolio_uuid;
+					var currUserUUID = sessionStorage.getItem('uuid');
+	    			if (vm_users.users[currUserUUID] !== undefined) {
+						var currUserFolioUUID = vm_users.users[currUserUUID].portfolio_uuid;
 	    				if (vm_portfolios.portfolios[currUserFolioUUID] !== undefined) {
 							var folio = vm_portfolios.portfolios[currUserFolioUUID];
 							folio.investments = folio.net_worth - folio.wallet;
@@ -147,11 +163,11 @@ if(authenticated) {
 		    		return {};
 		    	},
 				currUserStocks: function() {
-					var currUser = sessionStorage.getItem('uuid');
-					if (vm_users.users[currUser] !== undefined) {
+					var currUserUUID = sessionStorage.getItem('uuid');
+					if (vm_users.users[currUserUUID] !== undefined) {
 						
 						// Current users portfolio uuid
-						var portfolio_uuid = vm_users.users[currUser].portfolio_uuid;
+						var portfolio_uuid = vm_users.users[currUserUUID].portfolio_uuid;
 						
 						// If objects are in ledger
 						if (Object.keys(vm_ledger.ledger).length !== 0) {
@@ -169,6 +185,18 @@ if(authenticated) {
 	
 								return d;
 							})
+
+					    	// Sorting array
+					    	ownedStocks = ownedStocks.sort(function(a,b) {
+					    		if (a[vm_dash_tab.sortBy] > b[vm_dash_tab.sortBy]) {
+					    			return -vm_dash_tab.sortDesc;
+					    		} 
+					    		if (a[vm_dash_tab.sortBy] < b[vm_dash_tab.sortBy]) {
+
+					    			return vm_dash_tab.sortDesc;
+					    		}
+					    		return 0;
+					    	});
 							return ownedStocks;
 						}
 					}
@@ -777,7 +805,7 @@ if(authenticated) {
 	    				buySellModal.buySellAmount = buySellModal.stock.open_shares; 
 	    			} else {
 	    				//determine current users holdings
-	    				let stock = currUser.currUserStocks.filter(d => d.stock_id === buySellModal.stock_uuid)[0];
+	    				let stock = vm_dash_tab.currUserStocks.filter(d => d.stock_id === buySellModal.stock_uuid)[0];
 	    				buySellModal.buySellAmount = stock.amount;
 	    			}
 	    		},
@@ -786,8 +814,13 @@ if(authenticated) {
 	    			buySellModal.isBuying = bool;
 
 	    			// Set styling
-			        $('#calc-btn-sell').toggleClass("fill");
-			        $('#calc-btn-buy').toggleClass("fill");
+	    			if (buySellModal.isBuying) {
+			        	$('#calc-btn-buy').addClass("fill");
+			        	$('#calc-btn-sell').removeClass("fill");
+	    			} else {
+			        	$('#calc-btn-sell').addClass("fill");
+			        	$('#calc-btn-buy').removeClass("fill");
+	    			}
 	    		},
 	    		submitTrade: function() {
 	    			// Change amount depending on buy/sell
