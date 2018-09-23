@@ -384,9 +384,11 @@ if(authenticated) {
 
 	    $('table').on('click', 'tr.clickable' , function (event) {
 	    	
-
+	    	var ticker_id = $(this).find('.stock-ticker-id').attr('tid');
+	    	
+	    	console.log("TID: "+ticker_id);
 	    	// TODO: get all data elements
-		    var ticker_id = this.getElementsByClassName('stock-ticker-id')[0].innerHTML;
+		    // var ticker_id = this.getElementsByClassName('stock-ticker-id')[0].innerHTML;
 
 	    	var stock = Object.values(vm_stocks.stocks).filter(d => d.ticker_id === ticker_id)[0];
 
@@ -395,6 +397,7 @@ if(authenticated) {
 	    	buySellModal.stock_uuid = stock.uuid;
 		    
 		    toggleModal();
+		    
         });
 
 
