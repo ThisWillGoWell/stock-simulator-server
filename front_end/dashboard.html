@@ -361,6 +361,12 @@
 									</table>
  -->								
 								</div>
+								<investor-card
+									v-for="investor in investors"
+									:key="investor.uuid"
+									v-bind:user_uuid="investor.user_uuid">
+										
+									</investor-card>
 							</div>
 						</div>
 					</div>
@@ -390,7 +396,7 @@
 			<section id="chat-module--container" class="closed">
 				<div class="chat-title-bar">
 					<span>All Chat</span>
-					<button></button>
+					<button v-on:click="toggleChat()"></button>
 				</div>
 
 				<!-- 
