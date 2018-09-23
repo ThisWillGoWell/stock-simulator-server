@@ -256,29 +256,12 @@ if(authenticated) {
 			el: '#investors--view',
 			methods: {
 				toPrice: formatPrice,
-				// investorStocks: function(portfolio_uuid) {
-
-				// 	// Ledger items of interest
-				// 	stocks = stocks.filter(function(d) {
-				// 		return d.portfolio_id === portfolio_uuid;
-				// 	});
-				// 	// Grabbing additional info from stock objects
-				// 	stocks = stocks.map(function(d) {
-				// 		d.ticker_id = vm_stocks.stocks[d.stock_id].ticker_id;
-				// 		d.stock_name = vm_stocks.stocks[d.stock_id].name;
-				// 		d.current_price = vm_stocks.stocks[d.stock_id].current_price;
-				// 		d.value = d.current_price * d.amount;
-				// 		return d;
-				// 	});
-				// 	return stocks;
-				// }
 			},
 			computed: {
 				investors: function() {
 					var investors = Object.values(vm_portfolios.portfolios);
 					// List of all ledger items
 					var ledgerItems = Object.values(vm_ledger.ledger);
-
 
 					investors.map(function(d) {
 						// Augment investor data
@@ -295,14 +278,53 @@ if(authenticated) {
 						});
 						return d;
 					})
-
+					console.log(investors);
 					return investors;
 				},
 			}
 		});
 
-			
-		
+		Vue.component('investor-card', {
+			computed: {
+				investor: function() {
+					return vm_investors_tab.investors.filter(d => d.user_uuid === this.user_uuid)[0];
+				}
+			},
+			props: ['user_uuid'],
+			template: "<div>{{ investor }}</div>"
+		});
+
+
+		var vm_chat = new Vue({
+			el: '#chat-module--container',
+			data: {
+				showingChat: false,
+				unreadMessages: false,
+
+			},
+			methods: {
+				toggleChat: function() {
+					console.log(this.showingChat)
+					this.showingChat = !this.showingChat;
+					console.log(this.showingChat)
+	        		$('#chat-module--container').toggleClass('closed');
+	        		$('#chat-text-input').focus();
+				}
+			},
+			watch: {
+				unreadMessages: function() {
+					// make css changes here to show a notification for unread messages
+					if (this.unreadMessages) {
+						console.log("unread messages");
+					} else {
+						console.log("all messages read");
+					}
+				}
+
+			},
+		});
+
+
 		$(document).scroll(function() {
 			scrollVal = $(document).scrollTop();
 		});
@@ -316,6 +338,10 @@ if(authenticated) {
 		}
 
 		function appendNewMessage(msg, fromMe){
+			// if your chat is closed, add notification
+			if (!vm_chat.showingChat) {
+				vm_chat.unreadMessages = true;
+			}
 
 			let isMe = "";
 			if (fromMe) {
@@ -335,23 +361,19 @@ if(authenticated) {
 
 		}
 
-		function appendNewServerMessage(msg){
+
+		// NOTE: I DONT THINK THIS IS BEING USED AT ALL
+		// function appendNewServerMessage(msg){
 			
-			let msg_template = '<li>'+			
-					'				<div class="msg-text">'+ formatted_msg +'</div>'+
-					'			</li>';
+		// 	let msg_template = '<li>'+			
+		// 			'				<div class="msg-text">'+ formatted_msg +'</div>'+
+		// 			'			</li>';
 
-			debug_feed.append(msg_template);
-			debug_feed.animate({scrollTop: chat_feed.prop("scrollHeight")}, $('#chat-module--container .chat-message--list').height());
+		// 	debug_feed.append(msg_template);
+		// 	debug_feed.animate({scrollTop: chat_feed.prop("scrollHeight")}, $('#chat-module--container .chat-message--list').height());
 
-		}
+		// }
 
-
-		$('.chat-title-bar button').click(function() {
-	    
-	        $('#chat-module--container').toggleClass('closed');
-	        $('#chat-text-input').focus();
-	    });
 
 	    $('.debug-title-bar button').click(function() {
 	    
