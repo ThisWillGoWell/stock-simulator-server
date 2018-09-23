@@ -31,10 +31,10 @@
 						<div class="modal-stock-id"> {{ stock.ticker_id }} </div>
 						<div class="flex-grid--container no-padding">
 							<div class="flex-column-50">
-								<div id="calc-btn-buy" class="card calc-btn fill green" v-on:click="setIsBuying(true)">BUY</div>
+								<div id="calc-btn-buy" class="card calc-btn fill green no-buffer-top" v-on:click="setIsBuying(true)">BUY</div>
 							</div>
 							<div class="flex-column-50">
-								<div id="calc-btn-sell" class="card calc-btn red" v-on:click="setIsBuying(false)">SELL</div>
+								<div id="calc-btn-sell" class="card calc-btn red no-buffer-top" v-on:click="setIsBuying(false)">SELL</div>
 							</div>
 							<div class="flex-column-50">
 								<div class="card calc-btn" v-on:click="addAmount(1)">1</div>
@@ -54,28 +54,31 @@
 							<div class="flex-column-50">
 							  <div class="card calc-btn" v-on:click="determineMax()">MAX</div>
 							</div>
-							<table class="table">
-								<thead>
-
-									<tr>
-										<th>Price</th>
-										<th>Amount</th>
-										<th>Total</th>	
-									</tr>
-								</thead>
-								<tbody>
-									<tr>
-										<td class='modal-stock-price'>${{ toPrice(stock.current_price) }}</td>
-										<td>{{ buySellAmount }}</td>
-										<td>${{ toPrice(buySellAmount * stock.current_price) }}</td>
-									</tr>
-								</tbody>
-							</table>
-							<div class="flex-column-50">
-								<div class="card calc-btn red" v-on:click="clearAmount()" data-val="0">CLEAR</div>
+							<div class="flex-column-100">
+								<div class="card calc-btn clear" v-on:click="clearAmount()" data-val="0">CLEAR</div>
 							</div>
-							<div class="flex-column-50">
-								<input id="trade-request-submit" type="submit" value="CONFIRM" class="input-full-width" v-on:click="submitTrade()">
+							<div class="flex-column-100" style="padding: 0 15px;">
+								<table class="table">
+									<thead>
+
+										<tr>
+											<th>Price</th>
+											<th>Amount</th>
+											<th>Total</th>	
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td class='modal-stock-price'>${{ toPrice(stock.current_price) }}</td>
+											<td>{{ buySellAmount }}</td>
+											<td>${{ toPrice(buySellAmount * stock.current_price) }}</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+							
+							<div class="flex-column-100">
+								<div id="trade-request-submit" class="card calc-btn green no-buffer-top" v-on:click="submitTrade()">CONFIRM</div>
 							</div>
 							
 					</div>
@@ -188,7 +191,8 @@
 							<div class="flex-column-33">
 								<div class="card small">
 									<div class="stat-value green">
-										<i class="material-icons menu-icon">local_atm</i><div class="card-details">
+										<i class="material-icons menu-icon">local_atm</i>
+										<div class="card-details">
 											<div class="card-category">CASH</div>
 											<p> ${{ toPrice(currUserPortfolio.wallet) }}</p>
 										</div>
@@ -198,33 +202,36 @@
 							<div class="flex-column-33">
 								<div class="card small">
 									<div class="stat-value orange">
-										<i class="material-icons menu-icon">trending_up</i><div class="card-details">
+										<i class="material-icons menu-icon">trending_up</i>
+										<div class="card-details">
 											<div class="card-category">INVESTMENTS</div>
 											<p> ${{ toPrice(currUserPortfolio.investments) }}</p>
 										</div>
 									</div>
 								</div>
 							</div>
-							<div>
-								<table class="table">
-									<thead>
-								    	<tr>
-									    	<th scope="col">Stock</th>
-									    	<th scope="col">Amount Owned</th>
-									    	<th scope="col">Cost</th>
-									    	<th scope="col">Value</th>
-									    </tr>
-									</thead>
-									<tbody>
-										<tr v-for="stock in currUserStocks">
-											<th scope="row">{{ stock.stock_ticker }}</th>
-											<td>{{ stock.amount }}</td>
-											<!-- Brennan these tds should use onclick idk how we have been implementing that -->
-											<td class="price-alter">{{ toPrice(stock.stock_price) }}</td>
-											<td class="price-alter">{{ toPrice(stock.stock_value) }}</td>
-										</tr>
-									</tbody>
-								</table>
+							<div class="flex-column-100">
+								<div class="card stock-list">
+									<table class="table">
+										<thead>
+									    	<tr>
+										    	<th scope="col" style="text-align: left; padding-left: 25px;">Stock</th>
+										    	<th scope="col" style="padding-right: 25px;">Amount Owned</th>
+										    	<th scope="col" style="padding-right: 25px;">Cost</th>
+										    	<th scope="col" style="padding-right: 25px;">Value</th>
+										    </tr>
+										</thead>
+										<tbody>
+											<tr class="clickable" v-for="stock in currUserStocks">
+												<th class="stock-ticker-id" scope="row" v-bind:tid="stock.stock_ticker">{{ stock.stock_ticker }}</th>
+												<td style="text-align: right; padding-right: 25px;">{{ stock.amount }}</td>
+												<!-- Brennan these tds should use onclick idk how we have been implementing that -->
+												<td class="price-alter" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_price) }}</td>
+												<td class="price-alter" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_value) }}</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -285,7 +292,7 @@
 										  <tbody>
 											  <!-- https://vuejs.org/v2/guide/list.html :key is recommended in v.fors -->
 											<tr class="clickable" v-for="stock in sortedStocks" :key='stock.uuid' v-bind:uuid="stock.uuid">
-											  <th scope="row">
+											  <th class="stock-ticker-id" scope="row" v-bind:tid="stock.ticker_id">
 												  <div class="stock-ticker-id">{{ stock.ticker_id }}</div>
 												  <div class="stock-display-name">{{ stock.name }}</div>
 											  </th>
