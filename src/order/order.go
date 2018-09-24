@@ -189,10 +189,11 @@ func executeTrade(o *PurchaseOrder) {
 	}
 	if !ledgerExists{
 		ledger.NewObjectChannel.Offer(ledgerEntry)
+		port.UpdateInput.RegisterInput(value.UpdateChannel.GetBufferedOutput(10))
+
 	} else{
 		ledgerEntry.UpdateChannel.Offer(ledgerEntry)
 		// todo remove also
-		port.UpdateInput.RegisterInput(value.UpdateChannel.GetBufferedOutput(10))
 	}
 	go value.Update()
 	go port.Update()
