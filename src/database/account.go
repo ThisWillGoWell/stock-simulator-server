@@ -49,7 +49,8 @@ func writeUser(user *account.User) {
 		db.Close()
 		panic("could not begin stocks init")
 	}
-	_, err = tx.Exec(accountTableUpdateInsert, user.Uuid, user.UserName, user.DisplayName, user.Password, user.PortfolioId, user.Config)
+
+	_, err = tx.Exec(accountTableUpdateInsert, user.Uuid, user.UserName, user.DisplayName, user.Password, user.PortfolioId, user.ConfigStr)
 	if err != nil {
 		tx.Rollback()
 		panic("error occurred while insert account in table " + err.Error())

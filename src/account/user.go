@@ -39,6 +39,7 @@ type User struct {
 	Lock          *lock.Lock `json:"-"`
 	PortfolioId   string     `json:"portfolio_uuid"`
 	Config 		  map[string]interface{}	 `json:"-"`
+	ConfigStr     string			`json:"-"`
 }
 
 /**
@@ -100,7 +101,7 @@ func NewUser(username, displayName,  password string) (*User, error) {
 		return nil, errors.New("password too short")
 	}
 	hashedPassword := hashAndSalt(password)
-	user, err := MakeUser(uuid, username, displayName, hashedPassword, "", `{"config":"this is a config", "nested":{"one":1}}`)
+	user, err := MakeUser(uuid, username, displayName, hashedPassword, "", `{"swag":"420"}`)
 	if err != nil {
 		utils.RemoveUuid(uuid)
 		return nil, err
@@ -133,6 +134,7 @@ func MakeUser(uuid, username, displayName, password, portfolioUUID, config strin
 		Lock:        lock.NewLock("user"),
 		Active:      true,
 		Config:      configMap,
+		ConfigStr: config,
 	}
 	NewObjectChannel.Offer(userList[uuid])
 	utils.RegisterUuid(uuid, userList[uuid])
@@ -180,6 +182,8 @@ func GetAllUsers() []*User {
 
 func  (user *User) SetConfig(config map[string]interface{}){
 	user.Config = config
+	configBytes, _ := json.Marshal(config)
+	user.ConfigStr = string(configBytes)
 	UpdateChannel.Offer(user)
 }
 
