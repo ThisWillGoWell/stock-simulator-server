@@ -434,7 +434,7 @@ $( document ).ready(function() {
     });
 
      $('#input-create-submit').click(function() {
-    
+
         let input_uid = $('#create-uid').val();
         let input_pw = $('#create-pw').val();
         let input_create_pw_confirm = $('#create-pw-confirm').val();
@@ -444,6 +444,7 @@ $( document ).ready(function() {
         if(input_uid != '' && input_pw != '') {
             input_uid_trimmed = input_uid.trim();
             input_pw_trimmed = input_pw.trim();
+
             input_create_pw_trimmed = input_create_pw_confirm.trim();
             input_name_trimmed = input_name.trim();
 
@@ -458,6 +459,7 @@ $( document ).ready(function() {
                 };
             }
             
+
             uid = input_uid_trimmed;
         }
 

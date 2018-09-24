@@ -159,6 +159,7 @@ func executeTrade(o *PurchaseOrder) {
 			port.UpdateInput.RegisterInput(ledgerEntry.UpdateChannel.GetBufferedOutput(10))
 
 		}
+		ledgerEntry.InvestmentValue += costOfTrade
 		//add the holder amount
 		ledgerEntry.Amount += o.Amount
 		successOrder(o)
@@ -184,15 +185,17 @@ func executeTrade(o *PurchaseOrder) {
 		ledgerEntry.Amount -= amount
 		costOfTrade := amount * value.GetValue()
 		port.Wallet += costOfTrade
+		ledgerEntry.InvestmentValue -= costOfTrade
 		successOrder(o)
 
 	}
 	if !ledgerExists{
 		ledger.NewObjectChannel.Offer(ledgerEntry)
+		port.UpdateInput.RegisterInput(value.UpdateChannel.GetBufferedOutput(10))
+
 	} else{
 		ledgerEntry.UpdateChannel.Offer(ledgerEntry)
 		// todo remove also
-		port.UpdateInput.RegisterInput(value.UpdateChannel.GetBufferedOutput(10))
 	}
 	go value.Update()
 	go port.Update()

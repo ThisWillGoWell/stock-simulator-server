@@ -75,6 +75,18 @@ func InitDatabase() {
 	populatePortfolios()
 	populateUsers()
 
+	for _, l := range ledger.Entries{
+		port := portfolio.Portfolios[l.PortfolioId]
+		stock := valuable.Stocks[l.StockId]
+		port.UpdateInput.RegisterInput(stock.UpdateChannel.GetBufferedOutput(10))
+		port.UpdateInput.RegisterInput(l.UpdateChannel.GetBufferedOutput(10))
+
+	}
+	for _, port := range portfolio.Portfolios{
+		port.Update()
+	}
+
+
 	go databaseWriter()
 
 }

@@ -22,7 +22,7 @@ func StartHandlers() {
 	//fmt.Println(shareDir)
 	//var fs = http.FileServer(http.Dir(shareDir))
 
-	//http.Handle("/", fs)
+
 	http.HandleFunc("/load", func(w http.ResponseWriter, r *http.Request) {
 		go app.LoadVars()
 		<- time.After(time.Second)
@@ -35,6 +35,12 @@ func StartHandlers() {
 		log.Fatal("ListenAndServe:", err)
 	}
 
+}
+
+func ServePath(p string){
+
+	var fs = http.FileServer(http.Dir(p))
+	http.Handle("/", fs)
 }
 
 var upgrader = websocket.Upgrader{
