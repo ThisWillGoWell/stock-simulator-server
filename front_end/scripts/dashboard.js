@@ -176,23 +176,35 @@ if(authenticated) {
 							
 							// Remove stocks that user owns 0 of
 							ownedStocks = ownedStocks.filter(d => d.amount !== 0);
-	
 							// Augmenting owned stocks
 							ownedStocks = ownedStocks.map(function(d) {
 								d.stock_ticker = vm_stocks.stocks[d.stock_id].ticker_id;
 								d.stock_price = vm_stocks.stocks[d.stock_id].current_price;
-								d.stock_value = Number(d.stock_price) * Number(d.amount);
-	
-								return d;
-							})
+								d.stock_value = Number(d.stock_price) * Number(d.amount);								
+								d.stock_roi = (Number(d.stock_price) * Number(d.amount)) - Number(d.investment_value);
 
-					    	// Sorting array
+								// TODO: css changes done here talk to brennan about his \ux22 magic 
+								
+								// helper to color rows in the stock table 
+								var targetChangeElem = $("tr[uuid=\x22" + d.stock_uuid + "\x22] > td.stock-change");
+								
+								if (d.stock_roi > 0) {
+									targetChangeElem.removeClass("falling");
+									targetChangeElem.addClass("rising");
+								} else {
+									targetChangeElem.removeClass("rising");
+									targetChangeElem.addClass("falling");
+								}
+
+								return d;
+							});
+
+					    	// Sorting array of owned stocks
 					    	ownedStocks = ownedStocks.sort(function(a,b) {
 					    		if (a[vm_dash_tab.sortBy] > b[vm_dash_tab.sortBy]) {
 					    			return -vm_dash_tab.sortDesc;
 					    		} 
 					    		if (a[vm_dash_tab.sortBy] < b[vm_dash_tab.sortBy]) {
-
 					    			return vm_dash_tab.sortDesc;
 					    		}
 					    		return 0;
@@ -238,9 +250,8 @@ if(authenticated) {
 				    	stock_array = stock_array.sort(function(a,b) {
 				    		if (a[vm_stocks_tab.sortBy] > b[vm_stocks_tab.sortBy]) {
 				    			return -vm_stocks_tab.sortDesc;
-				    		} 
+				    		}
 				    		if (a[vm_stocks_tab.sortBy] < b[vm_stocks_tab.sortBy]) {
-
 				    			return vm_stocks_tab.sortDesc;
 				    		}
 				    		return 0;
@@ -306,7 +317,6 @@ if(authenticated) {
 						});
 						return d;
 					})
-					console.log(investors);
 					return investors;
 				},
 			}
@@ -322,21 +332,27 @@ if(authenticated) {
 			template: "<div>{{ investor }}</div>"
 		});
 
+		// console.log("ACTIVE USERS");
+		// console.log(vm_users);
 
 		var vm_chat = new Vue({
 			el: '#chat-module--container',
 			data: {
 				showingChat: false,
 				unreadMessages: false,
-
 			},
 			methods: {
 				toggleChat: function() {
-					console.log(this.showingChat)
 					this.showingChat = !this.showingChat;
-					console.log(this.showingChat)
+					this.unreadMessages = false;
 	        		$('#chat-module--container').toggleClass('closed');
 	        		$('#chat-text-input').focus();
+				},
+
+			},
+			computed: {
+				activeUsers: function() {
+						return Object.values(vm_users.users).filter(d => d.active === true).length;
 				}
 			},
 			watch: {
@@ -344,12 +360,15 @@ if(authenticated) {
 					// make css changes here to show a notification for unread messages
 					if (this.unreadMessages) {
 						console.log("unread messages");
+						$("#chat-module--container .chat-title-bar span").addClass("unread");
 					} else {
 						console.log("all messages read");
+						$("#chat-module--container .chat-title-bar span").removeClass("unread");
 					}
 				}
 
 			},
+			
 		});
 
 
@@ -371,18 +390,29 @@ if(authenticated) {
 				vm_chat.unreadMessages = true;
 			}
 
-			let isMe = "";
-			if (fromMe) {
-				isMe = "is-me";
-			}
 			let msg_text = cleanInput(msg.body);
 			let msg_author_display_name = msg.author_display_name;
 			let msg_author_uuid = msg.author_uuid;
 			let msg_timestamp = formatDate12Hour(new Date($.now()));
-			let msg_template = '<li '+ msg_author_uuid +'>'+
-					'				<div class="msg-username '+ isMe +'">'+ msg_author_display_name +' <span class="msg-timestamp">'+ msg_timestamp +'</span></div>'+
+
+			let msg_template = '';			
+			let isMe = "";
+			if (fromMe) {
+				isMe = "is-me";
+				msg_template = '<li '+ msg_author_uuid +'>'+
+					'				<div class="msg-timestamp">'+ msg_timestamp +'</div>'+
+					'				<div class="msg-username '+ isMe +'">'+ msg_author_display_name +'</div>'+
+					'				<div class="msg-text right">'+ msg_text +'</div>'+
+					'			</li>';
+			} else {
+				msg_template = '<li '+ msg_author_uuid +'>'+
+					'				<div class="msg-timestamp">'+ msg_timestamp +'</div>'+
+					'				<div class="msg-username '+ isMe +'">'+ msg_author_display_name +'</div>'+
 					'				<div class="msg-text">'+ msg_text +'</div>'+
 					'			</li>';
+			}
+
+			
 
 			chat_feed.append(msg_template);
 			chat_feed.animate({scrollTop: chat_feed.prop("scrollHeight")}, $('#chat-module--container .chat-message--list').height());
@@ -497,17 +527,28 @@ if(authenticated) {
 	    });
 
 	    function formatChatMessage(msg) {
+
 	    	let timestamp = formatDate12Hour(new Date($.now()));
 	    	// let message_body = $('#chat-module--container textarea').val();
 	    	let message_body = msg.msg.message_body;
-	    	var currentUser = msg.msg.author;
+	    	let message_author = msg.msg.author;
+	    	let isMe = false;
+
+	    	if(vm_users.currentUser == vm_users.users[message_author].display_name) {
+	    		isMe = true;
+	    		//console.log(isMe);
+	    	} else {
+	    		isMe = false;
+	    	}
+
 	    	let temp_msg = {
-		        author_uuid: currentUser,
-		        author_display_name: vm_users.users[currentUser].display_name,
+		        author_uuid: message_author,
+		        author_display_name: vm_users.users[message_author].display_name,
 		        timestamp: timestamp,
 		        body: message_body,
 		    };
-		    appendNewMessage(temp_msg, true);
+
+		    appendNewMessage(temp_msg, isMe);
 	    }
 
 
@@ -618,6 +659,7 @@ if(authenticated) {
 	    var routeObject = function(msg) {
 			switch (msg.msg.type) {
 				case 'portfolio':
+					//console.log(msg.msg.object)
 				    Vue.set(vm_portfolios.portfolios, msg.msg.uuid, msg.msg.object);
 				    break;
 
@@ -683,8 +725,8 @@ if(authenticated) {
 	    };
 
 	    var ledgerUpdate = function(msg) {
-			var targetUUID = msg.msg.uuid;
 
+			var targetUUID = msg.msg.uuid;
 			msg.msg.changes.forEach(function(changeObject){
 				// Variables needed to update the ledger item
 				var targetField = changeObject.field;
@@ -697,12 +739,8 @@ if(authenticated) {
 
 	    var portfolioUpdate = function(msg) {
 
-	    	console.log("PORTFOLIO UPDATE");
-	    	console.log(msg);
-			
 			var targetUUID = msg.msg.uuid;
 			msg.msg.changes.forEach(function(changeObject){
-
 				// Variables needed to update the ledger item
 				var targetField = changeObject.field;
 				var targetChange = changeObject.value;
@@ -716,7 +754,6 @@ if(authenticated) {
 
 			var targetUUID = msg.msg.uuid;
 			msg.msg.changes.forEach(function(changeObject){
-			
 				// Variables needed to update the ledger item
 				var targetField = changeObject.field;
 				var targetChange = changeObject.value;
@@ -828,11 +865,13 @@ if(authenticated) {
 	    				buySellModal.buySellAmount *= -1;
 	    			}
 	    			sendTrade();
+	    			toggleModal();
 	    		},
 	    		closeModal: function(){
 	    			toggleModal();
 	    			buySellModal.buySellAmount = 0;
 	    			buySellModal.showModal = false;
+	    			buySellModal.isBuying = true;
 	    		}
 	    	},
 	    	computed: {
