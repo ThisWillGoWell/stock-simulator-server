@@ -18,7 +18,7 @@ var (
 		`PRIMARY KEY(uuid)` +
 		`);`
 
-	ledgerTableUpdateInsert = `INSERT into ` + ledgerTableName + `(uuid, portfolio_id, stock_id, amount) values($1, $2, $3, $4) ` +
+	ledgerTableUpdateInsert = `INSERT into ` + ledgerTableName + `(uuid, portfolio_id, stock_id, amount, investment_value) values($1, $2, $3, $4) ` +
 		`ON CONFLICT (uuid) DO UPDATE SET amount=EXCLUDED.amount investment_value=EXCLUDED.investment_value`
 
 	ledgerTableQueryStatement = "SELECT uuid, portfolio_id, stock_id, amount, investment_value FROM " + ledgerTableName + `;`
