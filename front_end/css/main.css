@@ -1278,7 +1278,7 @@ table.table tbody tr td{
 
 .stock-display-name {
     color: #bdbdbd;
-    font-size: 8px;
+    font-size: 10px;
 }
 
 .stock-ticker-id {
@@ -1376,10 +1376,11 @@ table.table tbody tr td{
 
 #modal--container .modal-card{
     position: absolute;
-    height: 80%;
+    height: auto;
+    display: inline-table;
     width: 500px;
-    background-color: transparent;
-    border: 1px solid #fff;
+    background-color: #fafbfc;
+    /*border: 1px solid #fff;*/
     top: 0;
     bottom: 0;
     left: 0;
@@ -1387,7 +1388,7 @@ table.table tbody tr td{
     z-index: 20;
     margin: auto;
     /*border-radius: 2px;*/
-    
+    padding-bottom: 50px;
     /*box-shadow: 0 3px 5px rgba(0,0,0,0.10), 0 3px 5px rgba(0,0,0,0.15);*/
 }
 
@@ -1407,18 +1408,15 @@ table.table tbody tr td{
 }
 
 #modal--container .modal-card button:hover{
-    
-    
     background-color: #9e9e9e;
-    color: #fff;
-    
-    
-    
+    color: #fff; 
 }
 
 #modal--container .modal-card button i{
     font-size: 22px;
 }
+
+
 
 /* DASHBOARD VIEWS */
 
@@ -1438,12 +1436,14 @@ table.table tbody tr td{
     -o-transition: all ease-in-out 0.23s;
     -webkit-transition: all ease-in-out 0.23s;
     transition: all ease-in-out 0.23s;
+    display: none;
 }
 
 #dashboard--view.active, #business--view.active, #stocks--view.active, #investors--view.active, #futures--view.active, #store--view.active {
     opacity: 1;
     z-index: 110;
     transform: translateY(0px);
+    display: block;
 }
 
 .username-text {
@@ -1464,11 +1464,9 @@ table.table tbody tr td{
     text-align: center;
     line-height: 38px;
     font-weight: 600;
-
     position: absolute;
-        right: 220px;
-    top: 20px;
-   
+    right: 220px;
+    top: 20px; 
 }
 
 #stats--view {
@@ -1543,20 +1541,20 @@ table.table tbody tr td{
 }
 
 #trade--view {
-    
-    padding-bottom: 25px;
+    padding: 0px 25px;
 }
 
 #trade--view .modal-stock-id{
     font-size: 96px;
     letter-spacing: 3px;
-    color: #fff;
+    color: #4d4d4d;
     font-weight: 500;
     text-align: left;
+    padding-left: 15px;
 }
 
 #trade--view table.table th, #trade--view table.table td{
-    color: #fff;
+    color: #4d4d4d;
     text-align: left !important;
 }
 
@@ -1565,6 +1563,18 @@ table.table tbody tr td{
     background-color: #90A4AE;
     color: #fff;
     cursor: pointer;
+    -moz-transition: all ease-in-out 0.17s;
+    -o-transition: all ease-in-out 0.17s;
+    -webkit-transition: all ease-in-out 0.17s;
+    transition: all ease-in-out 0.17s;
+}
+
+.calc-btn:hover {
+    background-color: #607D8B;
+}
+
+.calc-btn.no-top-buffer {
+    margin-top: 0px;
 }
 
 .calc-btn.no-fill {
@@ -1573,17 +1583,61 @@ table.table tbody tr td{
 }
 
 .calc-btn.no-fill.red {
-    background-color: #f44336;
-    border: #fff;
+    background-color: transparent;
+    border: solid 2px #f44336;
 }
 
 .calc-btn.no-fill.green {
-    background-color: #1abc9c;
-    border: #fff;
+    background-color: transparent;
+    border: solid 2px #1abc9c;
 }
 
-#trade-view table.table thead tr th {
-    
+.calc-btn.fill.red {
+    background-color: #f44336;
+    border: #f44336;
+}
+
+.calc-btn.green {
+    background-color: #1abc9c;
+    /*border: #1abc9c;*/
+}
+
+#calc-btn-buy {
+    background-color: transparent;
+    border: solid 2px #1abc9c;
+    color: #1abc9c;
+    font-size: 18px;
+    line-height: 16px;
+}
+
+#calc-btn-sell {
+    background-color: transparent;
+    border: solid 2px #f44336;
+    color: #f44336;
+    font-size: 18px;
+    line-height: 16px;
+}
+
+#calc-btn-buy.fill {
+    background-color: #1abc9c;
+    color: #fff;
+}
+
+#calc-btn-sell.fill {
+    background-color: #f44336;
+    color: #fff;
+}
+
+#trade-view table.table{
+    padding: 0 25px;
+}
+
+.card.calc-btn.no-buffer-top {
+    margin-top: 0px;
+}
+
+.calc-btn.clear {
+    background-color: #455A64;
 }
 
 /* MEDIA QUERIES */
