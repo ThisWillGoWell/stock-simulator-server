@@ -238,9 +238,8 @@ if(authenticated) {
 				    	stock_array = stock_array.sort(function(a,b) {
 				    		if (a[vm_stocks_tab.sortBy] > b[vm_stocks_tab.sortBy]) {
 				    			return -vm_stocks_tab.sortDesc;
-				    		} 
+				    		}
 				    		if (a[vm_stocks_tab.sortBy] < b[vm_stocks_tab.sortBy]) {
-
 				    			return vm_stocks_tab.sortDesc;
 				    		}
 				    		return 0;
@@ -306,7 +305,6 @@ if(authenticated) {
 						});
 						return d;
 					})
-					console.log(investors);
 					return investors;
 				},
 			}
@@ -332,9 +330,7 @@ if(authenticated) {
 			},
 			methods: {
 				toggleChat: function() {
-					console.log(this.showingChat)
 					this.showingChat = !this.showingChat;
-					console.log(this.showingChat)
 	        		$('#chat-module--container').toggleClass('closed');
 	        		$('#chat-text-input').focus();
 				}
@@ -618,6 +614,7 @@ if(authenticated) {
 	    var routeObject = function(msg) {
 			switch (msg.msg.type) {
 				case 'portfolio':
+					console.log(msg.msg.object)
 				    Vue.set(vm_portfolios.portfolios, msg.msg.uuid, msg.msg.object);
 				    break;
 
@@ -683,8 +680,8 @@ if(authenticated) {
 	    };
 
 	    var ledgerUpdate = function(msg) {
-			var targetUUID = msg.msg.uuid;
 
+			var targetUUID = msg.msg.uuid;
 			msg.msg.changes.forEach(function(changeObject){
 				// Variables needed to update the ledger item
 				var targetField = changeObject.field;
@@ -697,12 +694,8 @@ if(authenticated) {
 
 	    var portfolioUpdate = function(msg) {
 
-	    	console.log("PORTFOLIO UPDATE");
-	    	console.log(msg);
-			
 			var targetUUID = msg.msg.uuid;
 			msg.msg.changes.forEach(function(changeObject){
-
 				// Variables needed to update the ledger item
 				var targetField = changeObject.field;
 				var targetChange = changeObject.value;
@@ -716,7 +709,6 @@ if(authenticated) {
 
 			var targetUUID = msg.msg.uuid;
 			msg.msg.changes.forEach(function(changeObject){
-			
 				// Variables needed to update the ledger item
 				var targetField = changeObject.field;
 				var targetChange = changeObject.value;
@@ -833,6 +825,7 @@ if(authenticated) {
 	    			toggleModal();
 	    			buySellModal.buySellAmount = 0;
 	    			buySellModal.showModal = false;
+	    			buySellModal.isBuying = true;
 	    		}
 	    	},
 	    	computed: {

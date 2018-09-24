@@ -188,7 +188,7 @@ $( document ).ready(function() {
     });
 
      $('#input-create-submit').click(function() {
-    
+
         let input_uid = $('#create-uid').val();
         let input_pw = $('#create-pw').val();
         let create_auth_msg = {};
@@ -200,7 +200,8 @@ $( document ).ready(function() {
                 action: "new_account",
                 msg: {
                     "username": input_uid_trimmed, 
-                    "password": input_pw_trimmed
+                    "password": input_pw_trimmed,
+                    "display_name": input_uid_trimmed
                 }
             };
             uid = input_uid_trimmed;
