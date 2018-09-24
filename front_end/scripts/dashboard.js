@@ -176,25 +176,35 @@ if(authenticated) {
 							
 							// Remove stocks that user owns 0 of
 							ownedStocks = ownedStocks.filter(d => d.amount !== 0);
-							// console.log("MY STOCKS");
-							// console.log(ownedStocks);
 							// Augmenting owned stocks
 							ownedStocks = ownedStocks.map(function(d) {
 								d.stock_ticker = vm_stocks.stocks[d.stock_id].ticker_id;
 								d.stock_price = vm_stocks.stocks[d.stock_id].current_price;
-								d.stock_value = Number(d.stock_price) * Number(d.amount);
+								d.stock_value = Number(d.stock_price) * Number(d.amount);								
 								d.stock_roi = (Number(d.stock_price) * Number(d.amount)) - Number(d.investment_value);
-	
+
+								// TODO: css changes done here talk to brennan about his \ux22 magic 
+								
+								// helper to color rows in the stock table 
+								var targetChangeElem = $("tr[uuid=\x22" + d.stock_uuid + "\x22] > td.stock-change");
+								
+								if (d.stock_roi > 0) {
+									targetChangeElem.removeClass("falling");
+									targetChangeElem.addClass("rising");
+								} else {
+									targetChangeElem.removeClass("rising");
+									targetChangeElem.addClass("falling");
+								}
+
 								return d;
 							});
 
-					    	// Sorting array
+					    	// Sorting array of owned stocks
 					    	ownedStocks = ownedStocks.sort(function(a,b) {
 					    		if (a[vm_dash_tab.sortBy] > b[vm_dash_tab.sortBy]) {
 					    			return -vm_dash_tab.sortDesc;
 					    		} 
 					    		if (a[vm_dash_tab.sortBy] < b[vm_dash_tab.sortBy]) {
-
 					    			return vm_dash_tab.sortDesc;
 					    		}
 					    		return 0;
