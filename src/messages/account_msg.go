@@ -23,7 +23,7 @@ func (baseMessage *BaseMessage) IsRenew() bool {
 }
 
 type NewAccountMessage struct {
-	UserName    string `json:"user_name"`
+	UserName    string `json:"username"`
 	Password    string `json:"password"`
 	DisplayName string `json:"display_name"`
 }

@@ -93,10 +93,10 @@ func LoadVars() {
 	//start the builder
 	//go client.BroadcastMessageBuilder()
 	//build and simulate a client
-	account.NewUser("Mike", "pass")
-	account.NewUser("Will", "pass")
-	account.NewUser("Jake", "pass")
-	account.NewUser("Chunt", "pass")
+	account.NewUser("Mike","Guzman", "pass")
+	account.NewUser("Will", "Will", "pass")
+	account.NewUser("Jake","Annie", "pass")
+	account.NewUser("Chunt", "Chunt", "pass")
 
 	acc, _ := account.GetUser("Will", "pass")
 	portfolio.Portfolios[acc.PortfolioId].Wallet = 1000000

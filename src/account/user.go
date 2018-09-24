@@ -47,7 +47,7 @@ func GetUser(username, password string) (*User, error) {
 	}
 	user := userList[userUuid]
 
-	if comparePasswords(user.PortfolioId, password) {
+	if !comparePasswords(user.Password, password) {
 		return nil, errors.New("Password is incorrect")
 	}
 	user.Active = true
@@ -75,10 +75,22 @@ func RenewUser(sessionToken string)(*User, error) {
 Build a new user
 set their Password to that provided
 */
-func NewUser(username, password string) (*User, error) {
+func NewUser(username, displayName,  password string) (*User, error) {
 	uuid := utils.PseudoUuid()
+	if len(username) > 20{
+		return nil, errors.New("username too long")
+	}
+	if len(username) < 4{
+		return nil, errors.New("username too short")
+	}
+	if len(displayName) > 20{
+		return nil, errors.New("display name too long")
+	}
+	if len(displayName) < 4{
+		return nil, errors.New("display name too short")
+	}
 	hashedPassword := hashAndSalt(password)
-	user, err := MakeUser(uuid, username, username, hashedPassword, "")
+	user, err := MakeUser(uuid, username, displayName, hashedPassword, "")
 	if err != nil {
 		utils.RemoveUuid(uuid)
 		return nil, err

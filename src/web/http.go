@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
-	"github.com/stock-simulator-server/src/account"
 	"github.com/stock-simulator-server/src/app"
 	"github.com/stock-simulator-server/src/client"
 	"github.com/stock-simulator-server/src/messages"
@@ -23,13 +22,12 @@ func StartHandlers() {
 	//fmt.Println(shareDir)
 	//var fs = http.FileServer(http.Dir(shareDir))
 
-	//http.Handle("/", fs)
+
 	http.HandleFunc("/load", func(w http.ResponseWriter, r *http.Request) {
 		go app.LoadVars()
 		<- time.After(time.Second)
 		http.Redirect(w, r, "/", 200)
 	})
-	http.HandleFunc("/new", func(w http.ResponseWriter, r *http.Request) { account.NewUser("Will", "pass") })
 
 	http.HandleFunc("/ws", handleConnections)
 	err := http.ListenAndServe(":8000", nil)
@@ -37,6 +35,12 @@ func StartHandlers() {
 		log.Fatal("ListenAndServe:", err)
 	}
 
+}
+
+func ServePath(p string){
+
+	var fs = http.FileServer(http.Dir(p))
+	http.Handle("/", fs)
 }
 
 var upgrader = websocket.Upgrader{

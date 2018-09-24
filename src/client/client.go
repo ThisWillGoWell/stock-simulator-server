@@ -116,7 +116,9 @@ func InitialReceive(initialPayload string, tx, rx chan string) error {
 	var sessionToken string
 
 	if initialMessage.IsAccountCreate() {
-		userTemp, err := account.NewUser(initialMessage.Msg.(*messages.NewAccountMessage).UserName, initialMessage.Msg.(*messages.NewAccountMessage).Password)
+		userTemp, err := account.NewUser(initialMessage.Msg.(*messages.NewAccountMessage).UserName,
+			initialMessage.Msg.(*messages.NewAccountMessage).DisplayName,
+			initialMessage.Msg.(*messages.NewAccountMessage).Password)
 		if err != nil {
 			return err
 		}
