@@ -47,7 +47,7 @@ func (port *Portfolio) GetType() string {
 
 func NewPortfolio(userUUID string) (*Portfolio, error) {
 	uuid := utils.PseudoUuid()
-	return MakePortfolio(uuid, userUUID, 1000)
+	return MakePortfolio(uuid, userUUID, 100000)
 }
 
 func MakePortfolio(uuid, userUUID string, wallet int64) (*Portfolio, error) {
