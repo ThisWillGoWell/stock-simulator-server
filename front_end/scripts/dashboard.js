@@ -377,19 +377,29 @@ if(authenticated) {
 				vm_chat.unreadMessages = true;
 			}
 
-			let isMe = "";
-			if (fromMe) {
-				isMe = "is-me";
-			}
-
 			let msg_text = cleanInput(msg.body);
 			let msg_author_display_name = msg.author_display_name;
 			let msg_author_uuid = msg.author_uuid;
 			let msg_timestamp = formatDate12Hour(new Date($.now()));
-			let msg_template = '<li '+ msg_author_uuid +'>'+
-					'				<div class="msg-username '+ isMe +'">'+ msg_author_display_name +' <span class="msg-timestamp">'+ msg_timestamp +'</span></div>'+
+
+			let msg_template = '';			
+			let isMe = "";
+			if (fromMe) {
+				isMe = "is-me";
+				msg_template = '<li '+ msg_author_uuid +'>'+
+					'				<div class="msg-timestamp">'+ msg_timestamp +'</div>'+
+					'				<div class="msg-username '+ isMe +'">'+ msg_author_display_name +'</div>'+
+					'				<div class="msg-text right">'+ msg_text +'</div>'+
+					'			</li>';
+			} else {
+				msg_template = '<li '+ msg_author_uuid +'>'+
+					'				<div class="msg-timestamp">'+ msg_timestamp +'</div>'+
+					'				<div class="msg-username '+ isMe +'">'+ msg_author_display_name +'</div>'+
 					'				<div class="msg-text">'+ msg_text +'</div>'+
 					'			</li>';
+			}
+
+			
 
 			chat_feed.append(msg_template);
 			chat_feed.animate({scrollTop: chat_feed.prop("scrollHeight")}, $('#chat-module--container .chat-message--list').height());
@@ -842,6 +852,7 @@ if(authenticated) {
 	    				buySellModal.buySellAmount *= -1;
 	    			}
 	    			sendTrade();
+	    			toggleModal();
 	    		},
 	    		closeModal: function(){
 	    			toggleModal();
