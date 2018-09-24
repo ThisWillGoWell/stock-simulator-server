@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
-	"github.com/stock-simulator-server/src/account"
 	"github.com/stock-simulator-server/src/app"
 	"github.com/stock-simulator-server/src/client"
 	"github.com/stock-simulator-server/src/messages"
@@ -29,7 +28,6 @@ func StartHandlers() {
 		<- time.After(time.Second)
 		http.Redirect(w, r, "/", 200)
 	})
-	http.HandleFunc("/new", func(w http.ResponseWriter, r *http.Request) { account.NewUser("Will", "pass") })
 
 	http.HandleFunc("/ws", handleConnections)
 	err := http.ListenAndServe(":8000", nil)

@@ -7,7 +7,7 @@
 __MACOSX
 venv
 mockstarket-front-end
-
+docker-compose.override.yaml
 
 # Test binary, build with `go test -c`
 *.test
