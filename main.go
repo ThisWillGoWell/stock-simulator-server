@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"github.com/stock-simulator-server/src/app"
 	"github.com/stock-simulator-server/src/change"
 	"github.com/stock-simulator-server/src/client"
 	"github.com/stock-simulator-server/src/database"
@@ -33,6 +34,7 @@ func main() {
 	}
 	disableDb := os.Getenv("DISABLE_DB") == "True"
 	serveLog := os.Getenv("SERVE_LOG") == "True"
+	autoLoad := os.Getenv("AUTO_LOAD") == "True"
 
 	//start DB
 	if !disableDb {
@@ -56,6 +58,9 @@ func main() {
 	order.Run()
 	valuable.StartStockStimulation()
 
+	if autoLoad{
+		go app.LoadVars()
+	}
 	//go app.LoadVars()
 	go web.StartHandlers()
 	select {}

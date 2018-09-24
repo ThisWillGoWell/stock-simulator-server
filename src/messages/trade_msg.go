@@ -22,13 +22,4 @@ func (baseMessage *BaseMessage) IsTrade() bool {
 	return baseMessage.Action == "trade"
 }
 
-func BuildPurchaseResponse(response interface{}) *BaseMessage {
-	return &BaseMessage{
-		Action: AlertAction,
-		Msg: &AlertMessage{
-			Alert: response,
-			Type:  "trade_response",
-		},
-	}
-}
 

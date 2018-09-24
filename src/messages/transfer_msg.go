@@ -22,12 +22,3 @@ func (baseMessage *BaseMessage) IsTransfer() bool {
 }
 
 
-func BuildTransferResponse(response interface{}) *BaseMessage {
-	return &BaseMessage{
-		Action: AlertAction,
-		Msg: &AlertMessage{
-			Alert: response,
-			Type:  "transfer_response",
-		},
-	}
-}

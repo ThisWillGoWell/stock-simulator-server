@@ -36,14 +36,15 @@ func (baseMessage *BaseMessage) IsLogin() bool {
 
 type AccountResponseMessage struct {
 	Success bool   `json:"success"`
-	SessionToken string `json:"token"`
-	Uuid    string `json:"uuid"`
-	Err     string `json:"err"`
+	Config map[string]interface{} `json:"config"`
+	SessionToken string `json:"token,omitempty"`
+	Uuid    string `json:"uuid,omitempty"`
+	Err     string `json:"err,omitempty"`
 }
 
 func (*AccountResponseMessage) message() { return }
 
-func SuccessLogin(userGuid, token string) *BaseMessage {
+func SuccessLogin(userGuid, token string, config map[string]interface{}) *BaseMessage {
 	return &BaseMessage{
 		Action: LoginAction,
 		Msg: &AccountResponseMessage{
@@ -51,6 +52,7 @@ func SuccessLogin(userGuid, token string) *BaseMessage {
 			SessionToken: token,
 			Uuid:    userGuid,
 			Err:     "",
+			Config: config,
 		},
 	}
 }

@@ -54,7 +54,7 @@ func (po *PurchaseOrder) rc() chan *Response {return po.ResponseChannel}
 type Response struct {
 	Order   Order 			`json:"order"`
 	Success bool           `json:"success"`
-	Err     string         `json:"err"`
+	Err     string         `json:"err,omitempty"`
 }
 
 // note this does not validate if the stock exists or not, that's done in the trade() function

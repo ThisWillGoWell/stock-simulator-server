@@ -112,11 +112,8 @@ func LoadVars() {
 		for i:=0; i<50; i++{
 			portId := accs[i%3]
 			po2 := order.MakePurchaseOrder(id, portId, 1)
-			client.SendToUser(users[i%3],messages.BuildPurchaseResponse( <-po2.ResponseChannel))
+			client.SendToUser(users[i%3],messages.BuildResponseMsg( <-po2.ResponseChannel, fmt.Sprintf("backend-trade-%d", i)))
 			<-time.After(time.Second * 30)
-			to := order.MakeTransferOrder(portId, accs[(i+1)%3], 1)
-			client.SendToUser(users[i%3],messages.BuildTransferResponse( <-to.ResponseChannel))
-			<-time.After(time.Minute * 5)
 		}
 	}
 

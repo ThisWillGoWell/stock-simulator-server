@@ -12,7 +12,10 @@ type Message interface {
 type BaseMessage struct {
 	Action string      `json:"action"`
 	Msg    interface{} `json:"msg"`
+	RequestID string `json:"request_id,omitempty"`
 }
+
+const ResponseAction = "response"
 
 type BatchMessage []BaseMessage
 
@@ -28,10 +31,17 @@ func (baseMessage *BaseMessage) UnmarshalJSON(data []byte) error {
 	}
 	// make sure that generic one contains the required keys
 	actionType := ""
+	requestId := ""
 	if t, ok := obj["action"].(string); ok {
 		actionType = t
 	} else {
 		return errors.New("action not there")
+	}
+
+	if t, ok := obj["request_id"].(string); ok {
+		requestId = t
+	} else {
+
 	}
 
 	if _, ok := obj["msg"].(string); ok {
@@ -58,6 +68,8 @@ func (baseMessage *BaseMessage) UnmarshalJSON(data []byte) error {
 		message = &TransferMessage{}
 	case RenewAction:
 		message = &RenewMessage{}
+	case SetAction:
+		message = &SetMessage{}
 	}
 
 	str, _ := json.Marshal(obj["msg"])
@@ -67,6 +79,16 @@ func (baseMessage *BaseMessage) UnmarshalJSON(data []byte) error {
 	}
 	baseMessage.Action = actionType
 	baseMessage.Msg = message
+	baseMessage.RequestID = requestId
 
 	return nil
 }
+
+func BuildResponseMsg(response interface{}, requestID string) *BaseMessage {
+	return &BaseMessage{
+		Action: ResponseAction,
+		Msg: response,
+		RequestID:requestID,
+	}
+}
+

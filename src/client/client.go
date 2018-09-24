@@ -3,6 +3,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"github.com/stock-simulator-server/src/session"
 	"time"
 
@@ -182,10 +183,13 @@ func (client *Client) rx() {
 		case messages.ChatAction:
 			client.processChatMessage(message.Msg.(messages.Message))
 		case messages.TradeAction:
-			client.processTradeMessage(message.Msg.(messages.Message))
+			client.processTradeMessage(message)
 		case messages.QueryAction:
-			client.processQueryMessage(message.Msg.(messages.Message))
-
+			client.processQueryMessage(message)
+		case messages.TransferAction:
+			client.processTransferMessage(message)
+		case messages.SetAction:
+			client.processSetMessage(message)
 		default:
 			client.messageSender.Offer(messages.NewErrorMessage("action is not known"))
 		}
@@ -229,41 +233,86 @@ func (client *Client) processChatMessage(message messages.Message) {
 	chatMessage.Author = client.user.Uuid
 	chatMessage.Timestamp = time.Now()
 	//database.SaveChatMessage(chatMessage.Author, chatMessage.Message)
-	print("offer")
 	BroadcastMessages.Offer(messages.BuildChatMessage(message.(*messages.ChatMessage)))
 }
 
-func (client *Client) processTradeMessage(message messages.Message) {
-	tradeMessage := message.(*messages.TradeMessage)
+func (client *Client) processTradeMessage(baseMessage *messages.BaseMessage) {
+	tradeMessage := baseMessage.Msg.(*messages.TradeMessage)
 	po := order.MakePurchaseOrder(tradeMessage.StockId, client.user.PortfolioId, tradeMessage.Amount)
 	go func() {
 		response := <-po.ResponseChannel
-		SendToUser(client.user.Uuid, messages.BuildPurchaseResponse(response))
+		SendToUser(client.user.Uuid, messages.BuildResponseMsg(response, baseMessage.RequestID))
 	}()
 }
 
-func (client *Client) processTransferMessage(message messages.Message) {
-	transferMessage := message.(*messages.TransferMessage)
+func (client *Client) processTransferMessage(baseMessage *messages.BaseMessage) {
+
+	transferMessage := baseMessage.Msg.(*messages.TransferMessage)
 	 to := order.MakeTransferOrder(client.user.PortfolioId, transferMessage.Recipient, transferMessage.Amount)
 	go func() {
 		response := <-to.ResponseChannel
-		SendToUser(client.user.Uuid, messages.BuildTransferResponse(response))
+		client.sendMessage(messages.BuildResponseMsg(response, baseMessage.RequestID))
+
 	}()
 }
 
-func (client *Client) processQueryMessage(message messages.Message) {
-	queryMessage := message.(*messages.QueryMessage)
+func (client *Client) processQueryMessage(baseMessage *messages.BaseMessage) {
+	queryMessage := baseMessage.Msg.(*messages.QueryMessage)
 	q := histroy.MakeQuery(queryMessage)
 	go func(){
-		client.sendMessage(<- q.ResponseChannel )
+		response := <-q.ResponseChannel
+		client.sendMessage(messages.BuildResponseMsg(response, baseMessage.RequestID))
 	}()
 }
+
+func (client *Client) processSetMessage(baseMessage *messages.BaseMessage) {
+	setMessage := baseMessage.Msg.(*messages.SetMessage)
+	var response *messages.SetResponse
+	switch setMessage.Set {
+	case "config":
+		newConfig, ok := setMessage.Value.(map[string]interface{})
+		if !ok{
+			response = messages.BuildFailedSet(errors.New("failed, invalid type"))
+			break
+		}
+		client.user.SetConfig(newConfig)
+		response = messages.BuildSuccessSet()
+	case "password":
+		newPassword, ok := setMessage.Value.(string)
+		if !ok{
+			response = messages.BuildFailedSet(errors.New("failed, invalid type"))
+			break
+		}
+		err := client.user.SetPassword(newPassword)
+		if err != nil{
+			response = messages.BuildFailedSet(err)
+			break
+		}
+		response = messages.BuildSuccessSet()
+	case "display_name":
+		newDisplayName, ok := setMessage.Value.(string)
+		if !ok{
+			response = messages.BuildFailedSet(errors.New("failed, invalid type"))
+			break
+		}
+		err := client.user.SetDisplayName(newDisplayName)
+		if err != nil{
+			response = messages.BuildFailedSet(err)
+			break
+		}
+		response = messages.BuildSuccessSet()
+	}
+	client.sendMessage(messages.BuildResponseMsg(response, baseMessage.RequestID))
+
+}
+
 
 /**
 When a session is started, loop though all current cache and send them to the client
+Also send the success login to make sure that happens first on the login
 */
 func (client *Client) initSession(sessionToken string ) {
-	client.sendMessage(messages.SuccessLogin(client.user.Uuid, sessionToken))
+	client.sendMessage(messages.SuccessLogin(client.user.Uuid, sessionToken, client.user.Config))
 
 	for _, v := range account.GetAllUsers() {
 		client.sendMessage(messages.NewObjectMessage(v))

@@ -1,7 +1,9 @@
 package account
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
 	"github.com/stock-simulator-server/src/portfolio"
@@ -19,6 +21,10 @@ var userListLock = lock.NewLock("user-list")
 var NewObjectChannel = duplicator.MakeDuplicator("New User")
 var UpdateChannel = duplicator.MakeDuplicator("User Update")
 
+const minPasswordLength = 4
+const minDisplayNameLength = 4
+const maxDisplayNameLength = 20
+
 /*
 User Object
 Represents a unique individual of the system
@@ -32,6 +38,7 @@ type User struct {
 	ActiveClients int64      `json:"-"`
 	Lock          *lock.Lock `json:"-"`
 	PortfolioId   string     `json:"portfolio_uuid"`
+	Config 		  map[string]interface{}	 `json:"-"`
 }
 
 /**
@@ -83,14 +90,17 @@ func NewUser(username, displayName,  password string) (*User, error) {
 	if len(username) < 4{
 		return nil, errors.New("username too short")
 	}
-	if len(displayName) > 20{
+	if len(displayName) > maxDisplayNameLength {
 		return nil, errors.New("display name too long")
 	}
-	if len(displayName) < 4{
+	if len(displayName) < minDisplayNameLength{
 		return nil, errors.New("display name too short")
 	}
+	if len(password) < minPasswordLength{
+		return nil, errors.New("password too short")
+	}
 	hashedPassword := hashAndSalt(password)
-	user, err := MakeUser(uuid, username, displayName, hashedPassword, "")
+	user, err := MakeUser(uuid, username, displayName, hashedPassword, "", `{"config":"this is a config", "nested":{"one":1}}`)
 	if err != nil {
 		utils.RemoveUuid(uuid)
 		return nil, err
@@ -100,15 +110,21 @@ func NewUser(username, displayName,  password string) (*User, error) {
 	return user, nil
 }
 
-func MakeUser(uuid, username, displayName, password, portfolioUUID string) (*User, error) {
+func MakeUser(uuid, username, displayName, password, portfolioUUID, config string) (*User, error) {
 	userListLock.Acquire("new-user")
 	defer userListLock.Release()
 	_, userNameExists := uuidList[username]
 	if userNameExists {
 		return nil, errors.New("username already exists")
 	}
+	var configMap map[string]interface{}
+	err := json.Unmarshal([]byte(config), &configMap)
+	if err != nil{
+		fmt.Println("error making config json in MakeUser: ", err)
+		configMap = make(map[string]interface{})
+	}
 	uuidList[username] = uuid
-	userList[uuid] = &User{
+	userList[uuid] = &User {
 		UserName:    username,
 		DisplayName: displayName,
 		Password:    password,
@@ -116,6 +132,7 @@ func MakeUser(uuid, username, displayName, password, portfolioUUID string) (*Use
 		PortfolioId: portfolioUUID,
 		Lock:        lock.NewLock("user"),
 		Active:      true,
+		Config:      configMap,
 	}
 	NewObjectChannel.Offer(userList[uuid])
 	utils.RegisterUuid(uuid, userList[uuid])
@@ -159,4 +176,33 @@ func GetAllUsers() []*User {
 		i += 1
 	}
 	return lst
+}
+
+func  (user *User) SetConfig(config map[string]interface{}){
+	user.Config = config
+	UpdateChannel.Offer(user)
+}
+
+
+func  (user *User) SetPassword(pass string) error{
+	if len(pass) > minPasswordLength{
+		return errors.New("password too short")
+	}
+	hashedPassword := hashAndSalt(pass)
+	user.Password = hashedPassword
+	UpdateChannel.Offer(user)
+	return nil
+}
+
+
+func  (user *User) SetDisplayName(displayName string)error{
+	if len(displayName) > maxDisplayNameLength {
+		return errors.New("display name too long")
+	}
+	if len(displayName) < minDisplayNameLength {
+		return errors.New("display name too short")
+	}
+	user.DisplayName = displayName
+	UpdateChannel.Offer(user)
+	return nil
 }
