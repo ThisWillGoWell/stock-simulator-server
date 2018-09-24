@@ -32,10 +32,16 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 	disableDb := os.Getenv("DISABLE_DB") == "True"
+	serveLog := os.Getenv("SERVE_LOG") == "True"
 
 	//start DB
 	if !disableDb {
 		database.InitDatabase()
+	}
+	if serveLog {
+		filepath := os.Getenv("FILE_SERVE")
+
+		web.ServePath(filepath)
 	}
 	//valuable.ValuablesLock.EnableDebug()
 	//ledger.EntriesLock.EnableDebug()

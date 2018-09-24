@@ -47,7 +47,7 @@ func GetUser(username, password string) (*User, error) {
 	}
 	user := userList[userUuid]
 
-	if comparePasswords(user.PortfolioId, password) {
+	if !comparePasswords(user.Password, password) {
 		return nil, errors.New("Password is incorrect")
 	}
 	user.Active = true
