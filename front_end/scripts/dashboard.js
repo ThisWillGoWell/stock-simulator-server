@@ -330,8 +330,6 @@ if(authenticated) {
 			data: {
 				showingChat: false,
 				unreadMessages: false,
-				activeUsers: 1,
-
 			},
 			methods: {
 				toggleChat: function() {
@@ -341,6 +339,11 @@ if(authenticated) {
 	        		$('#chat-text-input').focus();
 				},
 
+			},
+			computed: {
+				activeUsers: function() {
+						return Object.values(vm_users.users).filter(d => d.active === true).length;
+				}
 			},
 			watch: {
 				unreadMessages: function() {
