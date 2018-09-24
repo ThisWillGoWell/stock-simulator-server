@@ -14,13 +14,14 @@ var (
 		`portfolio_id text NOT NULL,` +
 		`stock_id text NOT NULL,` +
 		`amount int NOT NULL,` +
+		`investment_value int NOT NULL, ` +
 		`PRIMARY KEY(uuid)` +
 		`);`
 
 	ledgerTableUpdateInsert = `INSERT into ` + ledgerTableName + `(uuid, portfolio_id, stock_id, amount) values($1, $2, $3, $4) ` +
-		`ON CONFLICT (uuid) DO UPDATE SET amount=EXCLUDED.amount`
+		`ON CONFLICT (uuid) DO UPDATE SET amount=EXCLUDED.amount investment_value=EXCLUDED.investment_value`
 
-	ledgerTableQueryStatement = "SELECT uuid, portfolio_id, stock_id, amount FROM " + ledgerTableName + `;`
+	ledgerTableQueryStatement = "SELECT uuid, portfolio_id, stock_id, amount, investment_value FROM " + ledgerTableName + `;`
 	//getCurrentPrice()
 )
 
@@ -56,8 +57,8 @@ func writeLedger(entry *ledger.Entry) {
 }
 
 func populateLedger() {
-	var uuid, portfolioId, stockId string
-	var amount int64
+	var uuid, portfolioId, stockId  string
+	var amount, investmentVal int64
 
 	rows, err := db.Query(ledgerTableQueryStatement)
 	if err != nil {
@@ -66,11 +67,11 @@ func populateLedger() {
 	}
 	defer rows.Close()
 	for rows.Next() {
-		err := rows.Scan(&uuid, &portfolioId, &stockId, &amount)
+		err := rows.Scan(&uuid, &portfolioId, &stockId, &amount, &investmentVal)
 		if err != nil {
 			log.Fatal("error in querying ledger: ", err)
 		}
-		ledger.MakeLedgerEntry(uuid, portfolioId, stockId, amount)
+		ledger.MakeLedgerEntry(uuid, portfolioId, stockId, amount, investmentVal)
 	}
 	err = rows.Err()
 	if err != nil {
