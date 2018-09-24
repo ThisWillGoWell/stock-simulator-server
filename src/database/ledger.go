@@ -18,7 +18,7 @@ var (
 		`PRIMARY KEY(uuid)` +
 		`);`
 
-	ledgerTableUpdateInsert = `INSERT into ` + ledgerTableName + `(uuid, portfolio_id, stock_id, amount, investment_value) values($1, $2, $3, $4) ` +
+	ledgerTableUpdateInsert = `INSERT into ` + ledgerTableName + `(uuid, portfolio_id, stock_id, amount, investment_value) values($1, $2, $3, $4, $5) ` +
 		`ON CONFLICT (uuid) DO UPDATE SET amount=EXCLUDED.amount, investment_value=EXCLUDED.investment_value`
 
 	ledgerTableQueryStatement = "SELECT uuid, portfolio_id, stock_id, amount, investment_value FROM " + ledgerTableName + `;`
@@ -48,7 +48,7 @@ func writeLedger(entry *ledger.Entry) {
 		db.Close()
 		panic("could not begin stocks init")
 	}
-	_, err = tx.Exec(ledgerTableUpdateInsert, entry.Uuid, entry.PortfolioId, entry.StockId, entry.Amount)
+	_, err = tx.Exec(ledgerTableUpdateInsert, entry.Uuid, entry.PortfolioId, entry.StockId, entry.Amount, entry.InvestmentValue)
 	if err != nil {
 		tx.Rollback()
 		panic("error occurred while insert stock in table " + err.Error())
