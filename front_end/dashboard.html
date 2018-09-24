@@ -183,7 +183,7 @@
 										<i class="material-icons menu-icon">business</i>
 										<div class="card-details">
 											<div class="card-category">NETWORTH</div>
-											<p> ${{ toPrice(currUserPortfolio.net_worth) }}</p>
+											<p><span class="small-money">$</span>{{ toPrice(currUserPortfolio.net_worth) }}</p>
 										</div>
 									</div>
 								</div>
@@ -194,7 +194,7 @@
 										<i class="material-icons menu-icon">local_atm</i>
 										<div class="card-details">
 											<div class="card-category">CASH</div>
-											<p> ${{ toPrice(currUserPortfolio.wallet) }}</p>
+											<p><span class="small-money">$</span>{{ toPrice(currUserPortfolio.wallet) }}</p>
 										</div>
 									</div>
 								</div>
@@ -205,7 +205,7 @@
 										<i class="material-icons menu-icon">trending_up</i>
 										<div class="card-details">
 											<div class="card-category">INVESTMENTS</div>
-											<p> ${{ toPrice(currUserPortfolio.investments) }}</p>
+											<p><span class="small-money">$</span>{{ toPrice(currUserPortfolio.investments) }}</p>
 										</div>
 									</div>
 								</div>
@@ -223,11 +223,11 @@
 										</thead>
 										<tbody>
 											<tr class="clickable" v-for="stock in currUserStocks">
-												<th class="stock-ticker-id" scope="row" v-bind:tid="stock.stock_ticker">{{ stock.stock_ticker }}</th>
-												<td style="text-align: right; padding-right: 25px;">{{ stock.amount }}</td>
+												<th class="stock-ticker-id" scope="row" v-bind:tid="stock.stock_ticker" style="line-height: 40px;">{{ stock.stock_ticker }}</th>
+												<td class="stock-price" style="text-align: right; padding-right: 25px;">{{ stock.amount }}</td>
 												<!-- Brennan these tds should use onclick idk how we have been implementing that -->
-												<td class="price-alter" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_price) }}</td>
-												<td class="price-alter" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_value) }}</td>
+												<td class="price-alter stock-price" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_price) }}</td>
+												<td class="price-alter stock-price" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_value) }}</td>
 											</tr>
 										</tbody>
 									</table>
