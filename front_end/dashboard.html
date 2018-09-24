@@ -219,6 +219,7 @@
 										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('amount')">Amount Owned</th>
 										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('stock_price')">Current Price</th>
 										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('stock_value')">Value</th>
+										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('stock_roi')" >R.O.I.</th>
 										    </tr>
 										</thead>
 										<tbody>
@@ -228,6 +229,8 @@
 												<!-- Brennan these tds should use onclick idk how we have been implementing that -->
 												<td class="price-alter stock-price" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_price) }}</td>
 												<td class="price-alter stock-price" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_value) }}</td>
+												<td class="price-alter stock-price" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_roi) }}</td>
+												
 											</tr>
 										</tbody>
 									</table>

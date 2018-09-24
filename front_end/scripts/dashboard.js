@@ -176,15 +176,17 @@ if(authenticated) {
 							
 							// Remove stocks that user owns 0 of
 							ownedStocks = ownedStocks.filter(d => d.amount !== 0);
-	
+							console.log("MY STOCKS");
+							console.log(ownedStocks);
 							// Augmenting owned stocks
 							ownedStocks = ownedStocks.map(function(d) {
 								d.stock_ticker = vm_stocks.stocks[d.stock_id].ticker_id;
 								d.stock_price = vm_stocks.stocks[d.stock_id].current_price;
 								d.stock_value = Number(d.stock_price) * Number(d.amount);
+								d.stock_roi = (Number(d.stock_price) * Number(d.amount)) - Number(d.investment_value);
 	
 								return d;
-							})
+							});
 
 					    	// Sorting array
 					    	ownedStocks = ownedStocks.sort(function(a,b) {
