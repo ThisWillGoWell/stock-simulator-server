@@ -307,12 +307,12 @@ if(authenticated) {
 						return mover.ticker_id;
 					}
 				},
-				mostShares: function() {
+				lowestStock: function() {
 					if (Object.values(vm_stocks.stocks).length === 0) {
 						return "";
 					} else {
 						stocks = Object.values(vm_stocks.stocks).map((d) => d);
-						var mover = stocks.reduce((a, b) => a.open_shares > b.open_shares ? a : b);
+						var mover = stocks.reduce((a, b) => a.current_price < b.current_price ? a : b);
 						return mover.ticker_id;
 					}
 				},
