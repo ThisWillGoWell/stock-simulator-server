@@ -15,6 +15,8 @@ if(authenticated) {
 
 
 		/* Highest level Vue data object */
+		
+		
 		var vm_stocks = new Vue({
 			data: {
 				stocks: {}
@@ -716,7 +718,12 @@ if(authenticated) {
 
 	    var routeResponse = function(msg) {
 	    	console.log(msg);
-	    	REQUESTS[msg.request_id]();
+	    	try {
+	    		REQUESTS[msg.request_id]();
+	    	} catch(err) {
+	    		console.log(err);
+	    		console.log("no request key for " + JSON.stringify(msg));
+	    	}
 	    	delete REQUESTS[msg.request_id];
 	    	console.log(REQUESTS);
 	    };
