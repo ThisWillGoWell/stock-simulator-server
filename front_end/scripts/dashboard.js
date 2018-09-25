@@ -201,7 +201,7 @@ if(authenticated) {
 						// If objects are in ledger
 						if (Object.keys(vm_ledger.ledger).length !== 0) {
 							
-							var ownedStocks = Object.values(vm_ledger.ledger).filter((d) => d.portfolio_id === portfolio_uuid);
+							var ownedStocks = Object.values(vm_ledger.ledger).filter(d => d.portfolio_id === portfolio_uuid);
 							
 							// Remove stocks that user owns 0 of
 							ownedStocks = ownedStocks.filter(d => d.amount !== 0);
@@ -215,16 +215,18 @@ if(authenticated) {
 								// TODO: css changes done here talk to brennan about his \ux22 magic 
 
 								// helper to color rows in the stock table 
-								var targetChangeElem = $("tr[uuid=\x22" + d.stock_uuid + "\x22] > td.stock-change");
-
-								if (d.stock_roi > 0) {
-									targetChangeElem.removeClass("falling");
-									targetChangeElem.addClass("rising");
-								} else {
-									targetChangeElem.removeClass("rising");
-									targetChangeElem.addClass("falling");
-								}
-
+								var targetChangeElem = $("tr[uuid=\x22" + d.stock_uuid + "\x22].clickable > td.stock-change");
+								// targetChangeElem.addClass("rising");
+								// if (d.stock_roi > 0) {
+								// 	targetChangeElem.removeClass("falling");
+								// 	targetChangeElem.addClass("rising");
+								// } else if (d.stock_roi === 0) {
+								// 	targetChangeElem.removeClass("falling");
+								// 	targetChangeElem.removeClass("rising");
+								// } else {
+								// 	targetChangeElem.removeClass("rising");
+								// 	targetChangeElem.addClass("falling");
+								// }
 								return d;
 							});
 
