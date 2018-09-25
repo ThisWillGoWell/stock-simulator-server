@@ -2,6 +2,7 @@
 // ADDED THIS BLOCK FOR AUTH - TELL JAKE
 let authenticated = sessionStorage.getItem('authenticated');
 let auth_uid = sessionStorage.getItem('uid');
+let auth_uuid = sessionStorage.getItem('uuid');
 
 var REQUESTS = {};
 var REQUEST_ID = 1;
@@ -42,7 +43,7 @@ if(authenticated) {
 		var vm_users = new Vue({
 			data: {
 			  users: {},
-			  currentUser: auth_uid,
+			  currentUser: auth_uuid,
 			},
 			methods: {
 		  		getCurrentUser: function() {
@@ -567,7 +568,7 @@ if(authenticated) {
 	    	let message_author = msg.msg.author;
 	    	let isMe = false;
 
-	    	if(vm_users.currentUser == vm_users.users[message_author].display_name) {
+	    	if(vm_users.currentUser === message_author) {
 	    		isMe = true;
 	    		//console.log(isMe);
 	    	} else {
