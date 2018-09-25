@@ -15,11 +15,15 @@ if(authenticated) {
 
 
 		/* Highest level Vue data object */
-		
-		
+		var config = new Vue({
+			data: {
+				config: {},
+			}
+		})
+
 		var vm_stocks = new Vue({
 			data: {
-				stocks: {}
+				stocks: {},
 			}
 		});
 
@@ -209,10 +213,10 @@ if(authenticated) {
 								d.stock_roi = (Number(d.stock_price) * Number(d.amount)) - Number(d.investment_value);
 
 								// TODO: css changes done here talk to brennan about his \ux22 magic 
-								
+
 								// helper to color rows in the stock table 
 								var targetChangeElem = $("tr[uuid=\x22" + d.stock_uuid + "\x22] > td.stock-change");
-								
+
 								if (d.stock_roi > 0) {
 									targetChangeElem.removeClass("falling");
 									targetChangeElem.addClass("rising");
@@ -373,12 +377,18 @@ if(authenticated) {
 	        		$('#chat-module--container').toggleClass('closed');
 	        		$('#chat-text-input').focus();
 				},
+				activeUsers: function() {
+					// stop here later when not concating a string
+					var online = Object.values(vm_users.users).filter(d => d.active === true);
 
+					var online_str = JSON.stringify(online.map(d => d.display_name).join(', '));
+					return online_str.replace(/"/g, "");
+				}
 			},
 			computed: {
-				activeUsers: function() {
-						return Object.values(vm_users.users).filter(d => d.active === true).length;
-				}
+				numActiveUsers: function() {
+					return Object.values(vm_users.users).filter(d => d.active === true).length;
+				},
 			},
 			watch: {
 				unreadMessages: function() {
@@ -391,9 +401,7 @@ if(authenticated) {
 						$("#chat-module--container .chat-title-bar span").removeClass("unread");
 					}
 				}
-
 			},
-			
 		});
 
 
@@ -678,6 +686,11 @@ if(authenticated) {
 	        if(!msg.msg.success) {
 	            let err_msg = msg.msg.err;
 	            console.log(err_msg);
+	            console.log(msg);
+	        } else {
+	            console.log(msg);
+	        	Vue.set(config.config, msg.msg.uuid, msg.msg.config);
+	        	console.log(config.config);
 	        }
 	        
 	    };
