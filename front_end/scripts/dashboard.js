@@ -132,11 +132,9 @@ if(authenticated) {
 						'request_id': REQUEST_ID.toString()
 					};
 
-					REQUESTS[REQUEST_ID] = function() {
+					REQUESTS[REQUEST_ID++] = function() {
 						alert("Display_name changed to: " + new_name);
 					};
-					// increase request ID field
-					REQUEST_ID++;
 					// Send through WebSocket
 					console.log(JSON.stringify(msg));
 			    	doSend(JSON.stringify(msg));
@@ -271,7 +269,7 @@ if(authenticated) {
 			    	}
 			    },
 			},
-			computed:{
+			computed: {
 				sortedStocks: function() {
 		    		if (Object.keys(vm_stocks.stocks).length !== 0) {
 			    	  	// Turn to array and sort 
@@ -737,7 +735,7 @@ if(authenticated) {
 	    		REQUESTS[msg.request_id]();
 	    	} catch(err) {
 	    		console.log(err);
-	    		console.log("no request key for " + JSON.stringify(msg));
+	    		console.log("no request_id key for " + JSON.stringify(msg));
 	    	}
 	    	delete REQUESTS[msg.request_id];
 	    	console.log(REQUESTS);
