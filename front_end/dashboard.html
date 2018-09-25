@@ -168,6 +168,12 @@
 					<i id="account-settings-menu-close-btn" class="material-icons">close</i>
 					<ul>
 						<li>
+							<textarea id="newDisplayName"></textarea>
+						</li>
+						<li>
+							<button id="changeDisplayName" v-on:click="changeDisplayName">Change Display Name</button>
+						</li>
+						<li>
 							<button id="btn-logout" v-on:click="logout">Logout</button>
 						</li>
 					</ul>

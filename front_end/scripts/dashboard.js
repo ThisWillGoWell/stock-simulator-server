@@ -3,6 +3,8 @@
 let authenticated = sessionStorage.getItem('authenticated');
 let auth_uid = sessionStorage.getItem('uid');
 
+var REQUESTS = {};
+var REQUEST_ID = 1;
 
 //let authenticated = sessionStorage.getItem('authenticated');
 
@@ -29,7 +31,7 @@ if(authenticated) {
 			data: {
 				portfolios: {},
 			}
-		});		
+		});
 		
 		var vm_users = new Vue({
 			data: {
@@ -98,8 +100,45 @@ if(authenticated) {
 		});
 		
 	    // Vue for username top right
-	    let displayName = new Vue({
-	    	el: "#user-info-container",
+	    var topBar = new Vue({
+	    	el: "#top-bar--container",
+	    	methods: {
+				logout: function (event) {
+					// delete cookie
+					// Get saved data from sessionStorage
+					console.log("logout");
+					sessionStorage.removeItem('authenticated');
+					sessionStorage.removeItem('auth_obj');
+					// send back to index
+					window.location.href = "/";
+			    },
+			    changeDisplayName: function() {
+			    	// Get entered display name
+			    	let new_name = $("#newDisplayName").val();
+
+			    	// Creating message that changes the users display name
+					let msg = {
+						'action': "set",
+						'msg': {
+							'set': "display_name",
+							'value': new_name
+						},
+						'request_id': REQUEST_ID.toString()
+					};
+
+					REQUESTS[REQUEST_ID] = function() {
+						alert("Display_name changed to: " + new_name);
+					};
+					// increase request ID field
+					REQUEST_ID++;
+					// Send through WebSocket
+					console.log(JSON.stringify(msg));
+			    	doSend(JSON.stringify(msg));
+
+			    	// Reset display name
+			    	$("#newDisplayName").val("");
+			    }
+			},
 			computed: {
 				userDisplayName: function() {
 	    			var currUserUUID = sessionStorage.getItem('uuid');
@@ -110,22 +149,6 @@ if(authenticated) {
 				}
 			}
 	    });
-
-		// Vue for all options data 
-		let vm_popout_menu = new Vue({
-			el: '#btn-logout',
-			methods: {
-				logout: function (event) {
-					// delete cookie
-					// Get saved data from sessionStorage
-					console.log("logout");
-					sessionStorage.removeItem('authenticated');
-					sessionStorage.removeItem('auth_obj');
-					// send back to index
-					window.location.href = "/";
-			    }
-			}
-		});
 
 		// Vue for all dashboard data
 	    var vm_dash_tab = new Vue({
@@ -631,6 +654,7 @@ if(authenticated) {
 	    		'update': routeUpdate,
 	    		'alert': routeAlert,
 	    		'chat': routeChat,
+	    		'response': routeResponse,
 	    	};
 	    	
     		if (msg.action) {
@@ -688,6 +712,13 @@ if(authenticated) {
 	    		'user': userUpdate,
 	    	};
 	    	updateRouter[msg.msg.type](msg);
+	    };
+
+	    var routeResponse = function(msg) {
+	    	console.log(msg);
+	    	REQUESTS[msg.request_id]();
+	    	delete REQUESTS[msg.request_id];
+	    	console.log(REQUESTS);
 	    };
 
 	    var stockUpdate = function(msg) {
