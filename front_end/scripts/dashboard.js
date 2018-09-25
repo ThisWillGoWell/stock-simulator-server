@@ -58,6 +58,9 @@ if(authenticated) {
 		  		}
 		  	},
 		});
+
+		console.log("----- CONFIG -----");
+		console.log(config.config);
 		console.log("----- USERS -----");
 		console.log(vm_users.users);
 		console.log("------ STOCKS ------");
