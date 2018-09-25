@@ -296,7 +296,7 @@ if(authenticated) {
 						return "";
 					} else {
 						stocks = Object.values(vm_stocks.stocks).map((d) => d);
-						var highestStock = stocks.reduce(function(a, b){ return a.current_price > b.current_price ? a : b });
+						var highestStock = stocks.reduce((a, b) => a.current_price > b.current_price ? a : b);
 						return highestStock.ticker_id;
 					}
 				},

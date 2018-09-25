@@ -403,8 +403,8 @@
 				</div>
 			</section>
 			<section id="chat-module--container" class="closed">
-				<div class="chat-title-bar">
-					<span v-bind:title="activeUsers()">All Chat ({{ numActiveUsers }})</span>
+				<div class="chat-title-bar" v-bind:title="activeUsers()">
+					<span>All Chat ({{ numActiveUsers }})</span>
 					<button v-on:click="toggleChat()"></button>
 				</div>
 
