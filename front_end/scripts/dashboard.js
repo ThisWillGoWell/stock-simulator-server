@@ -935,6 +935,22 @@ if(authenticated) {
 	    			var clickedStock = Object.values(vm_stocks.stocks).filter(d => d.uuid === buySellModal.stock_uuid)[0];
 	    			return clickedStock;
 	    		}
+	    	},
+	    	watch: {
+	    		// Resetting amount if more than can be traded is selected
+	    		buySellAmount: function() {
+	    			if (buySellModal.isBuying) {
+	    				if (buySellModal.buySellAmount > buySellModal.stock.open_shares) {
+	    					buySellModal.buySellAmount = buySellModal.stock.open_shares;
+	    				}
+	    			} else {
+	    				//determine current users holdings
+	    				let stock = vm_dash_tab.currUserStocks.filter(d => d.stock_id === buySellModal.stock_uuid)[0];
+	    				if (buySellModal.buySellAmount > stock.amount) {
+	    					buySellModal.buySellAmount = stock.amount;
+	    				}
+	    			}
+	    		}
 	    	}
 	    });
 
