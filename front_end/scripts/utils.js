@@ -40,18 +40,3 @@ function getMoverStock(stocks) {
 	var mover = stocks.reduce((a, b) => a.change > b.change ? a : b);
 	return mover;
 };
-
-
-function sorter(a, b, ind) {
-	if (a[vm_stocks_tab.sortCols[ind]] > b[vm_stocks_tab.sortCols[ind]]) {
-		return vm_stocks_tab.sortDirections[ind];
-	}
-	if (a[vm_stocks_tab.sortCols[ind]] < b[vm_stocks_tab.sortCols[ind]]) {
-		return -vm_stocks_tab.sortDirections[ind];
-	}
-	if (ind === (vm_stocks_tab.sortCols.length-1)) {
-		return 0;
-	} else {
-		return sorter(a, b, ind+1);
-	}
-};

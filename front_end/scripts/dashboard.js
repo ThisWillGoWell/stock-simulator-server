@@ -315,7 +315,21 @@ if(authenticated) {
 				// },
 				multiSortStocks: function() {
 					if (Object.keys(vm_stocks.stocks).length !== 0) {
-												
+						
+						function sorter(a, b, ind) {
+							if (a[vm_stocks_tab.sortCols[ind]] > b[vm_stocks_tab.sortCols[ind]]) {
+								return vm_stocks_tab.sortDirections[ind];
+							}
+							if (a[vm_stocks_tab.sortCols[ind]] < b[vm_stocks_tab.sortCols[ind]]) {
+								return -vm_stocks_tab.sortDirections[ind];
+							}
+							if (ind === (vm_stocks_tab.sortCols.length-1)) {
+								return 0;
+							} else {
+								return sorter(a, b, ind+1);
+							}
+						};
+							
 						// Get all stocks
 						var stock_array = Object.values(vm_stocks.stocks);
 						// Sort
