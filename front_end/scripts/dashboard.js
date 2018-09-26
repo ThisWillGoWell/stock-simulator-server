@@ -256,40 +256,74 @@ if(authenticated) {
 			data: {
 			  sortBy: 'ticker_id',
 			  sortDesc: 1,
+			  sortCols: ["ticker_id", "open_shares", "change", "current_price"],
+			  sortDirections: [-1, -1, -1, -1],
+			  reSort: 1,
 			},
 			methods: {
 				toPrice: formatPrice,
 			    // on column name clicks
-			    sortCol: function(col) {
-					// If sorting by selected column
-			    	if (vm_stocks_tab.sortBy == col) {
-						// Change sort direction
-			    		// console.log(col);
-			    		vm_stocks_tab.sortDesc = -vm_stocks_tab.sortDesc;
-			    	} else {
-						// Change sorted column
-			    		vm_stocks_tab.sortBy = col;
+			  //   sortCol: function(col) {
+					// // If sorting by selected column
+			  //   	if (vm_stocks_tab.sortBy == col) {
+					// 	// Change sort direction
+			  //   		// console.log(col);
+			  //   		vm_stocks_tab.sortDesc = -vm_stocks_tab.sortDesc;
+			  //   	} else {
+					// 	// Change sorted column
+			  //   		vm_stocks_tab.sortBy = col;
 			    		
+			  //   	}
+			  //   },
+			    multiSort: function(col) {
+			    	// if old first sort is the new first sort
+			    	if (vm_stocks_tab.sortCols[0] === col) {
+			    		// change sort direction
+			    		vm_stocks_tab.sortDirections[0] *= -1;
+			    	} else {
+			    		// Where is the new sort column
+			    		let ind = vm_stocks_tab.sortCols.indexOf(col);
+			    		// Remove new column from old spot
+			    		vm_stocks_tab.sortCols.splice(ind, 1);
+			    		vm_stocks_tab.sortDirections.splice(ind, 1);
+			    		// Push to the beginning of the array
+			    		vm_stocks_tab.sortCols.unshift(col);
+			    		vm_stocks_tab.sortDirections.unshift(1);
 			    	}
-			    },
+			    	vm_stocks_tab.reSort++;
+			    }
 			},
 			computed: {
-				sortedStocks: function() {
-		    		if (Object.keys(vm_stocks.stocks).length !== 0) {
-			    	  	// Turn to array and sort 
-						var stock_array = Object.values(vm_stocks.stocks);
+				// sortedStocks: function() {
+		  //   		if (Object.keys(vm_stocks.stocks).length !== 0) {
+			 //    	  	// Turn to array and sort 
+				// 		var stock_array = Object.values(vm_stocks.stocks);
 
-				    	// Sorting array
-				    	stock_array = stock_array.sort(function(a,b) {
-				    		if (a[vm_stocks_tab.sortBy] > b[vm_stocks_tab.sortBy]) {
-				    			return -vm_stocks_tab.sortDesc;
-				    		}
-				    		if (a[vm_stocks_tab.sortBy] < b[vm_stocks_tab.sortBy]) {
-				    			return vm_stocks_tab.sortDesc;
-				    		}
-				    		return 0;
-				    	})
-				    	return stock_array;
+				//     	// Sorting array
+				//     	stock_array = stock_array.sort(function(a,b) {
+				//     		if (a[vm_stocks_tab.sortBy] > b[vm_stocks_tab.sortBy]) {
+				//     			return -vm_stocks_tab.sortDesc;
+				//     		}
+				//     		if (a[vm_stocks_tab.sortBy] < b[vm_stocks_tab.sortBy]) {
+				//     			return vm_stocks_tab.sortDesc;
+				//     		}
+				//     		return 0;
+				//     	})
+				//     	return stock_array;
+				// 	}
+				// 	return [];
+				// },
+				multiSortStocks: function() {
+					if (Object.keys(vm_stocks.stocks).length !== 0) {
+												
+						// Get all stocks
+						var stock_array = Object.values(vm_stocks.stocks);
+						// Sort
+						stock_array = stock_array.sort(function(a,b) {
+							return sorter(a, b, 0);
+						});
+
+						return stock_array;
 					}
 					return [];
 				},
