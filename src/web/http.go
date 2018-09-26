@@ -22,11 +22,9 @@ func StartHandlers() {
 	//fmt.Println(shareDir)
 	//var fs = http.FileServer(http.Dir(shareDir))
 
-
 	http.HandleFunc("/load", func(w http.ResponseWriter, r *http.Request) {
-		go app.LoadVars()
-		<- time.After(time.Second)
-		http.Redirect(w, r, "/", 200)
+		app.LoadConfig()
+		http.Redirect(w, r, "/", 301)
 	})
 
 	http.HandleFunc("/ws", handleConnections)
@@ -37,7 +35,7 @@ func StartHandlers() {
 
 }
 
-func ServePath(p string){
+func ServePath(p string) {
 
 	var fs = http.FileServer(http.Dir(p))
 	http.Handle("/", fs)
@@ -49,7 +47,6 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		return true
 	},
-
 }
 
 func handleConnections(w http.ResponseWriter, r *http.Request) {
@@ -74,12 +71,12 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 		loginErr := client.InitialReceive(string(msg), socketTX, socketRX)
 		if loginErr != nil {
 			val, err := json.Marshal(messages.FailedLogin(loginErr))
-			if err != nil{
+			if err != nil {
 				fmt.Print(err)
 			}
 			ws.WriteMessage(websocket.TextMessage, val)
 			// Give time for the connection to send the error
-			<- time.After(100 * time.Millisecond)
+			<-time.After(100 * time.Millisecond)
 			return
 		} else {
 			break

@@ -1,0 +1,226 @@
+{
+  "stocks": {
+    "CHUNT": {
+      "name": "Slut Hut",
+      "change": "1s"
+    },
+    "ABBV": {
+      "name": "AbbVie Inc.",
+      "change": "10s"
+    },
+    "ABT": {
+      "name": "Abbott Laboratories",
+      "change": "10s"
+    },
+    "ACN": {
+      "name": "Accenture plc",
+      "change": "10s"
+    },
+    "AGN": {
+      "name": "Allergan plc",
+      "change": "10s"
+    },
+    "AIG": {
+      "name": "American International Group Inc.",
+      "change": "10s"
+    },
+    "ALL": {
+      "name": "Allstate Corp.",
+      "change": "10s"
+    },
+    "AMGN": {
+      "name": "Amgen Inc.",
+      "change": "10s"
+    },
+    "AMZN": {
+      "name": "Amazon.com",
+      "change": "10s"
+    },
+    "AXP": {
+      "name": "American Express Inc.",
+      "change": "10s"
+    },
+    "BA": {
+      "name": "Boeing Co.",
+      "change": "10s"
+    },
+    "BAC": {
+      "name": "Bank of America Corp",
+      "change": "10s"
+    },
+    "BIIB": {
+      "name": "Biogen Idec",
+      "change": "10s"
+    },
+    "BK": {
+      "name": "The Bank of New York Mellon",
+      "change": "10s"
+    },
+    "BKNG": {
+      "name": "Booking Holdings",
+      "change": "10s"
+    },
+    "BLK": {
+      "name": "BlackRock Inc",
+      "change": "10s"
+    },
+    "BMY": {
+      "name": "Bristol-Myers Squibb",
+      "change": "10s"
+    },
+    "BRK.B": {
+      "name": "Berkshire Hathaway",
+      "change": "10s"
+    },
+    "C": {
+      "name": "Citigroup Inc",
+      "change": "10s"
+    },
+    "CAT": {
+      "name": "Caterpillar Inc",
+      "change": "10s"
+    },
+    "CELG": {
+      "name": "Celgene Corp",
+      "change": "10s"
+    },
+    "CHTR": {
+      "name": "Charter Communications",
+      "change": "10s"
+    },
+    "CL": {
+      "name": "Colgate-Palmolive Co.",
+      "change": "10s"
+    },
+    "CMCSA": {
+      "name": "Comcast Corporation",
+      "change": "10s"
+    },
+    "COF": {
+      "name": "Capital One Financial Corp.",
+      "change": "10s"
+    },
+    "COP": {
+      "name": "ConocoPhillips",
+      "change": "10s"
+    },
+    "COST": {
+      "name": "Costco",
+      "change": "10s"
+    },
+    "CSCO": {
+      "name": "Cisco Systems",
+      "change": "10s"
+    },
+    "CVS": {
+      "name": "CVS Health",
+      "change": "10s"
+    },
+    "CVX": {
+      "name": "Chevron",
+      "change": "10s"
+    },
+    "DHR": {
+      "name": "Danaher",
+      "change": "10s"
+    },
+    "DIS": {
+      "name": "The Walt Disney Company",
+      "change": "10s"
+    },
+    "DUK": {
+      "name": "Duke Energy",
+      "change": "10s"
+    },
+    "DWDP": {
+      "name": "DowDuPont",
+      "change": "10s"
+    },
+    "EMR": {
+      "name": "Emerson Electric Co.",
+      "change": "10s"
+    },
+    "EXC": {
+      "name": "Exelon",
+      "change": "10s"
+    },
+    "F": {
+      "name": "Ford Motor",
+      "change": "10s"
+    },
+    "FB": {
+      "name": "Facebook",
+      "change": "10s"
+    },
+    "FDX": {
+      "name": "FedEx",
+      "change": "10s"
+    },
+    "FOX": {
+      "name": "21st Century Fox",
+      "change": "10s"
+    },
+    "FOXA": {
+      "name": "21st Century Fox",
+      "change": "10s"
+    },
+    "GD": {
+      "name": "General Dynamics",
+      "change": "10s"
+    },
+    "GE": {
+      "name": "General Electric Co.",
+      "change": "10s"
+    },
+    "GILD": {
+      "name": "Gilead Sciences",
+      "change": "10s"
+    },
+    "GM": {
+      "name": "General Motors",
+      "change": "10s"
+    },
+    "GOOG": {
+      "name": "Alphabet Inc",
+      "change": "10s"
+    },
+    "GOOGL": {
+      "name": "Alphabet Inc",
+      "change": "10s"
+    },
+    "GS": {
+      "name": "Goldman Sachs",
+      "change": "10s"
+    },
+    "HAL": {
+      "name": "Halliburton",
+      "change": "10s"
+    },
+    "HD": {
+      "name": "Home Depot",
+      "change": "10s"
+    },
+    "HON": {
+      "name": "Honeywell",
+      "change": "10s"
+    },
+    "IBM": {
+      "name": "International Business Machines",
+      "change": "10s"
+    }
+  },
+  "accounts": {
+    "Will": {
+      "display_name": "Lil Guzman",
+      "password": "pass"
+    },
+    "Chunt": {
+      "display_name": "Chuntastic",
+      "password": "pass"
+    },
+    "Jake": {
+      "display_name": "jake1228",
+      "password": "pass"
+    }
+  }
+}

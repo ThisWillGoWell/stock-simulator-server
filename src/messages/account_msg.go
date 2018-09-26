@@ -3,6 +3,7 @@ package messages
 const LoginAction = "login"
 const NewAccountAction = "new_account"
 const RenewAction = "renew"
+
 type LoginMessage struct {
 	UserName string `json:"username"`
 	Password string `json:"password"`
@@ -17,7 +18,8 @@ func (baseMessage *BaseMessage) IsAccountCreate() bool {
 type RenewMessage struct {
 	SessionToken string `json:"token"`
 }
-func (*RenewMessage) message(){ return }
+
+func (*RenewMessage) message() { return }
 func (baseMessage *BaseMessage) IsRenew() bool {
 	return baseMessage.Action == RenewAction
 }
@@ -35,11 +37,12 @@ func (baseMessage *BaseMessage) IsLogin() bool {
 }
 
 type AccountResponseMessage struct {
-	Success bool   `json:"success"`
-	Config map[string]interface{} `json:"config"`
-	SessionToken string `json:"token,omitempty"`
-	Uuid    string `json:"uuid,omitempty"`
-	Err     string `json:"err,omitempty"`
+	Success      bool                   `json:"success"`
+	Config       map[string]interface{} `json:"config"`
+	SessionToken string                 `json:"token,omitempty"`
+	Uuid         string                 `json:"uuid,omitempty"`
+	Err          string                 `json:"err,omitempty"`
+	Init		 map[string]interface{} `json:"init,omitempty"`
 }
 
 func (*AccountResponseMessage) message() { return }
@@ -48,11 +51,11 @@ func SuccessLogin(userGuid, token string, config map[string]interface{}) *BaseMe
 	return &BaseMessage{
 		Action: LoginAction,
 		Msg: &AccountResponseMessage{
-			Success: true,
+			Success:      true,
 			SessionToken: token,
-			Uuid:    userGuid,
-			Err:     "",
-			Config: config,
+			Uuid:         userGuid,
+			Err:          "",
+			Config:       config,
 		},
 	}
 }

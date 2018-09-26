@@ -28,9 +28,9 @@ var Stocks = make(map[string]*Stock)
 
 func StartStockStimulation() {
 	/*
-	when simulation gets emitted, it will trigger all the tings listening to it
-	to run a session
-	 */
+		when simulation gets emitted, it will trigger all the tings listening to it
+		to run a session
+	*/
 	ticker := time.NewTicker(timeSimulationPeriod)
 	simulation := make(chan interface{})
 	timeSimulation.RegisterInput(simulation)
@@ -50,15 +50,15 @@ type stockManager struct {
 
 //Stock type for storing the stock information
 type Stock struct {
-	Uuid          string                        `json:"uuid"`
-	Name          string                        `json:"name"`
-	TickerId      string                        `json:"ticker_id"`
-	CurrentPrice  int64                 	    `json:"current_price" change:"-"`
-	OpenShares    int64                      	`json:"open_shares" change:"-"`
-	ChangeDuration time.Duration				`json:"-"`
-	PriceChanger  PriceChange                   `json:"-"`
-	UpdateChannel *duplicator.ChannelDuplicator `json:"-"`
-	lock          *lock.Lock                    `json:"-"`
+	Uuid           string                        `json:"uuid"`
+	Name           string                        `json:"name"`
+	TickerId       string                        `json:"ticker_id"`
+	CurrentPrice   int64                         `json:"current_price" change:"-"`
+	OpenShares     int64                         `json:"open_shares" change:"-"`
+	ChangeDuration time.Duration                 `json:"-"`
+	PriceChanger   PriceChange                   `json:"-"`
+	UpdateChannel  *duplicator.ChannelDuplicator `json:"-"`
+	lock           *lock.Lock                    `json:"-"`
 }
 
 func (stock *Stock) GetType() string {
@@ -83,13 +83,13 @@ func MakeStock(uuid, tickerID, name string, startPrice, openShares int64, runInt
 	}
 	stock := &Stock{
 		ChangeDuration: runInterval,
-		OpenShares:    openShares,
-		Uuid:          uuid,
-		lock:          lock.NewLock(fmt.Sprintf("stock-%s", tickerID)),
-		Name:          name,
-		TickerId:      tickerID,
-		CurrentPrice:  startPrice,
-		UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("stock-%s-update", tickerID)),
+		OpenShares:     openShares,
+		Uuid:           uuid,
+		lock:           lock.NewLock(fmt.Sprintf("stock-%s", tickerID)),
+		Name:           name,
+		TickerId:       tickerID,
+		CurrentPrice:   startPrice,
+		UpdateChannel:  duplicator.MakeDuplicator(fmt.Sprintf("stock-%s-update", tickerID)),
 	}
 	//stock.lock.EnableDebug()
 
@@ -142,14 +142,19 @@ func (stock *Stock) ChangeDetected() reflect.Type {
 // Some thing that can take in a stock and change the current price
 type PriceChange interface {
 	change(stock *Stock)
+	GetTargetPrice() int64
 }
 
 // Random Price implements priceChange
 type RandomPrice struct {
 	RunPercent            float64 `json:"run_percent"`
-	TargetPrice           int64 `json:"target_price"`
+	TargetPrice           int64   `json:"target_price"`
 	PercentToChangeTarget float64 `json:"change_percent"`
 	Volatility            float64 `json:"volatility"`
+}
+
+func (randPrice *RandomPrice) GetTargetPrice() int64{
+	return randPrice.TargetPrice
 }
 
 //change the stock using the changer
@@ -164,11 +169,11 @@ func (randPrice *RandomPrice) change(stock *Stock) {
 	}
 
 	//can make this a lot more interesting, like adding in the ability for it to drop
-	change := float64(randPrice.TargetPrice - stock.CurrentPrice) /
+	change := float64(randPrice.TargetPrice-stock.CurrentPrice) /
 		utils.MapNum(randPrice.Volatility, volatilityMin, volatilityMax, volatilityMinTurns, volatilityMaxTurns)
 
 	stock.CurrentPrice = stock.CurrentPrice + int64(change)
-		stock.UpdateChannel.Offer(stock)
+	stock.UpdateChannel.Offer(stock)
 
 }
 
@@ -206,7 +211,7 @@ func GetAllStocks() []*Stock {
 	return v
 }
 
-func (s *Stock) Update(){
+func (s *Stock) Update() {
 	s.UpdateChannel.Offer(s)
 }
 

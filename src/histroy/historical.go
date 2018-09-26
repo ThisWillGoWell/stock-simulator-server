@@ -12,60 +12,57 @@ import (
 	"time"
 )
 
-
 type Query struct {
-	Message *messages.QueryMessage
-	Type string
-	QueryUUID string
-	QueryField string
-	TimeInterval string
-	TimeLength string
-	Limit int
+	Message         *messages.QueryMessage
+	Type            string
+	QueryUUID       string
+	QueryField      string
+	TimeInterval    string
+	TimeLength      string
+	Limit           int
 	ResponseChannel chan *messages.QueryResponse
 }
 
-func BuildQuery(qm *messages.QueryMessage) *Query{
+func BuildQuery(qm *messages.QueryMessage) *Query {
 	duration := qm.Length.Duration
 	var limit int
 	var interval, length string
 
 	t := "time"
-	if duration == time.Duration(0){
+	if duration == time.Duration(0) {
 		t = "limit"
 		limit = qm.NumberPoints
-		if qm.NumberPoints > 1000{
+		if qm.NumberPoints > 1000 {
 			limit = 1000
 		}
-	}else{
-		interval = fmt.Sprintf("%d seconds", int(duration.Seconds()) / qm.NumberPoints)
+	} else {
+		interval = fmt.Sprintf("%d seconds", int(duration.Seconds())/qm.NumberPoints)
 		length = fmt.Sprintf("%d seconds", int(duration.Seconds()))
 	}
 
 	return &Query{
-		Message: qm,
-		Type: t,
-		QueryUUID: qm.QueryUUID,
-		QueryField: qm.QueryField,
-		Limit: limit,
-		TimeInterval: interval,
-		TimeLength: length,
+		Message:         qm,
+		Type:            t,
+		QueryUUID:       qm.QueryUUID,
+		QueryField:      qm.QueryField,
+		Limit:           limit,
+		TimeInterval:    interval,
+		TimeLength:      length,
 		ResponseChannel: make(chan *messages.QueryResponse, 1),
 	}
 }
-
-
 
 /**
 query historical data of uuid from startTime to endTime
 prob should make sure they don't query like 1000 years or something
 */
-func MakeQuery(qm *messages.QueryMessage) *Query{
+func MakeQuery(qm *messages.QueryMessage) *Query {
 	q := BuildQuery(qm)
 	go makeQuery(q)
 	return q
 }
 
-func makeQuery(query *Query ) {
+func makeQuery(query *Query) {
 	val, exists := utils.GetVal(query.QueryUUID)
 	if !exists {
 		failedQuery(query, errors.New("uuid does not exist"))
@@ -101,25 +98,25 @@ func makeQuery(query *Query ) {
 		fmt.Printf("%T", v)
 	}
 
-	if err != nil{
+	if err != nil {
 		failedQuery(query, err)
 	}
 	successQuery(query, vals)
 }
 
-func failedQuery(query *Query, err error){
+func failedQuery(query *Query, err error) {
 	query.ResponseChannel <- &messages.QueryResponse{
 		Success: false,
-		Error: err.Error(),
+		Error:   err.Error(),
 		Message: query.Message,
 	}
 }
 
-func successQuery(query *Query, values [][]interface{} ){
+func successQuery(query *Query, values [][]interface{}) {
 	query.ResponseChannel <- &messages.QueryResponse{
 		Success: true,
-		Error:"",
-		Points: values,
+		Error:   "",
+		Points:  values,
 		Message: query.Message,
 	}
 }

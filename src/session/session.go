@@ -10,6 +10,7 @@ import (
 
 const expireTime = time.Hour * 24
 const tokenLength = 32
+
 var sessions = make(map[string]*sessionToken)
 var sessionsLock = lock.NewLock("sessions")
 
@@ -19,11 +20,11 @@ type sessionToken struct {
 	lastUse      time.Time
 }
 
-func NewSessionToken(userId string) string{
+func NewSessionToken(userId string) string {
 	sessionsLock.Acquire("New token")
 	defer sessionsLock.Release()
 	newToken, err := generateRandomString(tokenLength)
-	if err != nil{
+	if err != nil {
 		print("new token err: " + err.Error())
 		return ""
 	}
@@ -46,11 +47,11 @@ func NewSessionToken(userId string) string{
 	return newToken
 }
 
-func GetUserId(sessionToken string) (string, error){
+func GetUserId(sessionToken string) (string, error) {
 	sessionsLock.Acquire("get sessions")
 	defer sessionsLock.Release()
 	token, exists := sessions[sessionToken]
-	if !exists{
+	if !exists {
 		return "", errors.New("invalid token")
 	}
 	token.lastUse = time.Now()
@@ -58,20 +59,20 @@ func GetUserId(sessionToken string) (string, error){
 
 }
 
-func StartSessionCleaner(){
+func StartSessionCleaner() {
 	go runCleanSessionTokens()
 }
 
-func runCleanSessionTokens(){
+func runCleanSessionTokens() {
 	for {
 		sessionsLock.Acquire("clean sessions")
 		for key, tokens := range sessions {
-			if time.Since(tokens.lastUse) > expireTime{
+			if time.Since(tokens.lastUse) > expireTime {
 				delete(sessions, key)
 			}
 		}
 		sessionsLock.Release()
-		<- time.After(time.Hour)
+		<-time.After(time.Hour)
 	}
 }
 
@@ -90,8 +91,6 @@ func generateRandomBytes(n int) ([]byte, error) {
 	return b, nil
 }
 
-
-
 // GenerateRandomString returns a securely generated random string.
 // It will return an error if the system's secure random
 // number generator fails to function correctly, in which
@@ -107,4 +106,3 @@ func generateRandomString(n int) (string, error) {
 	}
 	return string(bytes), nil
 }
-

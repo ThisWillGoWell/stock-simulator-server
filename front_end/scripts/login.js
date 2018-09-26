@@ -259,9 +259,9 @@ $( document ).ready(function() {
 
 	/*  WEBSOCKETS */
 
-	let externalServer = "mockstarket.com";
+	let externalServer = "localhost:8000";
     let localServer = window.location.host;
-    let wsUri = "wss://"+ externalServer + "/ws";
+    let wsUri = "ws://"+ externalServer + "/ws";
     var webSocket;
     var uid = "";
 

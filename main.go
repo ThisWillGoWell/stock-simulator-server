@@ -47,7 +47,7 @@ func main() {
 	}
 	//valuable.ValuablesLock.EnableDebug()
 	//ledger.EntriesLock.EnableDebug()
-	
+
 	//Wiring of system
 	wires.ConnectWires(disableDb)
 	//this takes the subscribe output and converts it to a message
@@ -58,8 +58,8 @@ func main() {
 	order.Run()
 	valuable.StartStockStimulation()
 
-	if autoLoad{
-		go app.LoadVars()
+	if autoLoad {
+		go app.LoadConfig()
 	}
 	//go app.LoadVars()
 	go web.StartHandlers()

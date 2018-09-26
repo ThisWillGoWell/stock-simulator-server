@@ -23,10 +23,10 @@ var NewObjectChannel = duplicator.MakeDuplicator("new-portfolio")
 Portfolios are the $$$ part of a user
 */
 type Portfolio struct {
-	UserUUID string  `json:"user_uuid"`
-	UUID     string  `json:"uuid"`
-	Wallet   int64 `json:"wallet" change:"-"`
-	NetWorth int64 `json:"net_worth" change:"-"`
+	UserUUID string `json:"user_uuid"`
+	UUID     string `json:"uuid"`
+	Wallet   int64  `json:"wallet" change:"-"`
+	NetWorth int64  `json:"net_worth" change:"-"`
 
 	//keeps track of how much $$$ they own, used for some slight optomization on calc networth
 	// stock_uuid -> ledgerObject
@@ -66,7 +66,7 @@ func MakePortfolio(uuid, userUUID string, wallet int64) (*Portfolio, error) {
 			UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-update", uuid)),
 			Lock:          lock.NewLock(fmt.Sprintf("portfolio-%s", uuid)),
 			UpdateInput:   duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-valueable-update", uuid)),
-			NetWorth: wallet,
+			NetWorth:      wallet,
 		}
 	Portfolios[uuid] = port
 	//port.Lock.EnableDebug()
@@ -89,7 +89,7 @@ func (port *Portfolio) valuableUpdate() {
 	}
 }
 
-func (port *Portfolio) Update(){
+func (port *Portfolio) Update() {
 	// need to acquire here or else deadlock on the trade
 	ledger.EntriesLock.Acquire("portfolio-update")
 	defer ledger.EntriesLock.Release()

@@ -6,13 +6,17 @@ import (
 	"fmt"
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
+	"github.com/stock-simulator-server/src/messages"
+	"github.com/stock-simulator-server/src/notification"
 	"github.com/stock-simulator-server/src/portfolio"
 	"github.com/stock-simulator-server/src/session"
+	"github.com/stock-simulator-server/src/titles"
 	"github.com/stock-simulator-server/src/utils"
+	"time"
 )
 
 // keep the uuid to user
-var userList = make(map[string]*User)
+var UserList = make(map[string]*User)
 
 // keep the username to uuid list
 var uuidList = make(map[string]string)
@@ -24,22 +28,24 @@ var UpdateChannel = duplicator.MakeDuplicator("User Update")
 const minPasswordLength = 4
 const minDisplayNameLength = 4
 const maxDisplayNameLength = 20
-
+const notificationTimeLimit = 1 * time.Hour
 /*
 User Object
 Represents a unique individual of the system
 */
 type User struct {
-	UserName      string     `json:"-"`
-	Password      string     `json:"-"`
-	DisplayName   string     `json:"display_name" change:"-"`
-	Uuid          string     `json:"-"`
-	Active        bool       `json:"active" change:"-"`
-	ActiveClients int64      `json:"-"`
-	Lock          *lock.Lock `json:"-"`
-	PortfolioId   string     `json:"portfolio_uuid"`
-	Config 		  map[string]interface{}	 `json:"-"`
-	ConfigStr     string			`json:"-"`
+	UserName      string                 `json:"-"`
+	Password      string                 `json:"-"`
+	DisplayName   string                      `json:"display_name" change:"-"`
+	Uuid          string                      `json:"-"`
+	Active        bool                        `json:"active" change:"-"`
+	ActiveClients int64                       `json:"-"`
+	Lock          *lock.Lock                  `json:"-"`
+	PortfolioId   string                      `json:"portfolio_uuid"`
+	Config        map[string]interface{}      `json:"-"`
+	ConfigStr     string                      `json:"-"`
+	Level         int64                       `json:"level" change:"-"`
+	Notifications []*messages.NotificationMsg `json:"-"`
 }
 
 /**
@@ -53,25 +59,25 @@ func GetUser(username, password string) (*User, error) {
 	if !exists {
 		return nil, errors.New("user does not exist")
 	}
-	user := userList[userUuid]
+	user := UserList[userUuid]
 
 	if !comparePasswords(user.Password, password) {
-		return nil, errors.New("Password is incorrect")
+		return nil, errors.New("password is incorrect")
 	}
 	user.Active = true
 	UpdateChannel.Offer(user)
 	return user, nil
 }
 
-func RenewUser(sessionToken string)(*User, error) {
+func RenewUser(sessionToken string) (*User, error) {
 	userId, err := session.GetUserId(sessionToken)
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 	userListLock.Acquire("renew-user")
 	defer userListLock.Release()
-	user, exists := userList[userId]
-	if !exists{
+	user, exists := UserList[userId]
+	if !exists {
 		return nil, errors.New("user found in session list but not in current users")
 	}
 	user.Active = true
@@ -83,21 +89,21 @@ func RenewUser(sessionToken string)(*User, error) {
 Build a new user
 set their Password to that provided
 */
-func NewUser(username, displayName,  password string) (*User, error) {
+func NewUser(username, displayName, password string) (*User, error) {
 	uuid := utils.PseudoUuid()
-	if len(username) > 20{
+	if len(username) > 20 {
 		return nil, errors.New("username too long")
 	}
-	if len(username) < 4{
+	if len(username) < 4 {
 		return nil, errors.New("username too short")
 	}
 	if len(displayName) > maxDisplayNameLength {
 		return nil, errors.New("display name too long")
 	}
-	if len(displayName) < minDisplayNameLength{
+	if len(displayName) < minDisplayNameLength {
 		return nil, errors.New("display name too short")
 	}
-	if len(password) < minPasswordLength{
+	if len(password) < minPasswordLength {
 		return nil, errors.New("password too short")
 	}
 	hashedPassword := hashAndSalt(password)
@@ -120,12 +126,12 @@ func MakeUser(uuid, username, displayName, password, portfolioUUID, config strin
 	}
 	var configMap map[string]interface{}
 	err := json.Unmarshal([]byte(config), &configMap)
-	if err != nil{
+	if err != nil {
 		fmt.Println("error making config json in MakeUser: ", err)
 		configMap = make(map[string]interface{})
 	}
 	uuidList[username] = uuid
-	userList[uuid] = &User {
+	UserList[uuid] = &User{
 		UserName:    username,
 		DisplayName: displayName,
 		Password:    password,
@@ -134,11 +140,12 @@ func MakeUser(uuid, username, displayName, password, portfolioUUID, config strin
 		Lock:        lock.NewLock("user"),
 		Active:      true,
 		Config:      configMap,
-		ConfigStr: config,
+		ConfigStr:   config,
+		Notifications: make([]*messages.NotificationMsg, 0),
 	}
-	NewObjectChannel.Offer(userList[uuid])
-	utils.RegisterUuid(uuid, userList[uuid])
-	return userList[uuid], nil
+	NewObjectChannel.Offer(UserList[uuid])
+	utils.RegisterUuid(uuid, UserList[uuid])
+	return UserList[uuid], nil
 
 }
 
@@ -171,25 +178,24 @@ Turn the user map into a list so they can be sent to a rx client
 func GetAllUsers() []*User {
 	userListLock.Acquire("get all users")
 	defer userListLock.Release()
-	lst := make([]*User, len(userList))
+	lst := make([]*User, len(UserList))
 	i := 0
-	for _, val := range userList {
+	for _, val := range UserList {
 		lst[i] = val
 		i += 1
 	}
 	return lst
 }
 
-func  (user *User) SetConfig(config map[string]interface{}){
+func (user *User) SetConfig(config map[string]interface{}) {
 	user.Config = config
 	configBytes, _ := json.Marshal(config)
 	user.ConfigStr = string(configBytes)
 	UpdateChannel.Offer(user)
 }
 
-
-func  (user *User) SetPassword(pass string) error{
-	if len(pass) > minPasswordLength{
+func (user *User) SetPassword(pass string) error {
+	if len(pass) > minPasswordLength {
 		return errors.New("password too short")
 	}
 	hashedPassword := hashAndSalt(pass)
@@ -198,8 +204,7 @@ func  (user *User) SetPassword(pass string) error{
 	return nil
 }
 
-
-func  (user *User) SetDisplayName(displayName string)error{
+func (user *User) SetDisplayName(displayName string) error {
 	if len(displayName) > maxDisplayNameLength {
 		return errors.New("display name too long")
 	}
@@ -209,4 +214,53 @@ func  (user *User) SetDisplayName(displayName string)error{
 	user.DisplayName = displayName
 	UpdateChannel.Offer(user)
 	return nil
+}
+
+func (user *User) LevelUp() error {
+	user.Lock.Acquire("level up")
+	port := portfolio.Portfolios[user.PortfolioId]
+	port.Lock.Acquire("level up")
+	nextLevel := user.Level + 1
+	nextTitle, exists := titles.Titles[nextLevel]
+	if !exists {
+		return errors.New("there is no next level")
+	}
+	if port.Wallet < nextTitle.Cost {
+		return errors.New("not enough $$")
+	}
+	port.Wallet = port.Wallet - nextTitle.Cost
+	user.Level = nextLevel
+
+	go port.Update()
+	UpdateChannel.Offer(user)
+	return nil
+}
+
+func (user *User) AddNotification(msg *notification.Notification) {
+	user.Notifications = append(user.Notifications, msg)
+}
+
+func StartNotifcationCleaner(){
+	go runCleanNotifications()
+}
+
+func runCleanNotifications(){
+	for {
+		userListLock.Acquire("clean notifications")
+		for _, user := range UserList{
+			user.Lock.Acquire("clean notifications")
+			newStartIndex := 0
+			for _, notification := range user.Notifications{
+				if time.Since(notification.Timestamp) < notificationTimeLimit {
+					break
+				} else{
+					newStartIndex += 1
+				}
+			}
+			user.Notifications = user.Notifications[newStartIndex:]
+			userListLock.Release()
+		}
+		userListLock.Release()
+		<-time.After(time.Hour)
+	}
 }

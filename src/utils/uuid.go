@@ -19,7 +19,7 @@ have the database be the one assigning uuid
 func PseudoUuid() string {
 	uuidLock.Acquire("new uuid")
 	defer uuidLock.Release()
-	b := make([]byte, 16)
+	b := make([]byte, 24)
 	_, err := rand.Read(b)
 	if err != nil {
 		panic(err)

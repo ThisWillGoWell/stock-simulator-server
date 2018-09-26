@@ -3,22 +3,19 @@ package messages
 const TransferAction = "transfer"
 
 type TransferMessage struct {
-	Amount int64 `json:"amount"`
+	Amount    int64  `json:"amount"`
 	Recipient string `json:"recipient"`
 }
 
-type TransferResponse struct{
+type TransferResponse struct {
 	Transfer *TransferMessage `json:"transfer"`
-	Response interface{} `json:"response"`
+	Response interface{}      `json:"response"`
 }
 
 func (*TransferMessage) message() { return }
 
 func (*TransferResponse) message() { return }
 
-
 func (baseMessage *BaseMessage) IsTransfer() bool {
 	return baseMessage.Action == TransferAction
 }
-
-

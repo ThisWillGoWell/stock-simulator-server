@@ -7,15 +7,15 @@ func (baseMessage *BaseMessage) IsAlert() bool {
 }
 
 type AlertMessage struct {
-	Alert     interface{} `json:"alert"`
-	Type      string      `json:"type"`
+	Alert interface{} `json:"alert"`
+	Type  string      `json:"type"`
 }
 
 func (*AlertMessage) message() { return }
 
 func NewErrorMessage(err string) *AlertMessage {
 	return &AlertMessage{
-		Type:      "error",
-		Alert:     err,
+		Type:  "error",
+		Alert: err,
 	}
 }

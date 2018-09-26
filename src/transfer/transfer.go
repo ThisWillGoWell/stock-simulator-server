@@ -5,11 +5,11 @@ import (
 	"github.com/stock-simulator-server/src/portfolio"
 )
 
-func ExecuteTransfer(o *order.TransferOrder){
+func ExecuteTransfer(o *order.TransferOrder) {
 	portfolio.PortfoliosLock.Acquire("moneyTransfer")
 	defer portfolio.PortfoliosLock.Release()
 	port, exists := portfolio.Portfolios[o.PortfolioID]
-	if !exists{
+	if !exists {
 		order.FailureOrder("giver portfolio not known", 0)
 	}
 	receiver, exists := portfolio.Portfolios[o.ReceiverID]
@@ -25,7 +25,7 @@ func ExecuteTransfer(o *order.TransferOrder){
 		order.FailureOrder("invalid amount", o)
 		return
 	}
-	if o.Amount > port.Wallet{
+	if o.Amount > port.Wallet {
 		order.FailureOrder("not enough money", o)
 		return
 	}

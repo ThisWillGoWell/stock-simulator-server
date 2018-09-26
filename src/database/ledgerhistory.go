@@ -57,16 +57,16 @@ func writeLedgerHistory(entry *ledger.Entry) {
 	}
 	tx.Commit()
 }
-func MakeLedgerHistoryTimeQuery( uuid,timeLength, field, intervalLength string)([][]interface{}, error){
-	if _, valid := validLedgerFields[field]; !valid{
+func MakeLedgerHistoryTimeQuery(uuid, timeLength, field, intervalLength string) ([][]interface{}, error) {
+	if _, valid := validLedgerFields[field]; !valid {
 		return nil, errors.New("not valid choice")
 	}
 	return MakeHistoryTimeQuery(ledgerHistoryTableName, uuid, timeLength, field, intervalLength)
 
 }
 
-func MakeLedgerHistoryLimitQuery(uuid, field string, limit int)([][]interface{}, error){
-	if _, valid := validLedgerFields[field]; !valid{
+func MakeLedgerHistoryLimitQuery(uuid, field string, limit int) ([][]interface{}, error) {
+	if _, valid := validLedgerFields[field]; !valid {
 		return nil, errors.New("not valid choice")
 	}
 	return MakeHistoryLimitQuery(ledgerHistoryTableName, uuid, field, limit)

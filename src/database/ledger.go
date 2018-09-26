@@ -57,7 +57,7 @@ func writeLedger(entry *ledger.Entry) {
 }
 
 func populateLedger() {
-	var uuid, portfolioId, stockId  string
+	var uuid, portfolioId, stockId string
 	var amount, investmentVal int64
 
 	rows, err := db.Query(ledgerTableQueryStatement)

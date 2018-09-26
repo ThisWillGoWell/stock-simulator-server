@@ -28,13 +28,13 @@ They are stored in two maps
 2) given a portfolio uuid, get all stocks it owns
 */
 type Entry struct {
-	Lock          *lock.Lock                    `json:"-"`
-	Uuid          string                        `json:"uuid"`
-	PortfolioId   string                        `json:"portfolio_id"`
-	StockId       string                        `json:"stock_id"`
-	Amount        int64                         `json:"amount" change:"-"`
-	InvestmentValue int64						`json:"investment_value" change:"-"`
-	UpdateChannel *duplicator.ChannelDuplicator `json:"-"`
+	Lock            *lock.Lock                    `json:"-"`
+	Uuid            string                        `json:"uuid"`
+	PortfolioId     string                        `json:"portfolio_id"`
+	StockId         string                        `json:"stock_id"`
+	Amount          int64                         `json:"amount" change:"-"`
+	InvestmentValue int64                         `json:"investment_value" change:"-"`
+	UpdateChannel   *duplicator.ChannelDuplicator `json:"-"`
 }
 
 /**
@@ -53,13 +53,13 @@ func NewLedgerEntry(portfolioId, stockId string, lockAcquired bool) *Entry {
 
 func MakeLedgerEntry(uuid, portfolioId, stockId string, amount, investmentVal int64) *Entry {
 
-	entry := &Entry {
-		Uuid:          uuid,
-		PortfolioId:   portfolioId,
-		Amount:        amount,
+	entry := &Entry{
+		Uuid:            uuid,
+		PortfolioId:     portfolioId,
+		Amount:          amount,
 		InvestmentValue: investmentVal,
-		StockId:       stockId,
-		UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("LedgerEntry-%s", uuid)),
+		StockId:         stockId,
+		UpdateChannel:   duplicator.MakeDuplicator(fmt.Sprintf("LedgerEntry-%s", uuid)),
 	}
 
 	Entries[uuid] = entry
