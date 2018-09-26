@@ -29,14 +29,3 @@ function formatDate12Hour(date) {
 };
 
 
-function getHighestStock(stocks) {
-	stocks = Object.values(stocks).map((d) => d);
-	var highestStock = stocks.reduce(function(a, b){ return a.current_price > b.current_price ? a : b });
-	return highestStock;
-};
-
-function getMoverStock(stocks) {
-	stocks = Object.values(stocks).map((d) => d);
-	var mover = stocks.reduce((a, b) => a.change > b.change ? a : b);
-	return mover;
-};

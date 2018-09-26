@@ -2,7 +2,10 @@
 // ADDED THIS BLOCK FOR AUTH - TELL JAKE
 let authenticated = sessionStorage.getItem('authenticated');
 let auth_uid = sessionStorage.getItem('uid');
+let auth_uuid = sessionStorage.getItem('uuid');
 
+var REQUESTS = {};
+var REQUEST_ID = 1;
 
 //let authenticated = sessionStorage.getItem('authenticated');
 
@@ -13,9 +16,15 @@ if(authenticated) {
 
 
 		/* Highest level Vue data object */
+		var config = new Vue({
+			data: {
+				config: {},
+			}
+		})
+
 		var vm_stocks = new Vue({
 			data: {
-				stocks: {}
+				stocks: {},
 			}
 		});
 
@@ -29,12 +38,12 @@ if(authenticated) {
 			data: {
 				portfolios: {},
 			}
-		});		
+		});
 		
 		var vm_users = new Vue({
 			data: {
 			  users: {},
-			  currentUser: auth_uid,
+			  currentUser: auth_uuid,
 			},
 			methods: {
 		  		getCurrentUser: function() {
@@ -49,6 +58,9 @@ if(authenticated) {
 		  		}
 		  	},
 		});
+
+		console.log("----- CONFIG -----");
+		console.log(config.config);
 		console.log("----- USERS -----");
 		console.log(vm_users.users);
 		console.log("------ STOCKS ------");
@@ -98,8 +110,43 @@ if(authenticated) {
 		});
 		
 	    // Vue for username top right
-	    let displayName = new Vue({
-	    	el: "#user-info-container",
+	    var topBar = new Vue({
+	    	el: "#top-bar--container",
+	    	methods: {
+				logout: function (event) {
+					// delete cookie
+					// Get saved data from sessionStorage
+					console.log("logout");
+					sessionStorage.removeItem('authenticated');
+					sessionStorage.removeItem('auth_obj');
+					// send back to index
+					window.location.href = "/";
+			    },
+			    changeDisplayName: function() {
+			    	// Get entered display name
+			    	let new_name = $("#newDisplayName").val();
+
+			    	// Creating message that changes the users display name
+					let msg = {
+						'action': "set",
+						'msg': {
+							'set': "display_name",
+							'value': new_name
+						},
+						'request_id': REQUEST_ID.toString()
+					};
+
+					REQUESTS[REQUEST_ID++] = function() {
+						alert("Display_name changed to: " + new_name);
+					};
+					// Send through WebSocket
+					console.log(JSON.stringify(msg));
+			    	doSend(JSON.stringify(msg));
+
+			    	// Reset display name
+			    	$("#newDisplayName").val("");
+			    }
+			},
 			computed: {
 				userDisplayName: function() {
 	    			var currUserUUID = sessionStorage.getItem('uuid');
@@ -110,22 +157,6 @@ if(authenticated) {
 				}
 			}
 	    });
-
-		// Vue for all options data 
-		let vm_popout_menu = new Vue({
-			el: '#btn-logout',
-			methods: {
-				logout: function (event) {
-					// delete cookie
-					// Get saved data from sessionStorage
-					console.log("logout");
-					sessionStorage.removeItem('authenticated');
-					sessionStorage.removeItem('auth_obj');
-					// send back to index
-					window.location.href = "/";
-			    }
-			}
-		});
 
 		// Vue for all dashboard data
 	    var vm_dash_tab = new Vue({
@@ -172,7 +203,7 @@ if(authenticated) {
 						// If objects are in ledger
 						if (Object.keys(vm_ledger.ledger).length !== 0) {
 							
-							var ownedStocks = Object.values(vm_ledger.ledger).filter((d) => d.portfolio_id === portfolio_uuid);
+							var ownedStocks = Object.values(vm_ledger.ledger).filter(d => d.portfolio_id === portfolio_uuid);
 							
 							// Remove stocks that user owns 0 of
 							ownedStocks = ownedStocks.filter(d => d.amount !== 0);
@@ -184,18 +215,20 @@ if(authenticated) {
 								d.stock_roi = (Number(d.stock_price) * Number(d.amount)) - Number(d.investment_value);
 
 								// TODO: css changes done here talk to brennan about his \ux22 magic 
-								
-								// helper to color rows in the stock table 
-								var targetChangeElem = $("tr[uuid=\x22" + d.stock_uuid + "\x22] > td.stock-change");
-								
-								if (d.stock_roi > 0) {
-									targetChangeElem.removeClass("falling");
-									targetChangeElem.addClass("rising");
-								} else {
-									targetChangeElem.removeClass("rising");
-									targetChangeElem.addClass("falling");
-								}
 
+								// helper to color rows in the stock table 
+								var targetChangeElem = $("tr[uuid=\x22" + d.stock_uuid + "\x22].clickable > td.stock-change");
+								// targetChangeElem.addClass("rising");
+								// if (d.stock_roi > 0) {
+								// 	targetChangeElem.removeClass("falling");
+								// 	targetChangeElem.addClass("rising");
+								// } else if (d.stock_roi === 0) {
+								// 	targetChangeElem.removeClass("falling");
+								// 	targetChangeElem.removeClass("rising");
+								// } else {
+								// 	targetChangeElem.removeClass("rising");
+								// 	targetChangeElem.addClass("falling");
+								// }
 								return d;
 							});
 
@@ -223,40 +256,88 @@ if(authenticated) {
 			data: {
 			  sortBy: 'ticker_id',
 			  sortDesc: 1,
+			  sortCols: ["ticker_id", "open_shares", "change", "current_price"],
+			  sortDirections: [-1, -1, -1, -1],
+			  reSort: 1,
 			},
 			methods: {
 				toPrice: formatPrice,
 			    // on column name clicks
-			    sortCol: function(col) {
-					// If sorting by selected column
-			    	if (vm_stocks_tab.sortBy == col) {
-						// Change sort direction
-			    		// console.log(col);
-			    		vm_stocks_tab.sortDesc = -vm_stocks_tab.sortDesc;
-			    	} else {
-						// Change sorted column
-			    		vm_stocks_tab.sortBy = col;
+			  //   sortCol: function(col) {
+					// // If sorting by selected column
+			  //   	if (vm_stocks_tab.sortBy == col) {
+					// 	// Change sort direction
+			  //   		// console.log(col);
+			  //   		vm_stocks_tab.sortDesc = -vm_stocks_tab.sortDesc;
+			  //   	} else {
+					// 	// Change sorted column
+			  //   		vm_stocks_tab.sortBy = col;
 			    		
+			  //   	}
+			  //   },
+			    multiSort: function(col) {
+			    	// if old first sort is the new first sort
+			    	if (vm_stocks_tab.sortCols[0] === col) {
+			    		// change sort direction
+			    		vm_stocks_tab.sortDirections[0] *= -1;
+			    	} else {
+			    		// Where is the new sort column
+			    		let ind = vm_stocks_tab.sortCols.indexOf(col);
+			    		// Remove new column from old spot
+			    		vm_stocks_tab.sortCols.splice(ind, 1);
+			    		vm_stocks_tab.sortDirections.splice(ind, 1);
+			    		// Push to the beginning of the array
+			    		vm_stocks_tab.sortCols.unshift(col);
+			    		vm_stocks_tab.sortDirections.unshift(1);
 			    	}
-			    },
+			    	vm_stocks_tab.reSort++;
+			    }
 			},
-			computed:{
-				sortedStocks: function() {
-		    		if (Object.keys(vm_stocks.stocks).length !== 0) {
-			    	  	// Turn to array and sort 
-						var stock_array = Object.values(vm_stocks.stocks);
+			computed: {
+				// sortedStocks: function() {
+		  //   		if (Object.keys(vm_stocks.stocks).length !== 0) {
+			 //    	  	// Turn to array and sort 
+				// 		var stock_array = Object.values(vm_stocks.stocks);
 
-				    	// Sorting array
-				    	stock_array = stock_array.sort(function(a,b) {
-				    		if (a[vm_stocks_tab.sortBy] > b[vm_stocks_tab.sortBy]) {
-				    			return -vm_stocks_tab.sortDesc;
-				    		}
-				    		if (a[vm_stocks_tab.sortBy] < b[vm_stocks_tab.sortBy]) {
-				    			return vm_stocks_tab.sortDesc;
-				    		}
-				    		return 0;
-				    	})
-				    	return stock_array;
+				//     	// Sorting array
+				//     	stock_array = stock_array.sort(function(a,b) {
+				//     		if (a[vm_stocks_tab.sortBy] > b[vm_stocks_tab.sortBy]) {
+				//     			return -vm_stocks_tab.sortDesc;
+				//     		}
+				//     		if (a[vm_stocks_tab.sortBy] < b[vm_stocks_tab.sortBy]) {
+				//     			return vm_stocks_tab.sortDesc;
+				//     		}
+				//     		return 0;
+				//     	})
+				//     	return stock_array;
+				// 	}
+				// 	return [];
+				// },
+				multiSortStocks: function() {
+					if (Object.keys(vm_stocks.stocks).length !== 0) {
+						
+						function sorter(a, b, ind) {
+							if (a[vm_stocks_tab.sortCols[ind]] > b[vm_stocks_tab.sortCols[ind]]) {
+								return vm_stocks_tab.sortDirections[ind];
+							}
+							if (a[vm_stocks_tab.sortCols[ind]] < b[vm_stocks_tab.sortCols[ind]]) {
+								return -vm_stocks_tab.sortDirections[ind];
+							}
+							if (ind === (vm_stocks_tab.sortCols.length-1)) {
+								return 0;
+							} else {
+								return sorter(a, b, ind+1);
+							}
+						};
+
+						// Get all stocks
+						var stock_array = Object.values(vm_stocks.stocks);
+						// Sort
+						stock_array = stock_array.sort(function(a,b) {
+							return sorter(a, b, 0);
+						});
+
+						return stock_array;
 					}
 					return [];
 				},
@@ -265,7 +346,7 @@ if(authenticated) {
 						return "";
 					} else {
 						stocks = Object.values(vm_stocks.stocks).map((d) => d);
-						var highestStock = stocks.reduce(function(a, b){ return a.current_price > b.current_price ? a : b });
+						var highestStock = stocks.reduce((a, b) => a.current_price > b.current_price ? a : b);
 						return highestStock.ticker_id;
 					}
 				},
@@ -278,12 +359,12 @@ if(authenticated) {
 						return mover.ticker_id;
 					}
 				},
-				mostShares: function() {
+				lowestStock: function() {
 					if (Object.values(vm_stocks.stocks).length === 0) {
 						return "";
 					} else {
 						stocks = Object.values(vm_stocks.stocks).map((d) => d);
-						var mover = stocks.reduce((a, b) => a.open_shares > b.open_shares ? a : b);
+						var mover = stocks.reduce((a, b) => a.current_price < b.current_price ? a : b);
 						return mover.ticker_id;
 					}
 				},
@@ -348,12 +429,18 @@ if(authenticated) {
 	        		$('#chat-module--container').toggleClass('closed');
 	        		$('#chat-text-input').focus();
 				},
+				activeUsers: function() {
+					// stop here later when not concating a string
+					var online = Object.values(vm_users.users).filter(d => d.active === true);
 
+					var online_str = JSON.stringify(online.map(d => d.display_name).join(', '));
+					return online_str.replace(/"/g, "");
+				}
 			},
 			computed: {
-				activeUsers: function() {
-						return Object.values(vm_users.users).filter(d => d.active === true).length;
-				}
+				numActiveUsers: function() {
+					return Object.values(vm_users.users).filter(d => d.active === true).length;
+				},
 			},
 			watch: {
 				unreadMessages: function() {
@@ -366,9 +453,7 @@ if(authenticated) {
 						$("#chat-module--container .chat-title-bar span").removeClass("unread");
 					}
 				}
-
 			},
-			
 		});
 
 
@@ -534,7 +619,7 @@ if(authenticated) {
 	    	let message_author = msg.msg.author;
 	    	let isMe = false;
 
-	    	if(vm_users.currentUser == vm_users.users[message_author].display_name) {
+	    	if(vm_users.currentUser === message_author) {
 	    		isMe = true;
 	    		//console.log(isMe);
 	    	} else {
@@ -631,6 +716,7 @@ if(authenticated) {
 	    		'update': routeUpdate,
 	    		'alert': routeAlert,
 	    		'chat': routeChat,
+	    		'response': routeResponse,
 	    	};
 	    	
     		if (msg.action) {
@@ -652,6 +738,11 @@ if(authenticated) {
 	        if(!msg.msg.success) {
 	            let err_msg = msg.msg.err;
 	            console.log(err_msg);
+	            console.log(msg);
+	        } else {
+	            console.log(msg);
+	        	Vue.set(config.config, msg.msg.uuid, msg.msg.config);
+	        	console.log(config.config);
 	        }
 	        
 	    };
@@ -688,6 +779,18 @@ if(authenticated) {
 	    		'user': userUpdate,
 	    	};
 	    	updateRouter[msg.msg.type](msg);
+	    };
+
+	    var routeResponse = function(msg) {
+	    	console.log(msg);
+	    	try {
+	    		REQUESTS[msg.request_id]();
+	    	} catch(err) {
+	    		console.log(err);
+	    		console.log("no request_id key for " + JSON.stringify(msg));
+	    	}
+	    	delete REQUESTS[msg.request_id];
+	    	console.log(REQUESTS);
 	    };
 
 	    var stockUpdate = function(msg) {
@@ -879,6 +982,22 @@ if(authenticated) {
 
 	    			var clickedStock = Object.values(vm_stocks.stocks).filter(d => d.uuid === buySellModal.stock_uuid)[0];
 	    			return clickedStock;
+	    		}
+	    	},
+	    	watch: {
+	    		// Resetting amount if more than can be traded is selected
+	    		buySellAmount: function() {
+	    			if (buySellModal.isBuying) {
+	    				if (buySellModal.buySellAmount > buySellModal.stock.open_shares) {
+	    					buySellModal.buySellAmount = buySellModal.stock.open_shares;
+	    				}
+	    			} else {
+	    				//determine current users holdings
+	    				let stock = vm_dash_tab.currUserStocks.filter(d => d.stock_id === buySellModal.stock_uuid)[0];
+	    				if (buySellModal.buySellAmount > stock.amount) {
+	    					buySellModal.buySellAmount = stock.amount;
+	    				}
+	    			}
 	    		}
 	    	}
 	    });
