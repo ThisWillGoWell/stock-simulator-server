@@ -1,14 +1,18 @@
 package web
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
+	"github.com/stock-simulator-server/src/account"
 	"github.com/stock-simulator-server/src/app"
 	"github.com/stock-simulator-server/src/client"
 	"github.com/stock-simulator-server/src/messages"
+	"io"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -27,6 +31,61 @@ func StartHandlers() {
 		go app.LoadVars()
 		<- time.After(time.Second)
 		http.Redirect(w, r, "/", 200)
+	})
+
+	http.HandleFunc("/create", func(w http.ResponseWriter, r *http.Request){
+		if r.Method != "PUT" {
+			http.Error(w, "put only", http.StatusMethodNotAllowed)
+			return
+		}
+
+		auth := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
+
+		if len(auth) != 2 || auth[0] != "Basic" {
+			http.Error(w, "create failed", http.StatusBadRequest)
+			return
+		}
+
+		payload, _ := base64.StdEncoding.DecodeString(auth[1])
+		pair := strings.SplitN(string(payload), ":", 2)
+
+
+		if len(pair) != 2 {
+			http.Error(w, "create failed", http.StatusBadRequest)
+			return
+		}
+		token, err :=  account.NewUser(pair[0], pair[1])
+		if err != nil{
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+		io.WriteString(w, token)
+	})
+
+	http.HandleFunc("/token", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			http.Error(w, "get only", http.StatusMethodNotAllowed)
+			return
+		}
+		auth := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
+
+		if len(auth) != 2 || auth[0] != "Basic" {
+			http.Error(w, "authorization failed", http.StatusUnauthorized)
+			return
+		}
+
+		payload, _ := base64.StdEncoding.DecodeString(auth[1])
+		pair := strings.SplitN(string(payload), ":", 2)
+
+
+		if len(pair) != 2 {
+			http.Error(w, "authorization failed", http.StatusUnauthorized)
+			return
+		}
+		token, err :=  account.ValidateUser(pair[0], pair[1])
+		if err != nil{
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+		}
+		io.WriteString(w, token)
 	})
 
 	http.HandleFunc("/ws", handleConnections)
@@ -73,7 +132,7 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 		}
 		loginErr := client.InitialReceive(string(msg), socketTX, socketRX)
 		if loginErr != nil {
-			val, err := json.Marshal(messages.FailedLogin(loginErr))
+			val, err := json.Marshal(messages.FailedConnect(loginErr))
 			if err != nil{
 				fmt.Print(err)
 			}

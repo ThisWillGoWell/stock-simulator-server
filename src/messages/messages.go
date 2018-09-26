@@ -56,18 +56,14 @@ func (baseMessage *BaseMessage) UnmarshalJSON(data []byte) error {
 		message = &ChatMessage{}
 	case TradeAction:
 		message = &TradeMessage{}
-	case LoginAction:
-		message = &LoginMessage{}
 	case UpdateAction:
 		message = &UpdateMessage{}
-	case NewAccountAction:
-		message = &NewAccountMessage{}
 	case QueryAction:
 		message = &QueryMessage{}
 	case TransferAction:
 		message = &TransferMessage{}
-	case RenewAction:
-		message = &RenewMessage{}
+	case ConnectAction:
+		message = &ConnectMessage{}
 	case SetAction:
 		message = &SetMessage{}
 	}

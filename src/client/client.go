@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
-	"github.com/stock-simulator-server/src/session"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -115,30 +114,15 @@ func InitialReceive(initialPayload string, tx, rx chan string) error {
 	}
 	user := new(account.User)
 	var sessionToken string
-
-	if initialMessage.IsAccountCreate() {
-		userTemp, err := account.NewUser(initialMessage.Msg.(*messages.NewAccountMessage).UserName,
-			initialMessage.Msg.(*messages.NewAccountMessage).DisplayName,
-			initialMessage.Msg.(*messages.NewAccountMessage).Password)
+	if initialMessage.IsConnect(){
+		userTemp, err := account.ConnectUser(initialMessage.Msg.(*messages.ConnectMessage).SessionToken)
 		if err != nil {
 			return err
 		}
 		user = userTemp
-		sessionToken = session.NewSessionToken(user.Uuid)
-	} else if initialMessage.IsLogin() {
-		userTemp, err := account.GetUser(initialMessage.Msg.(*messages.LoginMessage).UserName, initialMessage.Msg.(*messages.LoginMessage).Password)
-		if err != nil {
-			return err
-		}
-		user = userTemp
-		sessionToken = session.NewSessionToken(user.Uuid)
-	} else if initialMessage.IsRenew(){
-		userTemp, err := account.RenewUser(initialMessage.Msg.(*messages.RenewMessage).SessionToken)
-		if err != nil {
-			return err
-		}
-		user = userTemp
-		sessionToken = initialMessage.Msg.(*messages.RenewMessage).SessionToken
+		sessionToken = initialMessage.Msg.(*messages.ConnectMessage).SessionToken
+	} else {
+		return errors.New("unknown message, need sessio")
 	}
 
 	client := &Client{
@@ -312,7 +296,7 @@ When a session is started, loop though all current cache and send them to the cl
 Also send the success login to make sure that happens first on the login
 */
 func (client *Client) initSession(sessionToken string ) {
-	client.sendMessage(messages.SuccessLogin(client.user.Uuid, sessionToken, client.user.Config))
+	client.sendMessage(messages.SuccessConnect(client.user.Uuid, sessionToken, client.user.Config))
 
 	for _, v := range account.GetAllUsers() {
 		client.sendMessage(messages.NewObjectMessage(v))

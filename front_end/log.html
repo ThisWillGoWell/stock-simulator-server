@@ -22,7 +22,7 @@
 
 
 <script language="javascript" type="text/javascript">
-    var wsUri = "wss://"+ window.location.host + "/ws";
+    var wsUri = "ws://"+ window.location.host + "/ws";
     var output;
     var webSocket;
 
@@ -40,12 +40,32 @@
         webSocket.onmessage = function(evt) { onMessage(evt) };
         webSocket.onerror = function(evt) { onError(evt) };
     }
+    function authenticateUser(user, password)
+    {
+        var token = user + ":" + password;
+
+        // Should i be encoding this value????? does it matter???
+        // Base64 Encoding -> btoa
+        var hash = btoa(token);
+
+        return "Basic " + hash;
+    }
+
+    function getToken(){
+        const Http = new XMLHttpRequest();
+        const url='https://jsonplaceholder.typicode.com/posts';
+        Http.open("GET","http://" + window.location.host + "/token", false);
+        Http.setRequestHeader("Authorization", authenticateUser("Will", "pass"));
+        Http.send();
+
+        return  Http.responseText;
+    }
 
     function onOpen(evt)
     {
         onEvent("Connected");
         //doSend('{"container_type": "register", "register_action": "register", "device_type": "test", "device_name":"' + window.prompt("device_name","test")  + '"}');
-        doSend('{"action": "login", "msg": {"username": "Will", "password":"pass"}}');
+        doSend('{"action": "connect", "msg": {"token": "' + getToken() + '"}}');
         //doSend('{"action": "renew", "msg": {"token": "ts1x8jP9TDPFQQKHvwPABAxo8z1mfftW"}}');
 
         //doSend('{"op":"subscribe","type":"alert", "system":"irRemote"}');

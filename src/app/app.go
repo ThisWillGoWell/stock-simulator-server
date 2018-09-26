@@ -93,26 +93,22 @@ func LoadVars() {
 	//start the builder
 	//go client.BroadcastMessageBuilder()
 	//build and simulate a client
-	account.NewUser("Mike","Guzman", "pass")
-	account.NewUser("Will", "Will", "pass")
-	account.NewUser("Jake","Annie", "pass")
-	account.NewUser("Chunt", "Chunt", "pass")
+	account.NewUser("Mike", "pass")
+	account.NewUser("Will", "pass")
 
-	acc, _ := account.GetUser("Will", "pass")
+	token, _ := account.ValidateUser("Will", "pass")
+	acc, _ := account.ConnectUser(token)
 	portfolio.Portfolios[acc.PortfolioId].Wallet = 1000000
-	acc2, _ := account.GetUser("Jake", "pass")
-	portfolio.Portfolios[acc2.PortfolioId].Wallet = 1000000
-	acc3, _ := account.GetUser("Chunt", "pass")
-	portfolio.Portfolios[acc3.PortfolioId].Wallet = 6942069
 
-	accs := []string{acc.PortfolioId, acc2.PortfolioId, acc3.PortfolioId}
-	users := []string{acc.Uuid, acc2.Uuid, acc3.Uuid}
+
+	accs := []string{acc.PortfolioId}
+	users := []string{acc.Uuid}
 
 	for id := range valuable.Stocks {
 		for i:=0; i<50; i++{
-			portId := accs[i%3]
+			portId := accs[0]
 			po2 := order.MakePurchaseOrder(id, portId, 1)
-			client.SendToUser(users[i%3],messages.BuildResponseMsg( <-po2.ResponseChannel, fmt.Sprintf("backend-trade-%d", i)))
+			client.SendToUser(users[0],messages.BuildResponseMsg( <-po2.ResponseChannel, fmt.Sprintf("backend-trade-%d", i)))
 			<-time.After(time.Second * 30)
 		}
 	}

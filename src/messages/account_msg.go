@@ -2,36 +2,16 @@ package messages
 
 const LoginAction = "login"
 const NewAccountAction = "new_account"
-const RenewAction = "renew"
-type LoginMessage struct {
-	UserName string `json:"username"`
-	Password string `json:"password"`
-}
+const ConnectAction = "connect"
 
-func (*LoginMessage) message() { return }
-
-func (baseMessage *BaseMessage) IsAccountCreate() bool {
-	return baseMessage.Action == NewAccountAction
-}
-
-type RenewMessage struct {
+type ConnectMessage struct {
 	SessionToken string `json:"token"`
 }
-func (*RenewMessage) message(){ return }
-func (baseMessage *BaseMessage) IsRenew() bool {
-	return baseMessage.Action == RenewAction
-}
 
-type NewAccountMessage struct {
-	UserName    string `json:"username"`
-	Password    string `json:"password"`
-	DisplayName string `json:"display_name"`
-}
+func (*ConnectMessage) message() { return }
 
-func (*NewAccountMessage) message() { return }
-
-func (baseMessage *BaseMessage) IsLogin() bool {
-	return baseMessage.Action == LoginAction
+func (baseMessage *BaseMessage) IsConnect() bool {
+	return baseMessage.Action == ConnectAction
 }
 
 type AccountResponseMessage struct {
@@ -44,7 +24,7 @@ type AccountResponseMessage struct {
 
 func (*AccountResponseMessage) message() { return }
 
-func SuccessLogin(userGuid, token string, config map[string]interface{}) *BaseMessage {
+func SuccessConnect(userGuid, token string, config map[string]interface{}) *BaseMessage {
 	return &BaseMessage{
 		Action: LoginAction,
 		Msg: &AccountResponseMessage{
@@ -57,7 +37,7 @@ func SuccessLogin(userGuid, token string, config map[string]interface{}) *BaseMe
 	}
 }
 
-func FailedLogin(err error) *BaseMessage {
+func FailedConnect(err error) *BaseMessage {
 	return &BaseMessage{
 		Action: LoginAction,
 		Msg: &AccountResponseMessage{
