@@ -329,7 +329,7 @@ if(authenticated) {
 								return sorter(a, b, ind+1);
 							}
 						};
-							
+
 						// Get all stocks
 						var stock_array = Object.values(vm_stocks.stocks);
 						// Sort
