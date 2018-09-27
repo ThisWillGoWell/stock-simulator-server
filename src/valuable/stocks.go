@@ -14,8 +14,8 @@ import (
 const (
 	volatilityMin      = 1
 	volatilityMax      = 10
-	volatilityMinTurns = 1
-	volatilityMaxTurns = 100
+	volatilityMinTurns = 3
+	volatilityMaxTurns = 20
 
 	timeSimulationPeriod = time.Second
 
@@ -41,11 +41,6 @@ func StartStockStimulation() {
 		close(simulation)
 	}()
 
-}
-
-type stockManager struct {
-	stocks             map[string]*Stock
-	StockUpdateChannel *duplicator.ChannelDuplicator
 }
 
 //Stock type for storing the stock information
@@ -98,6 +93,7 @@ func MakeStock(uuid, tickerID, name string, startPrice, openShares int64, runInt
 		TargetPrice:           int64(rand.Intn(100000)),
 		PercentToChangeTarget: .1,
 		Volatility:            5,
+		RandomNoise:			.07,
 	}
 	go stock.stockUpdateRoutine()
 	Stocks[uuid] = stock
@@ -150,6 +146,7 @@ type RandomPrice struct {
 	TargetPrice           int64 `json:"target_price"`
 	PercentToChangeTarget float64 `json:"change_percent"`
 	Volatility            float64 `json:"volatility"`
+	RandomNoise		  float64
 }
 
 //change the stock using the changer
@@ -159,16 +156,21 @@ func (randPrice *RandomPrice) change(stock *Stock) {
 	}
 	stock.lock.Acquire("change-stock")
 	defer stock.lock.Release()
+
 	if rand.Float64() <= randPrice.PercentToChangeTarget {
 		randPrice.changeValues()
 	}
 
-	//can make this a lot more interesting, like adding in the ability for it to drop
 	change := float64(randPrice.TargetPrice - stock.CurrentPrice) /
 		utils.MapNum(randPrice.Volatility, volatilityMin, volatilityMax, volatilityMinTurns, volatilityMaxTurns)
 
+	if rand.Float64() <= randPrice.RandomNoise {
+		change = change * -1
+	}
+
 	stock.CurrentPrice = stock.CurrentPrice + int64(change)
-		stock.UpdateChannel.Offer(stock)
+
+	stock.UpdateChannel.Offer(stock)
 
 }
 
@@ -206,8 +208,8 @@ func GetAllStocks() []*Stock {
 	return v
 }
 
-func (s *Stock) Update(){
-	s.UpdateChannel.Offer(s)
+func (stock *Stock) Update(){
+	stock.UpdateChannel.Offer(stock)
 }
 
 /** ########################################

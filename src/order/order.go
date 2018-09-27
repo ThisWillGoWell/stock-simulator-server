@@ -203,9 +203,6 @@ func executeTrade(o *PurchaseOrder) {
 	go port.Update()
 }
 
-
-
-
 func executeTransfer(o *TransferOrder) {
 	portfolio.PortfoliosLock.Acquire("moneyTransfer")
 	defer portfolio.PortfoliosLock.Release()
