@@ -63,7 +63,7 @@ func NewUser(username, displayName, password string) (string, error) {
 	if len(username) < 4{
 		return "", errors.New("username too short")
 	}
-	if !isAllowedCharaterUsername(username){
+	if !isAllowedCharacterUsername(username){
 		return "", errors.New("username is not allowed")
 	}
 
@@ -77,7 +77,7 @@ func NewUser(username, displayName, password string) (string, error) {
 	if len(displayName) < minDisplayNameLength {
 		return "", errors.New("display name too short")
 	}
-	if !isAllowedCharaterUsername(displayName) {
+	if !isAllowedCharacterDisplayName(displayName) {
 		return "", errors.New("display name contains invalid characters")
 	}
 

@@ -127,7 +127,7 @@ func  (user *User) SetPassword(pass string) error{
 
 
 func  (user *User) SetDisplayName(displayName string)error{
-	if isAllowedCharaterDispayName(displayName){
+	if isAllowedCharacterDisplayName(displayName){
 		return errors.New("display name contains invalid character")
 	}
 	if len(displayName) > maxDisplayNameLength {
@@ -142,7 +142,7 @@ func  (user *User) SetDisplayName(displayName string)error{
 	return nil
 }
 
-func isAllowedCharaterDisplayName(s string) bool {
+func isAllowedCharacterDisplayName(s string) bool {
 	for _, r := range s {
 		if !unicode.IsLetter(r) || !unicode.IsNumber(r) || r != '_' {
 			return false
@@ -151,7 +151,7 @@ func isAllowedCharaterDisplayName(s string) bool {
 	return true
 }
 
-func isAllowedCharaterUsername(s string) bool {
+func isAllowedCharacterUsername(s string) bool {
 	for _, r := range s {
 		if !unicode.IsLetter(r) || !unicode.IsNumber(r){
 			return false
