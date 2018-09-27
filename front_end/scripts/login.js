@@ -383,7 +383,5 @@ $( document ).ready(function() {
     
     });
 
-	window.addEventListener("load", init, false);
-
 
 });
