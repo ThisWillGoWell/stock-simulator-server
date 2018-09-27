@@ -1,15 +1,13 @@
 
 // ADDED THIS BLOCK FOR AUTH - TELL JAKE
-let authenticated = sessionStorage.getItem('authenticated');
+let token = sessionStorage.getItem('token');
 let auth_uid = sessionStorage.getItem('uid');
 let auth_uuid = sessionStorage.getItem('uuid');
 
 var REQUESTS = {};
 var REQUEST_ID = 1;
 
-//let authenticated = sessionStorage.getItem('authenticated');
-
-if(authenticated) {
+if(token !== undefined) {
 	
 	// Get saved data from sessionStorage
 	$( document ).ready(function() {
@@ -117,7 +115,7 @@ if(authenticated) {
 					// delete cookie
 					// Get saved data from sessionStorage
 					console.log("logout");
-					sessionStorage.removeItem('authenticated');
+					sessionStorage.removeItem('token');
 					sessionStorage.removeItem('auth_obj');
 					// send back to index
 					window.location.href = "/";
@@ -684,11 +682,11 @@ if(authenticated) {
 
 	    function onOpen(evt)
 	    {
-	    	if (sessionStorage.getItem('authenticated') !== null) {
+	    	if (sessionStorage.getItem('token') !== null) {
 	            var loginMessage = {
-	                'action': 'renew',
+	                'action': 'connect',
 	                'msg': {
-	                    'token': sessionStorage.getItem('authenticated')
+	                    'token': sessionStorage.getItem('token')
 	                }
 	            };
 	            doSend(JSON.stringify(loginMessage));
@@ -711,7 +709,7 @@ if(authenticated) {
 	        var msg = JSON.parse(evt.data);
 	        // console.log(msg);
 	    	var router = {
-	    		'login': routeLogin,
+	    		'connect': routeConnect,
 	    		'object': routeObject,
 	    		'update': routeUpdate,
 	    		'alert': routeAlert,
@@ -731,7 +729,7 @@ if(authenticated) {
     		}
 	    };
 
-	    var routeLogin = function(msg) {
+	    var routeConnect = function(msg) {
 
 	        console.log("login recieved");
 
@@ -739,6 +737,7 @@ if(authenticated) {
 	            let err_msg = msg.msg.err;
 	            console.log(err_msg);
 	            console.log(msg);
+	            window.location.href= "/login.html";
 	        } else {
 	            console.log(msg);
 	        	Vue.set(config.config, msg.msg.uuid, msg.msg.config);
