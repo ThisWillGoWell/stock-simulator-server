@@ -142,9 +142,9 @@ func  (user *User) SetDisplayName(displayName string)error{
 	return nil
 }
 
-func isAllowedCharaterDispayName(s string) bool {
+func isAllowedCharaterDisplayName(s string) bool {
 	for _, r := range s {
-		if !unicode.IsLetter(r) && !unicode.IsNumber(r) && r != '_' {
+		if !unicode.IsLetter(r) || !unicode.IsNumber(r) || r != '_' {
 			return false
 		}
 	}
@@ -153,7 +153,7 @@ func isAllowedCharaterDispayName(s string) bool {
 
 func isAllowedCharaterUsername(s string) bool {
 	for _, r := range s {
-		if !unicode.IsLetter(r) && !unicode.IsNumber(r){
+		if !unicode.IsLetter(r) || !unicode.IsNumber(r){
 			return false
 		}
 	}
