@@ -1,7 +1,5 @@
 package messages
 
-const LoginAction = "login"
-const NewAccountAction = "new_account"
 const ConnectAction = "connect"
 
 type ConnectMessage struct {
@@ -26,7 +24,7 @@ func (*AccountResponseMessage) message() { return }
 
 func SuccessConnect(userGuid, token string, config map[string]interface{}) *BaseMessage {
 	return &BaseMessage{
-		Action: LoginAction,
+		Action: ConnectAction,
 		Msg: &AccountResponseMessage{
 			Success: true,
 			SessionToken: token,
@@ -39,7 +37,7 @@ func SuccessConnect(userGuid, token string, config map[string]interface{}) *Base
 
 func FailedConnect(err error) *BaseMessage {
 	return &BaseMessage{
-		Action: LoginAction,
+		Action: ConnectAction,
 		Msg: &AccountResponseMessage{
 			Success: false,
 			Uuid:    "",
