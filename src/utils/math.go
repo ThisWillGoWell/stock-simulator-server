@@ -17,12 +17,25 @@ func Round(f float64) float64 {
 }
 
 // generate a random number between two floats
-func RandRange(min, max float64) float64 {
-	return MapNum(rand.Float64(), 0, 1, min, max)
+func RandRangeFloat(min, max float64) float64 {
+	return MapNumFloat(rand.Float64(), 0, 1, min, max)
 }
 
 // map a number from one range to another range
-func MapNum(value, inMin, inMax, outMin, outMax float64) float64 {
+func MapNumFloat(value, inMin, inMax, outMin, outMax float64) float64 {
+	if value >= inMax {
+		return outMax
+	}
+	if value <= inMin {
+		return outMin
+	}
+	return (value-inMin)*(outMax-outMin)/(inMax-inMin) + outMin
+}
+
+func RandRangInt(min, max int64) int64{
+	return rand.Int63n(max-min) + min
+}
+func MapNumInt(value, inMin, inMax, outMin, outMax int64) int64 {
 	if value >= inMax {
 		return outMax
 	}
