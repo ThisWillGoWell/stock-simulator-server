@@ -47,11 +47,13 @@ if(token) {
 		  		getCurrentUser: function() {
 		  			// Get userUUID of the person that is logged in
 		  			var currentUser = sessionStorage.getItem('uuid');
-		  			// Have they been added to the users object yet?
-		  			if (vm_users.users[currentUser]) {
-		  				return vm_users.users[currentUser].display_name;
-		  			} else {
-		  				return "";
+		  			if (currentUser !== null) {
+			  			// Have they been added to the users object yet?
+			  			if (vm_users.users[currentUser]) {
+			  				return vm_users.users[currentUser].display_name;
+			  			} else {
+			  				return "";
+			  			}
 		  			}
 		  		}
 		  	},
