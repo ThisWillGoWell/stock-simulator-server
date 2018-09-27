@@ -7,7 +7,7 @@ let auth_uuid = sessionStorage.getItem('uuid');
 var REQUESTS = {};
 var REQUEST_ID = 1;
 
-if(token !== undefined) {
+if(token) {
 	
 	// Get saved data from sessionStorage
 	$( document ).ready(function() {
@@ -740,8 +740,8 @@ if(token !== undefined) {
 	            window.location.href= "/login.html";
 	        } else {
 	            console.log(msg);
+	            sessionStorage.setItem('uuid', msg.msg.uuid);
 	        	Vue.set(config.config, msg.msg.uuid, msg.msg.config);
-	        	console.log(config.config);
 	        }
 	        
 	    };
