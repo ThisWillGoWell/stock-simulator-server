@@ -292,15 +292,15 @@
 										<table class="table">
 										  <thead>
 											<tr>
-											  <th scope="col" v-on:click="multiSort('ticker_id')" style="text-align: left; padding-left: 25px;">Stock <i class="material-icons stock">arrow_drop_down</i></th>
-											  <th scope="col" v-on:click="multiSort('open_shares')">Open Shares <i class="material-icons open-shares">arrow_drop_down</i></th>
-											  <th scope="col" v-on:click="multiSort('change')">Change <i class="material-icons change">arrow_drop_down</i></th>
-											  <th scope="col" v-on:click="multiSort('current_price')" style="padding-right: 25px;">Cost <i class="material-icons cost">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('ticker_id')" style="text-align: left; padding-left: 25px;">Stock <i class="material-icons stock">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('open_shares')">Open Shares <i class="material-icons open-shares">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('change')">Change <i class="material-icons change">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('current_price')" style="padding-right: 25px;">Cost <i class="material-icons cost">arrow_drop_down</i></th>
 											</tr>
 										  </thead>
 										  <tbody>
 											  <!-- https://vuejs.org/v2/guide/list.html :key is recommended in v.fors -->
-											<tr class="clickable" v-for="stock in multiSortStocks" :key='stock.uuid' v-bind:uuid="stock.uuid">
+											<tr class="clickable" v-for="stock in sortedStocks" :key='stock.uuid' v-bind:uuid="stock.uuid">
 											  <th class="stock-ticker-id" scope="row" v-bind:tid="stock.ticker_id">
 												  <div class="stock-ticker-id">{{ stock.ticker_id }}</div>
 												  <div class="stock-display-name">{{ stock.name }}</div>

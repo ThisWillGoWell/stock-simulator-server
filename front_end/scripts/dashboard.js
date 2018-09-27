@@ -263,18 +263,18 @@ if(token) {
 			methods: {
 				toPrice: formatPrice,
 			    // on column name clicks
-			  //   sortCol: function(col) {
-					// // If sorting by selected column
-			  //   	if (vm_stocks_tab.sortBy == col) {
-					// 	// Change sort direction
-			  //   		// console.log(col);
-			  //   		vm_stocks_tab.sortDesc = -vm_stocks_tab.sortDesc;
-			  //   	} else {
-					// 	// Change sorted column
-			  //   		vm_stocks_tab.sortBy = col;
+			    sortCol: function(col) {
+					// If sorting by selected column
+			    	if (vm_stocks_tab.sortBy == col) {
+						// Change sort direction
+			    		// console.log(col);
+			    		vm_stocks_tab.sortDesc = -vm_stocks_tab.sortDesc;
+			    	} else {
+						// Change sorted column
+			    		vm_stocks_tab.sortBy = col;
 			    		
-			  //   	}
-			  //   },
+			    	}
+			    },
 			    multiSort: function(col) {
 			    	// if old first sort is the new first sort
 			    	if (vm_stocks_tab.sortCols[0] === col) {
@@ -294,25 +294,25 @@ if(token) {
 			    }
 			},
 			computed: {
-				// sortedStocks: function() {
-		  //   		if (Object.keys(vm_stocks.stocks).length !== 0) {
-			 //    	  	// Turn to array and sort 
-				// 		var stock_array = Object.values(vm_stocks.stocks);
+				sortedStocks: function() {
+		    		if (Object.keys(vm_stocks.stocks).length !== 0) {
+			    	  	// Turn to array and sort 
+						var stock_array = Object.values(vm_stocks.stocks);
 
-				//     	// Sorting array
-				//     	stock_array = stock_array.sort(function(a,b) {
-				//     		if (a[vm_stocks_tab.sortBy] > b[vm_stocks_tab.sortBy]) {
-				//     			return -vm_stocks_tab.sortDesc;
-				//     		}
-				//     		if (a[vm_stocks_tab.sortBy] < b[vm_stocks_tab.sortBy]) {
-				//     			return vm_stocks_tab.sortDesc;
-				//     		}
-				//     		return 0;
-				//     	})
-				//     	return stock_array;
-				// 	}
-				// 	return [];
-				// },
+				    	// Sorting array
+				    	stock_array = stock_array.sort(function(a,b) {
+				    		if (a[vm_stocks_tab.sortBy] > b[vm_stocks_tab.sortBy]) {
+				    			return -vm_stocks_tab.sortDesc;
+				    		}
+				    		if (a[vm_stocks_tab.sortBy] < b[vm_stocks_tab.sortBy]) {
+				    			return vm_stocks_tab.sortDesc;
+				    		}
+				    		return 0;
+				    	})
+				    	return stock_array;
+					}
+					return [];
+				},
 				multiSortStocks: function() {
 					if (Object.keys(vm_stocks.stocks).length !== 0) {
 						
