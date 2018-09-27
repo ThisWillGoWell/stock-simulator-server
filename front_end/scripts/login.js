@@ -26,7 +26,6 @@ $( document ).ready(function() {
     });
 
     
-
     function disableScroll() {
       if (window.addEventListener) // older FF
           window.addEventListener('DOMMouseScroll', preventDefault, false);
@@ -285,10 +284,11 @@ $( document ).ready(function() {
         }
     };
 
-    function createUser(user, password) {
+    function createUser(user, password, nickname) {
         const Http = new XMLHttpRequest();
         Http.open("PUT", url+"/create", false);
         Http.setRequestHeader("Authorization", authenticateUser(user, password));
+        Http.setRequestHeader("DisplayName", nickname);
         Http.send();
 
         if (Http.status !== 200) {
@@ -314,10 +314,11 @@ $( document ).ready(function() {
 
         let input_uid = $('#create-uid').val().trim();
         let input_pw = $('#create-pw').val().trim();
-        let input_create_pw_confirm = $('#create-pw-confirm').val();
+        let input_create_pw_confirm = $('#create-pw-confirm').val().trim();
+        let nickname = $('#create-name').val().trim();
 
         if(input_pw === input_create_pw_confirm) {
-            createUser(input_uid, input_pw);
+            createUser(input_uid, input_pw, nickname);
         }
         console.log("created account attempting login");
         
