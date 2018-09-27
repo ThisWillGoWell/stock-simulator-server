@@ -1438,6 +1438,7 @@ table.table tbody tr td{
     margin: auto;
     /*border-radius: 2px;*/
     padding-bottom: 50px;
+    pointer-events: none;
     /*box-shadow: 0 3px 5px rgba(0,0,0,0.10), 0 3px 5px rgba(0,0,0,0.15);*/
 }
 
@@ -1454,6 +1455,7 @@ table.table tbody tr td{
     right: 8px;
     z-index: 20px;
     border: none;
+    pointer-events:auto;
     -moz-transition: all ease-in-out 0.17s;
     -o-transition: all ease-in-out 0.17s;
     -webkit-transition: all ease-in-out 0.17s;
@@ -1462,6 +1464,7 @@ table.table tbody tr td{
 
 #modal--container .modal-card button i{
     font-size: 22px;
+    pointer-events:auto;
     -moz-transition: all ease-in-out 0.1s;
     -o-transition: all ease-in-out 0.1s;
     -webkit-transition: all ease-in-out 0.1s;
@@ -1624,6 +1627,7 @@ table.table tbody tr td{
     background-color: #90A4AE;
     color: #fff;
     cursor: pointer;
+    pointer-events:auto;
     -moz-transition: all ease-in-out 0.17s;
     -o-transition: all ease-in-out 0.17s;
     -webkit-transition: all ease-in-out 0.17s;
@@ -1671,6 +1675,7 @@ table.table tbody tr td{
     line-height: 16px;
     border-radius: 30px;
     font-weight: 100;
+    pointer-events:auto;
 }
 
 #calc-btn-sell {
@@ -1681,6 +1686,7 @@ table.table tbody tr td{
     line-height: 16px;
     border-radius: 30px;
     font-weight: 100;
+    pointer-events:auto;
 }
 
 #calc-btn-buy.fill {
