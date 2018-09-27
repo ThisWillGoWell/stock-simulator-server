@@ -45,6 +45,7 @@ func StartHandlers() {
 		}
 
 		auth := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
+		displayName := r.Header.Get("DisplayName")
 
 		if len(auth) != 2 || auth[0] != "Basic" {
 			http.Error(w, "create failed", http.StatusBadRequest)
@@ -59,7 +60,7 @@ func StartHandlers() {
 			http.Error(w, "create failed", http.StatusBadRequest)
 			return
 		}
-		token, err :=  account.NewUser(pair[0], pair[1])
+		token, err :=  account.NewUser(pair[0], displayName, pair[1])
 		if err != nil{
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}

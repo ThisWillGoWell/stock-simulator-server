@@ -7,6 +7,10 @@ import (
 	"github.com/stock-simulator-server/src/utils"
 )
 
+const minPasswordLength = 4
+const minDisplayNameLength = 4
+const maxDisplayNameLength = 20
+
 /**
 Return a user provided the username and Password
 If the Password is correct return user, else return err
@@ -50,7 +54,7 @@ func ConnectUser(sessionToken string)(*User, error) {
 Build a new user
 set their Password to that provided
 */
-func NewUser(username, password string) (string, error) {
+func NewUser(username, displayName, password string) (string, error) {
 	uuid := utils.PseudoUuid()
 	if len(username) > 20{
 		return "", errors.New("username too long")
@@ -62,8 +66,16 @@ func NewUser(username, password string) (string, error) {
 	if len(password) < minPasswordLength{
 		return "", errors.New("password too short")
 	}
+
+	if len(displayName) > maxDisplayNameLength {
+		return "", errors.New("display name too long")
+	}
+	if len(displayName) < minDisplayNameLength{
+		return "", errors.New("display name too short")
+	}
+
 	hashedPassword := hashAndSalt(password)
-	user, err := MakeUser(uuid, username, username, hashedPassword, "", `{"swag":"420"}`)
+	user, err := MakeUser(uuid, username, displayName, hashedPassword, "", `{"swag":"420"}`)
 	if err != nil {
 		utils.RemoveUuid(uuid)
 		return "", err
