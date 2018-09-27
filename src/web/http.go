@@ -34,6 +34,7 @@ func StartHandlers() {
 	})
 
 	http.HandleFunc("/create", func(w http.ResponseWriter, r *http.Request){
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		if r.Method != "PUT" {
 			http.Error(w, "put only", http.StatusMethodNotAllowed)
 			return
@@ -62,6 +63,7 @@ func StartHandlers() {
 	})
 
 	http.HandleFunc("/token", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		if r.Method != "GET" {
 			http.Error(w, "get only", http.StatusMethodNotAllowed)
 			return
