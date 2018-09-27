@@ -541,6 +541,13 @@ if(token) {
 	        
 	    });
 
+	    $('#modal--container').click(function() {
+	    	
+	    	console.log("modal quit");
+	        $('#modal--container').removeClass('open');
+	        
+	    });
+
 
 
 
@@ -637,7 +644,9 @@ if(token) {
 
 
 	    $(document).keypress(function(e) {
+	    	
 	    	if($('#chat-module--container textarea').val()) {
+			    
 			    if(e.which == 13) {
 
 			    	let message_body = $('#chat-module--container textarea').val();
@@ -657,6 +666,17 @@ if(token) {
 
 			    }
 			}
+		});
+
+		$(document).keyup(function(e) {
+		  	
+		  	if(buySellModal.showModal === true){
+		  		if (e.keyCode === 27) {
+					//toggleModal();
+					buySellModal.closeModal();
+				}   
+		  	}
+			
 		});
 
 
