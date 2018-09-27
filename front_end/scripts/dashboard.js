@@ -1018,7 +1018,6 @@ if(token) {
 						allViews.removeClass('active');
 						dashboardView.addClass('active');
 						currentViewName[0].innerHTML = "Dashboard";
-				    	// console.log("show dashboard");
 				    break;
 
 				case 'business':
@@ -1026,36 +1025,30 @@ if(token) {
 						businessView.addClass('active');
 						console.log(currentViewName)
 						currentViewName[0].innerHTML = "Business";
-			  			// console.log("show business");
 				  	break;
 
 				case 'stocks':
-						alert("Smell my poo finger");
 						allViews.removeClass('active');
 						stocksView.addClass('active');
 						currentViewName[0].innerHTML = "Stocks";
-						// console.log("show stocks");
 				    break;
 
 				case 'investors':
 						allViews.removeClass('active');
 						investorsView.addClass('active');
 						currentViewName[0].innerHTML = "Investors";
-						// console.log("show investors");
 				    break;
 
 				case 'futures':
 						allViews.removeClass('active');
 						futuresView.addClass('active');
 						currentViewName[0].innerHTML = "Futures";
-						// console.log("show futures");
 				    break;
 
 				case 'perks':
 						allViews.removeClass('active');
 						storeView.addClass('active');
 						currentViewName[0].innerHTML = "Perks";
-						// console.log("show perks");
 				    break;
 			}
 	    }
