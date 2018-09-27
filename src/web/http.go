@@ -45,6 +45,7 @@ func StartHandlers() {
 		}
 
 		auth := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
+		displayName := r.Header.Get("DisplayName")
 
 		if len(auth) != 2 || auth[0] != "Basic" {
 			http.Error(w, "create failed", http.StatusBadRequest)
@@ -59,7 +60,7 @@ func StartHandlers() {
 			http.Error(w, "create failed", http.StatusBadRequest)
 			return
 		}
-		token, err :=  account.NewUser(pair[0], pair[1])
+		token, err :=  account.NewUser(pair[0], displayName, pair[1])
 		if err != nil{
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
@@ -123,7 +124,7 @@ var upgrader = websocket.Upgrader{
 func setupResponse(w *http.ResponseWriter, req *http.Request) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	(*w).Header().Set("Access-Control-Allow-Headers", "DisplayName, Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 }
 
 

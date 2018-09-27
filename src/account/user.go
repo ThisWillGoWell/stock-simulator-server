@@ -19,9 +19,6 @@ var userListLock = lock.NewLock("user-list")
 var NewObjectChannel = duplicator.MakeDuplicator("New User")
 var UpdateChannel = duplicator.MakeDuplicator("User Update")
 
-const minPasswordLength = 4
-const minDisplayNameLength = 4
-const maxDisplayNameLength = 20
 
 /*
 User Object

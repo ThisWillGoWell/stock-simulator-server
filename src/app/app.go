@@ -93,8 +93,8 @@ func LoadVars() {
 	//start the builder
 	//go client.BroadcastMessageBuilder()
 	//build and simulate a client
-	account.NewUser("Mike", "pass")
-	account.NewUser("Will", "pass")
+	account.NewUser("Mike", "Mike", "pass")
+	account.NewUser("Will", "dName", "pass")
 
 	token, _ := account.ValidateUser("Will", "pass")
 	acc, _ := account.ConnectUser(token)
