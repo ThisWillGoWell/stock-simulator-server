@@ -1,7 +1,6 @@
 
 // ADDED THIS BLOCK FOR AUTH - TELL JAKE
 let token = sessionStorage.getItem('token');
-let auth_uid = sessionStorage.getItem('uid');
 let auth_uuid = sessionStorage.getItem('uuid');
 
 var REQUESTS = {};
@@ -1031,6 +1030,7 @@ if(token) {
 				  	break;
 
 				case 'stocks':
+						alert("Smell my poo finger");
 						allViews.removeClass('active');
 						stocksView.addClass('active');
 						currentViewName[0].innerHTML = "Stocks";
