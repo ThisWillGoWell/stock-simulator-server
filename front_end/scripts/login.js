@@ -1,6 +1,6 @@
 $( document ).ready(function() {
 
-    let token_path = "https://mockstarket.com/token";
+    let url = "https://mockstarket.com";
     let input_login_uid = $('#login-uid');
     let input_login_pw = $('#login-pw');
     let input_login_submit = $('#input-login-submit');
@@ -271,7 +271,7 @@ $( document ).ready(function() {
 
     function getToken(user, password) {
         const Http = new XMLHttpRequest();
-        Http.open("GET", token_path, false);
+        Http.open("GET", url+"/token", false);
         Http.setRequestHeader("Authorization", authenticateUser(user, password));
         Http.send();
 
@@ -285,91 +285,40 @@ $( document ).ready(function() {
         }
     };
 
-    function attemptLogin() {
-    	
-    	let input_uid = $('#login-uid').val();
-		let input_pw = $('#login-pw').val();
+    function createUser(user, password) {
+        const Http = new XMLHttpRequest();
+        Http.open("PUT", url+"/create", false);
+        Http.setRequestHeader("Authorization", authenticateUser(user, password));
+        Http.send();
 
-        getToken(input_uid, input_pw);
+        if (Http.status !== 200) {
+            console.error(Http.responseText);
+            return null;
+        } else {
+            sessionStorage.setItem('token', Http.responseText);
+            window.location.href = "/";
+            return  Http.responseText;
+        }
+    };
 
-        // TODO delete if working
-  //   	if(input_uid != '' && input_pw != '') {
-  //           input_uid_trimmed = input_uid.trim();
-  //           input_pw_trimmed = input_pw.trim();
-  //   		auth_msg = {
-  //   					action: "login",
-		// 		        msg: {
-		// 		        	"username": input_uid_trimmed, 
-		// 		        	"password": input_pw_trimmed
-		// 		        }
-		// 		    };
-  //           uid = input_uid_trimmed;
-  //   	}
-
-  //   	console.log(auth_msg);
-
-  //   	try {
-    		
-	 //  		doSend(JSON.stringify(auth_msg));
-
-  //           //doSend('{"action": "login", "msg": {"username": "Will", "password":"pass"}}');
-		// }
-
-		// catch(error) {
-	 //  		console.error(error);
-		//   	$('.login-err').text("Username or password is incorrect");
-		// }
-		
-    }
 
     $('#input-login-submit').click(function() {
-    	attemptLogin();
+        let input_uid = $('#login-uid').val();
+        let input_pw = $('#login-pw').val();
+
+        getToken(input_uid, input_pw);
         console.log("login clicked");
     });
 
      $('#input-create-submit').click(function() {
 
-        let input_uid = $('#create-uid').val();
-        let input_pw = $('#create-pw').val();
+        let input_uid = $('#create-uid').val().trim();
+        let input_pw = $('#create-pw').val().trim();
         let input_create_pw_confirm = $('#create-pw-confirm').val();
-        let input_name = $('#create-name').val();
-        let create_auth_msg = {};
 
-        if(input_uid != '' && input_pw != '') {
-            input_uid_trimmed = input_uid.trim();
-            input_pw_trimmed = input_pw.trim();
-
-            input_create_pw_trimmed = input_create_pw_confirm.trim();
-            input_name_trimmed = input_name.trim();
-
-            if(input_pw_trimmed === input_create_pw_trimmed) {
-                create_auth_msg = {
-                    action: "new_account",
-                    msg: {
-                        "username": input_uid_trimmed, 
-                        "password": input_pw_trimmed,
-                        "display_name": input_name_trimmed
-                    }
-                };
-            }
-            
-
-            uid = input_uid_trimmed;
+        if(input_pw === input_create_pw_confirm) {
+            createUser(input_uid, input_pw);
         }
-
-        console.log(create_auth_msg);
-
-        try {
-            
-            doSend(JSON.stringify(create_auth_msg));
-
-        }
-
-        catch(error) {
-            console.error(error);
-            $('.login-err').text("Username or password is incorrect");
-        }
-
         console.log("created account attempting login");
         
     });
