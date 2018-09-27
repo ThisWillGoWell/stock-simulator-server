@@ -329,10 +329,10 @@
 								</div>
 							</div>
 							<div class="flex-column-100" id="portfolio-list">
-								<div class="card" >
+								<div>
 
 									<!-- Needs to be some version of this -->
-									<div v-for="investor in investors" :key="investor.uuid">
+									<div class="card" v-for="investor in investors" :key="investor.uuid">
 
 										<td>{{ investor.name }}</td>
 								    	<td>Wallet: {{ toPrice(investor.wallet) }}</td>
@@ -350,7 +350,7 @@
 										<br><br>
 									</div>
 
-<!-- 
+<!-- +
 									<table class="table">
 										<thead>
 									    	<tr>
