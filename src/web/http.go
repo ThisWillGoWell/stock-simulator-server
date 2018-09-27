@@ -34,7 +34,11 @@ func StartHandlers() {
 	})
 
 	http.HandleFunc("/create", func(w http.ResponseWriter, r *http.Request){
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		setupResponse(&w, r)
+		if (*r).Method == "OPTIONS" {
+			return
+		}
+
 		if r.Method != "PUT" {
 			http.Error(w, "put only", http.StatusMethodNotAllowed)
 			return
@@ -63,7 +67,10 @@ func StartHandlers() {
 	})
 
 	http.HandleFunc("/token", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		setupResponse(&w, r)
+		if (*r).Method == "OPTIONS" {
+			return
+		}
 		if r.Method != "GET" {
 			http.Error(w, "get only", http.StatusMethodNotAllowed)
 			return
@@ -112,6 +119,13 @@ var upgrader = websocket.Upgrader{
 	},
 
 }
+
+func setupResponse(w *http.ResponseWriter, req *http.Request) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+}
+
 
 func handleConnections(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("got Upgrade")
