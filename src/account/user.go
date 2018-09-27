@@ -7,6 +7,7 @@ import (
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
 	"github.com/stock-simulator-server/src/utils"
+	"unicode"
 )
 
 // keep the uuid to user
@@ -58,7 +59,7 @@ func MakeUser(uuid, username, displayName, password, portfolioUUID, config strin
 		Uuid:        uuid,
 		PortfolioId: portfolioUUID,
 		Lock:        lock.NewLock("user"),
-		Active:      true,
+		Active:      false,
 		Config:      configMap,
 		ConfigStr: config,
 	}
@@ -126,13 +127,36 @@ func  (user *User) SetPassword(pass string) error{
 
 
 func  (user *User) SetDisplayName(displayName string)error{
+	if isAllowedCharaterDispayName(displayName){
+		return errors.New("display name contains invalid character")
+	}
 	if len(displayName) > maxDisplayNameLength {
 		return errors.New("display name too long")
 	}
 	if len(displayName) < minDisplayNameLength {
 		return errors.New("display name too short")
 	}
+
 	user.DisplayName = displayName
 	UpdateChannel.Offer(user)
 	return nil
 }
+
+func isAllowedCharaterDispayName(s string) bool {
+	for _, r := range s {
+		if !unicode.IsLetter(r) && !unicode.IsNumber(r) && r != '_' {
+			return false
+		}
+	}
+	return true
+}
+
+func isAllowedCharaterUsername(s string) bool {
+	for _, r := range s {
+		if !unicode.IsLetter(r) && !unicode.IsNumber(r){
+			return false
+		}
+	}
+	return true
+}
+

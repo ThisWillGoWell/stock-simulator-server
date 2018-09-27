@@ -186,8 +186,10 @@ func executeTrade(o *PurchaseOrder) {
 		costOfTrade := amount * value.GetValue()
 		port.Wallet += costOfTrade
 		ledgerEntry.InvestmentValue -= costOfTrade
+		if ledgerEntry.Amount == 0{
+			ledgerEntry.InvestmentValue = 0
+		}
 		successOrder(o)
-
 	}
 	if !ledgerExists{
 		ledger.NewObjectChannel.Offer(ledgerEntry)

@@ -56,11 +56,15 @@ set their Password to that provided
 */
 func NewUser(username, displayName, password string) (string, error) {
 	uuid := utils.PseudoUuid()
+
 	if len(username) > 20{
 		return "", errors.New("username too long")
 	}
 	if len(username) < 4{
 		return "", errors.New("username too short")
+	}
+	if !isAllowedCharaterUsername(username){
+		return "", errors.New("username is not allowed")
 	}
 
 	if len(password) < minPasswordLength{
@@ -70,8 +74,11 @@ func NewUser(username, displayName, password string) (string, error) {
 	if len(displayName) > maxDisplayNameLength {
 		return "", errors.New("display name too long")
 	}
-	if len(displayName) < minDisplayNameLength{
+	if len(displayName) < minDisplayNameLength {
 		return "", errors.New("display name too short")
+	}
+	if !isAllowedCharaterUsername(displayName) {
+		return "", errors.New("display name contains invalid characters")
 	}
 
 	hashedPassword := hashAndSalt(password)
