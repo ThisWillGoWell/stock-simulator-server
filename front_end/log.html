@@ -54,7 +54,7 @@
     function getToken(){
         const Http = new XMLHttpRequest();
         const url='https://jsonplaceholder.typicode.com/posts';
-        Http.open("GET","http://" + window.location.host + "/token", false);
+        Http.open("GET","https://" + window.location.host + "/token", false);
         Http.setRequestHeader("Authorization", authenticateUser("Will", "pass"));
         Http.send();
 
