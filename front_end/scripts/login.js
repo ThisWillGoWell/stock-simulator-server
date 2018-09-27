@@ -279,7 +279,7 @@ $( document ).ready(function() {
             console.error(Http.responseText);
             return null;
         } else {
-            sessionStorage.setItem('token') = Http.responseText;
+            sessionStorage.setItem('token', Http.responseText);
             window.location.href = "/";
             return  Http.responseText;
         }
