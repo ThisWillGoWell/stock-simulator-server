@@ -17,8 +17,8 @@ function formatPrice(value) {
 		let val = ((value/100)/1000000000).toFixed(2).toString();
 		val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 		return val + "B";
-	} else if (value < 100000000000000) {
-		let val = ((value/100)/1000000000).toFixed(2).toString();
+	} else if (value < 100000000000000000) {
+		let val = ((value/100)/1000000000000).toFixed(2).toString();
 		val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 		return val + "T";
 	} else {
@@ -39,5 +39,3 @@ function formatDate12Hour(date) {
 	let strTime = hours + ':' + minutes + ' ' + ampm;
 	return strTime;
 };
-
-
