@@ -1076,7 +1076,7 @@ if(token !== undefined) {
 
 	} else {
 
-	window.location.href = "/";
+	window.location.href = "/login.html";
 
 }
 
