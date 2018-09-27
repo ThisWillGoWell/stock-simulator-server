@@ -118,7 +118,7 @@ if(token !== undefined) {
 					sessionStorage.removeItem('token');
 					sessionStorage.removeItem('auth_obj');
 					// send back to index
-					window.location.href = "/";
+					window.location.href = "/login.html";
 			    },
 			    changeDisplayName: function() {
 			    	// Get entered display name
