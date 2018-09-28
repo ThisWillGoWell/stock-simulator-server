@@ -48,7 +48,7 @@ func writeLedgerHistory(entry *ledger.Entry) {
 	tx, err := ts.Begin()
 	if err != nil {
 		ts.Close()
-		panic("could not begin portfolio init")
+		panic("could not begin portfolio init: " + err.Error())
 	}
 	_, err = tx.Exec(ledgerHistoryTableUpdateInsert, entry.Uuid, entry.PortfolioId, entry.StockId, entry.Amount)
 	if err != nil {

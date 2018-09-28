@@ -46,12 +46,12 @@ func writeLedger(entry *ledger.Entry) {
 
 	if err != nil {
 		db.Close()
-		panic("could not begin stocks init")
+		panic("could not begin ledger init" + err.Error() )
 	}
 	_, err = tx.Exec(ledgerTableUpdateInsert, entry.Uuid, entry.PortfolioId, entry.StockId, entry.Amount, entry.InvestmentValue)
 	if err != nil {
 		tx.Rollback()
-		panic("error occurred while insert stock in table " + err.Error())
+		panic("error occurred while insert ledger in table " + err.Error())
 	}
 	tx.Commit()
 }

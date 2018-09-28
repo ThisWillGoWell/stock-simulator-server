@@ -42,12 +42,12 @@ func SaveChatMessage(uuid, message string) {
 	tx, err := ts.Begin()
 	if err != nil {
 		ts.Close()
-		panic("could not begin portfolio init")
+		panic("could not begin chat history init: " + err.Error())
 	}
 	_, err = tx.Exec(chatHistoryTableUpdateInsert, uuid, message)
 	if err != nil {
 		tx.Rollback()
-		panic("error occurred while insert portfolio in table " + err.Error())
+		panic("error occurred while insert chat history in table " + err.Error())
 	}
 	tx.Commit()
 }

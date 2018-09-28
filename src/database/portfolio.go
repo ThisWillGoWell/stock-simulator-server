@@ -32,7 +32,7 @@ func initPortfolio() {
 	_, err = tx.Exec(portfolioTableCreateStatement)
 	if err != nil {
 		tx.Rollback()
-		panic("error occurred while creating metrics table " + err.Error())
+		panic("error occurred while creating portfolio table " + err.Error())
 	}
 	tx.Commit()
 }
@@ -44,12 +44,12 @@ func writePortfolio(port *portfolio.Portfolio) {
 
 	if err != nil {
 		db.Close()
-		panic("could not begin stocks init")
+		panic("could not begin portfolio init: " + err.Error())
 	}
 	_, err = tx.Exec(portfolioTableUpdateInsert, port.UUID, port.UserUUID, port.Wallet)
 	if err != nil {
 		tx.Rollback()
-		panic("error occurred while insert stock in table " + err.Error())
+		panic("error occurred while insert portfolio in table " + err.Error())
 	}
 	tx.Commit()
 }

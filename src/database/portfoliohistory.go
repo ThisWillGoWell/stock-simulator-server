@@ -48,7 +48,7 @@ func writePortfolioHistory(port *portfolio.Portfolio) {
 	tx, err := ts.Begin()
 	if err != nil {
 		ts.Close()
-		panic("could not begin portfolio init")
+		panic("could not begin portfolio history write init: " + err.Error())
 	}
 	_, err = tx.Exec(portfolioHistoryTableUpdateInsert, port.UUID, port.NetWorth, port.Wallet)
 	if err != nil {

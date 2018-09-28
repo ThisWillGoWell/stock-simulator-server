@@ -48,7 +48,7 @@ func writeStock(stock *valuable.Stock) {
 
 	if err != nil {
 		db.Close()
-		panic("could not begin stocks init")
+		panic("could not begin stocks init: " + err.Error())
 	}
 	_, err = tx.Exec(stocksTableUpdateInsert, stock.Uuid, stock.TickerId, stock.Name, stock.CurrentPrice, stock.OpenShares, stock.ChangeDuration)
 	if err != nil {

@@ -14,8 +14,8 @@ import (
 const (
 	volatilityMin      = 1
 	volatilityMax      = 10
-	volatilityMinTurns = 3
-	volatilityMaxTurns = 20
+	volatilityMinTurns = 5
+	volatilityMaxTurns = 25
 
 	timeSimulationPeriod = time.Second
 
@@ -91,7 +91,7 @@ func MakeStock(uuid, tickerID, name string, startPrice, openShares int64, runInt
 	stock.PriceChanger = &RandomPrice{
 		RunPercent:            timeSimulationPeriod.Seconds() / (runInterval.Seconds() * 1.0),
 		TargetPrice:           int64(rand.Intn(100000)),
-		PercentToChangeTarget: .1,
+		PercentToChangeTarget: .07,
 		Volatility:            5,
 		RandomNoise:			.07,
 	}
@@ -161,14 +161,16 @@ func (randPrice *RandomPrice) change(stock *Stock) {
 		randPrice.changeValues()
 	}
 
-	change := float64(randPrice.TargetPrice - stock.CurrentPrice) /
+	moveToTarget := int64(utils.RandRangeFloat(float64(randPrice.TargetPrice) * 0.9, float64(randPrice.TargetPrice) * 1.1 ))
+
+	change := float64(moveToTarget - stock.CurrentPrice) /
 		utils.MapNumFloat(randPrice.Volatility, volatilityMin, volatilityMax, volatilityMinTurns, volatilityMaxTurns)
 
 	if rand.Float64() <= randPrice.RandomNoise {
 		change = change * -1
 	}
-	newCurrentPrice := float64(stock.CurrentPrice) + change
-	stock.CurrentPrice = int64(utils.RandRangeFloat(newCurrentPrice * .99, newCurrentPrice * 1.01 ))
+	stock.CurrentPrice = int64(float64(stock.CurrentPrice) + (change * .5))
+
 	stock.UpdateChannel.Offer(stock)
 
 }

@@ -31,7 +31,7 @@ func BuildQuery(qm *messages.QueryMessage) *Query{
 
 	t := "time"
 	if duration == time.Duration(0){
-		t = "limit"
+		t = "limsit"
 		limit = qm.NumberPoints
 		if qm.NumberPoints > 1000{
 			limit = 1000
