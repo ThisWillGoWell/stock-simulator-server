@@ -135,7 +135,7 @@ if(token) {
 						'request_id': REQUEST_ID.toString()
 					};
 
-					REQUESTS[REQUEST_ID++] = function() {
+					REQUESTS[REQUEST_ID++] = function(msg) {
 						alert("Display_name changed to: " + new_name);
 					};
 					// Send through WebSocket
@@ -177,7 +177,44 @@ if(token) {
 						// Change sorted column
 			    		vm_dash_tab.sortBy = col;
 			    	}
-			    }
+			    },
+			    showPortfolioHistory: function() {
+			    	// Set up SVG for graphing
+			    	setSVG('#portfolio-graph');	
+
+			    	// Get curr user portfolioUUID
+		    		let folioUUID = vm_dash_tab.currUserPortfolio.uuid;
+		    		console.log(folioUUID);
+					var currUserUUID = sessionStorage.getItem('uuid');
+			    	var currUserFolioUUID = vm_users.users[currUserUUID].portfolio_uuid;
+			    	// send requests
+					["net_worth", "wallet"].forEach(function(field) {
+
+						// Creating message 
+						let msg = {
+							'action': "query",
+							'msg': {
+								'uuid': folioUUID,
+								'field': field,
+								'num_points': 100,
+								'length': "24h",
+							},
+							'request_id': REQUEST_ID.toString()
+						};
+						
+						// Store request on my end
+						REQUESTS[REQUEST_ID++] = function(msg) {
+							var points = msg.msg.points;
+							points = points.map(function(d) {
+								return {'time': d[0], 'value': d[1] };
+							});
+							addToLineGraph('#portfolio-graph', points);
+						};
+
+						// Send message
+						doSend(JSON.stringify(msg));
+					});
+				},
 	    	},
 	    	computed: {
 				currUserPortfolio: function() {
@@ -245,9 +282,10 @@ if(token) {
 						}
 					}
 					return [];
-				}
+				},
 	    	}
 	    });
+
 
 		// Vue for all stocks tab data 
 		var vm_stocks_tab = new Vue({
@@ -804,13 +842,13 @@ if(token) {
 	    var routeResponse = function(msg) {
 	    	console.log(msg);
 	    	try {
-	    		REQUESTS[msg.request_id]();
+	    		REQUESTS[msg.request_id](msg);
 	    	} catch(err) {
 	    		console.log(err);
 	    		console.log("no request_id key for " + JSON.stringify(msg));
 	    	}
+	    	console.log(msg);
 	    	delete REQUESTS[msg.request_id];
-	    	console.log(REQUESTS);
 	    };
 
 	    var stockUpdate = function(msg) {
