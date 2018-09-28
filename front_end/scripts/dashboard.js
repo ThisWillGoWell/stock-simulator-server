@@ -1002,6 +1002,18 @@ if(token) {
 
 	    			var clickedStock = Object.values(vm_stocks.stocks).filter(d => d.uuid === buySellModal.stock_uuid)[0];
 	    			return clickedStock;
+	    		},
+	    		user: function() {
+	    			var currUserUUID = sessionStorage.getItem('uuid');
+	    			if (vm_users.users[currUserUUID] !== undefined) {
+		    			var currUserFolioUUID = vm_users.users[currUserUUID].portfolio_uuid;
+	    				if (vm_portfolios.portfolios[currUserFolioUUID] !== undefined) {
+			    			var folio = vm_portfolios.portfolios[currUserFolioUUID];
+							folio.investments = folio.net_worth - folio.wallet;
+			    			return folio;
+		    			}
+		    		}
+		    		return {};
 	    		}
 	    	},
 	    	watch: {
