@@ -13,10 +13,18 @@
         <link rel="stylesheet" href="css/main.css">
 
         <script src="scripts/utils.js"></script>
+        <script src="scripts/graphing.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+		<script src="https://d3js.org/d3.v5.min.js"></script>
+		<script src="https://d3js.org/d3-path.v1.min.js"></script>
+		<script src="https://d3js.org/d3-shape.v1.min.js"></script>
+		<script src="https://d3js.org/d3-time.v1.min.js"></script>
+		<script src="https://d3js.org/d3-time-format.v2.min.js"></script>
+
 		<script src="scripts/dashboard.js"></script>
+
 
     </head>
 
@@ -242,6 +250,12 @@
 										</tbody>
 									</table>
 								</div>
+							</div>
+							<div class="flex-column-100">
+								<div class="portfolio-history">
+									<button id="portfolio-history-btn" v-on:click="showPortfolioHistory()">Log cash/networth history</button>
+								</div>
+								<div id="portfolio-graph"></div>
 							</div>
 						</div>
 					</div>
