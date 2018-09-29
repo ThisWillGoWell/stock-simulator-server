@@ -178,23 +178,23 @@ if(token) {
 			    		vm_dash_tab.sortBy = col;
 			    	}
 			    },
-			    showPortfolioHistory: function() {
-			    	// Set up SVG for graphing
-			    	setSVG('#portfolio-graph');	
+			    createPortfolioGraph: function() {
+					// Get curr user portfolioUUID
+		    		let portfolioUUID = vm_dash_tab.currUserPortfolio.uuid;
+		    		
+			    	// Store graphing data
+					var data = {};
+					var responses = [];
+					var requests = [];
 
-			    	// Get curr user portfolioUUID
-		    		let folioUUID = vm_dash_tab.currUserPortfolio.uuid;
-		    		console.log(folioUUID);
-					var currUserUUID = sessionStorage.getItem('uuid');
-			    	var currUserFolioUUID = vm_users.users[currUserUUID].portfolio_uuid;
-			    	// send requests
+					// Send data requests
 					["net_worth", "wallet"].forEach(function(field) {
 
 						// Creating message 
 						let msg = {
 							'action': "query",
 							'msg': {
-								'uuid': folioUUID,
+								'uuid': portfolioUUID,
 								'field': field,
 								'num_points': 100,
 								'length': "24h",
@@ -202,19 +202,86 @@ if(token) {
 							'request_id': REQUEST_ID.toString()
 						};
 						
-						// Store request on my end
+						// Store request on front end
+						requests.push(REQUEST_ID.toString());
 						REQUESTS[REQUEST_ID++] = function(msg) {
+							// Pull out the data and format it
 							var points = msg.msg.points;
 							points = points.map(function(d) {
 								return {'time': d[0], 'value': d[1] };
 							});
-							addToLineGraph('#portfolio-graph', points);
+
+							// Store the data
+							data[msg.msg.message.field] = points;
+
+							// Make note the data is available
+							responses.push(msg.request_id);
+							// addToLineGraph('#portfolio-graph', points, field);
 						};
 
 						// Send message
 						doSend(JSON.stringify(msg));
 					});
-				},
+
+					var drawGraphOnceDone = null
+
+					var stillWaiting = true;
+					
+					drawGraphOnceDone = function(){
+						console.log(requests)
+						console.log(responses)
+						console.log(requests.every(r => responses.indexOf(r) > -1))
+
+						if (requests.every(r => responses.indexOf(r) > -1)) {
+							stillWaiting = false;
+						}
+
+						if (!stillWaiting) {
+							DrawPortfolioGraph('#portfolio-graph', data);
+						} else {
+							setTimeout(drawGraphOnceDone, 100);
+						}
+					}
+
+					setTimeout(drawGraphOnceDone, 100);
+				}
+			 //    showPortfolioHistory: function() {
+			 //    	// Set up SVG for graphing
+			 //    	setSVG('#portfolio-graph');	
+
+			 //    	// Get curr user portfolioUUID
+		  //   		let folioUUID = vm_dash_tab.currUserPortfolio.uuid;
+		  //   		console.log(folioUUID);
+				// 	var currUserUUID = sessionStorage.getItem('uuid');
+			 //    	var currUserFolioUUID = vm_users.users[currUserUUID].portfolio_uuid;
+			 //    	// send requests
+				// 	["net_worth", "wallet"].forEach(function(field) {
+
+				// 		// Creating message 
+				// 		let msg = {
+				// 			'action': "query",
+				// 			'msg': {
+				// 				'uuid': folioUUID,
+				// 				'field': field,
+				// 				'num_points': 100,
+				// 				'length': "24h",
+				// 			},
+				// 			'request_id': REQUEST_ID.toString()
+				// 		};
+						
+				// 		// Store request on my end
+				// 		REQUESTS[REQUEST_ID++] = function(msg) {
+				// 			var points = msg.msg.points;
+				// 			points = points.map(function(d) {
+				// 				return {'time': d[0], 'value': d[1] };
+				// 			});
+				// 			addToLineGraph('#portfolio-graph', points, field);
+				// 		};
+
+				// 		// Send message
+				// 		doSend(JSON.stringify(msg));
+				// 	});
+				// },
 	    	},
 	    	computed: {
 				currUserPortfolio: function() {
