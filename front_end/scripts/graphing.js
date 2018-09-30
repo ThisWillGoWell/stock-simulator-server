@@ -1,11 +1,13 @@
 // Setting graph colors. TEMP: in future use class so brennan can manage the css
-var graphColors = {
-	'net_worth': '#920000',
-	'wallet': '#009200',
-};
+var graphColors = d3.schemeCategory20b();
+// {
+// 	'net_worth': '#920000',
+// 	'wallet': '#009200',
+// };
 
 
-function DrawPortfolioGraph(location, dat, id) {
+
+function DrawLineGraph(location, dat, id) {
 	console.log(dat);
 	var width = 700;
 	var height = 500;
@@ -20,7 +22,7 @@ function DrawPortfolioGraph(location, dat, id) {
 		.attr('width', width)
 		.attr('height', height)
 		.append("g");
-	
+
 	let minTime = new Date('3000 Jan 1');
 	let maxTime = new Date();
 	let maxValue = 0;
@@ -52,7 +54,6 @@ function DrawPortfolioGraph(location, dat, id) {
 
 
 	for (line_key in dat) {
-		console.log(line_key);
 		let path = svg.append('path');
 
 		let line = d3.line()
@@ -60,7 +61,7 @@ function DrawPortfolioGraph(location, dat, id) {
 			.y(function(d) { return scaleValue(d.value); });
 
 		// Adding line 
-		path.data([dat[line_key]]).attr('d', line).attr('stroke', graphColors[line_key]).attr('stroke-width', '2px').attr('fill', 'none');
+		path.data([dat[line_key]]).attr('d', line).attr('stroke', 'black').attr('stroke-width', '2px').attr('fill', 'none');
 	}
 
 	// Creating axis

@@ -237,7 +237,7 @@ if(token) {
 						}
 
 						if (!stillWaiting) {
-							DrawPortfolioGraph('#portfolio-graph', data);
+							DrawLineGraph('#portfolio-graph', data);
 						} else {
 							setTimeout(drawGraphOnceDone, 100);
 						}
@@ -395,7 +395,72 @@ if(token) {
 			    		vm_stocks_tab.sortDirections.unshift(1);
 			    	}
 			    	vm_stocks_tab.reSort++;
-			    }
+			    },
+			    createStockGraph: function() {
+			    	// Store graphing data
+					var data = {};
+					var responses = [];
+					var requests = [];
+
+					// Send data requests
+					Object.keys(vm_stocks.stocks).forEach(function(stock) {
+
+						// Creating message 
+						let msg = {
+							'action': "query",
+							'msg': {
+								'uuid': stock,
+								'field': 'current_price',
+								'num_points': 1000,
+								'length': "100h",
+							},
+							'request_id': REQUEST_ID.toString()
+						};
+						
+						// Store request on front end
+						requests.push(REQUEST_ID.toString());
+						REQUESTS[REQUEST_ID++] = function(msg) {
+							// Pull out the data and format it
+							var points = msg.msg.points;
+							points = points.map(function(d) {
+								return {'time': d[0], 'value': d[1] };
+							});
+
+							// Store the data
+							data[msg.msg.message.uuid] = points;
+
+							// Make note the data is available
+							responses.push(msg.request_id);
+							// addToLineGraph('#portfolio-graph', points, field);
+						};
+
+						// Send message
+						doSend(JSON.stringify(msg));
+					});
+
+					var drawGraphOnceDone = null
+
+					var stillWaiting = true;
+					
+					drawGraphOnceDone = function(){
+						console.log(requests)
+						console.log(responses)
+						console.log(requests.every(r => responses.indexOf(r) > -1))
+
+						if (requests.every(r => responses.indexOf(r) > -1)) {
+							stillWaiting = false;
+						}
+
+						if (!stillWaiting) {
+					    	DrawLineGraph('#stock-graph', data);
+						} else {
+							setTimeout(drawGraphOnceDone, 100);
+						}
+					}
+
+					setTimeout(drawGraphOnceDone, 100);
+
+			    },
 			},
 			computed: {
 				sortedStocks: function() {
