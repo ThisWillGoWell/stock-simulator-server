@@ -52,16 +52,16 @@ func (baseMessage *BaseMessage) UnmarshalJSON(data []byte) error {
 	// update is not here since it should never have to be Unmarshal
 	var message Message
 	switch actionType {
+	case NotificationAck:
+		message = &NotificationMessage{}
+	case NotificationAction:
+		message = &NotificationAckMessage{}
 	case ChatAction:
 		message = &ChatMessage{}
 	case TradeAction:
 		message = &TradeMessage{}
-	case LoginAction:
-		message = &LoginMessage{}
 	case UpdateAction:
 		message = &UpdateMessage{}
-	case NewAccountAction:
-		message = &NewAccountMessage{}
 	case QueryAction:
 		message = &QueryMessage{}
 	case TransferAction:
@@ -70,6 +70,8 @@ func (baseMessage *BaseMessage) UnmarshalJSON(data []byte) error {
 		message = &RenewMessage{}
 	case SetAction:
 		message = &SetMessage{}
+	case ItemAction:
+		message = &ItemMessage{}
 	}
 
 	str, _ := json.Marshal(obj["msg"])

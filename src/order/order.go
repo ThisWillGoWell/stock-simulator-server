@@ -66,10 +66,10 @@ func MakePurchaseOrder(valuableID, portfolioUUID string, amount int64) *Purchase
 	return po
 }
 
-func MakeTransferOrder(giver, reciever string, amount int64) *TransferOrder {
+func MakeTransferOrder(giver, receiver string, amount int64) *TransferOrder {
 	to := &TransferOrder{
 		PortfolioID:     giver,
-		ReceiverID:      reciever,
+		ReceiverID:      receiver,
 		Amount:          amount,
 		ResponseChannel: make(chan *Response, 1),
 	}
@@ -77,16 +77,12 @@ func MakeTransferOrder(giver, reciever string, amount int64) *TransferOrder {
 	return to
 }
 
-func (po *PurchaseOrder) Execute() {
-
-}
-
 func successOrder(o Order) {
 	o.rc() <- &Response{
 		Order:   o,
-		Success: true,
-	}
+		Success: true}
 }
+
 func failureOrder(msg string, o Order) {
 
 	o.rc() <- &Response{
@@ -197,12 +193,14 @@ func executeTrade(o *PurchaseOrder) {
 }
 
 func executeTransfer(o *TransferOrder) {
-	portfolio.PortfoliosLock.Acquire("moneyTransfer")
-	defer portfolio.PortfoliosLock.Release()
+	if o.ReceiverID == o.PortfolioID {
+		failureOrder("cant transfer to and from same account", o)
+	}
 	port, exists := portfolio.Portfolios[o.PortfolioID]
 	if !exists {
 		failureOrder("giver portfolio not known", o)
 	}
+
 	receiver, exists := portfolio.Portfolios[o.ReceiverID]
 	if !exists {
 		failureOrder("portfolio does not exist, this is very bad", o)
@@ -212,10 +210,12 @@ func executeTransfer(o *TransferOrder) {
 	defer port.Lock.Release()
 	receiver.Lock.Acquire("transfer")
 	defer receiver.Lock.Release()
+
 	if o.Amount <= 0 {
 		failureOrder("invalid amount", o)
 		return
 	}
+
 	if o.Amount > port.Wallet {
 		failureOrder("not enough money", o)
 		return

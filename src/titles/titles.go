@@ -19,7 +19,7 @@ func makeTitle(level, cost int64, name string) {
 }
 
 func PopulateTitles() {
-	makeTitle(0,0, "Noob")
+	makeTitle(0, 0, "Noob")
 	makeTitle(1, 2*money.Thousand, "l33t N00b")
 	makeTitle(2, 10*money.Thousand, "Im trying")
 	makeTitle(3, 50*money.Thousand, "Road to T500")

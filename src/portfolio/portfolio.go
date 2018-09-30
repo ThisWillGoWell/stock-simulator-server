@@ -3,6 +3,7 @@ package portfolio
 import (
 	"errors"
 	"fmt"
+	"github.com/stock-simulator-server/src/change"
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/ledger"
 	"github.com/stock-simulator-server/src/lock"
@@ -46,7 +47,7 @@ func (port *Portfolio) GetType() string {
 }
 
 func NewPortfolio(userUUID string) (*Portfolio, error) {
-	uuid := utils.PseudoUuid()
+	uuid := utils.SerialUuid()
 	return MakePortfolio(uuid, userUUID, 100000)
 }
 
@@ -71,6 +72,7 @@ func MakePortfolio(uuid, userUUID string, wallet int64) (*Portfolio, error) {
 	Portfolios[uuid] = port
 	//port.Lock.EnableDebug()
 	port.UpdateChannel.EnableCopyMode()
+	change.RegisterPublicChangeDetect(port)
 	NewObjectChannel.Offer(port)
 	UpdateChannel.RegisterInput(port.UpdateChannel.GetOutput())
 	utils.RegisterUuid(uuid, port)

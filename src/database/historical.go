@@ -48,8 +48,10 @@ func MakeHistoryLimitQuery(tableName, uuid, field string, limit int) ([][]interf
 	}
 	querySmt := fmt.Sprintf(historyTableLimitQuery, field, tableName)
 	rows, err := tx.Query(querySmt, uuid, limit)
+	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
+
 	return rowsToResponse(rows)
 }

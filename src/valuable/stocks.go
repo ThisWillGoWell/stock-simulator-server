@@ -3,6 +3,7 @@ package valuable
 import (
 	"errors"
 	"fmt"
+	"github.com/stock-simulator-server/src/change"
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
 	"github.com/stock-simulator-server/src/utils"
@@ -70,7 +71,7 @@ func NewStock(tickerID, name string, startPrice int64, runInterval time.Duration
 	ValuablesLock.Acquire("new-stock")
 	defer ValuablesLock.Release()
 
-	uuidString := utils.PseudoUuid()
+	uuidString := utils.SerialUuid()
 
 	return MakeStock(uuidString, tickerID, name, startPrice, 100, runInterval)
 }
@@ -102,6 +103,7 @@ func MakeStock(uuid, tickerID, name string, startPrice, openShares int64, runInt
 	go stock.stockUpdateRoutine()
 	Stocks[uuid] = stock
 	stock.UpdateChannel.EnableCopyMode()
+	change.RegisterPublicChangeDetect(stock)
 	UpdateChannel.RegisterInput(stock.UpdateChannel.GetOutput())
 	NewObjectChannel.Offer(stock)
 	utils.RegisterUuid(uuid, stock)
@@ -153,7 +155,7 @@ type RandomPrice struct {
 	Volatility            float64 `json:"volatility"`
 }
 
-func (randPrice *RandomPrice) GetTargetPrice() int64{
+func (randPrice *RandomPrice) GetTargetPrice() int64 {
 	return randPrice.TargetPrice
 }
 

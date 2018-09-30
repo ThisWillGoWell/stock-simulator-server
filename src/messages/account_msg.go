@@ -42,7 +42,7 @@ type AccountResponseMessage struct {
 	SessionToken string                 `json:"token,omitempty"`
 	Uuid         string                 `json:"uuid,omitempty"`
 	Err          string                 `json:"err,omitempty"`
-	Init		 map[string]interface{} `json:"init,omitempty"`
+	Init         map[string]interface{} `json:"init,omitempty"`
 }
 
 func (*AccountResponseMessage) message() { return }

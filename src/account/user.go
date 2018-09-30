@@ -4,15 +4,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
+	"github.com/stock-simulator-server/src/items"
+
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
-	"github.com/stock-simulator-server/src/messages"
 	"github.com/stock-simulator-server/src/notification"
 	"github.com/stock-simulator-server/src/portfolio"
 	"github.com/stock-simulator-server/src/session"
 	"github.com/stock-simulator-server/src/titles"
 	"github.com/stock-simulator-server/src/utils"
-	"time"
 )
 
 // keep the uuid to user
@@ -28,24 +29,56 @@ var UpdateChannel = duplicator.MakeDuplicator("User Update")
 const minPasswordLength = 4
 const minDisplayNameLength = 4
 const maxDisplayNameLength = 20
-const notificationTimeLimit = 1 * time.Hour
+
 /*
 User Object
 Represents a unique individual of the system
 */
 type User struct {
-	UserName      string                 `json:"-"`
-	Password      string                 `json:"-"`
-	DisplayName   string                      `json:"display_name" change:"-"`
-	Uuid          string                      `json:"-"`
-	Active        bool                        `json:"active" change:"-"`
-	ActiveClients int64                       `json:"-"`
-	Lock          *lock.Lock                  `json:"-"`
-	PortfolioId   string                      `json:"portfolio_uuid"`
-	Config        map[string]interface{}      `json:"-"`
-	ConfigStr     string                      `json:"-"`
-	Level         int64                       `json:"level" change:"-"`
-	Notifications []*messages.NotificationMsg `json:"-"`
+	UserName       string                        `json:"-"`
+	Password       string                        `json:"-"`
+	DisplayName    string                        `json:"display_name" change:"-"`
+	Uuid           string                        `json:"-"`
+	Active         bool                          `json:"active" change:"-"`
+	ActiveClients  int64                         `json:"-"`
+	Lock           *lock.Lock                    `json:"-"`
+	PortfolioId    string                        `json:"portfolio_uuid"`
+	Config         map[string]interface{}        `json:"-"`
+	ConfigStr      string                        `json:"-"`
+	Level          int64                         `json:"level" change:"-"`
+	UserUpdateChan *duplicator.ChannelDuplicator `json:"-"`
+	Sender         *sender                       `json:"-"`
+}
+
+func RunUserSend() {
+	runSendNotification()
+	runSendItems()
+}
+
+func runSendNotification() {
+	go func() {
+		for o := range notification.Objects.GetBufferedOutput(10) {
+			n := o.(notification.Notification)
+			user, exists := UserList[n.UserUuid]
+			if !exists {
+				panic("got a notification, but no user name")
+			}
+			user.Sender.Notifications.Offer(n)
+		}
+	}()
+}
+
+func runSendItems() {
+	go func() {
+		for o := range items.NewObjectChannel.GetBufferedOutput(10) {
+			n := o.(notification.Notification)
+			user, exists := UserList[n.UserUuid]
+			if !exists {
+				panic("got a notification, but no user name")
+			}
+			user.Sender.NewObjects.Offer(n)
+		}
+	}()
 }
 
 /**
@@ -90,7 +123,7 @@ Build a new user
 set their Password to that provided
 */
 func NewUser(username, displayName, password string) (*User, error) {
-	uuid := utils.PseudoUuid()
+	uuid := utils.SerialUuid()
 	if len(username) > 20 {
 		return nil, errors.New("username too long")
 	}
@@ -132,16 +165,17 @@ func MakeUser(uuid, username, displayName, password, portfolioUUID, config strin
 	}
 	uuidList[username] = uuid
 	UserList[uuid] = &User{
-		UserName:    username,
-		DisplayName: displayName,
-		Password:    password,
-		Uuid:        uuid,
-		PortfolioId: portfolioUUID,
-		Lock:        lock.NewLock("user"),
-		Active:      true,
-		Config:      configMap,
-		ConfigStr:   config,
-		Notifications: make([]*messages.NotificationMsg, 0),
+		UserName:       username,
+		DisplayName:    displayName,
+		Password:       password,
+		Uuid:           uuid,
+		PortfolioId:    portfolioUUID,
+		Lock:           lock.NewLock("user"),
+		Active:         true,
+		Config:         configMap,
+		ConfigStr:      config,
+		UserUpdateChan: duplicator.MakeDuplicator("user-" + uuid),
+		Sender:         newSender(uuid),
 	}
 	NewObjectChannel.Offer(UserList[uuid])
 	utils.RegisterUuid(uuid, UserList[uuid])
@@ -237,30 +271,6 @@ func (user *User) LevelUp() error {
 }
 
 func (user *User) AddNotification(msg *notification.Notification) {
-	user.Notifications = append(user.Notifications, msg)
-}
+	user.Sender.Notifications.Offer(msg)
 
-func StartNotifcationCleaner(){
-	go runCleanNotifications()
-}
-
-func runCleanNotifications(){
-	for {
-		userListLock.Acquire("clean notifications")
-		for _, user := range UserList{
-			user.Lock.Acquire("clean notifications")
-			newStartIndex := 0
-			for _, notification := range user.Notifications{
-				if time.Since(notification.Timestamp) < notificationTimeLimit {
-					break
-				} else{
-					newStartIndex += 1
-				}
-			}
-			user.Notifications = user.Notifications[newStartIndex:]
-			userListLock.Release()
-		}
-		userListLock.Release()
-		<-time.After(time.Hour)
-	}
 }

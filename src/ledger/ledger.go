@@ -46,7 +46,7 @@ func NewLedgerEntry(portfolioId, stockId string, lockAcquired bool) *Entry {
 		EntriesLock.Acquire("make ledger entry")
 		defer EntriesLock.Release()
 	}
-	uuid := utils.PseudoUuid()
+	uuid := utils.SerialUuid()
 
 	return MakeLedgerEntry(uuid, portfolioId, stockId, 0, 0)
 }
