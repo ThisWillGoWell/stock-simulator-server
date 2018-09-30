@@ -181,103 +181,9 @@ if(token) {
 			    createPortfolioGraph: function() {
 					// Get curr user portfolioUUID
 		    		let portfolioUUID = vm_dash_tab.currUserPortfolio.uuid;
-		    		
-			    	// Store graphing data
-					var data = {};
-					var responses = [];
-					var requests = [];
-
-					// Send data requests
-					["net_worth", "wallet"].forEach(function(field) {
-
-						// Creating message 
-						let msg = {
-							'action': "query",
-							'msg': {
-								'uuid': portfolioUUID,
-								'field': field,
-								'num_points': 1000,
-								'length': "100h",
-							},
-							'request_id': REQUEST_ID.toString()
-						};
-						
-						// Store request on front end
-						requests.push(REQUEST_ID.toString());
-						REQUESTS[REQUEST_ID++] = function(msg) {
-							// Pull out the data and format it
-							var points = msg.msg.points;
-							points = points.map(function(d) {
-								return {'time': d[0], 'value': d[1] };
-							});
-
-							// Store the data
-							data[msg.msg.message.field] = points;
-
-							// Make note the data is available
-							responses.push(msg.request_id);
-							// addToLineGraph('#portfolio-graph', points, field);
-						};
-
-						// Send message
-						doSend(JSON.stringify(msg));
-					});
-
-					var drawGraphOnceDone = null
-
-					var stillWaiting = true;
-					
-					drawGraphOnceDone = function(){
-						if (requests.every(r => responses.indexOf(r) > -1)) {
-							stillWaiting = false;
-						}
-
-						if (!stillWaiting) {
-							DrawLineGraph('#portfolio-graph', data);
-						} else {
-							setTimeout(drawGraphOnceDone, 100);
-						}
-					}
-
-					setTimeout(drawGraphOnceDone, 100);
-				}
-			 //    showPortfolioHistory: function() {
-			 //    	// Set up SVG for graphing
-			 //    	setSVG('#portfolio-graph');	
-
-			 //    	// Get curr user portfolioUUID
-		  //   		let folioUUID = vm_dash_tab.currUserPortfolio.uuid;
-		  //   		console.log(folioUUID);
-				// 	var currUserUUID = sessionStorage.getItem('uuid');
-			 //    	var currUserFolioUUID = vm_users.users[currUserUUID].portfolio_uuid;
-			 //    	// send requests
-				// 	["net_worth", "wallet"].forEach(function(field) {
-
-				// 		// Creating message 
-				// 		let msg = {
-				// 			'action': "query",
-				// 			'msg': {
-				// 				'uuid': folioUUID,
-				// 				'field': field,
-				// 				'num_points': 100,
-				// 				'length': "24h",
-				// 			},
-				// 			'request_id': REQUEST_ID.toString()
-				// 		};
-						
-				// 		// Store request on my end
-				// 		REQUESTS[REQUEST_ID++] = function(msg) {
-				// 			var points = msg.msg.points;
-				// 			points = points.map(function(d) {
-				// 				return {'time': d[0], 'value': d[1] };
-				// 			});
-				// 			addToLineGraph('#portfolio-graph', points, field);
-				// 		};
-
-				// 		// Send message
-				// 		doSend(JSON.stringify(msg));
-				// 	});
-				// },
+		    		let location = "#portfolio-graph";
+		    		createPortfolioGraph(portfolioUUID, location);
+		    	}
 	    	},
 	    	computed: {
 				currUserPortfolio: function() {
@@ -314,7 +220,6 @@ if(token) {
 								d.stock_roi = (Number(d.stock_price) * Number(d.amount)) - Number(d.investment_value);
 
 								// TODO: css changes done here talk to brennan about his \ux22 magic 
-
 								// helper to color rows in the stock table 
 								var targetChangeElem = $("tr[uuid=\x22" + d.stock_uuid + "\x22].clickable > td.stock-change");
 								// targetChangeElem.addClass("rising");
@@ -537,6 +442,10 @@ if(token) {
 			el: '#investors--view',
 			methods: {
 				toPrice: formatPrice,
+				createGraph: function(portfolioUUID) {
+					let location = "#investorGraph" + portfolioUUID;
+					createPortfolioGraph(portfolioUUID, location);
+				}
 			},
 			computed: {
 				investors: function() {
@@ -557,12 +466,73 @@ if(token) {
 							d.value = d.current_price * d.amount;
 							return d;
 						});
+
 						return d;
-					})
+					});
 					return investors;
 				},
 			}
 		});
+
+		function createPortfolioGraph(portfolioUUID, location) {
+			// Store graphing data
+			var data = {};
+			var responses = [];
+			var requests = [];
+
+			// Send data requests
+			["net_worth", "wallet"].forEach(function(field) {
+
+				// Creating message 
+				let msg = {
+					'action': "query",
+					'msg': {
+						'uuid': portfolioUUID,
+						'field': field,
+						'num_points': 100,
+						'length': "100h",
+					},
+					'request_id': REQUEST_ID.toString()
+				};
+				
+				// Store request on front end
+				requests.push(REQUEST_ID.toString());
+				REQUESTS[REQUEST_ID++] = function(msg) {
+					// Pull out the data and format it
+					var points = msg.msg.points;
+					points = points.map(function(d) {
+						return {'time': d[0], 'value': d[1] };
+					});
+
+					// Store the data
+					data[msg.msg.message.field] = points;
+
+					// Make note the data is available
+					responses.push(msg.request_id);
+				};
+
+				// Send message
+				doSend(JSON.stringify(msg));
+			});
+
+			var drawGraphOnceDone = null
+
+			var stillWaiting = true;
+			
+			drawGraphOnceDone = function() {
+				if (requests.every(r => responses.indexOf(r) > -1)) {
+					stillWaiting = false;
+				}
+
+				if (!stillWaiting) {
+					DrawLineGraph(location, data);
+				} else {
+					setTimeout(drawGraphOnceDone, 100);
+				}
+			}
+
+			setTimeout(drawGraphOnceDone, 100);
+		};
 
 		Vue.component('investor-card', {
 			computed: {
@@ -665,20 +635,6 @@ if(token) {
 
 		}
 
-
-		// NOTE: I DONT THINK THIS IS BEING USED AT ALL
-		// function appendNewServerMessage(msg){
-			
-		// 	let msg_template = '<li>'+			
-		// 			'				<div class="msg-text">'+ formatted_msg +'</div>'+
-		// 			'			</li>';
-
-		// 	debug_feed.append(msg_template);
-		// 	debug_feed.animate({scrollTop: chat_feed.prop("scrollHeight")}, $('#chat-module--container .chat-message--list').height());
-
-		// }
-
-
 	    $('.debug-title-bar button').click(function() {
 	    
 	        $('#debug-module--container').toggleClass('closed');
@@ -720,8 +676,6 @@ if(token) {
 	    	var ticker_id = $(this).find('.stock-ticker-id').attr('tid');
 	    	
 	    	console.log("TID: "+ticker_id);
-	    	// TODO: get all data elements
-		    // var ticker_id = this.getElementsByClassName('stock-ticker-id')[0].innerHTML;
 
 	    	var stock = Object.values(vm_stocks.stocks).filter(d => d.ticker_id === ticker_id)[0];
 
@@ -734,18 +688,7 @@ if(token) {
         });
 
 
-
-	    // $('#nav li button').click(function(this) {
-	    
-	    //    $(this).remove();
-	        
-	    // });
-
 	    $('thead tr th').click(function(event) {
-	    	
-	    	// //let targetElem = this.find('.material-icon').first();
-	    	// let toggleAsc = false;
-	    	// let toggleDsc = false;
 	    	
 	    	if($(event.currentTarget).find('i').hasClass("shown")) {
 	    		$(event.currentTarget).find('i').toggleClass("flipped");
@@ -755,28 +698,6 @@ if(token) {
 	    		$(event.currentTarget).find('i').addClass("shown");
 	    	}
 
-	    	// if($(event.currentTarget).find('i').hasClass("asc")) {
-	    	// 	toggleDsc = true;
-	    	// 	console.log("is dsc");
-	    	// }
-
-	    	
-	    	
-	    	// if(toggleAsc) {
-	    		
-	    	// 	$(event.currentTarget).find('i').addClass("asc");
-	    	// } else {
-	    	// 	$(event.currentTarget).find('i').addClass("dsc");
-	    	// }
-
-	    	// if(toggleDsc) {
-	    	// 	$(event.currentTarget).find('i').addClass("dsc");
-	    	// } else {
-	    	// 	$(event.currentTarget).find('i').addClass("asc");
-	    	// }
-	        
-	        //$('#debug-module--container').toggleClass('visible');
-	        
 	    });
 
 	    function formatChatMessage(msg) {
@@ -1101,7 +1022,6 @@ if(token) {
 
 	    function toggleModal() {
 	    	$('#modal--container').toggleClass('open');
-	        // console.log("modal show");	
 	    }
 
 
@@ -1247,19 +1167,7 @@ if(token) {
 			}
 	    }
 
-	    
-	    
-
-	    // function writeToScreen(message)
-	    // {
-	    //     var pre = document.createElement("p");
-	    //     //pre.style.wordWrap = "break-word";
-	    //     pre.innerHTML = message;
-	    //     output.appendChild(pre);
-	    // }
-
 	    window.addEventListener("load", init, false);
-	    
 
 		});
 

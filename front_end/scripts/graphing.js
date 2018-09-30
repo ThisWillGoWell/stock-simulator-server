@@ -16,7 +16,7 @@ function DrawLineGraph(location, dat, id) {
 		'left': 60,
 		'right': 60,
 	};
-
+	console.log(location);
 	var svg = d3.select(location).append('svg')
 		.attr('width', width)
 		.attr('height', height)

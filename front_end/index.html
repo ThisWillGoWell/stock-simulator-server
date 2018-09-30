@@ -350,8 +350,7 @@
 								<div>
 
 									<!-- Needs to be some version of this -->
-									<div class="card" v-for="investor in investors" :key="investor.uuid">
-
+									<div class="card" v-for="investor in investors" :key="investor.uuid" v-on:click="createGraph(investor.uuid)">
 										<td>{{ investor.name }}</td>
 								    	<td>Wallet: {{ toPrice(investor.wallet) }}</td>
 								    	<td>Net Worth: {{ toPrice(investor.net_worth) }}</td>
@@ -365,6 +364,7 @@
 									    	<td>{{ toPrice(stock.value) }}</td>
 
 										</div>
+										<div v-bind:id="'investorGraph'+investor.uuid"></div>
 										<br><br>
 									</div>
 
