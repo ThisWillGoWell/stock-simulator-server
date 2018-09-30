@@ -268,7 +268,7 @@
 							</div>
 						</div>
 					</div>
-					<div id="stocks--view" class="view">
+					<div id="stocks--view" class="view" v-on:click="createStockGraph()">
 						<div class="flex-grid--container" id="stockSuperlatives">
 							<div class="flex-column-33">
 								<div class="card small">
@@ -332,6 +332,9 @@
 										</table>
 									</div>
 								</div>
+							</div>
+							<div class="flex-column-100">
+								<div id="stock-graph"></div>
 							</div>
 						</div>
 					</div>
