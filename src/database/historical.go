@@ -31,7 +31,6 @@ func rowsToResponse(rows *sql.Rows) ([][]interface{}, error) {
 	var t time.Time
 	var value float64
 	response := make([][]interface{}, 0)
-	defer rows.Close()
 	for rows.Next() {
 		err := rows.Scan(&t, &value)
 		if err != nil {
@@ -42,12 +41,9 @@ func rowsToResponse(rows *sql.Rows) ([][]interface{}, error) {
 	return response, nil
 }
 func MakeHistoryLimitQuery(tableName, uuid, field string, limit int) ([][]interface{}, error) {
-	tx, err := ts.Begin()
-	if err != nil {
-		return nil, err
-	}
+
 	querySmt := fmt.Sprintf(historyTableLimitQuery, field, tableName)
-	rows, err := tx.Query(querySmt, uuid, limit)
+	rows, err := ts.Query(querySmt, uuid, limit)
 	defer rows.Close()
 	if err != nil {
 		return nil, err
