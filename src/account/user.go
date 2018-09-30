@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/stock-simulator-server/src/items"
+	"github.com/stock-simulator-server/src/wires"
 
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
@@ -22,9 +22,6 @@ var UserList = make(map[string]*User)
 // keep the username to uuid list
 var uuidList = make(map[string]string)
 var userListLock = lock.NewLock("user-list")
-
-var NewObjectChannel = duplicator.MakeDuplicator("New User")
-var UpdateChannel = duplicator.MakeDuplicator("User Update")
 
 const minPasswordLength = 4
 const minDisplayNameLength = 4
@@ -70,7 +67,7 @@ func runSendNotification() {
 
 func runSendItems() {
 	go func() {
-		for o := range items.NewObjectChannel.GetBufferedOutput(10) {
+		for o := range wires.ItemsNewChannel.GetBufferedOutput(10) {
 			n := o.(notification.Notification)
 			user, exists := UserList[n.UserUuid]
 			if !exists {
@@ -98,7 +95,7 @@ func GetUser(username, password string) (*User, error) {
 		return nil, errors.New("password is incorrect")
 	}
 	user.Active = true
-	UpdateChannel.Offer(user)
+	wires.UsersUpdateChannel.Offer(user)
 	return user, nil
 }
 
@@ -114,7 +111,7 @@ func RenewUser(sessionToken string) (*User, error) {
 		return nil, errors.New("user found in session list but not in current users")
 	}
 	user.Active = true
-	UpdateChannel.Offer(user)
+	wires.UsersUpdateChannel.Offer(user)
 	return user, nil
 }
 
@@ -177,7 +174,7 @@ func MakeUser(uuid, username, displayName, password, portfolioUUID, config strin
 		UserUpdateChan: duplicator.MakeDuplicator("user-" + uuid),
 		Sender:         newSender(uuid),
 	}
-	NewObjectChannel.Offer(UserList[uuid])
+	wires.UsersNewObjectChannel.Offer(UserList[uuid])
 	utils.RegisterUuid(uuid, UserList[uuid])
 	return UserList[uuid], nil
 
@@ -196,7 +193,7 @@ func (user *User) LogoutUser() {
 	if user.ActiveClients == 0 {
 		user.Active = false
 	}
-	UpdateChannel.Offer(user)
+	wires.UsersUpdateChannel.Offer(user)
 }
 
 func (user *User) GetId() string {
@@ -225,7 +222,6 @@ func (user *User) SetConfig(config map[string]interface{}) {
 	user.Config = config
 	configBytes, _ := json.Marshal(config)
 	user.ConfigStr = string(configBytes)
-	UpdateChannel.Offer(user)
 }
 
 func (user *User) SetPassword(pass string) error {
@@ -234,7 +230,6 @@ func (user *User) SetPassword(pass string) error {
 	}
 	hashedPassword := hashAndSalt(pass)
 	user.Password = hashedPassword
-	UpdateChannel.Offer(user)
 	return nil
 }
 
@@ -266,7 +261,7 @@ func (user *User) LevelUp() error {
 	user.Level = nextLevel
 
 	go port.Update()
-	UpdateChannel.Offer(user)
+	wires.UsersUpdateChannel.Offer(user)
 	return nil
 }
 

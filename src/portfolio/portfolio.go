@@ -3,12 +3,14 @@ package portfolio
 import (
 	"errors"
 	"fmt"
+
 	"github.com/stock-simulator-server/src/change"
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/ledger"
 	"github.com/stock-simulator-server/src/lock"
 	"github.com/stock-simulator-server/src/utils"
 	"github.com/stock-simulator-server/src/valuable"
+	"github.com/stock-simulator-server/src/wires"
 )
 
 const (
@@ -17,8 +19,6 @@ const (
 
 var Portfolios = make(map[string]*Portfolio)
 var PortfoliosLock = lock.NewLock("portfolios")
-var UpdateChannel = duplicator.MakeDuplicator("portfolio-update")
-var NewObjectChannel = duplicator.MakeDuplicator("new-portfolio")
 
 /**
 Portfolios are the $$$ part of a user
@@ -73,8 +73,8 @@ func MakePortfolio(uuid, userUUID string, wallet int64) (*Portfolio, error) {
 	//port.Lock.EnableDebug()
 	port.UpdateChannel.EnableCopyMode()
 	change.RegisterPublicChangeDetect(port)
-	NewObjectChannel.Offer(port)
-	UpdateChannel.RegisterInput(port.UpdateChannel.GetOutput())
+	wires.PortfolioNewObjectChannel.Offer(port)
+	wires.PortfolioUpdateChannel.RegisterInput(port.UpdateChannel.GetOutput())
 	utils.RegisterUuid(uuid, port)
 	go port.valuableUpdate()
 	return port, nil

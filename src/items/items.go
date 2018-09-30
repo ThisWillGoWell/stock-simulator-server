@@ -3,7 +3,6 @@ package items
 import (
 	"github.com/pkg/errors"
 	"github.com/stock-simulator-server/src/account"
-	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
 	"github.com/stock-simulator-server/src/portfolio"
 )
@@ -11,8 +10,6 @@ import (
 var ItemTypes = ItemMap()
 var ItemsUserInventory = make(map[string]map[string]Item)
 var ItemLock = lock.NewLock("item")
-var NewObjectChannel = duplicator.MakeDuplicator("items-new")
-var UpdateChannel = duplicator.MakeDuplicator("items-update")
 
 const ItemIdentifiableType = "item"
 

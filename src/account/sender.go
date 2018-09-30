@@ -6,37 +6,32 @@ import (
 	"github.com/stock-simulator-server/src/lock"
 	"github.com/stock-simulator-server/src/messages"
 	"github.com/stock-simulator-server/src/notification"
+	"github.com/stock-simulator-server/src/wires"
 )
-
-var GlobalNewObjects = duplicator.MakeDuplicator("global-new-objects")
-var GlobalDeletes = duplicator.MakeDuplicator("global-deletes")
-var GlobalNotifications = duplicator.MakeDuplicator("global-notifications")
-var GlobalUpdates = duplicator.MakeDuplicator("global-new-objects")
-var Globals = duplicator.MakeDuplicator("global-broadcast")
 
 func RunGlobalSender() {
 	go func() {
-		out := GlobalNewObjects.GetBufferedOutput(10)
+		out := wires.GlobalNewObjects.GetBufferedOutput(10)
 		for ele := range out {
-			Globals.Offer(messages.NewObjectMessage(ele.(change.Identifiable)))
+			wires.Globals.Offer(messages.NewObjectMessage(ele.(change.Identifiable)))
 		}
 	}()
 	go func() {
-		out := GlobalDeletes.GetBufferedOutput(10)
+		out := wires.GlobalDeletes.GetBufferedOutput(10)
 		for ele := range out {
-			Globals.Offer(messages.BuildDeleteMessage(ele.(change.Identifiable)))
+			wires.Globals.Offer(messages.BuildDeleteMessage(ele.(change.Identifiable)))
 		}
 	}()
 	go func() {
-		out := GlobalNotifications.GetBufferedOutput(10)
+		out := wires.GlobalNotifications.GetBufferedOutput(10)
 		for ele := range out {
-			Globals.Offer(messages.BuildNotificationMessage(ele.(*notification.Notification)))
+			wires.Globals.Offer(messages.BuildNotificationMessage(ele.(*notification.Notification)))
 		}
 	}()
 	go func() {
-		out := GlobalUpdates.GetBufferedOutput(10)
+		out := wires.GlobalUpdates.GetBufferedOutput(10)
 		for ele := range out {
-			Globals.Offer(messages.BuildUpdateMessage(ele.(change.Identifiable)))
+			wires.Globals.Offer(messages.BuildUpdateMessage(ele.(change.Identifiable)))
 		}
 	}()
 }
@@ -64,7 +59,7 @@ func newSender(userUuid string) *sender {
 		Output:        duplicator.MakeDuplicator("output-Sender-" + userUuid),
 		close:         make(chan interface{}),
 	}
-	sender.Output.RegisterInput(Globals.GetBufferedOutput(10))
+	sender.Output.RegisterInput(wires.Globals.GetBufferedOutput(10))
 	sender.runSendDeletes()
 	sender.runSendObjects()
 	sender.runSendUpdates()
@@ -90,7 +85,7 @@ func (s *sender) stop() {
 	for i := 0; i < 4; i++ {
 		s.close <- nil
 	}
-	duplicator.UnlinkDouplicator(s.Output, Globals)
+	duplicator.UnlinkDouplicator(s.Output, wires.Globals)
 
 	s.Notifications.StopDuplicator()
 	s.Updates.StopDuplicator()
