@@ -16,12 +16,14 @@ function OnMessage(msg){
 	}
 }
 
-function MakeRequst(msg, callback){
-	r = requestID
-	responses[requestID++] = callback
-	Websocket.Send(msg)
-	return r
+function SendRequst(msg, callback){
+	r = requestID;
+	responses[requestID++] = callback;
+	webSocket.Send(msg);
+	return r;
 }
+
+
 
 function MakeTrade(tradeMessage){
 	MakeRequst(tradeMessage, function(response){

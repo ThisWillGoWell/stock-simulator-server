@@ -45,9 +45,17 @@ type InsiderTradingItem struct {
 	Result   map[string]int64 `json:"view,omitempty"`
 }
 
-func (it *InsiderTradingItem) GetType() ItemType {
+func (it *InsiderTradingItem) GetItemType() ItemType {
 	return it.Type
 }
+func (it *InsiderTradingItem) GetType() string {
+	return ItemIdentifiableType
+}
+
+func (it *InsiderTradingItem) GetId() string {
+	return it.Uuid
+}
+
 func (it *InsiderTradingItem) GetUserUuid() string {
 	return it.UserUuid
 }
