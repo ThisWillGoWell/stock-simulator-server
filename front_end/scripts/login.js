@@ -301,12 +301,15 @@ $( document ).ready(function() {
         }
     };
 
-
-    $('#input-login-submit').click(function() {
+    function getLogin() {
         let input_uid = $('#login-uid').val();
         let input_pw = $('#login-pw').val();
 
         getToken(input_uid, input_pw);
+    }
+
+    $('#input-login-submit').click(function() {
+        getLogin();
         console.log("login clicked");
     });
 
@@ -324,13 +327,11 @@ $( document ).ready(function() {
         
     });
 
+    // On enter key try login
     $(document).keypress(function(e) {
-        
         if(e.which == 13) {
-            attemptLogin();
-
+            getLogin();
         }
-    
     });
 
 
