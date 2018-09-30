@@ -268,7 +268,7 @@
 							</div>
 						</div>
 					</div>
-					<div id="stocks--view" class="view" v-on:click="createStockGraph()">
+					<div id="stocks--view" class="view">
 						<div class="flex-grid--container" id="stockSuperlatives">
 							<div class="flex-column-33">
 								<div class="card small">
@@ -282,7 +282,7 @@
 								</div>
 							</div>
 							<div class="flex-column-33">
-								<div class="card small">
+								<div class="card small" v-on:click="createStockGraph()">
 									<div class="stat-value green">
 										<i class="material-icons menu-icon">local_atm</i><div class="card-details">
 											<div class="card-category">HIGHEST GROWTH</div>
