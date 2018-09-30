@@ -197,7 +197,7 @@ if(token) {
 								'uuid': portfolioUUID,
 								'field': field,
 								'num_points': 1000,
-								'length': "1000h",
+								'length': "100h",
 							},
 							'request_id': REQUEST_ID.toString()
 						};
