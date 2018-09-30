@@ -1,5 +1,4 @@
 // Setting graph colors. TEMP: in future use class so brennan can manage the css
-var graphColors = d3.schemeCategory20b();
 // {
 // 	'net_worth': '#920000',
 // 	'wallet': '#009200',

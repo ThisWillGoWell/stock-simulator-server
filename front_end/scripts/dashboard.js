@@ -228,10 +228,6 @@ if(token) {
 					var stillWaiting = true;
 					
 					drawGraphOnceDone = function(){
-						console.log(requests)
-						console.log(responses)
-						console.log(requests.every(r => responses.indexOf(r) > -1))
-
 						if (requests.every(r => responses.indexOf(r) > -1)) {
 							stillWaiting = false;
 						}
@@ -443,10 +439,6 @@ if(token) {
 					var stillWaiting = true;
 					
 					drawGraphOnceDone = function(){
-						console.log(requests)
-						console.log(responses)
-						console.log(requests.every(r => responses.indexOf(r) > -1))
-
 						if (requests.every(r => responses.indexOf(r) > -1)) {
 							stillWaiting = false;
 						}
