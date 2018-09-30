@@ -12,14 +12,9 @@ var (
 )
 
 func MakeHistoryTimeQuery(table, uuid, timeLength, field, intervalLength string) ([][]interface{}, error) {
-	tx, err := ts.Begin()
-	if err != nil {
-		return nil, err
-	}
-
 	//rows, err := tx.Query("SELECT time_bucket('60 seconds', time) AS tb, AVG(current_price) AS val FROM stocks_history  WHERE time > NOW() - interval '600 seconds' and uuid='E30B70AD77B26C' GROUP BY tb  ORDER BY tb DESC")
 	querySmt := fmt.Sprintf(historyTableTimeQuery, intervalLength, field, table, timeLength)
-	rows, err := tx.Query(querySmt, uuid)
+	rows, err := ts.Query(querySmt, uuid)
 	if err != nil {
 		return nil, err
 	}
