@@ -1048,7 +1048,11 @@ if(token) {
 	    			} else {
 	    				//determine current users holdings
 	    				let stock = vm_dash_tab.currUserStocks.filter(d => d.stock_id === buySellModal.stock_uuid)[0];
-	    				buySellModal.buySellAmount = stock.amount;
+	    				if (stock !== undefined) {
+	    					buySellModal.buySellAmount = stock.amount;
+	    				} else {
+	    					buySellModal.buySellAmount = 0;
+	    				}
 	    			}
 	    		},
 	    		setIsBuying: function(bool) {
@@ -1105,11 +1109,19 @@ if(token) {
 	    				if (buySellModal.buySellAmount > buySellModal.stock.open_shares) {
 	    					buySellModal.buySellAmount = buySellModal.stock.open_shares;
 	    				}
+	    				// determine users cash and limit on purchase cost
+	    				let cash = buySellModal.user.wallet;
+	    				let purchase_val = buySellModal.stock.current_price * buySellModal.buySellAmount;
+	    				if (purchase_val > cash) {
+	    					buySellModal.buySellAmount = Math.floor(cash / buySellModal.stock.current_price); 
+	    				}
 	    			} else {
 	    				//determine current users holdings
-	    				let stock = vm_dash_tab.currUserStocks.filter(d => d.stock_id === buySellModal.stock_uuid)[0];
-	    				if (buySellModal.buySellAmount > stock.amount) {
-	    					buySellModal.buySellAmount = stock.amount;
+	    				let stock = vm_dash_tab.currUserStocks.filter(d => d.stock_id == buySellModal.stock_uuid)[0];
+	    				if (stock !== undefined) {
+		    				if (buySellModal.buySellAmount > stock.amount) {
+		    					buySellModal.buySellAmount = stock.amount;
+		    				}
 	    				}
 	    			}
 	    		}
