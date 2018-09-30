@@ -7,13 +7,13 @@ var graphColors = {
 
 function DrawPortfolioGraph(location, dat, id) {
 	console.log(dat);
-	var width = 500;
-	var height = 300;
+	var width = 700;
+	var height = 500;
 	var margin = {
-		'top': 40,
-		'bottom': 40,
-		'left': 40,
-		'right': 40,
+		'top': 60,
+		'bottom': 60,
+		'left': 60,
+		'right': 60,
 	};
 
 	var svg = d3.select(location).append('svg')
@@ -66,35 +66,43 @@ function DrawPortfolioGraph(location, dat, id) {
 
 	// Creating axis
 	var xAxisCall = d3.axisBottom()
-		// .tickFormat(d3.timeFormat("%Y-%m-%d"));
+		.tickFormat(d3.timeFormat("%a %I:%M%p"));
 	xAxisCall.scale(scaleTime);
-	var yAxisCall = d3.axisLeft();
+	var yAxisCall = d3.axisLeft()
+		.tickFormat(function(d) {
+			return "$" + abbrevPrice(d);
+		});
 	yAxisCall.scale(scaleValue);
 
 	svg.append('g')
 		.attr('id', 'x-axis')
-		.attr('transform', 'translate(0, '+ (height - margin.top) +')')
+		.attr('transform', 'translate(0, '+ (height - (margin.top-5)) +')')
 		.style('font-size', 12)
-		.call(xAxisCall);
+		.call(xAxisCall)
+	    .selectAll("text")	
+	        .style("text-anchor", "end")
+	        .attr("transform", "rotate(-35)")
+	        .attr('font-size', '10px');
+
 	svg.append('g')
 		.attr('id', 'y-axis')
-		.attr('transform', 'translate(' + margin.left +', ' + '0' + ')')
+		.attr('transform', 'translate(' + (margin.left-5) +', ' + '0' + ')')
 		.style('font-size', 12)
 		.call(yAxisCall);
 
-	// Adding axis labels
-	d3.select('#x-axis').append("text")
-		.attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')')
-		.attr('fill', 'black')
-		.attr('font-size', 14)
-		.attr('font-weight', 'bold')
-		.text('Time');
+	// // Adding axis labels
+	// d3.select('#x-axis').append("text")
+	// 	.attr('transform', 'translate(' + (margin.left/2) + ', ' + (margin.top/2) + ')')
+	// 	.attr('fill', 'black')
+	// 	.attr('font-size', 14)
+	// 	.attr('font-weight', 'bold')
+	// 	.text('Time');
 
-	d3.select('#y-axis').append('text')
-		.attr('transform', 'translate(50, -5)')
-		.attr('fill', 'black')
-		.attr('font-size', 15)
-		.attr('font-weight', 'bold')
-		.text('$');
+	// d3.select('#y-axis').append('text')
+	// 	.attr('transform', 'translate(0, ' + (margin.top/2) + ')')
+	// 	.attr('fill', 'black')
+	// 	.attr('font-size', 15)
+	// 	.attr('font-weight', 'bold')
+	// 	.text('$');
 
 };
