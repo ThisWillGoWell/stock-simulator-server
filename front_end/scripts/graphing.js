@@ -1,10 +1,3 @@
-// Setting graph colors. TEMP: in future use class so brennan can manage the css
-// {
-// 	'net_worth': '#920000',
-// 	'wallet': '#009200',
-// };
-
-
 
 function DrawLineGraph(location, dat, id) {
 	console.log(dat);

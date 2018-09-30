@@ -298,6 +298,7 @@ if(token) {
 			    	vm_stocks_tab.reSort++;
 			    },
 			    createStockGraph: function() {
+			    	
 			    	// Store graphing data
 					var data = {};
 					var responses = [];
@@ -312,7 +313,7 @@ if(token) {
 							'msg': {
 								'uuid': stock,
 								'field': 'current_price',
-								'num_points': 1000,
+								'num_points': 100,
 								'length': "100h",
 							},
 							'request_id': REQUEST_ID.toString()
@@ -885,7 +886,6 @@ if(token) {
 	    };
 
 	    var routeResponse = function(msg) {
-	    	console.log(msg);
 	    	try {
 	    		REQUESTS[msg.request_id](msg);
 	    	} catch(err) {
