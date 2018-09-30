@@ -298,7 +298,7 @@ if(token) {
 			    	vm_stocks_tab.reSort++;
 			    },
 			    createStockGraph: function() {
-			    	
+			    	console.log("Creating stock graph");
 			    	// Store graphing data
 					var data = {};
 					var responses = [];
