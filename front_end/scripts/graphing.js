@@ -1,7 +1,7 @@
 // Setting graph colors. TEMP: in future use class so brennan can manage the css
 var graphColors = {
-	'net_worth': 'red',
-	'wallet': 'green',
+	'net_worth': '#920000',
+	'wallet': '#009200',
 };
 
 
@@ -24,7 +24,6 @@ function DrawPortfolioGraph(location, dat, id) {
 	let minTime = new Date('3000 Jan 1');
 	let maxTime = new Date();
 	let maxValue = 0;
-
 
 	for (var line_key in dat) {
 
