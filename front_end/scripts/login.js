@@ -129,7 +129,6 @@ $( document ).ready(function() {
 
     $('.create-account-btn').click(function() {
    
-
         input_login_uid.prop('disabled', true);
         input_login_pw.prop('disabled', true);
         input_login_submit.prop('disabled', true);
@@ -140,8 +139,6 @@ $( document ).ready(function() {
         input_create_submit.prop('disabled', false);
 
         console.log("clicked create account");
-
-        
 
     });
 

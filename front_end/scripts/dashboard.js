@@ -545,9 +545,6 @@ if(token) {
 			template: "<div>{{ investor }}</div>"
 		});
 
-		// console.log("ACTIVE USERS");
-		// console.log(vm_users);
-
 		var vm_chat = new Vue({
 			el: '#chat-module--container',
 			data: {
@@ -668,10 +665,7 @@ if(token) {
 	    });
 
 
-
-
 		// TODO: find a better spot for this
-
 	    $('table').on('click', 'tr.clickable' , function (event) {
 	    	
 	    	var ticker_id = $(this).find('.stock-ticker-id').attr('tid');
@@ -698,8 +692,8 @@ if(token) {
 	    		$('thead tr th i').removeClass("shown");
 	    		$(event.currentTarget).find('i').addClass("shown");
 	    	}
-
 	    });
+
 
 	    function formatChatMessage(msg) {
 
@@ -747,10 +741,10 @@ if(token) {
 			        $('#chat-module--container textarea').val().replace(/\n/g, "");
 			        $('#chat-module--container textarea').val('');
 			        return false;
-
 			    }
 			}
 		});
+
 
 		$(document).keyup(function(e) {
 		  	
@@ -764,77 +758,9 @@ if(token) {
 		});
 
 
-		/*  WEBSOCKETS */
-		let externalServer = "mockstarket.com";
-		let localServer = window.location.host;
-		let wsUri = "wss://"+ externalServer + "/ws";
-	    let output;
-	    let webSocket;
 
-	    function init()
-	    {
-	        testWebSocket();
-	    }
-
-	    function testWebSocket()
-	    {
-	        webSocket = new WebSocket(wsUri);
-	        webSocket.onopen = function(evt) { onOpen(evt) };
-	        webSocket.onclose = function(evt) { onClose(evt) };
-	        webSocket.onmessage = function(evt) { onMessage(evt) };
-	        webSocket.onerror = function(evt) { onError(evt) };
-	    }
-
-	    function onOpen(evt)
-	    {
-	    	if (sessionStorage.getItem('token') !== null) {
-	            var loginMessage = {
-	                'action': 'connect',
-	                'msg': {
-	                    'token': sessionStorage.getItem('token')
-	                }
-	            };
-	            doSend(JSON.stringify(loginMessage));
-	        }   
-			onEvent("Connected");
-
-	    }
-
-	    function onClose(evt)
-	    {
-	        onEvent("Disconnected");
-	    }
-
-	    function onEvent(message){
-	        console.log(message);
-	    };
-
-	    function onMessage(evt)
-	    {
-	        var msg = JSON.parse(evt.data);
-	        // console.log(msg);
-	    	var router = {
-	    		'connect': routeConnect,
-	    		'object': routeObject,
-	    		'update': routeUpdate,
-	    		'alert': routeAlert,
-	    		'chat': routeChat,
-	    		'response': routeResponse,
-	    	};
-	    	
-    		if (msg.action) {
-    			router[msg.action](msg);
-    		} else {
-    			if (msg.type == "error") {
-    				console.log("ERROR")
-    				console.log(msg);
-    			}
-    			console.log("No message action");
-    			console.log(console.log(msg));	
-    		}
-	    };
-
-	    var routeConnect = function(msg) {
+	    // var routeConnect = function(msg) {
+	    registerRoute('connect', function(msg) {
 
 	        console.log("login recieved");
 
@@ -848,10 +774,9 @@ if(token) {
 	            sessionStorage.setItem('uuid', msg.msg.uuid);
 	        	Vue.set(config.config, msg.msg.uuid, msg.msg.config);
 	        }
-	        
-	    };
+	    });
 
-	    var routeObject = function(msg) {
+	    registerRoute('object', function(msg) {
 			switch (msg.msg.type) {
 				case 'portfolio':
 					//console.log(msg.msg.object)
@@ -873,9 +798,10 @@ if(token) {
 				    break;
 
 			}
-	    };
+	    });
 
-	    var routeUpdate = function(msg) {
+
+	    registerRoute('update', function(msg) {
 	    	var updateRouter = {
 	    		'stock': stockUpdate,
 	    		'ledger': ledgerUpdate,
@@ -883,9 +809,10 @@ if(token) {
 	    		'user': userUpdate,
 	    	};
 	    	updateRouter[msg.msg.type](msg);
-	    };
+	    });
 
-	    var routeResponse = function(msg) {
+
+	    registerRoute('response', function(msg) {
 	    	try {
 	    		REQUESTS[msg.request_id](msg);
 	    	} catch(err) {
@@ -894,7 +821,20 @@ if(token) {
 	    	}
 	    	console.log(msg);
 	    	delete REQUESTS[msg.request_id];
-	    };
+	    });
+
+
+	    registerRoute('alert', function(msg) {
+	    	console.log(msg);
+	    });
+
+
+		registerRoute('chat', function(msg) {
+	    	console.log("----- CHAT -----");
+	    	console.log(msg);
+	    	formatChatMessage(msg);
+	    });
+
 
 	    var stockUpdate = function(msg) {
 			var targetUUID = msg.msg.uuid;
@@ -970,17 +910,6 @@ if(token) {
 	    };
 
 
-	    var routeAlert = function(msg) {
-	    	console.log(msg);
-	    }
-
-	    var routeChat = function(msg) {
-	    	
-	    	console.log("----- CHAT -----");
-	    	console.log(msg);
-	    	formatChatMessage(msg);
-	    }
-
 
 	    /* Sending trade requests */
 
@@ -1004,20 +933,6 @@ if(token) {
 	    };
 
 	   	/* End sending trade requests */
-
-
-
-
-	    function onError(evt)
-	    {
-	    	console.log(evt);
-	        // writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
-	    }
-
-	    function doSend(message)
-	    {
-	        webSocket.send(message);
-	    }
 
 
 	    function toggleModal() {
@@ -1188,4 +1103,3 @@ if(token) {
 	window.location.href = "/login.html";
 
 }
-
