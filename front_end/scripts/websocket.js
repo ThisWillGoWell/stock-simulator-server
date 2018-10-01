@@ -23,12 +23,9 @@ if(token) {
 	function onOpen(evt) {
 		if (sessionStorage.getItem('token') !== null) {
 	        var loginMessage = {
-	            'action': 'connect',
-	            'msg': {
 	                'token': sessionStorage.getItem('token')
-	            }
 	        };
-	        doSend(JSON.stringify(loginMessage));
+	        doSend('connect', loginMessage);
 	    }   
 		onEvent("Connected");
 	};
@@ -62,8 +59,20 @@ if(token) {
 	    // writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
 	};
 
-	function doSend(message) {
-	    webSocket.send(message);
+	function doSend(action, msg, request_id) {
+		if (request_id === undefined) {
+			var message = {
+				'action': action,
+				'msg': msg,
+			};	
+		} else {
+			var message = {
+				'action': action,
+				'msg': msg,
+				'request_id': request_id
+			};
+		}
+	    webSocket.send(JSON.stringify(message));
 	};
 
 	function registerRoute(route, callback) {

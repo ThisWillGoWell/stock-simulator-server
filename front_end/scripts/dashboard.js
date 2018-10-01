@@ -121,20 +121,18 @@ $( document ).ready(function() {
 
 		    	// Creating message that changes the users display name
 				let msg = {
-					'action': "set",
-					'msg': {
-						'set': "display_name",
-						'value': new_name
-					},
-					'request_id': REQUEST_ID.toString()
+					'set': "display_name",
+					'value': new_name
 				};
 
-				REQUESTS[REQUEST_ID++] = function(msg) {
+				REQUESTS[REQUEST_ID] = function(msg) {
 					alert("Display_name changed to: " + new_name);
 				};
 				// Send through WebSocket
 				console.log(JSON.stringify(msg));
-		    	doSend(JSON.stringify(msg));
+		    	doSend('set', msg, EQUEST_ID.toString());
+
+		    	REQUEST_ID++;
 
 		    	// Reset display name
 		    	$("#newDisplayName").val("");
@@ -295,15 +293,11 @@ $( document ).ready(function() {
 		    	let data = {};
 		    	// Creating message 
 					let msg = {
-						'action': "query",
-						'msg': {
 							'uuid': stockUUID,
 							'field': 'current_price',
 							'num_points': 100,
 							'length': "100h",
-						},
-						'request_id': REQUEST_ID.toString()
-					};
+						};
 					
 					// Store request on front end
 					REQUESTS[REQUEST_ID] = function(msg) {
@@ -319,10 +313,12 @@ $( document ).ready(function() {
 						// Make note the data is available
 						DrawLineGraph('#stock-list', data);
 					};
-					REQUEST_ID++
 					
 					// Send message
-					doSend(JSON.stringify(msg));
+					doSend('query', msg, REQUEST_ID.toString());
+
+					REQUEST_ID++;
+
 		    },
 		    createStocksGraph: function() {
 		    	console.log("Creating stock graphs");
@@ -339,19 +335,15 @@ $( document ).ready(function() {
 				Object.keys(vm_stocks.stocks).forEach(function(stockUUID) {
 					// Creating message 
 					let msg = {
-						'action': "query",
-						'msg': {
-							'uuid': stockUUID,
-							'field': 'current_price',
-							'num_points': 100,
-							'length': "100h",
-						},
-						'request_id': REQUEST_ID.toString()
+						'uuid': stockUUID,
+						'field': 'current_price',
+						'num_points': 100,
+						'length': "100h",
 					};
 					
 					// Store request on front end
 					requests.push(REQUEST_ID.toString());
-					REQUESTS[REQUEST_ID++] = function(msg) {
+					REQUESTS[REQUEST_ID] = function(msg) {
 						// Pull out the data and format it
 						var points = msg.msg.points;
 						points = points.map(function(d) {
@@ -367,7 +359,10 @@ $( document ).ready(function() {
 					};
 
 					// Send message
-					doSend(JSON.stringify(msg));
+					doSend('query', msg, REQUEST_ID.toString());
+
+					REQUEST_ID++;
+
 				});
 
 				var drawGraphOnceDone = null
@@ -514,21 +509,17 @@ $( document ).ready(function() {
 		// Send data requests
 		["net_worth", "wallet"].forEach(function(field) {
 
-			// Creating message 
+			// Creating websocket message 
 			let msg = {
-				'action': "query",
-				'msg': {
-					'uuid': portfolioUUID,
-					'field': field,
-					'num_points': 100,
-					'length': "100h",
-				},
-				'request_id': REQUEST_ID.toString()
+				'uuid': portfolioUUID,
+				'field': field,
+				'num_points': 100,
+				'length': "100h",
 			};
 
 			// Store request on front end
 			requests.push(REQUEST_ID.toString());
-			REQUESTS[REQUEST_ID++] = function(msg) {
+			REQUESTS[REQUEST_ID] = function(msg) {
 				// Pull out the data and format it
 				var points = msg.msg.points;
 				points = points.map(function(d) {
@@ -543,7 +534,9 @@ $( document ).ready(function() {
 			};
 
 			// Send message
-			doSend(JSON.stringify(msg));
+			doSend('query', msg, REQUEST_ID.toString());
+
+			REQUEST_ID++
 		});
 
 		var drawGraphOnceDone = null
@@ -758,13 +751,10 @@ $( document ).ready(function() {
 		    	let message_body = $('#chat-module--container textarea').val();
 				
 				var msg = {
-					'action': 'chat',
-					'msg': {
-						'message_body': message_body,
-					}
+					'message_body': message_body,
 				};
 
-				doSend(JSON.stringify(msg))
+				doSend('chat', msg)
 		        
 		        $('#chat-module--container textarea').val().replace(/\n/g, "");
 		        $('#chat-module--container textarea').val('');
@@ -841,11 +831,14 @@ $( document ).ready(function() {
 
 
 	registerRoute('response', function(msg) {
+		// TODO make d3 notification popup on the bottom
 		try {
 			REQUESTS[msg.request_id](msg);
 		} catch(err) {
 			console.log(err);
 			console.log("no request_id key for " + JSON.stringify(msg));
+			console.log(REQUESTS);
+			console.log(REQUEST_ID);
 		}
 		console.log(msg);
 		delete REQUESTS[msg.request_id];
@@ -944,16 +937,14 @@ $( document ).ready(function() {
 	function sendTrade() {
 		
 		// Creating message for the trade request
-		var options = {
-			'action': "trade",
-			'msg': {
-				'stock_id': buySellModal.stock_uuid,
-				'amount': buySellModal.buySellAmount,
-			}
-		};
+		var msg = {
+			'stock_id': buySellModal.stock_uuid,
+			'amount': buySellModal.buySellAmount,
+		}
+
 		// Sending through websocket
 		console.log("SEND TRADE");
-		doSend(JSON.stringify(options));
+		doSend('trade', msg);
 
 		// Reset buy sell amount
 		buySellModal.buySellAmount = 0;

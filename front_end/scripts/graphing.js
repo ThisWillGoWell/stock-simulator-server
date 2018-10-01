@@ -1,4 +1,4 @@
-
+// TODO: tags for d3 plotting(title labels etc) sent with dat object in an serparate property
 function DrawLineGraph(location, dat, id) {
 	console.log(dat);
 	var width = 700;
