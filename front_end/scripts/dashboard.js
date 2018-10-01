@@ -291,21 +291,57 @@ $( document ).ready(function() {
 		    	}
 		    	vm_stocks_tab.reSort++;
 		    },
-		    createStockGraph: function() {
-		    	console.log("Creating stock graph");
+		    createStockGraph: function(stockUUID) {
+		    	let data = {};
+		    	// Creating message 
+					let msg = {
+						'action': "query",
+						'msg': {
+							'uuid': stockUUID,
+							'field': 'current_price',
+							'num_points': 100,
+							'length': "100h",
+						},
+						'request_id': REQUEST_ID.toString()
+					};
+					
+					// Store request on front end
+					REQUESTS[REQUEST_ID] = function(msg) {
+						// Pull out the data and format it
+						var points = msg.msg.points;
+						points = points.map(function(d) {
+							return {'time': d[0], 'value': d[1] };
+						});
+
+						// Store the data
+						data[stockUUID] = points;
+
+						// Make note the data is available
+						DrawLineGraph('#stock-list', data);
+					};
+					REQUEST_ID++
+					
+					// Send message
+					doSend(JSON.stringify(msg));
+		    },
+		    createStocksGraph: function() {
+		    	console.log("Creating stock graphs");
 		    	// Store graphing data
 				var data = {};
 				var responses = [];
 				var requests = [];
 
 				// Send data requests
-				Object.keys(vm_stocks.stocks).forEach(function(stock) {
+				Object.keys(vm_stocks.stocks).forEach(function(stockUUID) {
+					vm_stocks_tab.createStockGraph(stockUUID);
+				});
 
+				Object.keys(vm_stocks.stocks).forEach(function(stockUUID) {
 					// Creating message 
 					let msg = {
 						'action': "query",
 						'msg': {
-							'uuid': stock,
+							'uuid': stockUUID,
 							'field': 'current_price',
 							'num_points': 100,
 							'length': "100h",
