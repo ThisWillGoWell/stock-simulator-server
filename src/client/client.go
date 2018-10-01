@@ -3,8 +3,9 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/gorilla/websocket"
 	"github.com/stock-simulator-server/src/account"
@@ -73,9 +74,9 @@ Though messages that are responded to (query/trades) are only sent back
 to the client that sent it
 */
 type Client struct {
-	socketRx chan string
-	socketTx chan string
-	clientNum int
+	socketRx      chan string
+	socketTx      chan string
+	clientNum     int
 	messageSender *duplicator.ChannelDuplicator
 
 	broadcastTx chan messages.Message
@@ -87,14 +88,14 @@ type Client struct {
 	active bool
 }
 
-func SendToUser(uuid string, value interface{} ){
+func SendToUser(uuid string, value interface{}) {
 	clientsLock.Acquire("send-to-clients")
 	defer clientsLock.Release()
 	clients, exist := connections[uuid]
 	if !exist {
 		return
 	}
-	for i := range clients{
+	for i := range clients {
 		connections[uuid][i].messageSender.Offer(value)
 	}
 }
@@ -114,7 +115,7 @@ func InitialReceive(initialPayload string, tx, rx chan string) error {
 	}
 	user := new(account.User)
 	var sessionToken string
-	if initialMessage.IsConnect(){
+	if initialMessage.IsConnect() {
 		userTemp, err := account.ConnectUser(initialMessage.Msg.(*messages.ConnectMessage).SessionToken)
 		if err != nil {
 			return err
@@ -126,7 +127,7 @@ func InitialReceive(initialPayload string, tx, rx chan string) error {
 	}
 
 	client := &Client{
-		clientNum: currentId,
+		clientNum:     currentId,
 		user:          user,
 		socketRx:      rx,
 		socketTx:      tx,
@@ -135,12 +136,10 @@ func InitialReceive(initialPayload string, tx, rx chan string) error {
 	}
 	currentId += 1
 	_, exists := connections[user.Uuid]
-	if !exists{
+	if !exists {
 		connections[user.Uuid] = make(map[int]*Client)
 	}
 	connections[user.Uuid][client.clientNum] = client
-
-
 
 	client.tx()
 	go client.rx()
@@ -182,7 +181,7 @@ func (client *Client) rx() {
 	clientsLock.Acquire("remove uuid from connections")
 	defer clientsLock.Release()
 	delete(connections[client.user.Uuid], client.clientNum)
-	if len(connections[client.user.Uuid]) == 0{
+	if len(connections[client.user.Uuid]) == 0 {
 		delete(connections, client.user.Uuid)
 	}
 	client.user.LogoutUser()
@@ -232,7 +231,7 @@ func (client *Client) processTradeMessage(baseMessage *messages.BaseMessage) {
 func (client *Client) processTransferMessage(baseMessage *messages.BaseMessage) {
 
 	transferMessage := baseMessage.Msg.(*messages.TransferMessage)
-	 to := order.MakeTransferOrder(client.user.PortfolioId, transferMessage.Recipient, transferMessage.Amount)
+	to := order.MakeTransferOrder(client.user.PortfolioId, transferMessage.Recipient, transferMessage.Amount)
 	go func() {
 		response := <-to.ResponseChannel
 		client.sendMessage(messages.BuildResponseMsg(response, baseMessage.RequestID))
@@ -243,7 +242,7 @@ func (client *Client) processTransferMessage(baseMessage *messages.BaseMessage) 
 func (client *Client) processQueryMessage(baseMessage *messages.BaseMessage) {
 	queryMessage := baseMessage.Msg.(*messages.QueryMessage)
 	q := histroy.MakeQuery(queryMessage)
-	go func(){
+	go func() {
 		response := <-q.ResponseChannel
 		client.sendMessage(messages.BuildResponseMsg(response, baseMessage.RequestID))
 	}()
@@ -255,7 +254,7 @@ func (client *Client) processSetMessage(baseMessage *messages.BaseMessage) {
 	switch setMessage.Set {
 	case "config":
 		newConfig, ok := setMessage.Value.(map[string]interface{})
-		if !ok{
+		if !ok {
 			response = messages.BuildFailedSet(errors.New("failed, invalid type"))
 			break
 		}
@@ -263,24 +262,24 @@ func (client *Client) processSetMessage(baseMessage *messages.BaseMessage) {
 		response = messages.BuildSuccessSet()
 	case "password":
 		newPassword, ok := setMessage.Value.(string)
-		if !ok{
+		if !ok {
 			response = messages.BuildFailedSet(errors.New("failed, invalid type"))
 			break
 		}
 		err := client.user.SetPassword(newPassword)
-		if err != nil{
+		if err != nil {
 			response = messages.BuildFailedSet(err)
 			break
 		}
 		response = messages.BuildSuccessSet()
 	case "display_name":
 		newDisplayName, ok := setMessage.Value.(string)
-		if !ok{
+		if !ok {
 			response = messages.BuildFailedSet(errors.New("failed, invalid type"))
 			break
 		}
 		err := client.user.SetDisplayName(newDisplayName)
-		if err != nil{
+		if err != nil {
 			response = messages.BuildFailedSet(err)
 			break
 		}
@@ -290,12 +289,11 @@ func (client *Client) processSetMessage(baseMessage *messages.BaseMessage) {
 
 }
 
-
 /**
 When a session is started, loop though all current cache and send them to the client
 Also send the success login to make sure that happens first on the login
 */
-func (client *Client) initSession(sessionToken string ) {
+func (client *Client) initSession(sessionToken string) {
 	client.sendMessage(messages.SuccessConnect(client.user.Uuid, sessionToken, client.user.Config))
 
 	for _, v := range account.GetAllUsers() {
