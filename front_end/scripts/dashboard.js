@@ -130,7 +130,7 @@ $( document ).ready(function() {
 				};
 				// Send through WebSocket
 				console.log(JSON.stringify(msg));
-		    	doSend('set', msg, EQUEST_ID.toString());
+		    	doSend('set', msg, REQUEST_ID.toString());
 
 		    	REQUEST_ID++;
 
@@ -944,7 +944,20 @@ $( document ).ready(function() {
 
 		// Sending through websocket
 		console.log("SEND TRADE");
-		doSend('trade', msg);
+
+		REQUESTS[REQUEST_ID] = function(msg) {
+			if (msg.msg.success) {
+				notify("Trade successful!", msg.msg.success);
+			} else {
+				notify("Trade unsuccessful: " + msg.msg.err, msg.msg.success);
+			}
+		};
+
+		// Send through WebSocket
+		console.log(JSON.stringify(msg));
+		doSend('trade', msg, REQUEST_ID.toString());
+    	
+    	REQUEST_ID++;
 
 		// Reset buy sell amount
 		buySellModal.buySellAmount = 0;

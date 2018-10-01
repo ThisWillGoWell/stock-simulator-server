@@ -1,4 +1,5 @@
 // TODO: tags for d3 plotting(title labels etc) sent with dat object in an serparate property
+//			tags can pass the type of data being sent through so more data structuring can be done here like min an maxs 
 function DrawLineGraph(location, dat, id) {
 	console.log(dat);
 	var width = 700;
