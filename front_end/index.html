@@ -1,7 +1,14 @@
 <!DOCTYPE html>
 <html>
 	<head>
+
 		<title>MockStarket</title>
+		
+		<meta charset="utf-8">
+		<meta name="description" content="A mock stock market">
+		<meta name="keywords" content="mockstarket">
+		<link rel="author" href="Brennan Sieck, Will Gowell, Jake Elias" />
+		
 		<meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
         <link href="https://fonts.googleapis.com/css?family=Mukta+Vaani:300,400,500,700" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:100,300,400,500" rel="stylesheet">
@@ -11,6 +18,8 @@
       rel="stylesheet">
 
         <link rel="stylesheet" href="css/main.css">
+
+        <link rel="icon" type="image/png" href="assets/favicon_green.png">
 
         <script src="scripts/utils.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
@@ -26,7 +35,6 @@
 		<script src="scripts/dashboard.js"></script>
         <script src="scripts/graphing.js"></script>
         <script src="scripts/notifications.js"></script>
-
 
     </head>
 
@@ -90,6 +98,35 @@
 							
 							<div class="flex-column-100">
 								<div id="trade-request-submit" class="card calc-btn green no-buffer-top" v-on:click="submitTrade()">CONFIRM</div>
+							</div>
+							
+					</div>
+				</div>
+			</section>
+
+			<section id="generic-modal--container">
+				<div class="modal-card" v-if="showModal">
+					<button v-on:click="closeModal()"><i class="material-icons">close</i></button>
+					<div id="trade--view">
+						<div class="modal-stock-id">DieselBeaver</div>
+											
+						<div class="flex-grid--container no-padding">
+							
+							
+							<div class="flex-column-100">
+								
+									<div class="input-name">Send Cash to DieselBeaver</div>
+									<input type="text" id="cash-transfer-amount" class="input-full-width" name="cash-transfer-amount" placeholder="Amount">
+									<span class="input-focus-border"></span>
+								
+							</div>
+							<div class="input-grp flex-column-100">
+								<div class="flex-column-50">
+									<div id="send-cash-cancel" class="card calc-btn red no-buffer-top" v-on:click="closeModal()">CANCEL</div>
+								</div>
+								<div class="flex-column-50">
+									<div id="send-cash-submit" class="card calc-btn green no-buffer-top">CONFIRM</div>
+								</div>
 							</div>
 							
 					</div>
@@ -343,60 +380,37 @@
 					<!-- TODO: this tab collides with the sidebar -->
 					<div id="investors--view" class="view">
 						<div class="flex-grid--container">
+							
 							<div class="flex-column-100">
-								<div class="card">
-									<h1>INVESTORS</h1>
-								</div>
-							</div>
-							<div class="flex-column-100" id="portfolio-list">
-								<div>
-
-									<!-- Needs to be some version of this -->
-									<div class="card" v-for="investor in investors" :key="investor.uuid" v-on:click="createGraph(investor.uuid)">
-										<td>{{ investor.name }}</td>
-								    	<td>Wallet: {{ toPrice(investor.wallet) }}</td>
-								    	<td>Net Worth: {{ toPrice(investor.net_worth) }}</td>
-
-										<!-- Needs to be some version of this -->
-										<div v-for="stock in investor.stocks">
-
-											<td>{{ stock.ticker_id }}</th>
-									    	<td>{{ stock.amount }}</td>
-									    	<td>{{ toPrice(stock.current_price) }}</td>
-									    	<td>{{ toPrice(stock.value) }}</td>
-
-										</div>
-										<div v-bind:id="'investorGraph'+investor.uuid"></div>
-										<br><br>
+								<div class="card stock-list">
+									<div id="portfolio-list">
+										<table class="table">
+										  <thead>
+											<tr>
+											  <th scope="col" v-on:click="sortCol('ticker_id')" style="text-align: left; padding-left: 25px;">Name <i class="material-icons stock">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('current_price')">Cash <i class="material-icons cost">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('open_shares')">Networth <i class="material-icons open-shares">arrow_drop_down</i></th>
+											  
+											  
+											</tr>
+										  </thead>
+										  <tbody>
+											  
+											<tr class="investors" v-for="investor in investors" :key="investor.uuid" v-bind:tid="investor.uuid">
+											  <th class="stock-ticker-id" scope="row" v-bind:tid="investor.name">
+												  <div class="stock-ticker-id">{{ investor.name }}</div>
+												  
+											  </th>
+											  <td class="stock-price" style="padding-right: 25px;">
+											  ${{ toPrice(investor.net_worth) }}</td>
+											  <td class="stock-open-shares" style="padding-right: 25px;">${{ toPrice(investor.wallet) }}</td>
+											  
+											  
+											</tr>
+										  </tbody>
+										</table>
 									</div>
-
-<!-- +
-									<table class="table">
-										<thead>
-									    	<tr>
-									    	  <th scope="col">Name</th>
-									    	  <th scope="col">wallet</th>
-									    	  <th scope="col">net worth</th>
-									    	</tr>
-										</thead>
-										<tbody>
-										    <tr class="investor" v-if="investors.length != 0" v-for="investor in investors" :key="investor.uuid">
-										    	<td>{{ investor.name }}</td>
-										    	<td>{{ investor.stocks }}</td>
-										    	<td>{{ toPrice(investor.wallet) }}</td>
-										    	<td>{{ toPrice(investor.net_worth) }}</td>
-										    </tr>
-										</tbody>
-									</table>
- -->								
 								</div>
-
-								<investor-card
-									v-for="investor in investors"
-									:key="investor.uuid"
-									v-bind:user_uuid="investor.user_uuid">
-										
-									</investor-card>
 							</div>
 						</div>
 					</div>
