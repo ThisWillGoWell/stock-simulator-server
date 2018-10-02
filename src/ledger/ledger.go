@@ -2,6 +2,9 @@ package ledger
 
 import (
 	"fmt"
+
+	"github.com/stock-simulator-server/src/wires"
+
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
 	"github.com/stock-simulator-server/src/utils"
@@ -16,9 +19,6 @@ var EntriesPortfolioStock = make(map[string]map[string]*Entry)
 
 // map of stock_uuid -> open shares
 var EntriesLock = lock.NewLock("ledger-entries-lock")
-
-var UpdateChannel = duplicator.MakeDuplicator("ledger-entries-update")
-var NewObjectChannel = duplicator.MakeDuplicator("leger-entries-new")
 
 /**
 Ledgers store who owns what stock
@@ -51,6 +51,9 @@ func NewLedgerEntry(portfolioId, stockId string, lockAcquired bool) *Entry {
 	return MakeLedgerEntry(uuid, portfolioId, stockId, 0, 0)
 }
 
+/**
+Make a Ledger
+*/
 func MakeLedgerEntry(uuid, portfolioId, stockId string, amount, investmentVal int64) *Entry {
 
 	entry := &Entry{
@@ -73,8 +76,7 @@ func MakeLedgerEntry(uuid, portfolioId, stockId string, amount, investmentVal in
 	}
 	EntriesStockPortfolio[stockId][portfolioId] = entry
 	entry.UpdateChannel.EnableCopyMode()
-
-	UpdateChannel.RegisterInput(entry.UpdateChannel.GetOutput())
+	wires.LedgerUpdate.RegisterInput(entry.UpdateChannel.GetOutput())
 	utils.RegisterUuid(uuid, entry)
 	return entry
 }

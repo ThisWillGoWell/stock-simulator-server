@@ -1,23 +1,23 @@
 package wires
 
 import (
-	"github.com/stock-simulator-server/src/account"
-	"github.com/stock-simulator-server/src/change"
-	"github.com/stock-simulator-server/src/database"
 	"github.com/stock-simulator-server/src/duplicator"
-	"github.com/stock-simulator-server/src/ledger"
-	"github.com/stock-simulator-server/src/valuable"
 )
 
-var ItemsNewChannel = duplicator.MakeDuplicator("items-new")
-var ItemsUpdateChannel = duplicator.MakeDuplicator("items-update")
+var ItemsNewObjects = duplicator.MakeDuplicator("items-new")
+var ItemsUpdate = duplicator.MakeDuplicator("items-update")
 
-var PortfolioUpdateChannel = duplicator.MakeDuplicator("portfolio-update")
-var PortfolioNewObjectChannel = duplicator.MakeDuplicator("new-portfolio")
+var PortfolioUpdate = duplicator.MakeDuplicator("portfolio-update")
+var PortfolioNewObject = duplicator.MakeDuplicator("new-portfolio")
 
-var UsersNewObjectChannel = duplicator.MakeDuplicator("new-users")
-var UsersUpdateChannel = duplicator.MakeDuplicator("user-update")
+var UsersNewObject = duplicator.MakeDuplicator("new-users")
+var UsersUpdate = duplicator.MakeDuplicator("user-update")
 
+var StocksUpdate = duplicator.MakeDuplicator("valuable-update")
+var StocksNewObject = duplicator.MakeDuplicator("new-valuable")
+
+var LedgerUpdate = duplicator.MakeDuplicator("ledger-entries-update")
+var LedgerNewObject = duplicator.MakeDuplicator("leger-entries-new")
 
 var GlobalNewObjects = duplicator.MakeDuplicator("global-new-objects")
 var GlobalDeletes = duplicator.MakeDuplicator("global-deletes")
@@ -27,37 +27,21 @@ var Globals = duplicator.MakeDuplicator("global-broadcast")
 
 // change detector
 var PublicSubscribeInputs = duplicator.MakeDuplicator("subscribe-inputs")
-var PublicSubscribeChagneOutputs
+var PublicSubscribeChagneOutputs = duplicator.MakeDuplicator("public-subscribe-updates")
 
 func ConnectWires(diableDb bool) {
 	// Enable Copy Mode on all the global new input channels
-	UsersNewObjectChannel.EnableCopyMode()
-	valuable.NewObjectChannel.EnableCopyMode()
-	PortfolioNewObjectChannel.EnableCopyMode()
-	ledger.NewObjectChannel.EnableCopyMode()
+	UsersNewObject.EnableCopyMode()
+	StocksNewObject.EnableCopyMode()
+	PortfolioNewObject.EnableCopyMode()
+	LedgerNewObject.EnableCopyMode()
 
 	// enable copy mode only account, the rest have copy mode on a channel before
-	UsersUpdateChannel.EnableCopyMode()
+	UsersUpdate.EnableCopyMode()
 
-	GlobalUpdates.RegisterInput(ItemsUpdateChannel.GetOutput())
-	GlobalUpdates.RegisterInput(valuable.NewObjectChannel.GetOutput())
-	GlobalUpdates.RegisterInput(PortfolioNewObjectChannel.GetOutput())
-	GlobalUpdates.RegisterInput(ledger.NewObjectChannel.GetOutput())
-
-	if !diableDb {
-		database.DatabseWriter.RegisterInput(GlobalUpdates.GetOutput())
-	}
-
-	// register changes to change detector
-	change.SubscribeUpdateInputs.RegisterInput(portfolio.UpdateChannel.GetOutput())
-	change.SubscribeUpdateInputs.RegisterInput(ledger.UpdateChannel.GetOutput())
-	change.SubscribeUpdateInputs.RegisterInput(valuable.UpdateChannel.GetOutput())
-	change.SubscribeUpdateInputs.RegisterInput(account.UpdateChannel.GetOutput())
-
-	//register output
-	client.Updates.RegisterInput(change.SubscribeUpdateOutput.GetOutput())
-	if !diableDb {
-		database.DatabseWriter.RegisterInput(change.SubscribeUpdateOutput.GetOutput())
-	}
+	GlobalUpdates.RegisterInput(ItemsUpdate.GetOutput())
+	GlobalUpdates.RegisterInput(StocksUpdate.GetOutput())
+	GlobalUpdates.RegisterInput(PortfolioUpdate.GetOutput())
+	GlobalUpdates.RegisterInput(LedgerUpdate.GetOutput())
 
 }

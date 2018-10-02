@@ -208,7 +208,7 @@ func (client *Client) processChatMessage(message messages.Message) {
 	chatMessage.Author = client.user.Uuid
 	chatMessage.Timestamp = time.Now()
 	//database.SaveChatMessage(chatMessage.Author, chatMessage.Message)
-	account.Globals.Offer(messages.BuildChatMessage(message.(*messages.ChatMessage)))
+	account.GlobalMessages.Offer(messages.BuildChatMessage(message.(*messages.ChatMessage)))
 }
 
 func (client *Client) processTradeMessage(baseMessage *messages.BaseMessage) {

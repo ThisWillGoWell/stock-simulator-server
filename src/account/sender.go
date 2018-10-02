@@ -9,29 +9,33 @@ import (
 	"github.com/stock-simulator-server/src/wires"
 )
 
+var UserObjectSubscribes = make(map[string]*duplicator.ChannelDuplicator)
+var UserNotifcations = make(map[string]*duplicator.ChannelDuplicator)
+var GlobalMessages = duplicator.MakeDuplicator("global-messages")
+
 func RunGlobalSender() {
 	go func() {
 		out := wires.GlobalNewObjects.GetBufferedOutput(10)
 		for ele := range out {
-			wires.Globals.Offer(messages.NewObjectMessage(ele.(change.Identifiable)))
+			GlobalMessages.Offer(messages.NewObjectMessage(ele.(change.Identifiable)))
 		}
 	}()
 	go func() {
 		out := wires.GlobalDeletes.GetBufferedOutput(10)
 		for ele := range out {
-			wires.Globals.Offer(messages.BuildDeleteMessage(ele.(change.Identifiable)))
+			GlobalMessages.Offer(messages.BuildDeleteMessage(ele.(change.Identifiable)))
 		}
 	}()
 	go func() {
 		out := wires.GlobalNotifications.GetBufferedOutput(10)
 		for ele := range out {
-			wires.Globals.Offer(messages.BuildNotificationMessage(ele.(*notification.Notification)))
+			GlobalMessages.Offer(messages.BuildNotificationMessage(ele.(*notification.Notification)))
 		}
 	}()
 	go func() {
-		out := wires.GlobalUpdates.GetBufferedOutput(10)
+		out := change.PublicSubscribeChange.GetBufferedOutput(10)
 		for ele := range out {
-			wires.Globals.Offer(messages.BuildUpdateMessage(ele.(change.Identifiable)))
+			GlobalMessages.Offer(messages.BuildUpdateMessage(ele.(change.Identifiable)))
 		}
 	}()
 }
@@ -48,7 +52,6 @@ type sender struct {
 }
 
 func newSender(userUuid string) *sender {
-
 	sender := &sender{
 		lock:          lock.NewLock("client-user-Sender-" + userUuid),
 		activeClients: 0,
@@ -56,15 +59,27 @@ func newSender(userUuid string) *sender {
 		Updates:       duplicator.MakeDuplicator("update-Sender-" + userUuid),
 		Deletes:       duplicator.MakeDuplicator("delete-Sender-" + userUuid),
 		Notifications: duplicator.MakeDuplicator("notification-Sender-" + userUuid),
-		Output:        duplicator.MakeDuplicator("output-Sender-" + userUuid),
+		Output:        duplicator.MakeDuplicator("output-message-" + userUuid),
 		close:         make(chan interface{}),
 	}
-	sender.Output.RegisterInput(wires.Globals.GetBufferedOutput(10))
 	sender.runSendDeletes()
 	sender.runSendObjects()
 	sender.runSendUpdates()
 	sender.runSendNotifications()
 	return sender
+}
+
+func runSendItems() {
+	go func() {
+		for o := range wires.ItemsNewObjects.GetBufferedOutput(10) {
+			n := o.(notification.Notification)
+			user, exists := UserList[n.UserUuid]
+			if !exists {
+				panic("got a notification, but no user name")
+			}
+			user.Sender.NewObjects.Offer(n)
+		}
+	}()
 }
 
 func (s *sender) GetOutput() chan interface{} {
@@ -79,6 +94,10 @@ func (s *sender) CloseOutput(ch chan interface{}) {
 	defer s.lock.Release()
 	s.Output.UnregisterOutput(ch)
 	s.activeClients -= 1
+}
+
+func (s *sender) RegisterUpdateInput(ch chan interface{}) {
+	s.Updates.RegisterInput(ch)
 }
 
 func (s *sender) stop() {
@@ -125,12 +144,14 @@ func (s *sender) runSendUpdates() {
 }
 
 func (s *sender) runSendDeletes() {
-	object := s.Updates.GetBufferedOutput(10)
+	object := s.Deletes.GetBufferedOutput(10)
 	go func() {
 		for {
 			select {
 			case newObject := <-object:
-				s.Output.Offer(messages.BuildUpdateMessage(newObject.(change.Identifiable)))
+				s.Deletes.Offer(messages.BuildDeleteMessage(
+
+					newObject.(change.Identifiable)))
 			case <-s.close:
 				break
 			}

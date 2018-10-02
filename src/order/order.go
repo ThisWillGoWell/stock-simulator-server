@@ -4,6 +4,7 @@ import (
 	"github.com/stock-simulator-server/src/ledger"
 	"github.com/stock-simulator-server/src/portfolio"
 	"github.com/stock-simulator-server/src/valuable"
+	"github.com/stock-simulator-server/src/wires"
 )
 
 type Order interface {
@@ -181,7 +182,7 @@ func executeTrade(o *PurchaseOrder) {
 
 	}
 	if !ledgerExists {
-		ledger.NewObjectChannel.Offer(ledgerEntry)
+		wires.LedgerUpdate.Offer(ledgerEntry)
 		port.UpdateInput.RegisterInput(value.UpdateChannel.GetBufferedOutput(10))
 
 	} else {

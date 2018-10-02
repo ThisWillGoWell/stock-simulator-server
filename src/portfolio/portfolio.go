@@ -73,8 +73,8 @@ func MakePortfolio(uuid, userUUID string, wallet int64) (*Portfolio, error) {
 	//port.Lock.EnableDebug()
 	port.UpdateChannel.EnableCopyMode()
 	change.RegisterPublicChangeDetect(port)
-	wires.PortfolioNewObjectChannel.Offer(port)
-	wires.PortfolioUpdateChannel.RegisterInput(port.UpdateChannel.GetOutput())
+	wires.PortfolioNewObject.Offer(port)
+	wires.PortfolioUpdate.RegisterInput(port.UpdateChannel.GetOutput())
 	utils.RegisterUuid(uuid, port)
 	go port.valuableUpdate()
 	return port, nil

@@ -3,13 +3,15 @@ package valuable
 import (
 	"errors"
 	"fmt"
+	"math/rand"
+	"reflect"
+	"time"
+
 	"github.com/stock-simulator-server/src/change"
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
 	"github.com/stock-simulator-server/src/utils"
-	"math/rand"
-	"reflect"
-	"time"
+	"github.com/stock-simulator-server/src/wires"
 )
 
 const (
@@ -104,8 +106,8 @@ func MakeStock(uuid, tickerID, name string, startPrice, openShares int64, runInt
 	Stocks[uuid] = stock
 	stock.UpdateChannel.EnableCopyMode()
 	change.RegisterPublicChangeDetect(stock)
-	UpdateChannel.RegisterInput(stock.UpdateChannel.GetOutput())
-	NewObjectChannel.Offer(stock)
+	wires.StocksUpdate.RegisterInput(stock.UpdateChannel.GetOutput())
+	wires.StocksNewObject.Offer(stock)
 	utils.RegisterUuid(uuid, stock)
 	return stock, nil
 }

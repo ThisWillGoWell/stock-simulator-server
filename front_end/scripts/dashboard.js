@@ -238,7 +238,7 @@ if(authenticated) {
 			    		vm_stocks_tab.sortBy = col;
 			    		
 			    	}
-			    },
+			    },yesy
 			},
 			computed:{
 				sortedStocks: function() {

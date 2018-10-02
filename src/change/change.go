@@ -2,9 +2,10 @@ package change
 
 import (
 	"fmt"
+	"reflect"
+
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
-	"reflect"
 )
 
 /*
@@ -58,13 +59,12 @@ var (
 	// subscribeables is something that can be subscribed to
 	subscribeables        = make(map[string]*SubscribeUpdate)
 	subscribeablesLock    = lock.NewLock("subscribeables")
-	SubscribeUpdateInputs = duplicator.MakeDuplicator("subscribe-update-input")
-	SubscribeUpdateOutput = duplicator.MakeDuplicator("subscribe-update-output")
+	PublicSubscribeChange = duplicator.MakeDuplicator("subscribe-outputs")
 )
 
 func RegisterPublicChangeDetect(o Identifiable) error {
 	output := make(chan interface{})
-	SubscribeUpdateOutput.RegisterInput(output)
+	PublicSubscribeChange.RegisterInput(output)
 	return registerChangeDetect(o, output)
 }
 
@@ -77,7 +77,7 @@ func registerChangeDetect(o Identifiable, outputChan chan interface{}) error {
 	subscribeablesLock.Acquire("register-change")
 	defer subscribeablesLock.Release()
 
-	if _, ok := subscribeables[o.GetType()+o.GetId()]; !ok {
+	if _, ok := subscribeables[o.GetType()+o.GetId()]; ok {
 		panic("change detect already registered, check the code")
 	}
 
@@ -136,7 +136,7 @@ func StartDetectChanges() {
 	//SubscribeUpdateInputs.EnableCopyMode()
 	//SubscribeUpdateInputs.EnableDebug()
 	//SubscribeUpdateOutput.EnableDebug()
-	subscribeUpdateChannel := SubscribeUpdateInputs.GetBufferedOutput(100)
+	subscribeUpdateChannel := PublicSubscribeChange.GetBufferedOutput(100)
 	go func() {
 		for updateObj := range subscribeUpdateChannel {
 			update, ok := updateObj.(Identifiable)

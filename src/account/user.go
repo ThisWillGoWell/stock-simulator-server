@@ -65,19 +65,6 @@ func runSendNotification() {
 	}()
 }
 
-func runSendItems() {
-	go func() {
-		for o := range wires.ItemsNewChannel.GetBufferedOutput(10) {
-			n := o.(notification.Notification)
-			user, exists := UserList[n.UserUuid]
-			if !exists {
-				panic("got a notification, but no user name")
-			}
-			user.Sender.NewObjects.Offer(n)
-		}
-	}()
-}
-
 /**
 Return a user provided the username and Password
 If the Password is correct return user, else return err
@@ -95,7 +82,7 @@ func GetUser(username, password string) (*User, error) {
 		return nil, errors.New("password is incorrect")
 	}
 	user.Active = true
-	wires.UsersUpdateChannel.Offer(user)
+	wires.UsersUpdate.Offer(user)
 	return user, nil
 }
 
@@ -111,7 +98,7 @@ func RenewUser(sessionToken string) (*User, error) {
 		return nil, errors.New("user found in session list but not in current users")
 	}
 	user.Active = true
-	wires.UsersUpdateChannel.Offer(user)
+	wires.UsersUpdate.Offer(user)
 	return user, nil
 }
 
@@ -174,7 +161,7 @@ func MakeUser(uuid, username, displayName, password, portfolioUUID, config strin
 		UserUpdateChan: duplicator.MakeDuplicator("user-" + uuid),
 		Sender:         newSender(uuid),
 	}
-	wires.UsersNewObjectChannel.Offer(UserList[uuid])
+	wires.UsersNewObject.Offer(UserList[uuid])
 	utils.RegisterUuid(uuid, UserList[uuid])
 	return UserList[uuid], nil
 
@@ -193,7 +180,7 @@ func (user *User) LogoutUser() {
 	if user.ActiveClients == 0 {
 		user.Active = false
 	}
-	wires.UsersUpdateChannel.Offer(user)
+	wires.UsersUpdate.Offer(user)
 }
 
 func (user *User) GetId() string {
@@ -241,7 +228,7 @@ func (user *User) SetDisplayName(displayName string) error {
 		return errors.New("display name too short")
 	}
 	user.DisplayName = displayName
-	UpdateChannel.Offer(user)
+	wires.UsersUpdate.Offer(user)
 	return nil
 }
 
@@ -261,11 +248,10 @@ func (user *User) LevelUp() error {
 	user.Level = nextLevel
 
 	go port.Update()
-	wires.UsersUpdateChannel.Offer(user)
+	wires.UsersUpdate.Offer(user)
 	return nil
 }
 
 func (user *User) AddNotification(msg *notification.Notification) {
 	user.Sender.Notifications.Offer(msg)
-
 }

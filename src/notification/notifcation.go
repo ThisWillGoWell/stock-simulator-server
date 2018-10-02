@@ -108,26 +108,28 @@ func GetAllNotifications(userUuid string) []*Notification {
 	return notifications
 }
 
-func StartCleanNotifications() {
-	go runCleanNotifications()
-}
-func runCleanNotifications() {
-	for {
-		userListLock.Acquire("clean notifications")
-		for _, user := range UserList {
-			user.Lock.Acquire("clean notifications")
-			newStartIndex := 0
-			for _, notification := range user.Notifications {
-				if time.Since(notification.Timestamp) < notificationTimeLimit {
-					break
-				} else {
-					newStartIndex += 1
-				}
-			}
-			user.Notifications = user.Notifications[newStartIndex:]
-			userListLock.Release()
-		}
-		userListLock.Release()
-		<-time.After(time.Hour)
-	}
-}
+// todo
+//
+//func StartCleanNotifications() {
+//	go runCleanNotifications()
+//}
+//func runCleanNotifications() {
+//	for {
+//		userListLock.Acquire("clean notifications")
+//		for _, user := range UserList {
+//			user.Lock.Acquire("clean notifications")
+//			newStartIndex := 0
+//			for _, notification := range user.Notifications {
+//				if time.Since(notification.Timestamp) < notificationTimeLimit {
+//					break
+//				} else {
+//					newStartIndex += 1
+//				}
+//			}
+//			user.Notifications = user.Notifications[newStartIndex:]
+//			userListLock.Release()
+//		}
+//		userListLock.Release()
+//		<-time.After(time.Hour)
+//	}
+//}

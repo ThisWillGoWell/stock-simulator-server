@@ -2,19 +2,20 @@ package main
 
 import (
 	"flag"
+	"log"
+	"os"
+	"runtime"
+	"runtime/pprof"
+
+	"github.com/stock-simulator-server/src/account"
 	"github.com/stock-simulator-server/src/app"
 	"github.com/stock-simulator-server/src/change"
-	"github.com/stock-simulator-server/src/client"
 	"github.com/stock-simulator-server/src/database"
 	"github.com/stock-simulator-server/src/order"
 	"github.com/stock-simulator-server/src/session"
 	"github.com/stock-simulator-server/src/valuable"
 	"github.com/stock-simulator-server/src/web"
 	"github.com/stock-simulator-server/src/wires"
-	"log"
-	"os"
-	"runtime"
-	"runtime/pprof"
 )
 
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
@@ -51,9 +52,9 @@ func main() {
 	//Wiring of system
 	wires.ConnectWires(disableDb)
 	//this takes the subscribe output and converts it to a message
-	client.BroadcastMessageBuilder()
 	change.StartDetectChanges()
 	session.StartSessionCleaner()
+	account.RunUserSend()
 
 	order.Run()
 	valuable.StartStockStimulation()

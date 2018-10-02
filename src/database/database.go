@@ -3,6 +3,9 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"os"
+	"time"
+
 	_ "github.com/lib/pq"
 	"github.com/stock-simulator-server/src/account"
 	"github.com/stock-simulator-server/src/change"
@@ -12,8 +15,7 @@ import (
 	"github.com/stock-simulator-server/src/portfolio"
 	"github.com/stock-simulator-server/src/utils"
 	"github.com/stock-simulator-server/src/valuable"
-	"os"
-	"time"
+	"github.com/stock-simulator-server/src/wires"
 )
 
 var db *sql.DB
@@ -24,6 +26,7 @@ var dbLock = lock.NewLock("db lock")
 var DatabseWriter = duplicator.MakeDuplicator("database-writer")
 
 func InitDatabase() {
+	DatabseWriter.RegisterInput(wires.GlobalUpdates.GetOutput())
 	dbConStr := os.Getenv("DB_URI")
 	// if the env is not set, default to use the local host default port
 	database, err := sql.Open("postgres", dbConStr)
