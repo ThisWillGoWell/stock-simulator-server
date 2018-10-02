@@ -2,6 +2,7 @@ package database
 
 import (
 	"errors"
+
 	"github.com/stock-simulator-server/src/portfolio"
 )
 
@@ -48,7 +49,7 @@ func writePortfolioHistory(port *portfolio.Portfolio) {
 	tx, err := ts.Begin()
 	if err != nil {
 		ts.Close()
-		panic("could not begin portfolio init")
+		panic("could not begin portfolio history write init: " + err.Error())
 	}
 	_, err = tx.Exec(portfolioHistoryTableUpdateInsert, port.UUID, port.NetWorth, port.Wallet)
 	if err != nil {
@@ -57,7 +58,7 @@ func writePortfolioHistory(port *portfolio.Portfolio) {
 	}
 	tx.Commit()
 }
-func MakePorfolioHistoryTimeQuery(uuid, timeLength, field, intervalLength string) ([][]interface{}, error) {
+func MakePortfolioHistoryTimeQuery(uuid, timeLength, field, intervalLength string) ([][]interface{}, error) {
 	if _, valid := validPortfolioFields[field]; !valid {
 		return nil, errors.New("not valid choice")
 	}

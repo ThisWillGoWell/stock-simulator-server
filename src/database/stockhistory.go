@@ -28,7 +28,7 @@ func initStocksHistory() {
 	tx, err := ts.Begin()
 	if err != nil {
 		ts.Close()
-		panic("could not begin stocks init: " + err.Error())
+		panic("could not begin stocks history init: " + err.Error())
 	}
 	_, err = tx.Exec(stocksHistoryTableCreateStatement)
 	if err != nil {
@@ -47,7 +47,7 @@ func writeStockHistory(stock *valuable.Stock) {
 	tx, err := ts.Begin()
 	if err != nil {
 		ts.Close()
-		panic("could not begin stocks init")
+		panic("could not begin stocks history init: " + err.Error())
 	}
 	_, err = tx.Exec(stocksHistoryTableUpdateInsert, stock.Uuid, stock.CurrentPrice, stock.OpenShares)
 	if err != nil {

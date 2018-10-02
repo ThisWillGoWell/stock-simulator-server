@@ -66,8 +66,8 @@ func (baseMessage *BaseMessage) UnmarshalJSON(data []byte) error {
 		message = &QueryMessage{}
 	case TransferAction:
 		message = &TransferMessage{}
-	case RenewAction:
-		message = &RenewMessage{}
+	case ConnectAction:
+		message = &ConnectMessage{}
 	case SetAction:
 		message = &SetMessage{}
 	case ItemAction:

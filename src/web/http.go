@@ -1,14 +1,18 @@
 package web
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
+	"github.com/stock-simulator-server/src/account"
 	"github.com/stock-simulator-server/src/app"
 	"github.com/stock-simulator-server/src/client"
 	"github.com/stock-simulator-server/src/messages"
+	"io"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -22,9 +26,75 @@ func StartHandlers() {
 	//fmt.Println(shareDir)
 	//var fs = http.FileServer(http.Dir(shareDir))
 
+
 	http.HandleFunc("/load", func(w http.ResponseWriter, r *http.Request) {
 		app.LoadConfig()
 		http.Redirect(w, r, "/", 301)
+	})
+
+	http.HandleFunc("/create", func(w http.ResponseWriter, r *http.Request){
+		setupResponse(&w, r)
+		if (*r).Method == "OPTIONS" {
+			return
+		}
+
+		if r.Method != "PUT" {
+			http.Error(w, "put only", http.StatusMethodNotAllowed)
+			return
+		}
+
+		auth := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
+		displayName := r.Header.Get("DisplayName")
+
+		if len(auth) != 2 || auth[0] != "Basic" {
+			http.Error(w, "create failed", http.StatusBadRequest)
+			return
+		}
+
+		payload, _ := base64.StdEncoding.DecodeString(auth[1])
+		pair := strings.SplitN(string(payload), ":", 2)
+
+
+		if len(pair) != 2 {
+			http.Error(w, "create failed", http.StatusBadRequest)
+			return
+		}
+		token, err :=  account.NewUser(pair[0], displayName, pair[1])
+		if err != nil{
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+		io.WriteString(w, token)
+	})
+
+	http.HandleFunc("/token", func(w http.ResponseWriter, r *http.Request) {
+		setupResponse(&w, r)
+		if (*r).Method == "OPTIONS" {
+			return
+		}
+		if r.Method != "GET" {
+			http.Error(w, "get only", http.StatusMethodNotAllowed)
+			return
+		}
+		auth := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
+
+		if len(auth) != 2 || auth[0] != "Basic" {
+			http.Error(w, "authorization failed", http.StatusUnauthorized)
+			return
+		}
+
+		payload, _ := base64.StdEncoding.DecodeString(auth[1])
+		pair := strings.SplitN(string(payload), ":", 2)
+
+
+		if len(pair) != 2 {
+			http.Error(w, "authorization failed", http.StatusUnauthorized)
+			return
+		}
+		token, err :=  account.ValidateUser(pair[0], pair[1])
+		if err != nil{
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+		}
+		io.WriteString(w, token)
 	})
 
 	http.HandleFunc("/ws", handleConnections)
@@ -47,7 +117,15 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		return true
 	},
+
 }
+
+func setupResponse(w *http.ResponseWriter, req *http.Request) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	(*w).Header().Set("Access-Control-Allow-Headers", "DisplayName, Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+}
+
 
 func handleConnections(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("got Upgrade")
@@ -70,7 +148,7 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 		}
 		loginErr := client.InitialReceive(string(msg), socketTX, socketRX)
 		if loginErr != nil {
-			val, err := json.Marshal(messages.FailedLogin(loginErr))
+			val, err := json.Marshal(messages.FailedConnect(loginErr))
 			if err != nil {
 				fmt.Print(err)
 			}

@@ -47,7 +47,7 @@ func writeUser(user *account.User) {
 
 	if err != nil {
 		db.Close()
-		panic("could not begin stocks init")
+		panic("could not begin user init: " + err.Error())
 	}
 
 	_, err = tx.Exec(accountTableUpdateInsert, user.Uuid, user.UserName, user.DisplayName, user.Password, user.PortfolioId, user.ConfigStr)

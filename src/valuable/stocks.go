@@ -17,8 +17,8 @@ import (
 const (
 	volatilityMin      = 1
 	volatilityMax      = 10
-	volatilityMinTurns = 1
-	volatilityMaxTurns = 100
+	volatilityMinTurns = 5
+	volatilityMaxTurns = 25
 
 	timeSimulationPeriod = time.Second
 
@@ -44,11 +44,6 @@ func StartStockStimulation() {
 		close(simulation)
 	}()
 
-}
-
-type stockManager struct {
-	stocks             map[string]*Stock
-	StockUpdateChannel *duplicator.ChannelDuplicator
 }
 
 //Stock type for storing the stock information
@@ -99,8 +94,9 @@ func MakeStock(uuid, tickerID, name string, startPrice, openShares int64, runInt
 	stock.PriceChanger = &RandomPrice{
 		RunPercent:            timeSimulationPeriod.Seconds() / (runInterval.Seconds() * 1.0),
 		TargetPrice:           int64(rand.Intn(100000)),
-		PercentToChangeTarget: .1,
+		PercentToChangeTarget: .07,
 		Volatility:            5,
+		RandomNoise:			.07,
 	}
 	go stock.stockUpdateRoutine()
 	Stocks[uuid] = stock
@@ -155,6 +151,7 @@ type RandomPrice struct {
 	TargetPrice           int64   `json:"target_price"`
 	PercentToChangeTarget float64 `json:"change_percent"`
 	Volatility            float64 `json:"volatility"`
+	RandomNoise		  float64
 }
 
 func (randPrice *RandomPrice) GetTargetPrice() int64 {
@@ -168,15 +165,21 @@ func (randPrice *RandomPrice) change(stock *Stock) {
 	}
 	stock.lock.Acquire("change-stock")
 	defer stock.lock.Release()
+
 	if rand.Float64() <= randPrice.PercentToChangeTarget {
 		randPrice.changeValues()
 	}
 
-	//can make this a lot more interesting, like adding in the ability for it to drop
-	change := float64(randPrice.TargetPrice-stock.CurrentPrice) /
-		utils.MapNum(randPrice.Volatility, volatilityMin, volatilityMax, volatilityMinTurns, volatilityMaxTurns)
+	moveToTarget := int64(utils.RandRangeFloat(float64(randPrice.TargetPrice) * 0.9, float64(randPrice.TargetPrice) * 1.1 ))
 
-	stock.CurrentPrice = stock.CurrentPrice + int64(change)
+	change := float64(moveToTarget - stock.CurrentPrice) /
+		utils.MapNumFloat(randPrice.Volatility, volatilityMin, volatilityMax, volatilityMinTurns, volatilityMaxTurns)
+
+	if rand.Float64() <= randPrice.RandomNoise {
+		change = change * -1
+	}
+	stock.CurrentPrice = int64(float64(stock.CurrentPrice) + (change * .5))
+
 	stock.UpdateChannel.Offer(stock)
 
 }
@@ -185,13 +188,13 @@ func (randPrice *RandomPrice) change(stock *Stock) {
 func (randPrice *RandomPrice) changeValues() {
 
 	// get what the upper and lower bounds in % of the current price
-	window := utils.MapNum(randPrice.Volatility, volatilityMin, volatilityMax, 0, 0.3)
+	window := utils.MapNumFloat(randPrice.Volatility, volatilityMin, volatilityMax, 0, 0.3)
 	// select a random number on +- that
-	newTarget := utils.MapNum(rand.Float64(), 0, 1, float64(randPrice.TargetPrice)*(1-window), float64(randPrice.TargetPrice)*(1+window))
+	newTarget := utils.MapNumFloat(rand.Float64(), 0, 1, float64(randPrice.TargetPrice)*(1-window), float64(randPrice.TargetPrice)*(1+window))
 	// this is to prevent all the stocks to becoming 1.231234e-14
-	if newTarget < 3 {
+	if newTarget < 500 {
 		if rand.Float64() < randPrice.PercentToChangeTarget {
-			newTarget = 10000
+			newTarget = 1000 + newTarget
 		}
 	}
 	//need to deiced if the floor should happen before or after
@@ -200,7 +203,7 @@ func (randPrice *RandomPrice) changeValues() {
 	}
 
 	randPrice.TargetPrice = int64(newTarget)
-	randPrice.Volatility = utils.RandRange(volatilityMin, volatilityMax)
+	randPrice.Volatility = utils.RandRangeFloat(volatilityMin, volatilityMax)
 }
 
 func GetAllStocks() []*Stock {

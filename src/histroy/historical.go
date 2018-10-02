@@ -3,13 +3,14 @@ package histroy
 import (
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/stock-simulator-server/src/database"
 	"github.com/stock-simulator-server/src/ledger"
 	"github.com/stock-simulator-server/src/messages"
 	"github.com/stock-simulator-server/src/portfolio"
 	"github.com/stock-simulator-server/src/utils"
 	"github.com/stock-simulator-server/src/valuable"
-	"time"
 )
 
 type Query struct {
@@ -82,7 +83,7 @@ func makeQuery(query *Query) {
 	case *portfolio.Portfolio:
 		switch query.Type {
 		case "time":
-			vals, err = database.MakePorfolioHistoryTimeQuery(query.QueryUUID, query.TimeLength, query.QueryField, query.TimeInterval)
+			vals, err = database.MakePortfolioHistoryTimeQuery(query.QueryUUID, query.TimeLength, query.QueryField, query.TimeInterval)
 		case "limit":
 			vals, err = database.MakePortfolioHistoryLimitQuery(query.QueryUUID, query.QueryField, query.Limit)
 		}

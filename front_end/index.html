@@ -1,274 +1,457 @@
 <!DOCTYPE html>
 <html>
-
 	<head>
-
+		<title>MockStarket</title>
 		<meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
         <link href="https://fonts.googleapis.com/css?family=Mukta+Vaani:300,400,500,700" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:100,300,400,500" rel="stylesheet">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet">
         <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
       rel="stylesheet">
 
-        <link rel="stylesheet" href="../css/main.css">
+        <link rel="stylesheet" href="css/main.css">
 
+        <script src="scripts/utils.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-        <script src="../scripts/particles.min.js"></script>
-        <script src="../scripts/main.js"></script>
-        <script src="../scripts/login.js"></script>
-        <title>MockStarket</title>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+		<script src="https://d3js.org/d3.v5.min.js"></script>
+		<script src="https://d3js.org/d3-path.v1.min.js"></script>
+		<script src="https://d3js.org/d3-shape.v1.min.js"></script>
+		<script src="https://d3js.org/d3-time.v1.min.js"></script>
+		<script src="https://d3js.org/d3-time-format.v2.min.js"></script>
+
+		<script src="scripts/dashboard.js"></script>
+        <script src="scripts/graphing.js"></script>
+
 
     </head>
 
-	<body class="bg-dark-gradient">
-		<div id="particles-js"></div>
-		<div class="flex--container">
+	<body>
 
-			<div id="login-container" class="flex--center-vert-horiz">
-				<div class="card-title-panel">
-    				<div class="card-title">Create Account</div>
-    				<i id="menu-close-btn" class="material-icons">close</i>
-    			</div>
-    			<div class="logo-mark">MOCKSTARKET</div>
-				<div class="card-group">
-					<div class="input-grp">
-						<div class="input-name">Username</div>
-						<input type="text" id="login-uid" class="input-full-width" name="uid" required>
-						<span class="input-focus-border"></span>
-					</div>
-					<div class="input-grp buffer-bot-more">
-						<div class="input-name">Password</div>
-						<input type="password" id="login-pw" class="input-full-width" name="ps" required>
-						<span class="input-focus-border"></span>
-					</div>
-					<div class="err-msg login-err"></div>
-					<div class="input-grp buffer-bot-more">
-						<input id="input-login-submit" type="submit" value="LOGIN" class="input-full-width">
-			    		
-			    		<a href="#" class="create-account-btn not-active hanger-anim create-active">create account</a>
-			    	</div>
-		    		
-		    		<!-- 
-						Make inputs disabled unless you are viewing them
-						Change Easing on "create account clicked" 
-					-->
-		    		<div id="create-account--container">
-		    			
-		    			<div class="input-grp">
-							<div class="input-name">Username</div>
-							<input type="text" id="create-uid" class="input-full-width" name="create-uid" required disabled>
-							<span class="input-focus-border"></span>
-						</div>
-						<div class="input-grp">
-							<div class="input-name" disabled>Password <span>(Pro tip: Make up one just for MockStarket)</span></div>
-							<input type="password" id="create-pw" class="input-full-width" name="create-ps" required disabled>
-
-							<span class="input-focus-border"></span>
-
-						</div>
-
-						<div class="input-grp">
-							<div class="input-name">Confirm Password</div>
-							<input type="password" id="create-pw-confirm" class="input-full-width" name="create-ps-confirm" required disabled>
-
-							<span class="input-focus-border"></span>
-						</div>
-						<div class="input-grp buffer-bot">
-							<div class="input-name" disabled>Nickname</div>
-							<input type="text" id="create-name" class="input-full-width" name="create-name" required disabled>
-							<span class="input-focus-border"></span>
-							
-						</div>
-						<div class="input-grp">
-							<input id="input-create-submit" type="submit" value="CREATE ACCOUNT" class="input-full-width" disabled>
-						</div>
-						
-
-		    		</div>
-	    		</div>
-			</div>
+		<div class="app--container" id="app--container">
 			
+			<section id="modal--container">
+				<div class="modal-card" v-if="showModal">
+					<button v-on:click="closeModal()"><i class="material-icons">close</i></button>
+					<div id="trade--view">
+						<div class="modal-stock-id">{{ stock.ticker_id }} </div>
+						<div>Current cash: ${{ toPrice(user.wallet) }}</div>						
+						<div class="flex-grid--container no-padding">
+							<div class="flex-column-50">
+								<div id="calc-btn-buy" class="card calc-btn fill green no-buffer-top" v-on:click="setIsBuying(true)">BUY</div>
+							</div>
+							<div class="flex-column-50">
+								<div id="calc-btn-sell" class="card calc-btn red no-buffer-top" v-on:click="setIsBuying(false)">SELL</div>
+							</div>
+							<div class="flex-column-50">
+								<div class="card calc-btn" v-on:click="addAmount(1)">1</div>
+							</div>
+							<div class="flex-column-50">
+								<div class="card calc-btn" v-on:click="addAmount(5)">5</div>
+							</div>
+							<div class="flex-column-50">
+								<div class="card calc-btn" v-on:click="addAmount(25)">25</div>
+							</div>
+							<div class="flex-column-50">
+								<div class="card calc-btn" v-on:click="addAmount(100)">100</div>
+							</div>
+							<div class="flex-column-50">
+								<div class="card calc-btn" v-on:click="addAmount(0)">CUSTOM</div>
+							</div>
+							<div class="flex-column-50">
+							  <div class="card calc-btn" v-on:click="determineMax()">MAX</div>
+							</div>
+							<div class="flex-column-100">
+								<div class="card calc-btn clear" v-on:click="clearAmount()" data-val="0">CLEAR</div>
+							</div>
+							<div class="flex-column-100" style="padding: 0 15px;">
+								<table class="table">
+									<thead>
 
+										<tr>
+											<th>Price</th>
+											<th>Amount</th>
+											<th>Total</th>	
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td class='modal-stock-price'>${{ toPrice(stock.current_price) }}</td>
+											<td>{{ buySellAmount }}</td>
+											<td>${{ toPrice(buySellAmount * stock.current_price) }}</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+							
+							<div class="flex-column-100">
+								<div id="trade-request-submit" class="card calc-btn green no-buffer-top" v-on:click="submitTrade()">CONFIRM</div>
+							</div>
+							
+					</div>
+				</div>
+			</section>
+			
+			<section id="side-menu--container">
+				<div class="logo-mark">MOCKSTARKET</div>
+				<!-- <div id="user-info-container" class="timer-container">
+					<div class="level-circle">1</div>
+					<p v-if="getCurrentUser(users)">{{ getCurrentUser(users) }}</p>
+				</div> -->
+				<div id="stats--view">
+					<div class="stat-value blue"><i class="material-icons menu-icon">business</i>${{ toPrice(currUserPortfolio.net_worth) }}</div>
+					<div class="stat-value green"><i class="material-icons menu-icon">local_atm</i>${{ toPrice(currUserPortfolio.wallet) }}</div>
+					<div class="stat-value orange"><i class="material-icons menu-icon">trending_up</i>${{ toPrice(currUserPortfolio.investments) }}</div>
+				</div>
+				<ul id="nav">
+					<li>
+						<button v-on:click="nav" data-route="dashboard">
+							<i class="material-icons menu-icon">business</i>
+							<div class="menu-item-title">Dashboard</div>
+							<i class="material-icons right-arrow">keyboard_arrow_right</i>
+						</button>
+					</li>
+					<li>
+						<button v-on:click="nav" data-route="business">
+							<i class="material-icons menu-icon">store_mall_directory</i>
+							<div class="menu-item-title">Business</div>
+							<i class="material-icons right-arrow">keyboard_arrow_right</i>
+						</button>
+					</li>
+					<li>
+						<button v-on:click="nav" data-route="stocks">
+							<i class="material-icons menu-icon">trending_up</i>
+							<div class="menu-item-title">Stocks</div>
+							<i class="material-icons right-arrow">keyboard_arrow_right</i>
+						</button>
+					</li>
+					<li>
+						<button v-on:click="nav" data-route="investors">
+							<i class="material-icons menu-icon">account_box</i>
+							<div class="menu-item-title">Investors</div>
+							<i class="material-icons right-arrow">keyboard_arrow_right</i>
+						</button>
+					</li>
+					<li>
+						<button v-on:click="nav" data-route="futures">
+							<i class="material-icons menu-icon">swap_horiz</i>
+							<div class="menu-item-title">Futures</div>
+							<i class="material-icons right-arrow">keyboard_arrow_right</i>
+						</button>
+					</li>
+					<li>
+						<button v-on:click="nav" data-route="perks">
+							<i class="material-icons menu-icon">local_atm</i>
+							<div class="menu-item-title">Store</div>
+							<i class="material-icons right-arrow">keyboard_arrow_right</i>
+						</button>
+					</li>
+					<li>
+						<button class="debug-btn red" v-on:click="nav">
+							<i class="material-icons menu-icon">build</i>
+							<div class="menu-item-title">Debug</div>
+							<i class="material-icons right-arrow">keyboard_arrow_right</i>
+						</button>
+					</li>
+				</ul>
+			</section>
+			<section id="top-bar--container">
+				<div class="current-view" id="current-view">Dashboard</div>
+				<div class="account-settings-btn">
+						<span></span>
+						<span></span>
+						<span></span>	
+					</div>
+
+				<div id="user-info-container" class="nav-list">
+					<div class="username-text">{{ userDisplayName }}</div>
+					
+					
+				
+				</div>
+				
+				
+				<div class="account-settings-menu--container">
+					<i id="account-settings-menu-close-btn" class="material-icons">close</i>
+					<ul>
+						<li>
+							<textarea id="newDisplayName"></textarea>
+						</li>
+						<li>
+							<button id="changeDisplayName" v-on:click="changeDisplayName">Change Display Name</button>
+						</li>
+						<li>
+							<button id="btn-logout" v-on:click="logout">Logout</button>
+						</li>
+					</ul>
+				</div>
+			</section>
+			<section id="main-content--container" class="">
+				<div class="view-container">
+					<div id="dashboard--view" class="active view">
+						<div class="flex-grid--container">
+							<div class="flex-column-33">
+								<div class="card small">
+									<div class="stat-value blue">
+										<i class="material-icons menu-icon">business</i>
+										<div class="card-details">
+											<div class="card-category">NETWORTH</div>
+											<p><span class="small-money">$</span>{{ toPrice(currUserPortfolio.net_worth) }}</p>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="flex-column-33">
+								<div class="card small">
+									<div class="stat-value green">
+										<i class="material-icons menu-icon">local_atm</i>
+										<div class="card-details">
+											<div class="card-category">CASH</div>
+											<p><span class="small-money">$</span>{{ toPrice(currUserPortfolio.wallet) }}</p>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="flex-column-33">
+								<div class="card small">
+									<div class="stat-value orange">
+										<i class="material-icons menu-icon">trending_up</i>
+										<div class="card-details">
+											<div class="card-category">INVESTMENTS</div>
+											<p><span class="small-money">$</span>{{ toPrice(currUserPortfolio.investments) }}</p>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="flex-column-100">
+								<div class="card stock-list">
+									<table class="table">
+										<thead>
+									    	<tr>
+										    	<th scope="col" style="text-align: left; padding-left: 25px;" v-on:click="sortCol('stock_ticker')">Stock</th>
+										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('amount')">Amount Owned</th>
+										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('stock_price')">Current Price</th>
+										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('stock_value')">Value</th>
+										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('stock_roi')" >R.O.I.</th>
+										    </tr>
+										</thead>
+										<tbody>
+											<tr class="clickable" v-for="stock in currUserStocks" :key='stock.uuid' v-bind:uuid="stock.uuid">
+												<th class="stock-ticker-id" scope="row" v-bind:tid="stock.stock_ticker" style="line-height: 40px;">{{ stock.stock_ticker }}</th>
+												<td class="stock-price" style="text-align: right; padding-right: 25px;">{{ stock.amount }}</td>
+												<!-- Brennan these tds should use onclick idk how we have been implementing that -->
+												<td class="price-alter stock-price" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_price) }}</td>
+												<td class="price-alter stock-price" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_value) }}</td>
+												<td class="stock-change" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_roi) }}</td>
+												
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+							<div class="flex-column-100">
+								<div class="portfolio-history">
+									<button id="portfolio-history-btn" v-on:click="createPortfolioGraph()">Log cash/networth history</button>
+								</div>
+								<div id="portfolio-graph"></div>
+							</div>
+						</div>
+					</div>
+					<div id="business--view" class="view">
+						<div class="flex-grid--container">
+							<div class="flex-column-100">
+								<div class="card">
+									<h1>BUSINESS</h1>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div id="stocks--view" class="view">
+						<div class="flex-grid--container" id="stockSuperlatives">
+							<div class="flex-column-33">
+								<div class="card small">
+									<div class="stat-value blue">
+										<i class="material-icons menu-icon">business</i>
+										<div class="card-details">
+											<div class="card-category">MOST EXPENSIVE</div>
+											<p>{{ highestStock }}</p>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="flex-column-33">
+								<div class="card small" v-on:click="createStockGraph()">
+									<div class="stat-value green">
+										<i class="material-icons menu-icon">local_atm</i><div class="card-details">
+											<div class="card-category">HIGHEST GROWTH</div>
+											<p>{{ mostChange }}</p>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="flex-column-33">
+								<div class="card small">
+									<div class="stat-value orange">
+										<i class="material-icons menu-icon">trending_up</i><div class="card-details">
+											<div class="card-category">LEAST EXPENSIVE</div>
+											<p>{{ lowestStock }}</p>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="flex-column-100">
+								<div class="card stock-list">
+									<div id="stock-list">
+										<table class="table">
+										  <thead>
+											<tr>
+											  <th scope="col" v-on:click="sortCol('ticker_id')" style="text-align: left; padding-left: 25px;">Stock <i class="material-icons stock">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('open_shares')">Open Shares <i class="material-icons open-shares">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('change')">Change <i class="material-icons change">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('current_price')" style="padding-right: 25px;">Cost <i class="material-icons cost">arrow_drop_down</i></th>
+											</tr>
+										  </thead>
+										  <tbody>
+											  <!-- https://vuejs.org/v2/guide/list.html :key is recommended in v.fors -->
+											<tr class="clickable" v-for="stock in sortedStocks" :key='stock.uuid' v-bind:uuid="stock.uuid">
+											  <th class="stock-ticker-id" scope="row" v-bind:tid="stock.ticker_id">
+												  <div class="stock-ticker-id">{{ stock.ticker_id }}</div>
+												  <div class="stock-display-name">{{ stock.name }}</div>
+											  </th>
+											  <td class="stock-open-shares">{{ stock.open_shares }}</td>
+											  <td class="stock-change">
+												  {{ toPrice(stock.change) }}
+												  <i class="material-icons">arrow_drop_down</i>
+											  </td>
+											  <td class="stock-price" style="padding-right: 25px;">
+											  ${{ toPrice(stock.current_price) }}</td>
+											</tr>
+										  </tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+							<div class="flex-column-100">
+								<div id="stock-graph"></div>
+							</div>
+						</div>
+					</div>
+					<!-- TODO: this tab collides with the sidebar -->
+					<div id="investors--view" class="view">
+						<div class="flex-grid--container">
+							<div class="flex-column-100">
+								<div class="card">
+									<h1>INVESTORS</h1>
+								</div>
+							</div>
+							<div class="flex-column-100" id="portfolio-list">
+								<div>
+
+									<!-- Needs to be some version of this -->
+									<div class="card" v-for="investor in investors" :key="investor.uuid" v-on:click="createGraph(investor.uuid)">
+										<td>{{ investor.name }}</td>
+								    	<td>Wallet: {{ toPrice(investor.wallet) }}</td>
+								    	<td>Net Worth: {{ toPrice(investor.net_worth) }}</td>
+
+										<!-- Needs to be some version of this -->
+										<div v-for="stock in investor.stocks">
+
+											<td>{{ stock.ticker_id }}</th>
+									    	<td>{{ stock.amount }}</td>
+									    	<td>{{ toPrice(stock.current_price) }}</td>
+									    	<td>{{ toPrice(stock.value) }}</td>
+
+										</div>
+										<div v-bind:id="'investorGraph'+investor.uuid"></div>
+										<br><br>
+									</div>
+
+<!-- +
+									<table class="table">
+										<thead>
+									    	<tr>
+									    	  <th scope="col">Name</th>
+									    	  <th scope="col">wallet</th>
+									    	  <th scope="col">net worth</th>
+									    	</tr>
+										</thead>
+										<tbody>
+										    <tr class="investor" v-if="investors.length != 0" v-for="investor in investors" :key="investor.uuid">
+										    	<td>{{ investor.name }}</td>
+										    	<td>{{ investor.stocks }}</td>
+										    	<td>{{ toPrice(investor.wallet) }}</td>
+										    	<td>{{ toPrice(investor.net_worth) }}</td>
+										    </tr>
+										</tbody>
+									</table>
+ -->								
+								</div>
+
+								<investor-card
+									v-for="investor in investors"
+									:key="investor.uuid"
+									v-bind:user_uuid="investor.user_uuid">
+										
+									</investor-card>
+							</div>
+						</div>
+					</div>
+
+					<!-- TODO: this tab collides with the sidebar -->
+					<div id="futures--view" class="view">
+						<div class="flex-grid--container">
+							<div class="flex-column-100">
+								<div class="card">
+									<h1>FUTURES</h1>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- TODO: this tab collides with the sidebar -->
+					<div id="store--view" class="view">
+						<div class="flex-grid--container">
+							<div class="flex-column-100">
+								<div class="card">
+									<h1>STORE</h1>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+			<section id="chat-module--container" class="closed">
+				<div class="chat-title-bar" v-bind:title="activeUsers()">
+					<span>All Chat ({{ numActiveUsers }})</span>
+					<button v-on:click="toggleChat()"></button>
+				</div>
+
+				<!-- 
+					Make Chat resizable
+					Make user's own messages show differently 
+				-->
+				<ul class="chat-message--list">
+					
+				</ul>
+				<textarea id="chat-text-input" placeholder="Say anything..."></textarea>
+			</section>
+			<section id="debug-module--container" class="closed">
+				<div class="debug-title-bar">
+					<span>Server Log</span>
+					<button></button>
+				</div>
+
+				<!-- 
+					Make Chat resizable
+					Make user's own messages show differently 
+				-->
+				<ul class="debug-message--list">
+					
+				</ul>
+				
+			</section>
 		</div>
 	</body>
 	
 </html>
-
-
-<script language="javascript" type="text/javascript">
-//     var wsUri = "ws://"+ window.location.host + "/ws";
-//     var output;
-//     var webSocket;
-
-//     function init()
-//     {
-//         output = document.getElementById("output");
-//         testWebSocket();
-//     }
-
-//     function testWebSocket()
-//     {
-//         webSocket = new WebSocket(wsUri);
-//         webSocket.onopen = function(evt) { onOpen(evt) };
-//         webSocket.onclose = function(evt) { onClose(evt) };
-//         webSocket.onmessage = function(evt) { onMessage(evt) };
-//         webSocket.onerror = function(evt) { onError(evt) };
-//     }
-
-//     function onOpen(evt)
-//     {
-//         onEvent("Connected");
-//         //doSend('{"container_type": "register", "register_action": "register", "device_type": "test", "device_name":"' + window.prompt("device_name","test")  + '"}');
-//         doSend('{"action": "login", "msg": {"username": "Will", "password":"pass"}}');
-//         doSend('{"action": "query", "msg": {"uuid": "E72295C50A1652", "field":"net_worth", "num_points":10}}')
-//         doSend('{"action": "chat", "msg": {"message_body": "FUCK YEAH"}}')
-//         //doSend('{"op":"subscribe","type":"alert", "system":"irRemote"}');
-//     }
-
-//     function onClose(evt)
-//     {
-//         onEvent("Disconnected");
-//     }
-
-//     function login_message(login_message){
-//         /// ????????????????
-//     }
-//     // map[uuid] -> object {}
-//     /*
-//     {
-//     "action": "object",
-//     "msg": {
-//         "type": "ledger",
-//         "uuid": "10CC90568D47C5",
-//         "object": {
-//             "uuid": "10CC90568D47C5",
-//             "portfolio_id": "7AB098B953D711",
-//             "stock_id": "02E1E73E2DA8E9",
-//             "amount": 5
-//         }
-//     }
-// }
-//      */
-//     // map[uuid]-> object
-//     var all_objects = {}
-//     // uuid -> type string
-//     var uuid_map = {}
-
-//     function get_stock_name_ledger(ledger_object){
-//         return all_objects[stock_object.ledger.object.stock_id].object.name
-//     }
-//     function new_object(object_message){
-//         all_objects[object.message.type][object_message.msg.uuid] = object_message.msg
-//         var all_stocks = all_objects['stocks']
-//         all_objects[uuid_map['uuid']]['uuid']
-//         // map stock_uuids -> stock objects
-//     }
-
-//     function  object_update(update_msg){
-//         all_objects[update_msg.msg.uuid][update_msg.msg.field] = update_msg.msg.value
-//     }
-
-//     function purchase_order_response(purchase_response){}
-
-
-//     function onEvent(message){
-//         var router = {
-//             'login': login_message,
-//             'object': new_object,
-//             'update': object_update
-//         }
-//         //router[message.action](message)
-
-//         writeToScreen('<span style="color: darkorange;">'+ message+'</span>')
-//     }
-
-//     function syntaxHighlight(json) {
-//         if (typeof json != 'string') {
-//             json = JSON.stringify(json, undefined, 4);
-//         }
-//         json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-//         return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-//             var cls = 'number';
-//             if (/^"/.test(match)) {
-//                 if (/:$/.test(match)) {
-//                     cls = 'key';
-//                 } else {
-//                     cls = 'string';
-//                 }
-//             } else if (/true|false/.test(match)) {
-//                 cls = 'boolean';
-//             } else if (/null/.test(match)) {
-//                 cls = 'null';
-//             }
-//             return '<span class="' + cls + '">' + match + '</span>';
-//         });
-//     }
-
-//     function putScreen(inp) {
-//         var para = document.createElement("pre");
-//         para.innerHTML = inp
-
-//         var element = document.getElementById("output");
-//         element.insertBefore(para, element.firstChild);
-//     }
-
-//     function syntaxHighlight(json) {
-//         // https://stackoverflow.com/questions/4810841/how-can-i-pretty-print-json-using-javascript
-//         json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-//         return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-//             var cls = 'number';
-//             if (/^"/.test(match)) {
-//                 if (/:$/.test(match)) {
-//                     cls = 'key';
-//                 } else {
-//                     cls = 'string';
-//                 }
-//             } else if (/true|false/.test(match)) {
-//                 cls = 'boolean';
-//             } else if (/null/.test(match)) {
-//                 cls = 'null';
-//             }
-//             return '<span class="' + cls + '">'  + match + '</span>';
-//         });
-//     }
-
-//     function onMessage(evt)
-//     {
-//         //writeToScreen(syntaxHighlight(evt.data));
-//         var str = JSON.stringify(JSON.parse(evt.data), undefined, 4);
-//         putScreen(syntaxHighlight(str));
-//     }
-
-//     function onSend(message)
-//     {
-//         writeToScreen('<span style="color: lightblue;">SEND: ' + message +'</span>');
-
-//     }
-
-//     function onError(evt)
-//     {
-//         writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
-//     }
-
-//     function doSend(message)
-//     {
-//         onSend(message)
-//         webSocket.send(message);
-//     }
-//     function writeToScreen(message)
-//     {
-//         var pre = document.createElement("p");
-//         //pre.style.wordWrap = "break-word";
-//         pre.innerHTML = message;
-//         output.appendChild(pre);
-//     }
-
-
-
-//     window.addEventListener("load", init, false);
-
-</script>
-
-
-

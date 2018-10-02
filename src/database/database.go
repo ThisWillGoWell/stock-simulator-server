@@ -27,6 +27,7 @@ var DatabseWriter = duplicator.MakeDuplicator("database-writer")
 
 func InitDatabase() {
 	DatabseWriter.RegisterInput(wires.GlobalUpdates.GetOutput())
+	DatabseWriter.RegisterInput(wires..GetOutput())
 	dbConStr := os.Getenv("DB_URI")
 	// if the env is not set, default to use the local host default port
 	database, err := sql.Open("postgres", dbConStr)
@@ -88,6 +89,7 @@ func InitDatabase() {
 		port.Update()
 	}
 
+	runHistoricalQueries()
 	go databaseWriter()
 
 }

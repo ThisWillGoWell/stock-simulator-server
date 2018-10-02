@@ -1,21 +1,27 @@
 
 // ADDED THIS BLOCK FOR AUTH - TELL JAKE
-let authenticated = sessionStorage.getItem('authenticated');
-let auth_uid = sessionStorage.getItem('uid');
+let token = sessionStorage.getItem('token');
+let auth_uuid = sessionStorage.getItem('uuid');
 
+var REQUESTS = {};
+var REQUEST_ID = 1;
 
-//let authenticated = sessionStorage.getItem('authenticated');
-
-if(authenticated) {
+if(token) {
 	
 	// Get saved data from sessionStorage
 	$( document ).ready(function() {
 
 
 		/* Highest level Vue data object */
+		var config = new Vue({
+			data: {
+				config: {},
+			}
+		})
+
 		var vm_stocks = new Vue({
 			data: {
-				stocks: {}
+				stocks: {},
 			}
 		});
 
@@ -29,26 +35,31 @@ if(authenticated) {
 			data: {
 				portfolios: {},
 			}
-		});		
+		});
 		
 		var vm_users = new Vue({
 			data: {
 			  users: {},
-			  currentUser: auth_uid,
+			  currentUser: auth_uuid,
 			},
 			methods: {
 		  		getCurrentUser: function() {
 		  			// Get userUUID of the person that is logged in
 		  			var currentUser = sessionStorage.getItem('uuid');
-		  			// Have they been added to the users object yet?
-		  			if (vm_users.users[currentUser]) {
-		  				return vm_users.users[currentUser].display_name;
-		  			} else {
-		  				return "";
+		  			if (currentUser !== null) {
+			  			// Have they been added to the users object yet?
+			  			if (vm_users.users[currentUser]) {
+			  				return vm_users.users[currentUser].display_name;
+			  			} else {
+			  				return "";
+			  			}
 		  			}
 		  		}
 		  	},
 		});
+
+		console.log("----- CONFIG -----");
+		console.log(config.config);
 		console.log("----- USERS -----");
 		console.log(vm_users.users);
 		console.log("------ STOCKS ------");
@@ -98,8 +109,43 @@ if(authenticated) {
 		});
 		
 	    // Vue for username top right
-	    let displayName = new Vue({
-	    	el: "#user-info-container",
+	    var topBar = new Vue({
+	    	el: "#top-bar--container",
+	    	methods: {
+				logout: function (event) {
+					// delete cookie
+					// Get saved data from sessionStorage
+					console.log("logout");
+					sessionStorage.removeItem('token');
+					sessionStorage.removeItem('auth_obj');
+					// send back to index
+					window.location.href = "/login.html";
+			    },
+			    changeDisplayName: function() {
+			    	// Get entered display name
+			    	let new_name = $("#newDisplayName").val();
+
+			    	// Creating message that changes the users display name
+					let msg = {
+						'action': "set",
+						'msg': {
+							'set': "display_name",
+							'value': new_name
+						},
+						'request_id': REQUEST_ID.toString()
+					};
+
+					REQUESTS[REQUEST_ID++] = function(msg) {
+						alert("Display_name changed to: " + new_name);
+					};
+					// Send through WebSocket
+					console.log(JSON.stringify(msg));
+			    	doSend(JSON.stringify(msg));
+
+			    	// Reset display name
+			    	$("#newDisplayName").val("");
+			    }
+			},
 			computed: {
 				userDisplayName: function() {
 	    			var currUserUUID = sessionStorage.getItem('uuid');
@@ -110,22 +156,6 @@ if(authenticated) {
 				}
 			}
 	    });
-
-		// Vue for all options data 
-		let vm_popout_menu = new Vue({
-			el: '#btn-logout',
-			methods: {
-				logout: function (event) {
-					// delete cookie
-					// Get saved data from sessionStorage
-					console.log("logout");
-					sessionStorage.removeItem('authenticated');
-					sessionStorage.removeItem('auth_obj');
-					// send back to index
-					window.location.href = "/";
-			    }
-			}
-		});
 
 		// Vue for all dashboard data
 	    var vm_dash_tab = new Vue({
@@ -147,7 +177,13 @@ if(authenticated) {
 						// Change sorted column
 			    		vm_dash_tab.sortBy = col;
 			    	}
-			    }
+			    },
+			    createPortfolioGraph: function() {
+					// Get curr user portfolioUUID
+		    		let portfolioUUID = vm_dash_tab.currUserPortfolio.uuid;
+		    		let location = "#portfolio-graph";
+		    		createPortfolioGraph(portfolioUUID, location);
+		    	}
 	    	},
 	    	computed: {
 				currUserPortfolio: function() {
@@ -172,7 +208,7 @@ if(authenticated) {
 						// If objects are in ledger
 						if (Object.keys(vm_ledger.ledger).length !== 0) {
 							
-							var ownedStocks = Object.values(vm_ledger.ledger).filter((d) => d.portfolio_id === portfolio_uuid);
+							var ownedStocks = Object.values(vm_ledger.ledger).filter(d => d.portfolio_id === portfolio_uuid);
 							
 							// Remove stocks that user owns 0 of
 							ownedStocks = ownedStocks.filter(d => d.amount !== 0);
@@ -184,18 +220,19 @@ if(authenticated) {
 								d.stock_roi = (Number(d.stock_price) * Number(d.amount)) - Number(d.investment_value);
 
 								// TODO: css changes done here talk to brennan about his \ux22 magic 
-								
 								// helper to color rows in the stock table 
-								var targetChangeElem = $("tr[uuid=\x22" + d.stock_uuid + "\x22] > td.stock-change");
-								
-								if (d.stock_roi > 0) {
-									targetChangeElem.removeClass("falling");
-									targetChangeElem.addClass("rising");
-								} else {
-									targetChangeElem.removeClass("rising");
-									targetChangeElem.addClass("falling");
-								}
-
+								var targetChangeElem = $("tr[uuid=\x22" + d.stock_uuid + "\x22].clickable > td.stock-change");
+								// targetChangeElem.addClass("rising");
+								// if (d.stock_roi > 0) {
+								// 	targetChangeElem.removeClass("falling");
+								// 	targetChangeElem.addClass("rising");
+								// } else if (d.stock_roi === 0) {
+								// 	targetChangeElem.removeClass("falling");
+								// 	targetChangeElem.removeClass("rising");
+								// } else {
+								// 	targetChangeElem.removeClass("rising");
+								// 	targetChangeElem.addClass("falling");
+								// }
 								return d;
 							});
 
@@ -213,9 +250,10 @@ if(authenticated) {
 						}
 					}
 					return [];
-				}
+				},
 	    	}
 	    });
+
 
 		// Vue for all stocks tab data 
 		var vm_stocks_tab = new Vue({
@@ -223,6 +261,9 @@ if(authenticated) {
 			data: {
 			  sortBy: 'ticker_id',
 			  sortDesc: 1,
+			  sortCols: ["ticker_id", "open_shares", "change", "current_price"],
+			  sortDirections: [-1, -1, -1, -1],
+			  reSort: 1,
 			},
 			methods: {
 				toPrice: formatPrice,
@@ -238,9 +279,88 @@ if(authenticated) {
 			    		vm_stocks_tab.sortBy = col;
 			    		
 			    	}
-			    },yesy
+			    },
+			    multiSort: function(col) {
+			    	// if old first sort is the new first sort
+			    	if (vm_stocks_tab.sortCols[0] === col) {
+			    		// change sort direction
+			    		vm_stocks_tab.sortDirections[0] *= -1;
+			    	} else {
+			    		// Where is the new sort column
+			    		let ind = vm_stocks_tab.sortCols.indexOf(col);
+			    		// Remove new column from old spot
+			    		vm_stocks_tab.sortCols.splice(ind, 1);
+			    		vm_stocks_tab.sortDirections.splice(ind, 1);
+			    		// Push to the beginning of the array
+			    		vm_stocks_tab.sortCols.unshift(col);
+			    		vm_stocks_tab.sortDirections.unshift(1);
+			    	}
+			    	vm_stocks_tab.reSort++;
+			    },
+			    createStockGraph: function() {
+			    	console.log("Creating stock graph");
+			    	// Store graphing data
+					var data = {};
+					var responses = [];
+					var requests = [];
+
+					// Send data requests
+					Object.keys(vm_stocks.stocks).forEach(function(stock) {
+
+						// Creating message 
+						let msg = {
+							'action': "query",
+							'msg': {
+								'uuid': stock,
+								'field': 'current_price',
+								'num_points': 100,
+								'length': "100h",
+							},
+							'request_id': REQUEST_ID.toString()
+						};
+						
+						// Store request on front end
+						requests.push(REQUEST_ID.toString());
+						REQUESTS[REQUEST_ID++] = function(msg) {
+							// Pull out the data and format it
+							var points = msg.msg.points;
+							points = points.map(function(d) {
+								return {'time': d[0], 'value': d[1] };
+							});
+
+							// Store the data
+							data[msg.msg.message.uuid] = points;
+
+							// Make note the data is available
+							responses.push(msg.request_id);
+							// addToLineGraph('#portfolio-graph', points, field);
+						};
+
+						// Send message
+						doSend(JSON.stringify(msg));
+					});
+
+					var drawGraphOnceDone = null
+
+					var stillWaiting = true;
+					
+					drawGraphOnceDone = function(){
+						if (requests.every(r => responses.indexOf(r) > -1)) {
+							stillWaiting = false;
+						}
+
+						if (!stillWaiting) {
+					    	DrawLineGraph('#stock-graph', data);
+						} else {
+							setTimeout(drawGraphOnceDone, 100);
+						}
+					}
+
+					setTimeout(drawGraphOnceDone, 100);
+
+			    },
 			},
-			computed:{
+			computed: {
 				sortedStocks: function() {
 		    		if (Object.keys(vm_stocks.stocks).length !== 0) {
 			    	  	// Turn to array and sort 
@@ -260,12 +380,40 @@ if(authenticated) {
 					}
 					return [];
 				},
+				multiSortStocks: function() {
+					if (Object.keys(vm_stocks.stocks).length !== 0) {
+						
+						function sorter(a, b, ind) {
+							if (a[vm_stocks_tab.sortCols[ind]] > b[vm_stocks_tab.sortCols[ind]]) {
+								return vm_stocks_tab.sortDirections[ind];
+							}
+							if (a[vm_stocks_tab.sortCols[ind]] < b[vm_stocks_tab.sortCols[ind]]) {
+								return -vm_stocks_tab.sortDirections[ind];
+							}
+							if (ind === (vm_stocks_tab.sortCols.length-1)) {
+								return 0;
+							} else {
+								return sorter(a, b, ind+1);
+							}
+						};
+
+						// Get all stocks
+						var stock_array = Object.values(vm_stocks.stocks);
+						// Sort
+						stock_array = stock_array.sort(function(a,b) {
+							return sorter(a, b, 0);
+						});
+
+						return stock_array;
+					}
+					return [];
+				},
 				highestStock: function() {
 					if (Object.values(vm_stocks.stocks).length === 0) {
 						return "";
 					} else {
 						stocks = Object.values(vm_stocks.stocks).map((d) => d);
-						var highestStock = stocks.reduce(function(a, b){ return a.current_price > b.current_price ? a : b });
+						var highestStock = stocks.reduce((a, b) => a.current_price > b.current_price ? a : b);
 						return highestStock.ticker_id;
 					}
 				},
@@ -278,12 +426,12 @@ if(authenticated) {
 						return mover.ticker_id;
 					}
 				},
-				mostShares: function() {
+				lowestStock: function() {
 					if (Object.values(vm_stocks.stocks).length === 0) {
 						return "";
 					} else {
 						stocks = Object.values(vm_stocks.stocks).map((d) => d);
-						var mover = stocks.reduce((a, b) => a.open_shares > b.open_shares ? a : b);
+						var mover = stocks.reduce((a, b) => a.current_price < b.current_price ? a : b);
 						return mover.ticker_id;
 					}
 				},
@@ -295,6 +443,10 @@ if(authenticated) {
 			el: '#investors--view',
 			methods: {
 				toPrice: formatPrice,
+				createGraph: function(portfolioUUID) {
+					let location = "#investorGraph" + portfolioUUID;
+					createPortfolioGraph(portfolioUUID, location);
+				}
 			},
 			computed: {
 				investors: function() {
@@ -315,12 +467,73 @@ if(authenticated) {
 							d.value = d.current_price * d.amount;
 							return d;
 						});
+
 						return d;
-					})
+					});
 					return investors;
 				},
 			}
 		});
+
+		function createPortfolioGraph(portfolioUUID, location) {
+			// Store graphing data
+			var data = {};
+			var responses = [];
+			var requests = [];
+
+			// Send data requests
+			["net_worth", "wallet"].forEach(function(field) {
+
+				// Creating message 
+				let msg = {
+					'action': "query",
+					'msg': {
+						'uuid': portfolioUUID,
+						'field': field,
+						'num_points': 100,
+						'length': "100h",
+					},
+					'request_id': REQUEST_ID.toString()
+				};
+				
+				// Store request on front end
+				requests.push(REQUEST_ID.toString());
+				REQUESTS[REQUEST_ID++] = function(msg) {
+					// Pull out the data and format it
+					var points = msg.msg.points;
+					points = points.map(function(d) {
+						return {'time': d[0], 'value': d[1] };
+					});
+
+					// Store the data
+					data[msg.msg.message.field] = points;
+
+					// Make note the data is available
+					responses.push(msg.request_id);
+				};
+
+				// Send message
+				doSend(JSON.stringify(msg));
+			});
+
+			var drawGraphOnceDone = null
+
+			var stillWaiting = true;
+			
+			drawGraphOnceDone = function() {
+				if (requests.every(r => responses.indexOf(r) > -1)) {
+					stillWaiting = false;
+				}
+
+				if (!stillWaiting) {
+					DrawLineGraph(location, data);
+				} else {
+					setTimeout(drawGraphOnceDone, 100);
+				}
+			}
+
+			setTimeout(drawGraphOnceDone, 100);
+		};
 
 		Vue.component('investor-card', {
 			computed: {
@@ -348,12 +561,18 @@ if(authenticated) {
 	        		$('#chat-module--container').toggleClass('closed');
 	        		$('#chat-text-input').focus();
 				},
+				activeUsers: function() {
+					// stop here later when not concating a string
+					var online = Object.values(vm_users.users).filter(d => d.active === true);
 
+					var online_str = JSON.stringify(online.map(d => d.display_name).join(', '));
+					return online_str.replace(/"/g, "");
+				}
 			},
 			computed: {
-				activeUsers: function() {
-						return Object.values(vm_users.users).filter(d => d.active === true).length;
-				}
+				numActiveUsers: function() {
+					return Object.values(vm_users.users).filter(d => d.active === true).length;
+				},
 			},
 			watch: {
 				unreadMessages: function() {
@@ -366,9 +585,7 @@ if(authenticated) {
 						$("#chat-module--container .chat-title-bar span").removeClass("unread");
 					}
 				}
-
 			},
-			
 		});
 
 
@@ -419,20 +636,6 @@ if(authenticated) {
 
 		}
 
-
-		// NOTE: I DONT THINK THIS IS BEING USED AT ALL
-		// function appendNewServerMessage(msg){
-			
-		// 	let msg_template = '<li>'+			
-		// 			'				<div class="msg-text">'+ formatted_msg +'</div>'+
-		// 			'			</li>';
-
-		// 	debug_feed.append(msg_template);
-		// 	debug_feed.animate({scrollTop: chat_feed.prop("scrollHeight")}, $('#chat-module--container .chat-message--list').height());
-
-		// }
-
-
 	    $('.debug-title-bar button').click(function() {
 	    
 	        $('#debug-module--container').toggleClass('closed');
@@ -457,6 +660,13 @@ if(authenticated) {
 	        
 	    });
 
+	    $('#modal--container').click(function() {
+	    	
+	    	console.log("modal quit");
+	        $('#modal--container').removeClass('open');
+	        
+	    });
+
 
 
 
@@ -467,8 +677,6 @@ if(authenticated) {
 	    	var ticker_id = $(this).find('.stock-ticker-id').attr('tid');
 	    	
 	    	console.log("TID: "+ticker_id);
-	    	// TODO: get all data elements
-		    // var ticker_id = this.getElementsByClassName('stock-ticker-id')[0].innerHTML;
 
 	    	var stock = Object.values(vm_stocks.stocks).filter(d => d.ticker_id === ticker_id)[0];
 
@@ -481,18 +689,7 @@ if(authenticated) {
         });
 
 
-
-	    // $('#nav li button').click(function(this) {
-	    
-	    //    $(this).remove();
-	        
-	    // });
-
 	    $('thead tr th').click(function(event) {
-	    	
-	    	// //let targetElem = this.find('.material-icon').first();
-	    	// let toggleAsc = false;
-	    	// let toggleDsc = false;
 	    	
 	    	if($(event.currentTarget).find('i').hasClass("shown")) {
 	    		$(event.currentTarget).find('i').toggleClass("flipped");
@@ -502,28 +699,6 @@ if(authenticated) {
 	    		$(event.currentTarget).find('i').addClass("shown");
 	    	}
 
-	    	// if($(event.currentTarget).find('i').hasClass("asc")) {
-	    	// 	toggleDsc = true;
-	    	// 	console.log("is dsc");
-	    	// }
-
-	    	
-	    	
-	    	// if(toggleAsc) {
-	    		
-	    	// 	$(event.currentTarget).find('i').addClass("asc");
-	    	// } else {
-	    	// 	$(event.currentTarget).find('i').addClass("dsc");
-	    	// }
-
-	    	// if(toggleDsc) {
-	    	// 	$(event.currentTarget).find('i').addClass("dsc");
-	    	// } else {
-	    	// 	$(event.currentTarget).find('i').addClass("asc");
-	    	// }
-	        
-	        //$('#debug-module--container').toggleClass('visible');
-	        
 	    });
 
 	    function formatChatMessage(msg) {
@@ -534,7 +709,7 @@ if(authenticated) {
 	    	let message_author = msg.msg.author;
 	    	let isMe = false;
 
-	    	if(vm_users.currentUser == vm_users.users[message_author].display_name) {
+	    	if(vm_users.currentUser === message_author) {
 	    		isMe = true;
 	    		//console.log(isMe);
 	    	} else {
@@ -553,7 +728,9 @@ if(authenticated) {
 
 
 	    $(document).keypress(function(e) {
+	    	
 	    	if($('#chat-module--container textarea').val()) {
+			    
 			    if(e.which == 13) {
 
 			    	let message_body = $('#chat-module--container textarea').val();
@@ -575,11 +752,22 @@ if(authenticated) {
 			}
 		});
 
+		$(document).keyup(function(e) {
+		  	
+		  	if(buySellModal.showModal === true){
+		  		if (e.keyCode === 27) {
+					//toggleModal();
+					buySellModal.closeModal();
+				}   
+		  	}
+			
+		});
+
 
 		/*  WEBSOCKETS */
-		let externalServer = "localhost:8000";
+		let externalServer = "mockstarket.com";
 		let localServer = window.location.host;
-		let wsUri = "ws://"+ externalServer + "/ws";
+		let wsUri = "wss://"+ externalServer + "/ws";
 	    let output;
 	    let webSocket;
 
@@ -599,11 +787,11 @@ if(authenticated) {
 
 	    function onOpen(evt)
 	    {
-	    	if (sessionStorage.getItem('authenticated') !== null) {
+	    	if (sessionStorage.getItem('token') !== null) {
 	            var loginMessage = {
-	                'action': 'renew',
+	                'action': 'connect',
 	                'msg': {
-	                    'token': sessionStorage.getItem('authenticated')
+	                    'token': sessionStorage.getItem('token')
 	                }
 	            };
 	            doSend(JSON.stringify(loginMessage));
@@ -626,11 +814,12 @@ if(authenticated) {
 	        var msg = JSON.parse(evt.data);
 	        // console.log(msg);
 	    	var router = {
-	    		'login': routeLogin,
+	    		'connect': routeConnect,
 	    		'object': routeObject,
 	    		'update': routeUpdate,
 	    		'alert': routeAlert,
 	    		'chat': routeChat,
+	    		'response': routeResponse,
 	    	};
 	    	
     		if (msg.action) {
@@ -645,13 +834,19 @@ if(authenticated) {
     		}
 	    };
 
-	    var routeLogin = function(msg) {
+	    var routeConnect = function(msg) {
 
 	        console.log("login recieved");
 
 	        if(!msg.msg.success) {
 	            let err_msg = msg.msg.err;
 	            console.log(err_msg);
+	            console.log(msg);
+	            window.location.href= "/login.html";
+	        } else {
+	            console.log(msg);
+	            sessionStorage.setItem('uuid', msg.msg.uuid);
+	        	Vue.set(config.config, msg.msg.uuid, msg.msg.config);
 	        }
 	        
 	    };
@@ -688,6 +883,17 @@ if(authenticated) {
 	    		'user': userUpdate,
 	    	};
 	    	updateRouter[msg.msg.type](msg);
+	    };
+
+	    var routeResponse = function(msg) {
+	    	try {
+	    		REQUESTS[msg.request_id](msg);
+	    	} catch(err) {
+	    		console.log(err);
+	    		console.log("no request_id key for " + JSON.stringify(msg));
+	    	}
+	    	console.log(msg);
+	    	delete REQUESTS[msg.request_id];
 	    };
 
 	    var stockUpdate = function(msg) {
@@ -816,7 +1022,6 @@ if(authenticated) {
 
 	    function toggleModal() {
 	    	$('#modal--container').toggleClass('open');
-	        // console.log("modal show");	
 	    }
 
 
@@ -843,7 +1048,11 @@ if(authenticated) {
 	    			} else {
 	    				//determine current users holdings
 	    				let stock = vm_dash_tab.currUserStocks.filter(d => d.stock_id === buySellModal.stock_uuid)[0];
-	    				buySellModal.buySellAmount = stock.amount;
+	    				if (stock !== undefined) {
+	    					buySellModal.buySellAmount = stock.amount;
+	    				} else {
+	    					buySellModal.buySellAmount = 0;
+	    				}
 	    			}
 	    		},
 	    		setIsBuying: function(bool) {
@@ -879,6 +1088,42 @@ if(authenticated) {
 
 	    			var clickedStock = Object.values(vm_stocks.stocks).filter(d => d.uuid === buySellModal.stock_uuid)[0];
 	    			return clickedStock;
+	    		},
+	    		user: function() {
+	    			var currUserUUID = sessionStorage.getItem('uuid');
+	    			if (vm_users.users[currUserUUID] !== undefined) {
+		    			var currUserFolioUUID = vm_users.users[currUserUUID].portfolio_uuid;
+	    				if (vm_portfolios.portfolios[currUserFolioUUID] !== undefined) {
+			    			var folio = vm_portfolios.portfolios[currUserFolioUUID];
+							folio.investments = folio.net_worth - folio.wallet;
+			    			return folio;
+		    			}
+		    		}
+		    		return {};
+	    		}
+	    	},
+	    	watch: {
+	    		// Resetting amount if more than can be traded is selected
+	    		buySellAmount: function() {
+	    			if (buySellModal.isBuying) {
+	    				if (buySellModal.buySellAmount > buySellModal.stock.open_shares) {
+	    					buySellModal.buySellAmount = buySellModal.stock.open_shares;
+	    				}
+	    				// determine users cash and limit on purchase cost
+	    				let cash = buySellModal.user.wallet;
+	    				let purchase_val = buySellModal.stock.current_price * buySellModal.buySellAmount;
+	    				if (purchase_val > cash) {
+	    					buySellModal.buySellAmount = Math.floor(cash / buySellModal.stock.current_price); 
+	    				}
+	    			} else {
+	    				//determine current users holdings
+	    				let stock = vm_dash_tab.currUserStocks.filter(d => d.stock_id == buySellModal.stock_uuid)[0];
+	    				if (stock !== undefined) {
+		    				if (buySellModal.buySellAmount > stock.amount) {
+		    					buySellModal.buySellAmount = stock.amount;
+		    				}
+	    				}
+	    			}
 	    		}
 	    	}
 	    });
@@ -899,7 +1144,6 @@ if(authenticated) {
 						allViews.removeClass('active');
 						dashboardView.addClass('active');
 						currentViewName[0].innerHTML = "Dashboard";
-				    	// console.log("show dashboard");
 				    break;
 
 				case 'business':
@@ -907,58 +1151,41 @@ if(authenticated) {
 						businessView.addClass('active');
 						console.log(currentViewName)
 						currentViewName[0].innerHTML = "Business";
-			  			// console.log("show business");
 				  	break;
 
 				case 'stocks':
 						allViews.removeClass('active');
 						stocksView.addClass('active');
 						currentViewName[0].innerHTML = "Stocks";
-						// console.log("show stocks");
 				    break;
 
 				case 'investors':
 						allViews.removeClass('active');
 						investorsView.addClass('active');
 						currentViewName[0].innerHTML = "Investors";
-						// console.log("show investors");
 				    break;
 
 				case 'futures':
 						allViews.removeClass('active');
 						futuresView.addClass('active');
 						currentViewName[0].innerHTML = "Futures";
-						// console.log("show futures");
 				    break;
 
 				case 'perks':
 						allViews.removeClass('active');
 						storeView.addClass('active');
 						currentViewName[0].innerHTML = "Perks";
-						// console.log("show perks");
 				    break;
 			}
 	    }
 
-	    
-	    
-
-	    // function writeToScreen(message)
-	    // {
-	    //     var pre = document.createElement("p");
-	    //     //pre.style.wordWrap = "break-word";
-	    //     pre.innerHTML = message;
-	    //     output.appendChild(pre);
-	    // }
-
 	    window.addEventListener("load", init, false);
-	    
 
 		});
 
 	} else {
 
-	window.location.href = "/";
+	window.location.href = "/login.html";
 
 }
 

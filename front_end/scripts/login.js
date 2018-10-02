@@ -1,5 +1,6 @@
 $( document ).ready(function() {
 
+    let url = "https://mockstarket.com";
     let input_login_uid = $('#login-uid');
     let input_login_pw = $('#login-pw');
     let input_login_submit = $('#input-login-submit');
@@ -25,7 +26,6 @@ $( document ).ready(function() {
     });
 
     
-
     function disableScroll() {
       if (window.addEventListener) // older FF
           window.addEventListener('DOMMouseScroll', preventDefault, false);
@@ -257,239 +257,82 @@ $( document ).ready(function() {
       "retina_detect": true
     });
 
-	/*  WEBSOCKETS */
 
-	let externalServer = "localhost:8000";
-    let localServer = window.location.host;
-    let wsUri = "ws://"+ externalServer + "/ws";
-    var webSocket;
-    var uid = "";
+    function authenticateUser(user, password) {
+        var token = user + ":" + password;
 
-    function init()
-    {
-        refreshSocket();
-    }
+        // Should i be encoding this value????? does it matter???
+        // Base64 Encoding -> btoa
+        var hash = btoa(token);
 
-    function refreshSocket()
-    {
-        webSocket = new WebSocket(wsUri);
-        webSocket.onopen = function(evt) { onOpen(evt) };
-        webSocket.onclose = function(evt) { onClose(evt) };
-        webSocket.onmessage = function(evt) { onMessage(evt) };
-        webSocket.onerror = function(evt) { onError(evt) };
-    }
-
-    function onOpen(evt)
-    {
-        if (sessionStorage.getItem('authenticated') !== null) {
-            var loginMessage = {
-                'action': 'renew',
-                'msg': {
-                    'token': sessionStorage.getItem('authenticated'),
-                    // 'uuid': sessionStorage.getItem('uuid'),
-                }
-            };
-            doSend(JSON.stringify(loginMessage));
-        }
-        onEvent("Connected");
-        
-    }
-
-    function onClose(evt)
-    {
-        onEvent("Disconnected");
-    }
-
-    function onEvent(message){
-        // writeToScreen('<span style="color: darkorange;">'+ message+'</span>')
-        console.log(message);
-    }
-
-    var routeLogin = function(msg) {
-        console.log("login recieved");
-        console.log(msg);
-
+        return "Basic " + hash;
     };
 
+    function getToken(user, password) {
+        const Http = new XMLHttpRequest();
+        Http.open("GET", url+"/token", false);
+        Http.setRequestHeader("Authorization", authenticateUser(user, password));
+        Http.send();
 
-    function onMessage(evt)
-    {
-        
-        console.log(evt.data);
-        var str = JSON.stringify(JSON.parse(evt.data), undefined, 4);
-        
-    }
-
-    
-
-    function onMessage(evt)
-    {
-        var msg = JSON.parse(evt.data);
-
-        var router = {
-            'login': routeLogin,
-            'object': routeObject,
-            'update': routeUpdate,
-            'alert': alertUpdate,
-        }
-        router[msg.action](msg);
-    };
-
-
-    // TODO this code isnt ever hit
-    // Login message goes out 
-    var routeLogin = function(msg) {
-        console.log("login recieved");
-
-        // if success if true -> set cookie and forward to dashboard
-        if(msg.msg.success) {
-
-            // Save data to sessionStorage
-            sessionStorage.setItem("authenticated", msg.msg.token);
-            sessionStorage.setItem("uuid", msg.msg.uuid);
-            sessionStorage.setItem("uid", uid);
-            window.location.href = "/dashboard.html";
-
+        if (Http.status !== 200) {
+            console.error(Http.responseText);
+            return null;
         } else {
-            let err_msg = msg.msg.err;
-            $('.login-err').text("Username or password is incorrect");
-        }   
-        
-    };
-
-    var routeObject = function(msg) {
-        switch (msg.msg.type) {
-            case 'portfolio':
-                
-                break;
-
-            case 'stock':
-                
-                break;
-
-            case 'ledger':
-                
-                break;
+            sessionStorage.setItem('token', Http.responseText);
+            window.location.href = "/";
+            return  Http.responseText;
         }
     };
-    
-    var routeUpdate = function(msg) {
-        
+
+    function createUser(user, password, nickname) {
+        const Http = new XMLHttpRequest();
+        Http.open("PUT", url+"/create", false);
+        Http.setRequestHeader("Authorization", authenticateUser(user, password));
+        Http.setRequestHeader("DisplayName", nickname);
+        Http.send();
+
+        if (Http.status !== 200) {
+            console.error(Http.responseText);
+            return null;
+        } else {
+            sessionStorage.setItem('token', Http.responseText);
+            window.location.href = "/";
+            return  Http.responseText;
+        }
     };
 
-    var alertUpdate = function(msg) {
-        
-    };
+    function getLogin() {
+        let input_uid = $('#login-uid').val();
+        let input_pw = $('#login-pw').val();
 
-
-
-    function doSend(message)
-    {
-        
-        webSocket.send(message);
-    }
-
-    window.addEventListener("load", init, false);
-
-    function attemptLogin() {
-    	
-    	let input_uid = $('#login-uid').val();
-		let input_pw = $('#login-pw').val();
-		let auth_msg = {};
-
-        // TODO add token logging in 
-
-    	if(input_uid != '' && input_pw != '') {
-            input_uid_trimmed = input_uid.trim();
-            input_pw_trimmed = input_pw.trim();
-    		auth_msg = {
-    					action: "login",
-				        msg: {
-				        	"username": input_uid_trimmed, 
-				        	"password": input_pw_trimmed
-				        }
-				    };
-            uid = input_uid_trimmed;
-    	}
-
-    	console.log(auth_msg);
-
-    	try {
-    		
-	  		doSend(JSON.stringify(auth_msg));
-
-            //doSend('{"action": "login", "msg": {"username": "Will", "password":"pass"}}');
-		}
-
-		catch(error) {
-	  		console.error(error);
-		  	$('.login-err').text("Username or password is incorrect");
-		}
-		
+        getToken(input_uid, input_pw);
     }
 
     $('#input-login-submit').click(function() {
-    	attemptLogin();
+        getLogin();
         console.log("login clicked");
     });
 
      $('#input-create-submit').click(function() {
 
-        let input_uid = $('#create-uid').val();
-        let input_pw = $('#create-pw').val();
-        let input_create_pw_confirm = $('#create-pw-confirm').val();
-        let input_name = $('#create-name').val();
-        let create_auth_msg = {};
+        let input_uid = $('#create-uid').val().trim();
+        let input_pw = $('#create-pw').val().trim();
+        let input_create_pw_confirm = $('#create-pw-confirm').val().trim();
+        let nickname = $('#create-name').val().trim();
 
-        if(input_uid != '' && input_pw != '') {
-            input_uid_trimmed = input_uid.trim();
-            input_pw_trimmed = input_pw.trim();
-
-            input_create_pw_trimmed = input_create_pw_confirm.trim();
-            input_name_trimmed = input_name.trim();
-
-            if(input_pw_trimmed === input_create_pw_trimmed) {
-                create_auth_msg = {
-                    action: "new_account",
-                    msg: {
-                        "username": input_uid_trimmed, 
-                        "password": input_pw_trimmed,
-                        "display_name": input_name_trimmed
-                    }
-                };
-            }
-            
-
-            uid = input_uid_trimmed;
+        if(input_pw === input_create_pw_confirm) {
+            createUser(input_uid, input_pw, nickname);
         }
-
-        console.log(create_auth_msg);
-
-        try {
-            
-            doSend(JSON.stringify(create_auth_msg));
-
-        }
-
-        catch(error) {
-            console.error(error);
-            $('.login-err').text("Username or password is incorrect");
-        }
-
         console.log("created account attempting login");
         
     });
 
+    // On enter key try login
     $(document).keypress(function(e) {
-        
         if(e.which == 13) {
-            attemptLogin();
-
+            getLogin();
         }
-    
     });
-
-	window.addEventListener("load", init, false);
 
 
 });

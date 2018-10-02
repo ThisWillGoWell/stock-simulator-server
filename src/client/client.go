@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stock-simulator-server/src/notification"
 	"github.com/stock-simulator-server/src/session"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/stock-simulator-server/src/account"
@@ -68,38 +69,24 @@ func InitialReceive(initialPayload string, tx, rx chan string) error {
 	}
 	user := new(account.User)
 	var sessionToken string
-
-	if initialMessage.IsAccountCreate() {
-		userTemp, err := account.NewUser(initialMessage.Msg.(*messages.NewAccountMessage).UserName,
-			initialMessage.Msg.(*messages.NewAccountMessage).DisplayName,
-			initialMessage.Msg.(*messages.NewAccountMessage).Password)
+	if initialMessage.IsConnect() {
+		userTemp, err := account.ConnectUser(initialMessage.Msg.(*messages.ConnectMessage).SessionToken)
 		if err != nil {
 			return err
 		}
 		user = userTemp
-		sessionToken = session.NewSessionToken(user.Uuid)
-	} else if initialMessage.IsLogin() {
-		userTemp, err := account.GetUser(initialMessage.Msg.(*messages.LoginMessage).UserName, initialMessage.Msg.(*messages.LoginMessage).Password)
-		if err != nil {
-			return err
-		}
-		user = userTemp
-		sessionToken = session.NewSessionToken(user.Uuid)
-	} else if initialMessage.IsRenew() {
-		userTemp, err := account.RenewUser(initialMessage.Msg.(*messages.RenewMessage).SessionToken)
-		if err != nil {
-			return err
-		}
-		user = userTemp
-		sessionToken = initialMessage.Msg.(*messages.RenewMessage).SessionToken
+		sessionToken = initialMessage.Msg.(*messages.ConnectMessage).SessionToken
+	} else {
+		return errors.New("unknown message, need sessio")
 	}
 
 	client := &Client{
-		clientNum: currentId,
-		user:      user,
-		socketRx:  rx,
-		socketTx:  tx,
-		active:    true,
+		clientNum:     currentId,
+		user:          user,
+		socketRx:      rx,
+		socketTx:      tx,
+		messageSender: duplicator.MakeDuplicator("client-" + user.Uuid + "-message"),
+		active:        true,
 		close:     make(chan interface{}),
 	}
 	currentId += 1
@@ -112,7 +99,6 @@ func InitialReceive(initialPayload string, tx, rx chan string) error {
 	client.tx(sessionToken)
 	go client.rx()
 	return nil
-}
 
 /**
 When a session is started, loop though all current cache and send them to the client
@@ -164,6 +150,7 @@ func (client *Client) rx() {
 			client.sendMessage(messages.NewErrorMessage("err unmarshaling json"))
 			continue
 		}
+
 		switch message.Action {
 		case messages.NotificationAck:
 			client.processAckMessage(message)

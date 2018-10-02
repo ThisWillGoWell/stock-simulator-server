@@ -14,6 +14,7 @@ import (
 	"github.com/stock-simulator-server/src/session"
 	"github.com/stock-simulator-server/src/titles"
 	"github.com/stock-simulator-server/src/utils"
+	"unicode"
 )
 
 // keep the uuid to user
@@ -22,6 +23,9 @@ var UserList = make(map[string]*User)
 // keep the username to uuid list
 var uuidList = make(map[string]string)
 var userListLock = lock.NewLock("user-list")
+
+var NewObjectChannel = duplicator.MakeDuplicator("New User")
+var UpdateChannel = duplicator.MakeDuplicator("User Update")
 
 const minPasswordLength = 4
 const minDisplayNameLength = 4
@@ -56,7 +60,7 @@ func runSendNotification() {
 	go func() {
 		for o := range notification.Objects.GetBufferedOutput(10) {
 			n := o.(notification.Notification)
-			user, exists := UserList[n.UserUuid]
+			user, exists := userList[n.UserUuid]
 			if !exists {
 				panic("got a notification, but no user name")
 			}
@@ -148,14 +152,14 @@ func MakeUser(uuid, username, displayName, password, portfolioUUID, config strin
 		configMap = make(map[string]interface{})
 	}
 	uuidList[username] = uuid
-	UserList[uuid] = &User{
+	userList[uuid] = &User{
 		UserName:       username,
 		DisplayName:    displayName,
 		Password:       password,
 		Uuid:           uuid,
 		PortfolioId:    portfolioUUID,
 		Lock:           lock.NewLock("user"),
-		Active:         true,
+		Active:         false,
 		Config:         configMap,
 		ConfigStr:      config,
 		UserUpdateChan: duplicator.MakeDuplicator("user-" + uuid),
@@ -220,17 +224,41 @@ func (user *User) SetPassword(pass string) error {
 	return nil
 }
 
-func (user *User) SetDisplayName(displayName string) error {
+func  (user *User) SetDisplayName(displayName string)error{
+	if !isAllowedCharacterDisplayName(displayName){
+		return errors.New("display name contains invalid character")
+	}
 	if len(displayName) > maxDisplayNameLength {
 		return errors.New("display name too long")
 	}
 	if len(displayName) < minDisplayNameLength {
 		return errors.New("display name too short")
 	}
+
 	user.DisplayName = displayName
 	wires.UsersUpdate.Offer(user)
 	return nil
 }
+
+func isAllowedCharacterDisplayName(s string) bool {
+	for _, r := range s {
+		if !(unicode.IsLetter(r) || unicode.IsNumber(r) || r != '_') {
+			return false
+		}
+	}
+	return true
+}
+
+func isAllowedCharacterUsername(s string) bool {
+	for _, r := range s {
+		if !(unicode.IsLetter(r) || unicode.IsNumber(r)){
+			return false
+		}
+	}
+	return true
+}
+
+
 
 func (user *User) LevelUp() error {
 	user.Lock.Acquire("level up")
