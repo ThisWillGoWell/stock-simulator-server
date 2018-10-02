@@ -290,7 +290,17 @@ $( document ).ready(function() {
 		    	vm_stocks_tab.reSort++;
 		    },
 		    createStockGraph: function(stockUUID) {
-		    	let data = {};
+		    	let stock = Object.values(vm_stocks.stocks).filter(d => d.uuid === stockUUID)[0];
+		    	console.log(stock)
+		    	
+				// Creating data object and adding tags
+				let data = {
+		    		data: {},
+		    		tags: {
+		    			'title': stock.ticker_id,
+		    			'type': 'stock',
+		    		},
+		    	};
 		    	// Creating message 
 					let msg = {
 							'uuid': stockUUID,
@@ -308,7 +318,7 @@ $( document ).ready(function() {
 						});
 
 						// Store the data
-						data[stockUUID] = points;
+						data.data[stockUUID] = points;
 
 						// Make note the data is available
 						DrawLineGraph('#stock-list', data);
@@ -323,7 +333,10 @@ $( document ).ready(function() {
 		    createStocksGraph: function() {
 		    	console.log("Creating stock graphs");
 		    	// Store graphing data
-				var data = {};
+				var data = {
+					data: {},
+					tags: {},
+				};
 				var responses = [];
 				var requests = [];
 
@@ -351,7 +364,7 @@ $( document ).ready(function() {
 						});
 
 						// Store the data
-						data[msg.msg.message.uuid] = points;
+						data.data[msg.msg.message.uuid] = points;
 
 						// Make note the data is available
 						responses.push(msg.request_id);
@@ -502,7 +515,10 @@ $( document ).ready(function() {
 
 	function createPortfolioGraph(portfolioUUID, location) {
 		// Store graphing data
-		var data = {};
+		var data = {
+			data: {},
+			tags: {},
+		};
 		var responses = [];
 		var requests = [];
 
@@ -527,7 +543,7 @@ $( document ).ready(function() {
 				});
 
 				// Store the data
-				data[msg.msg.message.field] = points;
+				data.data[msg.msg.message.field] = points;
 
 				// Make note the data is available
 				responses.push(msg.request_id);
@@ -831,7 +847,6 @@ $( document ).ready(function() {
 
 
 	registerRoute('response', function(msg) {
-		// TODO make d3 notification popup on the bottom
 		try {
 			REQUESTS[msg.request_id](msg);
 		} catch(err) {

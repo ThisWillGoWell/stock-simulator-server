@@ -1,7 +1,25 @@
+
+function formatData(data) {
+
+	// if networth add points in to make a step graph
+	return data.data;
+	
+};
+
 // TODO: tags for d3 plotting(title labels etc) sent with dat object in an serparate property
 //			tags can pass the type of data being sent through so more data structuring can be done here like min an maxs 
-function DrawLineGraph(location, dat, id) {
+function DrawLineGraph(location, data, id) {
+	// Pulling out data, use tags to change data if need
+	var dat = formatData(data);
+	var tags = data.tags;
+
+	// logging remove later
+	console.log("DATA");
 	console.log(dat);
+	console.log("TAGS");
+	console.log(data.tags);
+	// logging remove later
+
 	var width = 700;
 	var height = 500;
 	var margin = {
@@ -82,6 +100,18 @@ function DrawLineGraph(location, dat, id) {
 		.attr('transform', 'translate(' + (margin.left-5) +', ' + '0' + ')')
 		.style('font-size', 12)
 		.call(yAxisCall);
+
+	// Add graph title
+	if (tags) {
+
+		if (tags.title) {
+			svg.append('text').text(tags.title)
+				.attr('class', 'stockGraph-title')
+				.attr('font-size', '20px')
+				.attr('text-anchor', 'middle')
+				.attr('transform', 'translate(' + (width/2) + ', 40)');
+		}
+	}
 
 	// // Adding axis labels
 	// d3.select('#x-axis').append("text")
