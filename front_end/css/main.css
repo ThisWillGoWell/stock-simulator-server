@@ -160,7 +160,7 @@ h1 {
 }*/
 
 #input-login-submit {
-
+    background-color: #1a1a1a;
 }
 
 .input-name {
@@ -936,8 +936,55 @@ input[type=password]:focus ~ .input-focus-border{
 #chat-module--container .chat-title-bar span.unread:after{
     
     background-color: #f44336;
-    box-shadow: 0px 0px 15px 2px rgba(239,72,54,0.3);
+    box-shadow: 0px 0px 15px 2px rgba(239,72,54,0.8);
+    animation-name: stretch;
+  animation-duration: 0.55s; 
+  animation-timing-function: ease-out; 
+  animation-delay: 0s;
+  animation-direction: alternate;
+  animation-iteration-count: infinite;
+  animation-fill-mode: none;
+  animation-play-state: running; 
+  animation: 
+    stretch
+    0.55s
+    ease-out
+    0s
+    alternate
+    infinite
+    none
+    running;
 }
+
+@keyframes stretch {
+
+    0% {
+        box-shadow: 0px 0px 15px 2px rgba(239,72,54,0.5);
+        transform: translateY(0px);
+    }
+
+    33% {
+        box-shadow: 0px 0px 15px 2px rgba(239,72,54,0.65);
+        transform: translateY(-0.5px);
+        
+    }
+
+    66% {
+        box-shadow: 0px 0px 15px 2px rgba(239,72,54,0.75);
+        transform: translateY(0px);
+        
+    }
+
+    100% {
+        box-shadow: 0px 0px 15px 2px rgba(239,72,54,0.95);
+        transform: translateY(-1px);
+        
+    }
+
+}
+  
+
+
 
 #chat-module--container .chat-message--list {
     list-style-type: none;
@@ -1416,7 +1463,7 @@ table.table tbody tr td{
     transform: rotate(-180deg);
 }*/
 
-#modal--container{
+#modal--container, #generic-modal--container{
     position: absolute;
     top: 0;
     bottom: 0;
@@ -1433,7 +1480,7 @@ table.table tbody tr td{
     
 }
 
-#modal--container.open {
+#modal--container.open, #generic-modal--container.open {
     
     opacity: 1;
     z-index: 100;
@@ -1459,9 +1506,30 @@ table.table tbody tr td{
     /*box-shadow: 0 3px 5px rgba(0,0,0,0.10), 0 3px 5px rgba(0,0,0,0.15);*/
 }
 
+#generic-modal--container .modal-card{
+    position: absolute;
+    height: auto;
+    display: inline-table;
+    width: 500px;
+    height: 600px;
+    background-color: #fafbfc;
+    /*border: 1px solid #fff;*/
+    border-radius: 20px;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    margin: auto;
+    /*border-radius: 2px;*/
+    padding-bottom: 50px;
+    /*pointer-events: none;*/
+    /*box-shadow: 0 3px 5px rgba(0,0,0,0.10), 0 3px 5px rgba(0,0,0,0.15);*/
+}
 
 
-#modal--container .modal-card button{
+
+#modal--container .modal-card button, #generic-modal--container .modal-card button{
     position: absolute;
     height: 40px;
     width: 40px;
@@ -1479,7 +1547,7 @@ table.table tbody tr td{
     transition: all ease-in-out 0.17s;
 }
 
-#modal--container .modal-card button i{
+#modal--container .modal-card button i, #generic-modal--container .modal-card button i{
     font-size: 22px;
     pointer-events:auto;
     -moz-transition: all ease-in-out 0.1s;
@@ -1488,7 +1556,7 @@ table.table tbody tr td{
     transition: all ease-in-out 0.1s;
 }
 
-#modal--container .modal-card button:hover{
+#modal--container .modal-card button:hover, #generic-modal--container .modal-card button:hover{
     background-color: #E0E0E0;
     
     /*box-shadow: 0 3px 5px rgba(0,0,0,0.10), 0 3px 5px rgba(0,0,0,0.15);*/
@@ -1679,6 +1747,11 @@ table.table tbody tr td{
     border: #f44336;
 }
 
+.calc-btn.red {
+    background-color: #f44336;
+    
+}
+
 .calc-btn.green {
     background-color: #1abc9c;
     /*border: #1abc9c;*/
@@ -1728,7 +1801,7 @@ table.table tbody tr td{
     background-color: #455A64;
 }
 
-#trade-request-submit {
+#trade-request-submit, #send-cash-cancel, #send-cash-submit {
     border-radius: 30px;
     box-shadow: 0 3px 15px rgba(0,0,0,0.10), 0 5px 15px rgba(0,0,0,0.15);
     font-size: 16px;
