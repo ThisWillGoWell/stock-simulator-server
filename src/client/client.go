@@ -7,17 +7,14 @@ import (
 
 	"github.com/stock-simulator-server/src/items"
 
-	"github.com/pkg/errors"
-	"github.com/stock-simulator-server/src/notification"
-	"github.com/stock-simulator-server/src/session"
-	"time"
-
 	"github.com/gorilla/websocket"
+	"github.com/pkg/errors"
 	"github.com/stock-simulator-server/src/account"
 	"github.com/stock-simulator-server/src/histroy"
 	"github.com/stock-simulator-server/src/ledger"
 	"github.com/stock-simulator-server/src/lock"
 	"github.com/stock-simulator-server/src/messages"
+	"github.com/stock-simulator-server/src/notification"
 	"github.com/stock-simulator-server/src/order"
 	"github.com/stock-simulator-server/src/portfolio"
 	"github.com/stock-simulator-server/src/valuable"
@@ -81,12 +78,11 @@ func InitialReceive(initialPayload string, tx, rx chan string) error {
 	}
 
 	client := &Client{
-		clientNum:     currentId,
-		user:          user,
-		socketRx:      rx,
-		socketTx:      tx,
-		messageSender: duplicator.MakeDuplicator("client-" + user.Uuid + "-message"),
-		active:        true,
+		clientNum: currentId,
+		user:      user,
+		socketRx:  rx,
+		socketTx:  tx,
+		active:    true,
 		close:     make(chan interface{}),
 	}
 	currentId += 1
@@ -96,16 +92,17 @@ func InitialReceive(initialPayload string, tx, rx chan string) error {
 	}
 	connections[user.Uuid][client.clientNum] = client
 
-	client.tx(sessionToken)
+	go client.tx(sessionToken)
 	go client.rx()
 	return nil
+}
 
 /**
 When a session is started, loop though all current cache and send them to the client
 Also send the success login to make sure that happens first on the login
 */
 func (client *Client) tx(sessionToken string) {
-	client.sendMessage(messages.SuccessLogin(client.user.Uuid, sessionToken, client.user.Config))
+	client.sendMessage(messages.SuccessConnect(client.user.Uuid, sessionToken, client.user.Config))
 
 	for _, v := range account.GetAllUsers() {
 		client.sendMessage(messages.NewObjectMessage(v))

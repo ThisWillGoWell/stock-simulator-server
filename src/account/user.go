@@ -7,6 +7,8 @@ import (
 
 	"github.com/stock-simulator-server/src/wires"
 
+	"unicode"
+
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
 	"github.com/stock-simulator-server/src/notification"
@@ -14,7 +16,6 @@ import (
 	"github.com/stock-simulator-server/src/session"
 	"github.com/stock-simulator-server/src/titles"
 	"github.com/stock-simulator-server/src/utils"
-	"unicode"
 )
 
 // keep the uuid to user
@@ -22,14 +23,10 @@ var UserList = make(map[string]*User)
 
 // keep the username to uuid list
 var uuidList = make(map[string]string)
-var userListLock = lock.NewLock("user-list")
+var UserListLock = lock.NewLock("user-list")
 
 var NewObjectChannel = duplicator.MakeDuplicator("New User")
 var UpdateChannel = duplicator.MakeDuplicator("User Update")
-
-const minPasswordLength = 4
-const minDisplayNameLength = 4
-const maxDisplayNameLength = 20
 
 /*
 User Object
@@ -60,7 +57,7 @@ func runSendNotification() {
 	go func() {
 		for o := range notification.Objects.GetBufferedOutput(10) {
 			n := o.(notification.Notification)
-			user, exists := userList[n.UserUuid]
+			user, exists := UserList[n.UserUuid]
 			if !exists {
 				panic("got a notification, but no user name")
 			}
@@ -74,8 +71,8 @@ Return a user provided the username and Password
 If the Password is correct return user, else return err
 */
 func GetUser(username, password string) (*User, error) {
-	userListLock.Acquire("get-user")
-	defer userListLock.Release()
+	UserListLock.Acquire("get-user")
+	defer UserListLock.Release()
 	userUuid, exists := uuidList[username]
 	if !exists {
 		return nil, errors.New("user does not exist")
@@ -95,8 +92,8 @@ func RenewUser(sessionToken string) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	userListLock.Acquire("renew-user")
-	defer userListLock.Release()
+	UserListLock.Acquire("renew-user")
+	defer UserListLock.Release()
 	user, exists := UserList[userId]
 	if !exists {
 		return nil, errors.New("user found in session list but not in current users")
@@ -106,41 +103,9 @@ func RenewUser(sessionToken string) (*User, error) {
 	return user, nil
 }
 
-/**
-Build a new user
-set their Password to that provided
-*/
-func NewUser(username, displayName, password string) (*User, error) {
-	uuid := utils.SerialUuid()
-	if len(username) > 20 {
-		return nil, errors.New("username too long")
-	}
-	if len(username) < 4 {
-		return nil, errors.New("username too short")
-	}
-	if len(displayName) > maxDisplayNameLength {
-		return nil, errors.New("display name too long")
-	}
-	if len(displayName) < minDisplayNameLength {
-		return nil, errors.New("display name too short")
-	}
-	if len(password) < minPasswordLength {
-		return nil, errors.New("password too short")
-	}
-	hashedPassword := hashAndSalt(password)
-	user, err := MakeUser(uuid, username, displayName, hashedPassword, "", `{"swag":"420"}`)
-	if err != nil {
-		utils.RemoveUuid(uuid)
-		return nil, err
-	}
-	port, _ := portfolio.NewPortfolio(uuid)
-	user.PortfolioId = port.UUID
-	return user, nil
-}
-
 func MakeUser(uuid, username, displayName, password, portfolioUUID, config string) (*User, error) {
-	userListLock.Acquire("new-user")
-	defer userListLock.Release()
+	UserListLock.Acquire("new-user")
+	defer UserListLock.Release()
 	_, userNameExists := uuidList[username]
 	if userNameExists {
 		return nil, errors.New("username already exists")
@@ -152,7 +117,7 @@ func MakeUser(uuid, username, displayName, password, portfolioUUID, config strin
 		configMap = make(map[string]interface{})
 	}
 	uuidList[username] = uuid
-	userList[uuid] = &User{
+	UserList[uuid] = &User{
 		UserName:       username,
 		DisplayName:    displayName,
 		Password:       password,
@@ -198,8 +163,8 @@ func (user *User) GetType() string {
 Turn the user map into a list so they can be sent to a rx client
 */
 func GetAllUsers() []*User {
-	userListLock.Acquire("get all users")
-	defer userListLock.Release()
+	UserListLock.Acquire("get all users")
+	defer UserListLock.Release()
 	lst := make([]*User, len(UserList))
 	i := 0
 	for _, val := range UserList {
@@ -224,8 +189,8 @@ func (user *User) SetPassword(pass string) error {
 	return nil
 }
 
-func  (user *User) SetDisplayName(displayName string)error{
-	if !isAllowedCharacterDisplayName(displayName){
+func (user *User) SetDisplayName(displayName string) error {
+	if !isAllowedCharacterDisplayName(displayName) {
 		return errors.New("display name contains invalid character")
 	}
 	if len(displayName) > maxDisplayNameLength {
@@ -251,14 +216,12 @@ func isAllowedCharacterDisplayName(s string) bool {
 
 func isAllowedCharacterUsername(s string) bool {
 	for _, r := range s {
-		if !(unicode.IsLetter(r) || unicode.IsNumber(r)){
+		if !(unicode.IsLetter(r) || unicode.IsNumber(r)) {
 			return false
 		}
 	}
 	return true
 }
-
-
 
 func (user *User) LevelUp() error {
 	user.Lock.Acquire("level up")

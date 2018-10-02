@@ -3,11 +3,12 @@ package app
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/stock-simulator-server/src/utils"
-	"github.com/stock-simulator-server/src/valuable"
 	"io/ioutil"
 	"math/rand"
 	"os"
+
+	"github.com/stock-simulator-server/src/utils"
+	"github.com/stock-simulator-server/src/valuable"
 
 	"github.com/stock-simulator-server/src/account"
 )

@@ -96,7 +96,7 @@ func MakeStock(uuid, tickerID, name string, startPrice, openShares int64, runInt
 		TargetPrice:           int64(rand.Intn(100000)),
 		PercentToChangeTarget: .07,
 		Volatility:            5,
-		RandomNoise:			.07,
+		RandomNoise:           .07,
 	}
 	go stock.stockUpdateRoutine()
 	Stocks[uuid] = stock
@@ -151,7 +151,7 @@ type RandomPrice struct {
 	TargetPrice           int64   `json:"target_price"`
 	PercentToChangeTarget float64 `json:"change_percent"`
 	Volatility            float64 `json:"volatility"`
-	RandomNoise		  float64
+	RandomNoise           float64
 }
 
 func (randPrice *RandomPrice) GetTargetPrice() int64 {
@@ -170,9 +170,9 @@ func (randPrice *RandomPrice) change(stock *Stock) {
 		randPrice.changeValues()
 	}
 
-	moveToTarget := int64(utils.RandRangeFloat(float64(randPrice.TargetPrice) * 0.9, float64(randPrice.TargetPrice) * 1.1 ))
+	moveToTarget := int64(utils.RandRangeFloat(float64(randPrice.TargetPrice)*0.9, float64(randPrice.TargetPrice)*1.1))
 
-	change := float64(moveToTarget - stock.CurrentPrice) /
+	change := float64(moveToTarget-stock.CurrentPrice) /
 		utils.MapNumFloat(randPrice.Volatility, volatilityMin, volatilityMax, volatilityMinTurns, volatilityMaxTurns)
 
 	if rand.Float64() <= randPrice.RandomNoise {
