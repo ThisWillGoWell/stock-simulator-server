@@ -1282,5 +1282,6 @@ $( document ).ready(function() {
 
 	var notification_sound = new Audio();
 	notification_sound.src = "assets/sfx_pling.wav";
+	notification_sound.volume = 0.2;
 
 });
