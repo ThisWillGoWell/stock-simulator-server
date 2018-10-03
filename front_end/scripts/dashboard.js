@@ -620,12 +620,22 @@ $( document ).ready(function() {
 				if (this.unreadMessages) {
 					console.log("unread messages");
 					$("#chat-module--container .chat-title-bar span").addClass("unread");
+					var link = document.querySelector("link[rel*='icon']") || document.createElement('link');
+				    link.type = 'image/x-icon';
+				    link.rel = 'shortcut icon';
+				    link.href = 'assets/favicon_green_unread.png';
+				    document.getElementsByTagName('head')[0].appendChild(link);
 					if(!vm_chat.mute_notification_sfx) {
 						notification_sound.play();
 					}
 				} else {
 					console.log("all messages read");
 					$("#chat-module--container .chat-title-bar span").removeClass("unread");
+					var link = document.querySelector("link[rel*='icon']") || document.createElement('link');
+				    link.type = 'image/x-icon';
+				    link.rel = 'shortcut icon';
+				    link.href = 'assets/favicon_green.png';
+				    document.getElementsByTagName('head')[0].appendChild(link);
 				}
 			}
 		},
