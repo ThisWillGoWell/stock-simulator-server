@@ -751,12 +751,30 @@ $( document ).ready(function() {
 		//var stock = Object.values(vm_users.stocks).filter(d => d.ticker_id === ticker_id)[0];
 
 		// Set show modal to true
+		//genericModal.showModal = true;
+		//genericModal.investor_uuid = stock.uuid;
+	    
+	    //toggleGenericModal();
+	    
+	});
+
+	$('table').on('click', 'tr td .money-transfer-btn' , function (event) {
+		
+		//var ticker_id = $(this).find('.stock-ticker-id').attr('tid');
+		
+		//console.log("TID: "+ticker_id);
+
+		//var stock = Object.values(vm_users.stocks).filter(d => d.ticker_id === ticker_id)[0];
+
+		// Set show modal to true
 		genericModal.showModal = true;
 		//genericModal.investor_uuid = stock.uuid;
 	    
 	    toggleGenericModal();
 	    
 	});
+
+	
 
 
 	$('thead tr th').click(function(event) {
@@ -1283,7 +1301,7 @@ $( document ).ready(function() {
 			case 'perks':
 					allViews.removeClass('active');
 					storeView.addClass('active');
-					currentViewName[0].innerHTML = "Perks";
+					currentViewName[0].innerHTML = "Store";
 			    break;
 		}
 	}
