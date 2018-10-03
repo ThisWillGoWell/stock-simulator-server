@@ -876,7 +876,7 @@ input[type=password]:focus ~ .input-focus-border{
 #chat-module--container textarea::-webkit-input-placeholder { /* Chrome/Opera/Safari */
   
     color: rgba(0,0,0,0.4);
-    font-weight: 300;
+    font-weight: 500;
 }
 
 
