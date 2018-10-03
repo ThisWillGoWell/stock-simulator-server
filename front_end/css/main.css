@@ -1436,6 +1436,10 @@ table.table tbody tr td{
     text-align: right;
 }
 
+.stock-open-shares.favorite {
+    text-align: left;
+}
+
 .stock-change.rising {
     color: #1abc9c;
     
@@ -1666,6 +1670,7 @@ table.table tbody tr td{
     background-color: #1abc9c;
     cursor: pointer;
     opacity: 0;
+    border-radius: 3px;
 }
 
 tbody tr:hover .money-transfer-btn{
@@ -1688,7 +1693,7 @@ tbody tr:hover .money-transfer-btn{
 
     line-height: 28px;
     font-size: 28px;
-    font-weight: 300;
+    font-weight: 500;
     letter-spacing: 2px;
 }
 .item-cost {
@@ -1697,6 +1702,31 @@ tbody tr:hover .money-transfer-btn{
     height: 75px;
     line-height: 75px;
     font-size: 18px
+}
+.item-description {
+    color: rgba(0,0,0,0.5);
+    text-align: center;
+    
+    font-size: 12px;
+    padding-top: 25px;
+}
+
+.item-effects {
+    color: #1DE9B6;
+    text-align: center;
+    
+    font-size: 14px;
+}
+.item-divider {
+    border-bottom: dotted 2px #ececec;
+    max-width: 14px;
+    margin: 4.5px auto 4.5px auto;
+}
+
+.item-effects.title {
+    color: #7E57C2;
+    font-weight: 500;
+    font-size: 16px;
 }
 
 .buy-item-btn {
@@ -1728,7 +1758,35 @@ tbody tr:hover .money-transfer-btn{
     
 }
 
+.item-category {
+    font-size: 30px;
+    text-align: left;
+    color: rgba(0, 0, 0, 0.25);
+    padding-left: 15px;
+    padding-top: 15px;
+    padding-bottom: 25px;
+}
 
+.item-category.buffer-top {
+    
+    padding-top: 50px;
+}
+
+.material-icons.star {
+    color: #FFEB3B; 
+    width: 50px;
+}
+
+.material-icons.star.unfilled {
+    color: rgba(0,0,0,0.2); 
+    width: 50px;
+    padding-left: 25px;
+}
+
+.material-icons.star.unfilled:hover {
+    color: #FFFF00; 
+    
+}
 
 
 

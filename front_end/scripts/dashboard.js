@@ -259,6 +259,9 @@ $( document ).ready(function() {
 		},
 		methods: {
 			toPrice: formatPrice,
+			toggleFavorite: function(uuid) {
+				console.log(uuid);
+			},
 		    // on column name clicks
 		    sortCol: function(col) {
 				// If sorting by selected column
@@ -692,7 +695,7 @@ $( document ).ready(function() {
 		chat_feed.animate({scrollTop: chat_feed.prop("scrollHeight")}, $('#chat-module--container .chat-message--list').height());
 
 	}
-
+	
 	$('.debug-title-bar button').click(function() {
 
 	    $('#debug-module--container').toggleClass('closed');
@@ -771,6 +774,22 @@ $( document ).ready(function() {
 		//genericModal.investor_uuid = stock.uuid;
 	    
 	    toggleGenericModal();
+	    
+	});
+
+	$('table').on('click', 'tr td i.material-icons.star.unfilled' , function (event) {
+		
+		var ticker_id = $(this).find('.stock-ticker-id').attr('tid');
+		
+		console.log("TID: "+ticker_id+" has been favorited");
+
+		//var stock = Object.values(vm_users.stocks).filter(d => d.ticker_id === ticker_id)[0];
+
+		// Set show modal to true
+		
+		//genericModal.investor_uuid = stock.uuid;
+	    
+	    vm_stocks_tab.toggleFavorite();
 	    
 	});
 
