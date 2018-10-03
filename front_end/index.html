@@ -162,13 +162,7 @@
 							<i class="material-icons right-arrow">keyboard_arrow_right</i>
 						</button>
 					</li>
-					<li>
-						<button v-on:click="nav" data-route="business">
-							<i class="material-icons menu-icon">store_mall_directory</i>
-							<div class="menu-item-title">Business</div>
-							<i class="material-icons right-arrow">keyboard_arrow_right</i>
-						</button>
-					</li>
+					
 					<li>
 						<button v-on:click="nav" data-route="stocks">
 							<i class="material-icons menu-icon">trending_up</i>
@@ -184,16 +178,24 @@
 						</button>
 					</li>
 					<li>
+						<button v-on:click="nav" data-route="perks">
+							<i class="material-icons menu-icon">local_atm</i>
+							<div class="menu-item-title">Store</div>
+							<i class="material-icons right-arrow">keyboard_arrow_right</i>
+						</button>
+					</li>
+					<!-- <li>
 						<button v-on:click="nav" data-route="futures">
 							<i class="material-icons menu-icon">swap_horiz</i>
 							<div class="menu-item-title">Futures</div>
 							<i class="material-icons right-arrow">keyboard_arrow_right</i>
 						</button>
 					</li>
+					
 					<li>
-						<button v-on:click="nav" data-route="perks">
-							<i class="material-icons menu-icon">local_atm</i>
-							<div class="menu-item-title">Store</div>
+						<button v-on:click="nav" data-route="business">
+							<i class="material-icons menu-icon">store_mall_directory</i>
+							<div class="menu-item-title">Business</div>
 							<i class="material-icons right-arrow">keyboard_arrow_right</i>
 						</button>
 					</li>
@@ -203,7 +205,7 @@
 							<div class="menu-item-title">Debug</div>
 							<i class="material-icons right-arrow">keyboard_arrow_right</i>
 						</button>
-					</li>
+					</li> -->
 				</ul>
 			</section>
 			<section id="top-bar--container">
@@ -275,15 +277,18 @@
 								</div>
 							</div>
 							<div class="flex-column-100">
+								<div class="item-category buffer-top">MY STOCKS</div>
+							</div>
+							<div class="flex-column-100">
 								<div class="card stock-list">
 									<table class="table">
 										<thead>
 									    	<tr>
-										    	<th scope="col" style="text-align: left; padding-left: 25px;" v-on:click="sortCol('stock_ticker')">Stock</th>
-										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('amount')">Amount Owned</th>
-										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('stock_price')">Current Price</th>
-										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('stock_value')">Value</th>
-										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('stock_roi')" >R.O.I.</th>
+										    	<th scope="col" style="text-align: left; padding-left: 25px;" v-on:click="sortCol('stock_ticker')">Stock <i class="material-icons stock">arrow_drop_down</i></th>
+										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('amount')">Amount Owned <i class="material-icons stock">arrow_drop_down</i></th>
+										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('stock_price')">Current Price <i class="material-icons stock">arrow_drop_down</i></th>
+										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('stock_value')">Value <i class="material-icons stock">arrow_drop_down</i></th>
+										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('stock_roi')" >R.O.I. <i class="material-icons stock">arrow_drop_down</i></th>
 										    </tr>
 										</thead>
 										<tbody>
@@ -356,6 +361,7 @@
 										<table class="table">
 										  <thead>
 											<tr>
+												<th scope="col" v-on:click="sortCol('favorite')" style="text-align: left; padding-left: 25px;"><i class="material-icons star">star</i> <i class="material-icons stock">arrow_drop_down</i></th>	
 											  <th scope="col" v-on:click="sortCol('ticker_id')" style="text-align: left; padding-left: 25px;">Stock <i class="material-icons stock">arrow_drop_down</i></th>
 											  <th scope="col" v-on:click="sortCol('open_shares')">Open Shares <i class="material-icons open-shares">arrow_drop_down</i></th>
 											  <th scope="col" v-on:click="sortCol('change')">Change <i class="material-icons change">arrow_drop_down</i></th>
@@ -365,9 +371,10 @@
 										  <tbody>
 											  <!-- https://vuejs.org/v2/guide/list.html :key is recommended in v.fors -->
 											<tr class="clickable" v-for="stock in sortedStocks" :key='stock.uuid' v-bind:uuid="stock.uuid">
-											  <th class="stock-ticker-id" scope="row" v-bind:tid="stock.ticker_id">
-												  <div class="stock-ticker-id">{{ stock.ticker_id }}</div>
-												  <div class="stock-display-name">{{ stock.name }}</div>
+												<td class="stock-open-shares favorite"><i class="material-icons star unfilled" >star</i></td>
+												<th class="stock-ticker-id" scope="row" v-bind:tid="stock.ticker_id">
+													<div class="stock-ticker-id">{{ stock.ticker_id }}</div>
+													<div class="stock-display-name">{{ stock.name }}</div>
 											  </th>
 											  <td class="stock-open-shares">{{ stock.open_shares }}</td>
 											  <td class="stock-change">
@@ -440,12 +447,19 @@
 					</div>
 					<!-- TODO: this tab collides with the sidebar -->
 					<div id="store--view" class="view">
+						
 						<div class="flex-grid--container">
+							<div class="flex-column-100">
+								<div class="item-category buffer-top">EXPERIENCE</div>
+							</div>
 							<div class="flex-column-25">
 								<div class="card item">
 									<div class="item-name">LEVEL 1</div>
-								
-
+									<div class="item-effects title">"Intern"</div>
+									<div class="item-divider"></div>
+									<div class="item-effects">+2% bonus stock value</div>
+									<div class="item-divider"></div>
+									<div class="item-effects">unlock cash transfer</div>
 									<div class="item-cost">$10,000</div>
 									<div class="buy-item-btn">BUY</div>
 								</div>
@@ -453,8 +467,10 @@
 							<div class="flex-column-25">
 								<div class="card item">
 									<div class="item-name">LEVEL 2</div>
-								
-
+									<div class="item-effects title">"Weekend Trader"</div>
+									<div class="item-divider"></div>
+									<div class="item-effects">+4% bonus stock value</div>
+									
 									<div class="item-cost">$250,000</div>
 									<div class="buy-item-btn">BUY</div>
 								</div>
@@ -462,21 +478,108 @@
 							<div class="flex-column-25">
 								<div class="card item">
 									<div class="item-name">LEVEL 3</div>
-								
-
+									<div class="item-effects title">"Day Trader"</div>
+									<div class="item-divider"></div>
+									<div class="item-effects">+7% bonus stock value</div>
+									
 									<div class="item-cost">$500,000</div>
 									<div class="buy-item-btn">BUY</div>
 								</div>
 							</div>
 							<div class="flex-column-25">
 								<div class="card item">
+									<div class="item-name">LEVEL 4</div>
+									<div class="item-effects title">"Regional Manager"</div>
+									<div class="item-divider"></div>
+									<div class="item-effects">+10% bonus stock value</div>
+									<div class="item-cost">$1,000,000</div>
+									<div class="buy-item-btn">BUY</div>
+								</div>
+							</div>
+							<div class="flex-column-25">
+								<div class="card item">
+									<div class="item-name">LEVEL 5</div>
+									<div class="item-effects title">"Vice President"</div>
+									<div class="item-divider"></div>
+									<div class="item-effects">+12% bonus stock value</div>
+									<div class="item-cost">$1,500,000</div>
+									<div class="buy-item-btn">BUY</div>
+								</div>
+							</div>
+							<div class="flex-column-25">
+								<div class="card item">
+									<div class="item-name">LEVEL 6</div>
+									<div class="item-effects title">"CFO"</div>
+									<div class="item-divider"></div>
+									<div class="item-effects">+14% bonus stock value</div>
+									<div class="item-cost">$2,500,000</div>
+									<div class="buy-item-btn">BUY</div>
+								</div>
+							</div>
+							<div class="flex-column-25">
+								<div class="card item">
+									<div class="item-name">LEVEL 7</div>
+									<div class="item-effects title">"Chairman"</div>
+									<div class="item-divider"></div>
+									<div class="item-effects">+17% bonus stock value</div>
+									
+									<div class="item-cost">$5,000,000</div>
+									<div class="buy-item-btn">BUY</div>
+								</div>
+							</div>
+							<div class="flex-column-25">
+								<div class="card item">
+									<div class="item-name">LEVEL 8</div>
+									<div class="item-effects title">"American Sniper"</div>
+									<div class="item-divider"></div>
+									<div class="item-effects">+20% bonus stock value</div>
+									<div class="item-cost">$10,000,000</div>
+									<div class="buy-item-btn">BUY</div>
+								</div>
+							</div>
+							
+							<div class="flex-column-100">
+								<div class="item-category buffer-top">ABILITIES</div>
+							</div>
+							
+							<div class="flex-column-25">
+								<div class="card item">
 									<div class="item-name">INSIDER TRADING</div>
+									<div class="item-description">Allows player to see the target price of all stocks.</div>
+								
+
+									<div class="item-cost">$175,000</div>
+									<div class="buy-item-btn">BUY</div>
+								</div>
+							</div>
+							<div class="flex-column-25">
+								<div class="card item">
+									<div class="item-name">BLOCK TRADING</div>
+									<div class="item-description">Stops another player from buying or selling stocks for 5 minutes.</div>
+								
+
+									<div class="item-cost">$25,000</div>
+									<div class="buy-item-btn">BUY</div>
+								</div>
+							</div>
+							<div class="flex-column-25">
+								<div class="card item">
+									<div class="item-name">BOOST GAINS</div>
+									<div class="item-description">25% higher returns on stock sales for 1 hour.</div>
 								
 
 									<div class="item-cost">$75,000</div>
 									<div class="buy-item-btn">BUY</div>
 								</div>
 							</div>
+							<div class="flex-column-25">
+									<div class="card item">
+										<div class="item-name">CRASH THE MARKET</div>
+										<div class="item-description">Resets the target prices of all stocks.</div>
+										<div class="item-cost">$900,000</div>
+										<div class="buy-item-btn">BUY</div>
+									</div>
+								</div>
 						</div>
 					</div>
 				</div>

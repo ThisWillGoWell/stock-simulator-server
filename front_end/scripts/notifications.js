@@ -19,7 +19,7 @@ function notify(message, success) {
 
 	// Hide and move back up
 	d3.select('#notification-module--container')
-		.transition().delay(5000).duration(300)
+		.transition().delay(3500).duration(300)
 		.style('opacity', 0).style('top', '-60px');
 
 };
