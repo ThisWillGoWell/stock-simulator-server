@@ -108,27 +108,37 @@
 				<div class="modal-card" v-if="showModal">
 					<button v-on:click="closeModal()"><i class="material-icons">close</i></button>
 					<div id="trade--view">
-						<div class="modal-stock-id">DieselBeaver</div>
+						<div class="modal-name">Cash Transfer</div>
 											
 						<div class="flex-grid--container no-padding">
 							
 							
 							<div class="flex-column-100">
-								
-									<div class="input-name">Send Cash to DieselBeaver</div>
-									<input type="text" id="cash-transfer-amount" class="input-full-width" name="cash-transfer-amount" placeholder="Amount">
+								<div class="input-group">
+									<div class="generic-input-name">SEND</div>
+									<input type="text" id="cash-transfer-amount" class="" name="cash-transfer-amount" placeholder="Amount ($)">
 									<span class="input-focus-border"></span>
+								</div>
 								
 							</div>
-							<div class="input-grp flex-column-100">
-								<div class="flex-column-50">
-									<div id="send-cash-cancel" class="card calc-btn red no-buffer-top" v-on:click="closeModal()">CANCEL</div>
-								</div>
-								<div class="flex-column-50">
-									<div id="send-cash-submit" class="card calc-btn green no-buffer-top">CONFIRM</div>
-								</div>
+							<div class="flex-column-100">
+									<div class="input-group buffer-bot">
+										<div class="generic-input-name">TO</div>
+										<input type="text" id="cash-transfer-target" class="" name="cash-transfer-target" placeholder="Name">
+										<span class="input-focus-border"></span>
+									</div>
+								
 							</div>
 							
+							<div class="flex-column-50">
+								<div id="send-cash-cancel" class="card calc-btn red no-buffer-top" v-on:click="closeModal()">CANCEL</div>
+							</div>
+							<div class="flex-column-50">
+								<div id="send-cash-submit" class="card calc-btn green no-buffer-top">CONFIRM</div>
+							</div>
+							
+							
+						</div>
 					</div>
 				</div>
 			</section>
@@ -388,6 +398,7 @@
 										  <thead>
 											<tr>
 											  <th scope="col" v-on:click="sortCol('ticker_id')" style="text-align: left; padding-left: 25px;">Name <i class="material-icons stock">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('current_price')"></th>
 											  <th scope="col" v-on:click="sortCol('current_price')">Cash <i class="material-icons cost">arrow_drop_down</i></th>
 											  <th scope="col" v-on:click="sortCol('open_shares')">Networth <i class="material-icons open-shares">arrow_drop_down</i></th>
 											  
@@ -399,8 +410,10 @@
 											<tr class="investors" v-for="investor in investors" :key="investor.uuid" v-bind:tid="investor.uuid">
 											  <th class="stock-ticker-id" scope="row" v-bind:tid="investor.name">
 												  <div class="stock-ticker-id">{{ investor.name }}</div>
-												  
 											  </th>
+											  <td class="stock-price">
+											  	<div class="money-transfer-btn">SEND CASH</div>
+											  </td>
 											  <td class="stock-price" style="padding-right: 25px;">
 											  ${{ toPrice(investor.net_worth) }}</td>
 											  <td class="stock-open-shares" style="padding-right: 25px;">${{ toPrice(investor.wallet) }}</td>
@@ -428,9 +441,40 @@
 					<!-- TODO: this tab collides with the sidebar -->
 					<div id="store--view" class="view">
 						<div class="flex-grid--container">
-							<div class="flex-column-100">
-								<div class="card">
-									<h1>STORE</h1>
+							<div class="flex-column-25">
+								<div class="card item">
+									<div class="item-name">LEVEL 1</div>
+								
+
+									<div class="item-cost">$10,000</div>
+									<div class="buy-item-btn">BUY</div>
+								</div>
+							</div>
+							<div class="flex-column-25">
+								<div class="card item">
+									<div class="item-name">LEVEL 2</div>
+								
+
+									<div class="item-cost">$250,000</div>
+									<div class="buy-item-btn">BUY</div>
+								</div>
+							</div>
+							<div class="flex-column-25">
+								<div class="card item">
+									<div class="item-name">LEVEL 3</div>
+								
+
+									<div class="item-cost">$500,000</div>
+									<div class="buy-item-btn">BUY</div>
+								</div>
+							</div>
+							<div class="flex-column-25">
+								<div class="card item">
+									<div class="item-name">INSIDER TRADING</div>
+								
+
+									<div class="item-cost">$75,000</div>
+									<div class="buy-item-btn">BUY</div>
 								</div>
 							</div>
 						</div>
@@ -456,6 +500,9 @@
 			<section id="notification-module--container">
 				<div class="notification-title-bar">
 					<span></span>
+					<i class="material-icons">
+done
+</i>
 				</div>
 			</section>
 

@@ -5,21 +5,21 @@ function notify(message, success) {
 
 	// Set notification color
 	if (success) {
-		var color = "#49cc6a";
+		var color = "#1abc9c";
 	} else {
-		var color = "#cc4848";
+		var color = "#f44336";
 	}
 
 	// Set color and start motion
 	d3.select('#notification-module--container')
 		.style('background-color', color)
-		.transition().duration(1000)
+		.transition().duration(300)
 		.style('opacity', 1).style('top', '0px');
 		
 
 	// Hide and move back up
 	d3.select('#notification-module--container')
-		.transition().delay(5000).duration(2000)
-		.style('opacity', 0).style('top', '-40px');
+		.transition().delay(5000).duration(300)
+		.style('opacity', 0).style('top', '-60px');
 
 };
