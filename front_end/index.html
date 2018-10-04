@@ -134,7 +134,7 @@
 								<div id="send-cash-cancel" class="card calc-btn red no-buffer-top" v-on:click="closeModal()">CANCEL</div>
 							</div>
 							<div class="flex-column-50">
-								<div id="send-cash-submit" class="card calc-btn green no-buffer-top">CONFIRM</div>
+								<div id="send-cash-submit" class="card calc-btn green no-buffer-top" v-on:click="submitTransfer()">CONFIRM</div>
 							</div>
 							
 							
@@ -463,7 +463,7 @@
 																	star_rate
 																	</i>
 													  </li>
-													  <li class="action-btn">
+													  <li class="action-btn" v-on:click="openTransferModal(investor)">
 															<i class="material-icons money-transfer-btn">
 																	monetization_on
 																	</i>
