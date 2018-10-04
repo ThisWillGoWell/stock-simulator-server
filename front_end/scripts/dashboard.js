@@ -754,10 +754,10 @@ $( document ).ready(function() {
 		//var stock = Object.values(vm_users.stocks).filter(d => d.ticker_id === ticker_id)[0];
 
 		// Set show modal to true
-		//genericModal.showModal = true;
-		//genericModal.investor_uuid = stock.uuid;
+		//transferModal.showModal = true;
+		//transferModal.investor_uuid = stock.uuid;
 	    
-	    //toggleGenericModal();
+	    //toggletransferModal();
 	    
 	});
 
@@ -770,10 +770,10 @@ $( document ).ready(function() {
 		//var stock = Object.values(vm_users.stocks).filter(d => d.ticker_id === ticker_id)[0];
 
 		// Set show modal to true
-		genericModal.showModal = true;
-		//genericModal.investor_uuid = stock.uuid;
+		transferModal.showModal = true;
+		//transferModal.investor_uuid = stock.uuid;
 	    
-	    toggleGenericModal();
+	    toggletransferModal();
 	    
 	});
 
@@ -787,7 +787,7 @@ $( document ).ready(function() {
 
 		// Set show modal to true
 		
-		//genericModal.investor_uuid = stock.uuid;
+		//transferModal.investor_uuid = stock.uuid;
 	    
 	    vm_stocks_tab.toggleFavorite();
 	    
@@ -805,6 +805,15 @@ $( document ).ready(function() {
 			$('thead tr th i').removeClass("shown");
 			$(event.currentTarget).find('i').addClass("shown");
 		}
+	});
+	$( ".buy-item-btn" ).click(function(event) {
+		genericTextFieldModal.showModal = true;
+		//transferModal.investor_uuid = stock.uuid;
+	    
+	    toggleGenericTextFieldModal();
+	});
+	$( ".buy-item-btn" ).hover(function(event) {
+		$(this).parent(".card.item").toggleClass("hover");
 	});
 
 
@@ -1062,9 +1071,14 @@ $( document ).ready(function() {
 		$('#modal--container').toggleClass('open');
 	}
 
-	function toggleGenericModal() {
+	function toggletransferModal() {
 		console.log("Show generic modal");
-		$('#generic-modal--container').toggleClass('open');
+		$('#transfer-Modal--container').toggleClass('open');
+	}
+
+	function toggleGenericTextFieldModal() {
+		console.log("Show generic text field modal");
+		$('#generic-text-field-modal--container').toggleClass('open');
 	}
 
 
@@ -1172,8 +1186,8 @@ $( document ).ready(function() {
 	});
 
 	// Vue object for the buy and sell modal
-	var genericModal = new Vue({
-		el: '#generic-modal--container',
+	var transferModal = new Vue({
+		el: '#transfer-Modal--container',
 		data: {
 			showModal: false,
 			// investor_uuid: '',
@@ -1222,10 +1236,10 @@ $( document ).ready(function() {
 				toggleModal();
 			},
 			closeModal: function(){
-				toggleGenericModal();
-				// genericModal.investor_uuid = '';
-				// genericModal.investor_name = '';
-				genericModal.showModal = false;
+				toggletransferModal();
+				// transferModal.investor_uuid = '';
+				// transferModal.investor_name = '';
+				transferModal.showModal = false;
 				
 			}
 		},
@@ -1271,6 +1285,33 @@ $( document ).ready(function() {
 					}
 				}
 			}
+		}
+	});
+
+	// Vue object for the buy and sell modal
+	var genericTextFieldModal = new Vue({
+		el: '#generic-text-field-modal--container',
+		data: {
+			showModal: false,
+			// investor_uuid: '',
+			investor_name: 'DieselBeaver',
+		},
+		methods: {
+			toPrice: formatPrice,
+			
+			closeModal: function(){
+				toggleGenericTextFieldModal();
+				// transferModal.investor_uuid = '';
+				// transferModal.investor_name = '';
+				genericTextFieldModal.showModal = false;
+				
+			}
+		},
+		computed: {
+			
+		},
+		watch: {
+			
 		}
 	});
 

@@ -104,7 +104,7 @@
 				</div>
 			</section>
 
-			<section id="generic-modal--container">
+			<section id="transfer-Modal--container">
 				<div class="modal-card" v-if="showModal">
 					<button v-on:click="closeModal()"><i class="material-icons">close</i></button>
 					<div id="trade--view">
@@ -139,6 +139,26 @@
 							
 							
 						</div>
+					</div>
+				</div>
+			</section>
+
+			<section id="generic-text-field-modal--container">
+				<div class="modal-card" v-if="showModal">
+					<button v-on:click="closeModal()"><i class="material-icons">close</i></button>
+					<div id="trade--view">
+						<div class="modal-name">Are you sure?</div>
+						<div class="flex-grid--container no-padding">
+					
+							<div class="flex-column-50">
+								<div id="send-cash-cancel" class="card calc-btn red no-buffer-top" v-on:click="closeModal()">CANCEL</div>
+							</div>
+							<div class="flex-column-50">
+								<div id="send-cash-submit" class="card calc-btn green no-buffer-top">CONFIRM</div>
+							</div>
+							
+						</div>					
+							
 					</div>
 				</div>
 			</section>
@@ -208,6 +228,7 @@
 					</li> -->
 				</ul>
 			</section>
+
 			<section id="top-bar--container">
 				<div class="current-view" id="current-view">Dashboard</div>
 				<div class="account-settings-btn">
@@ -239,6 +260,7 @@
 					</ul>
 				</div>
 			</section>
+			
 			<section id="main-content--container" class="">
 				<div class="view-container">
 					<div id="dashboard--view" class="active view">
@@ -452,134 +474,142 @@
 							<div class="flex-column-100">
 								<div class="item-category buffer-top">EXPERIENCE</div>
 							</div>
-							<div class="flex-column-25">
-								<div class="card item">
-									<div class="item-name">LEVEL 1</div>
-									<div class="item-effects title">"Intern"</div>
-									<div class="item-divider"></div>
-									<div class="item-effects">+2% bonus stock value</div>
-									<div class="item-divider"></div>
-									<div class="item-effects">unlock cash transfer</div>
-									<div class="item-cost">$10,000</div>
-									<div class="buy-item-btn">BUY</div>
-								</div>
+							<div class="flex-column-100">
+								<ul id="item-list">
+									<li>
+										<div class="card item">
+											<div class="item-name">LEVEL 1</div>
+											<div class="item-effects title">"Intern"</div>
+											<div class="item-divider"></div>
+											<div class="item-effects">+2% bonus stock value</div>
+											<div class="item-divider"></div>
+											<div class="item-effects">unlock cash transfer</div>
+											<div class="item-cost">$10,000</div>
+											<div class="buy-item-btn">BUY</div>
+										</div>
+									</li>
+									<li>
+											<div class="card item">
+													<div class="item-name">LEVEL 2</div>
+													<div class="item-effects title">"Weekend Trader"</div>
+													<div class="item-divider"></div>
+													<div class="item-effects">+4% bonus stock value</div>
+													
+													<div class="item-cost">$250,000</div>
+													<div class="buy-item-btn">BUY</div>
+												</div>
+									</li>
+									<li>
+											<div class="card item">
+													<div class="item-name">LEVEL 3</div>
+													<div class="item-effects title">"Day Trader"</div>
+													<div class="item-divider"></div>
+													<div class="item-effects">+7% bonus stock value</div>
+													
+													<div class="item-cost">$500,000</div>
+													<div class="buy-item-btn">BUY</div>
+												</div>
+									</li>
+									<li>
+											<div class="card item">
+													<div class="item-name">LEVEL 4</div>
+													<div class="item-effects title">"Regional Manager"</div>
+													<div class="item-divider"></div>
+													<div class="item-effects">+10% bonus stock value</div>
+													<div class="item-cost">$1,000,000</div>
+													<div class="buy-item-btn">BUY</div>
+												</div>
+									</li>
+									<li>
+											<div class="card item">
+													<div class="item-name">LEVEL 5</div>
+													<div class="item-effects title">"Vice President"</div>
+													<div class="item-divider"></div>
+													<div class="item-effects">+12% bonus stock value</div>
+													<div class="item-cost">$1,500,000</div>
+													<div class="buy-item-btn">BUY</div>
+												</div>
+										</li>
+										<li>
+												<div class="card item">
+														<div class="item-name">LEVEL 6</div>
+														<div class="item-effects title">"CFO"</div>
+														<div class="item-divider"></div>
+														<div class="item-effects">+14% bonus stock value</div>
+														<div class="item-cost">$2,500,000</div>
+														<div class="buy-item-btn">BUY</div>
+													</div>
+										</li>
+										<li>
+												<div class="card item">
+														<div class="item-name">LEVEL 7</div>
+														<div class="item-effects title">"Chairman"</div>
+														<div class="item-divider"></div>
+														<div class="item-effects">+17% bonus stock value</div>
+														
+														<div class="item-cost">$5,000,000</div>
+														<div class="buy-item-btn">BUY</div>
+													</div>
+										</li>
+										<li>
+												<div class="card item">
+														<div class="item-name">LEVEL 8</div>
+														<div class="item-effects title">"American Sniper"</div>
+														<div class="item-divider"></div>
+														<div class="item-effects">+20% bonus stock value</div>
+														<div class="item-cost">$10,000,000</div>
+														<div class="buy-item-btn">BUY</div>
+													</div>
+										</li>
+								</ul>
+								
 							</div>
-							<div class="flex-column-25">
-								<div class="card item">
-									<div class="item-name">LEVEL 2</div>
-									<div class="item-effects title">"Weekend Trader"</div>
-									<div class="item-divider"></div>
-									<div class="item-effects">+4% bonus stock value</div>
-									
-									<div class="item-cost">$250,000</div>
-									<div class="buy-item-btn">BUY</div>
-								</div>
-							</div>
-							<div class="flex-column-25">
-								<div class="card item">
-									<div class="item-name">LEVEL 3</div>
-									<div class="item-effects title">"Day Trader"</div>
-									<div class="item-divider"></div>
-									<div class="item-effects">+7% bonus stock value</div>
-									
-									<div class="item-cost">$500,000</div>
-									<div class="buy-item-btn">BUY</div>
-								</div>
-							</div>
-							<div class="flex-column-25">
-								<div class="card item">
-									<div class="item-name">LEVEL 4</div>
-									<div class="item-effects title">"Regional Manager"</div>
-									<div class="item-divider"></div>
-									<div class="item-effects">+10% bonus stock value</div>
-									<div class="item-cost">$1,000,000</div>
-									<div class="buy-item-btn">BUY</div>
-								</div>
-							</div>
-							<div class="flex-column-25">
-								<div class="card item">
-									<div class="item-name">LEVEL 5</div>
-									<div class="item-effects title">"Vice President"</div>
-									<div class="item-divider"></div>
-									<div class="item-effects">+12% bonus stock value</div>
-									<div class="item-cost">$1,500,000</div>
-									<div class="buy-item-btn">BUY</div>
-								</div>
-							</div>
-							<div class="flex-column-25">
-								<div class="card item">
-									<div class="item-name">LEVEL 6</div>
-									<div class="item-effects title">"CFO"</div>
-									<div class="item-divider"></div>
-									<div class="item-effects">+14% bonus stock value</div>
-									<div class="item-cost">$2,500,000</div>
-									<div class="buy-item-btn">BUY</div>
-								</div>
-							</div>
-							<div class="flex-column-25">
-								<div class="card item">
-									<div class="item-name">LEVEL 7</div>
-									<div class="item-effects title">"Chairman"</div>
-									<div class="item-divider"></div>
-									<div class="item-effects">+17% bonus stock value</div>
-									
-									<div class="item-cost">$5,000,000</div>
-									<div class="buy-item-btn">BUY</div>
-								</div>
-							</div>
-							<div class="flex-column-25">
-								<div class="card item">
-									<div class="item-name">LEVEL 8</div>
-									<div class="item-effects title">"American Sniper"</div>
-									<div class="item-divider"></div>
-									<div class="item-effects">+20% bonus stock value</div>
-									<div class="item-cost">$10,000,000</div>
-									<div class="buy-item-btn">BUY</div>
-								</div>
-							</div>
+							
 							
 							<div class="flex-column-100">
 								<div class="item-category buffer-top">ABILITIES</div>
 							</div>
-							
-							<div class="flex-column-25">
-								<div class="card item">
-									<div class="item-name">INSIDER TRADING</div>
-									<div class="item-description">Allows player to see the target price of all stocks.</div>
-								
-
-									<div class="item-cost">$175,000</div>
-									<div class="buy-item-btn">BUY</div>
-								</div>
-							</div>
-							<div class="flex-column-25">
-								<div class="card item">
-									<div class="item-name">BLOCK TRADING</div>
-									<div class="item-description">Stops another player from buying or selling stocks for 5 minutes.</div>
-								
-
-									<div class="item-cost">$25,000</div>
-									<div class="buy-item-btn">BUY</div>
-								</div>
-							</div>
-							<div class="flex-column-25">
-								<div class="card item">
-									<div class="item-name">BOOST GAINS</div>
-									<div class="item-description">25% higher returns on stock sales for 1 hour.</div>
-								
-
-									<div class="item-cost">$75,000</div>
-									<div class="buy-item-btn">BUY</div>
-								</div>
-							</div>
-							<div class="flex-column-25">
+							<ul id="item-list">
+								<li>
+									<div class="card item">
+										<div class="item-name">INSIDER TRADING</div>
+										<div class="item-description">Allows player to see the target price of all stocks.</div>
+									
+	
+										<div class="item-cost">$175,000</div>
+										<div class="buy-item-btn">BUY</div>
+									</div>
+								</li>
+								<li>
+									<div class="card item">
+										<div class="item-name">BLOCK TRADING</div>
+										<div class="item-description">Stops another player from buying or selling stocks for 5 minutes.</div>
+									
+	
+										<div class="item-cost">$25,000</div>
+										<div class="buy-item-btn">BUY</div>
+									</div>
+								</li>
+								<li>
+									<div class="card item">
+										<div class="item-name">BOOST GAINS</div>
+										<div class="item-description">25% higher returns on stock sales for 1 hour.</div>
+									
+	
+										<div class="item-cost">$75,000</div>
+										<div class="buy-item-btn">BUY</div>
+									</div>
+								</li>
+								<li>
 									<div class="card item">
 										<div class="item-name">CRASH THE MARKET</div>
 										<div class="item-description">Resets the target prices of all stocks.</div>
 										<div class="item-cost">$900,000</div>
 										<div class="buy-item-btn">BUY</div>
 									</div>
-								</div>
+								</li>
+							</ul>
+							
 						</div>
 					</div>
 				</div>
