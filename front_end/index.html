@@ -260,7 +260,7 @@
 					</ul>
 				</div>
 			</section>
-			
+
 			<section id="main-content--container" class="">
 				<div class="view-container">
 					<div id="dashboard--view" class="active view">
@@ -383,8 +383,9 @@
 										<table class="table">
 										  <thead>
 											<tr>
-												<th scope="col" v-on:click="sortCol('favorite')" style="text-align: left; padding-left: 25px;"><i class="material-icons star">star</i> <i class="material-icons stock">arrow_drop_down</i></th>	
+												<!-- <th scope="col" v-on:click="sortCol('favorite')" style="text-align: left; padding-left: 25px;"><i class="material-icons star">star</i> <i class="material-icons stock">arrow_drop_down</i></th>	 -->
 											  <th scope="col" v-on:click="sortCol('ticker_id')" style="text-align: left; padding-left: 25px;">Stock <i class="material-icons stock">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('open_shares')">Actions <i class="material-icons open-shares">arrow_drop_down</i></th>
 											  <th scope="col" v-on:click="sortCol('open_shares')">Open Shares <i class="material-icons open-shares">arrow_drop_down</i></th>
 											  <th scope="col" v-on:click="sortCol('change')">Change <i class="material-icons change">arrow_drop_down</i></th>
 											  <th scope="col" v-on:click="sortCol('current_price')" style="padding-right: 25px;">Cost <i class="material-icons cost">arrow_drop_down</i></th>
@@ -393,11 +394,26 @@
 										  <tbody>
 											  <!-- https://vuejs.org/v2/guide/list.html :key is recommended in v.fors -->
 											<tr class="clickable" v-for="stock in sortedStocks" :key='stock.uuid' v-bind:uuid="stock.uuid">
-												<td class="stock-open-shares favorite"><i class="material-icons star unfilled" >star</i></td>
+												<!-- <td class="stock-open-shares favorite"><i class="material-icons star unfilled" >star</i></td> -->
 												<th class="stock-ticker-id" scope="row" v-bind:tid="stock.ticker_id">
 													<div class="stock-ticker-id">{{ stock.ticker_id }}</div>
 													<div class="stock-display-name">{{ stock.name }}</div>
 											  </th>
+											  <td class="stock-open-shares">
+													<ul class="action-list">
+													<li class="action-btn star">
+														  <i class="material-icons">
+																  star_rate
+																  </i>
+													</li>
+													
+													<li class="action-btn chart">
+														  <i class="material-icons">
+																  show_chart
+																  </i>
+													</li>
+											  </ul>
+											  </td>
 											  <td class="stock-open-shares">{{ stock.open_shares }}</td>
 											  <td class="stock-change">
 												  {{ toPrice(stock.change) }}
@@ -427,7 +443,7 @@
 										  <thead>
 											<tr>
 											  <th scope="col" v-on:click="sortCol('ticker_id')" style="text-align: left; padding-left: 25px;">Name <i class="material-icons stock">arrow_drop_down</i></th>
-											  <th scope="col" v-on:click="sortCol('current_price')"></th>
+											  <th scope="col" v-on:click="sortCol('open_shares')">Actions <i class="material-icons open-shares">arrow_drop_down</i></th>
 											  <th scope="col" v-on:click="sortCol('current_price')">Cash <i class="material-icons cost">arrow_drop_down</i></th>
 											  <th scope="col" v-on:click="sortCol('open_shares')">Networth <i class="material-icons open-shares">arrow_drop_down</i></th>
 											  
@@ -440,9 +456,28 @@
 											  <th class="stock-ticker-id" scope="row" v-bind:tid="investor.name">
 												  <div class="stock-ticker-id">{{ investor.name }}</div>
 											  </th>
-											  <td class="stock-price">
-											  	<div class="money-transfer-btn">SEND CASH</div>
-											  </td>
+											  <td class="stock-open-shares">
+												  <ul class="action-list">
+													  <li class="action-btn star">
+															<i class="material-icons">
+																	star_rate
+																	</i>
+													  </li>
+													  <li class="action-btn">
+															<i class="material-icons money-transfer-btn">
+																	monetization_on
+																	</i>
+													  </li>
+													  <li class="action-btn chart">
+															<i class="material-icons">
+																	show_chart
+																	</i>
+													  </li>
+												</ul>
+												
+												<!-- <div class="money-transfer-btn">SEND CASH</div> -->
+												</td>
+											  
 											  <td class="stock-price" style="padding-right: 25px;">
 											  ${{ toPrice(investor.net_worth) }}</td>
 											  <td class="stock-open-shares" style="padding-right: 25px;">${{ toPrice(investor.wallet) }}</td>
@@ -616,7 +651,7 @@
 			</section>
 			<section id="chat-module--container" class="closed">
 				<div class="chat-title-bar" v-bind:title="activeUsers()">
-					<span>All Chat ({{ numActiveUsers }})</span>
+					<span>All Chat <i class="material-icons">group</i> {{ numActiveUsers }}</span>
 					<button v-on:click="toggleChat()"></button>
 				</div>
 
