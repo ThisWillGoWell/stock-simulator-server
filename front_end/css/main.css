@@ -817,6 +817,7 @@ input[type=password]:focus ~ .input-focus-border{
     z-index: 6;
     height: 400px;
     width: 320px;
+    border-radius: 5px 5px 0px 0px;
     background-color: #4d4d4d;
     -webkit-box-shadow: 0px -4px 23px 2px rgba(0,0,0,0.18);
     -moz-box-shadow: 0px -4px 23px 2px rgba(0,0,0,0.18);
@@ -839,6 +840,7 @@ input[type=password]:focus ~ .input-focus-border{
     background-color: #fff;
     height: 40px;
     text-align: left;
+    border-radius: 3px 3px 0px 0px;
     box-shadow: 0 13px 15px rgba(0,0,0,0.001), 0 3px 5px rgba(0,0,0,0.05);
     -moz-transition: all ease-in-out 0.13s;
     -o-transition: all ease-in-out 0.13s;
@@ -1497,7 +1499,7 @@ table.table tbody tr td{
     transform: rotate(-180deg);
 }*/
 
-#modal--container, #generic-modal--container{
+#modal--container, #transfer-Modal--container{
     position: absolute;
     top: 0;
     bottom: 0;
@@ -1514,7 +1516,24 @@ table.table tbody tr td{
     
 }
 
-#modal--container.open, #generic-modal--container.open {
+#modal--container, #generic-text-field-modal--container{
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: -20;
+    opacity: 0;
+    background-color: #fafbfc;
+    background-color: rgba(0,0,0,0.8);
+    -moz-transition: all ease-in-out 0.23s;
+    -o-transition: all ease-in-out 0.23s;
+    -webkit-transition: all ease-in-out 0.23s;
+    transition: all ease-in-out 0.23s;
+    
+}
+
+#modal--container.open, #transfer-Modal--container.open, #generic-text-field-modal--container.open {
     
     opacity: 1;
     z-index: 100;
@@ -1540,7 +1559,29 @@ table.table tbody tr td{
     /*box-shadow: 0 3px 5px rgba(0,0,0,0.10), 0 3px 5px rgba(0,0,0,0.15);*/
 }
 
-#generic-modal--container .modal-card{
+#generic-text-field-modal--container .modal-card{
+    position: absolute;
+    height: auto;
+    display: inline-table;
+    width: 500px;
+    
+    background-color: #fafbfc;
+    /*border: 1px solid #fff;*/
+    border-radius: 20px;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    margin: auto;
+    /*border-radius: 2px;*/
+    padding-bottom: 40px;
+    padding-top: 50px;
+    pointer-events: none;
+    /*box-shadow: 0 3px 5px rgba(0,0,0,0.10), 0 3px 5px rgba(0,0,0,0.15);*/
+}
+
+#transfer-Modal--container .modal-card{
     position: absolute;
     height: auto;
     display: inline-table;
@@ -1563,7 +1604,7 @@ table.table tbody tr td{
 
 
 
-#modal--container .modal-card button, #generic-modal--container .modal-card button{
+#modal--container .modal-card button, #transfer-Modal--container .modal-card button, #generic-text-field-modal--container .modal-card button{
     position: absolute;
     height: 40px;
     width: 40px;
@@ -1581,7 +1622,7 @@ table.table tbody tr td{
     transition: all ease-in-out 0.17s;
 }
 
-#modal--container .modal-card button i, #generic-modal--container .modal-card button i{
+#modal--container .modal-card button i, #transfer-Modal--container .modal-card button i, #generic-text-field-modal--container .modal-card button i{
     font-size: 22px;
     pointer-events:auto;
     -moz-transition: all ease-in-out 0.1s;
@@ -1590,7 +1631,7 @@ table.table tbody tr td{
     transition: all ease-in-out 0.1s;
 }
 
-#modal--container .modal-card button:hover, #generic-modal--container .modal-card button:hover{
+#modal--container .modal-card button:hover, #transfer-Modal--container .modal-card button:hover, #generic-text-field-modal--container .modal-card button:hover{
     background-color: #E0E0E0;
     
     /*box-shadow: 0 3px 5px rgba(0,0,0,0.10), 0 3px 5px rgba(0,0,0,0.15);*/
@@ -1601,8 +1642,10 @@ table.table tbody tr td{
     letter-spacing: -2px;
     color: #4d4d4d;
     font-weight: 600;
-    text-align: left;
+    text-align: center;
     padding-left: 15px;
+    padding-right: 15px;
+    margin-bottom: 50px;
     text-shadow: 2px 2px 3px rgba(0,0,0,0.1);
 }
 
@@ -1682,15 +1725,36 @@ tbody tr:hover .money-transfer-btn{
 
 /* ITEMS */
 
+#item-list {
+    list-style-type: none;
+    padding: 0;
+    text-align: left;
+    
+}
+
+#item-list li{
+    display: inline-grid;
+    width: 275px;
+}
 .card.item {
     padding: 35px 25px 35px 25px;
+    position: relative;
+    height: 335px;
+    -moz-transition: all ease-in-out 0.13s;
+    -o-transition: all ease-in-out 0.13s;
+    -webkit-transition: all ease-in-out 0.13s;
+    transition: all ease-in-out 0.13s;
+}
+
+.card.item.hover {
+    transform: translateY(-2px);
 }
 
 .item-name {
     color: rgba(0,0,0,0.7);
     text-align: center;
     height: 50px;
-
+    text-shadow: 2px 2px 3px rgba(0,0,0,0.05);
     line-height: 28px;
     font-size: 28px;
     font-weight: 500;
@@ -1701,7 +1765,9 @@ tbody tr:hover .money-transfer-btn{
     text-align: center;
     height: 75px;
     line-height: 75px;
-    font-size: 18px
+    font-size: 18px;
+    font-weight:500; 
+
 }
 .item-description {
     color: rgba(0,0,0,0.5);
@@ -1709,12 +1775,14 @@ tbody tr:hover .money-transfer-btn{
     
     font-size: 12px;
     padding-top: 25px;
+    margin: 0 auto;
+    width: 175px;
 }
 
 .item-effects {
     color: #1DE9B6;
     text-align: center;
-    
+    font-weight: 500;
     font-size: 14px;
 }
 .item-divider {
@@ -1726,10 +1794,15 @@ tbody tr:hover .money-transfer-btn{
 .item-effects.title {
     color: #7E57C2;
     font-weight: 500;
-    font-size: 16px;
+    font-size: 18px;
+    
 }
 
 .buy-item-btn {
+    position: absolute;
+    bottom: 35px;
+    right: 0;
+    left: 0;
     background-color: transparent;
     border: solid 2px #1abc9c;
     color: #1abc9c;
@@ -1748,14 +1821,22 @@ tbody tr:hover .money-transfer-btn{
     -webkit-transition: all ease-in-out 0.13s;
     transition: all ease-in-out 0.13s;
     cursor: pointer;
+
 }
 
 .buy-item-btn:hover {
     background-color: transparent;
     background-color: #1abc9c;
     color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 5px rgba(0,0,0,0.10), 0 3px 5px rgba(0,0,0,0.15);
+    max-width: 160px; 
     
-    
+}
+
+.buy-item-btn:hover .card.item {
+    box-shadow: 0 3px 5px rgba(0,0,0,0.10), 0 3px 5px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
 }
 
 .item-category {
