@@ -949,6 +949,14 @@ input[type=password]:focus ~ .input-focus-border{
     text-align: left;
 }
 
+#chat-module--container .chat-title-bar span i{
+    padding-left: 7px;
+    padding-right: 5px;
+    padding-bottom: 3px;
+    font-size: 18px;
+    color: rgba(0,0,0,0.3);
+}
+
 #chat-module--container .chat-title-bar span:after{
     content: "";
     position: absolute;
@@ -1382,7 +1390,7 @@ table.table thead tr {
 
 table.table tbody tr:hover {
     cursor: pointer;
-    background-color: #EEEEEE;
+    background-color: #fafbfc;
 }
 
 table.table thead tr th{
@@ -1705,22 +1713,54 @@ table.table tbody tr td{
     margin-bottom: 50px !important;
 }
 
-.money-transfer-btn {
-    height: 40px;
-    width: auto;
-    text-align: center;
-    color: #fff;
-    background-color: #1abc9c;
-    cursor: pointer;
-    opacity: 0;
-    border-radius: 3px;
-}
+
 
 tbody tr:hover .money-transfer-btn{
     opacity: 1;
 }
 
+.action-btn .money-transfer-btn:hover {
+    /* height: 40px;
+    width: auto;
+    text-align: center; */
+    color: #1abc9c;
+    /* background-color: #1abc9c;
+    cursor: pointer;
+    opacity: 0;
+    border-radius: 3px; */
+}
 
+.action-list {
+    list-style-type: none;
+    text-align: right;
+    padding: 0;
+}
+
+.action-btn {
+    display: inline-block;
+    width: 25px;
+    color: rgba(0,0,0,0.3);
+}
+
+.action-btn.star:hover {
+    
+    color: #FFEB3B;
+}
+
+.action-btn.chart:hover {
+    
+    color: #FF9800;
+}
+.action-btn .money-transfer-btn:hover {
+    /* height: 40px;
+    width: auto;
+    text-align: center; */
+    color: #1abc9c;
+    /* background-color: #1abc9c;
+    cursor: pointer;
+    opacity: 0;
+    border-radius: 3px; */
+}
 
 
 /* ITEMS */
