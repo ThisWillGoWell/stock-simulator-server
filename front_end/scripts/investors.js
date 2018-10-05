@@ -1,4 +1,4 @@
-$(document).ready(function() {
+if (vm_portfolios === undefined || vm_ledger === undefined || vm_stocks === undefined || vm_users === undefined) {
   // Vue for all investors tab data
   var vm_investors_tab = new Vue({
     el: "#investors--view",
@@ -16,7 +16,10 @@ $(document).ready(function() {
       }
     },
     computed: {
-      investors: function() {
+      investors: function() {{
+          return [];
+        }
+
         var investors = Object.values(vm_portfolios.portfolios);
         // List of all ledger items
         var ledgerItems = Object.values(vm_ledger.ledger);
@@ -27,7 +30,7 @@ $(document).ready(function() {
           // Get all stocks
           d.stocks = ledgerItems.filter(
             l => (l.portfolio_id === d.uuid) & (l.amount !== 0)
-          ); // ledgers can have amount == 0
+          ); // ledgers can have amount == 0, filter them out
           // Augment stock data
           d.stocks = d.stocks.map(function(d) {
             d.ticker_id = vm_stocks.stocks[d.stock_id].ticker_id;
@@ -43,4 +46,4 @@ $(document).ready(function() {
       }
     }
   });
-});
+}
