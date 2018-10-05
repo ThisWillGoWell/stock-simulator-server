@@ -197,6 +197,9 @@ func (randPrice *RandomPrice) changeValues() {
 			newTarget = 1000 + newTarget
 		}
 	}
+	if rand.Float64() < .01 {
+		newTarget = newTarget * 2
+	}
 	//need to deiced if the floor should happen before or after
 	if newTarget < 0 {
 		newTarget = 0
