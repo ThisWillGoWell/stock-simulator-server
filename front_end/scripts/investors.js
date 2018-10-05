@@ -15,10 +15,7 @@
       }
     },
     computed: {
-      investors: function() {{
-          return [];
-        }
-
+      investors: function() {
         var investors = Object.values(vm_portfolios.portfolios);
         // List of all ledger items
         var ledgerItems = Object.values(vm_ledger.ledger);
