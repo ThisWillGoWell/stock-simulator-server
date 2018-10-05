@@ -25,8 +25,6 @@ var ts *sql.DB
 
 var dbLock = lock.NewLock("db lock")
 
-var DatabseWriter = duplicator.MakeDuplicator("database-writer")
-
 func InitDatabase(disableDbWrite bool) {
 	dbConStr := os.Getenv("DB_URI")
 	// if the env is not set, default to use the local host default port
@@ -84,8 +82,8 @@ func InitDatabase(disableDbWrite bool) {
 	for _, l := range ledger.Entries {
 		port := portfolio.Portfolios[l.PortfolioId]
 		stock := valuable.Stocks[l.StockId]
-		port.UpdateInput.RegisterInput(stock.UpdateChannel.GetBufferedOutput(10))
-		port.UpdateInput.RegisterInput(l.UpdateChannel.GetBufferedOutput(10))
+		port.UpdateInput.RegisterInput(stock.UpdateChannel.GetBufferedOutput(100))
+		port.UpdateInput.RegisterInput(l.UpdateChannel.GetBufferedOutput(100))
 	}
 	for _, port := range portfolio.Portfolios {
 		port.Update()
@@ -101,8 +99,8 @@ func InitDatabase(disableDbWrite bool) {
 func databaseWriter() {
 	go func() {
 		portfolioDBWrite := duplicator.MakeDuplicator("portfolio-db-write")
-		portfolioDBWrite.RegisterInput(wires.PortfolioNewObject.GetBufferedOutput(5))
-		portfolioDBWrite.RegisterInput(wires.PortfolioNewObject.GetBufferedOutput(5))
+		portfolioDBWrite.RegisterInput(wires.PortfolioNewObject.GetBufferedOutput(100))
+		portfolioDBWrite.RegisterInput(wires.PortfolioNewObject.GetBufferedOutput(100))
 		write := portfolioDBWrite.GetBufferedOutput(10)
 		for val := range write {
 			writePortfolio(val.(*portfolio.Portfolio))
@@ -112,8 +110,8 @@ func databaseWriter() {
 
 	go func() {
 		userDBWrite := duplicator.MakeDuplicator("user-db-write")
-		userDBWrite.RegisterInput(wires.UsersNewObject.GetBufferedOutput(5))
-		userDBWrite.RegisterInput(wires.UsersUpdate.GetBufferedOutput(5))
+		userDBWrite.RegisterInput(wires.UsersNewObject.GetBufferedOutput(100))
+		userDBWrite.RegisterInput(wires.UsersUpdate.GetBufferedOutput(100))
 		write := userDBWrite.GetBufferedOutput(10)
 		for val := range write {
 			writeUser(val.(*account.User))
@@ -122,8 +120,8 @@ func databaseWriter() {
 
 	go func() {
 		ledgerDBWrite := duplicator.MakeDuplicator("ledger-db-write")
-		ledgerDBWrite.RegisterInput(wires.LedgerNewObject.GetBufferedOutput(5))
-		ledgerDBWrite.RegisterInput(wires.LedgerUpdate.GetBufferedOutput(5))
+		ledgerDBWrite.RegisterInput(wires.LedgerNewObject.GetBufferedOutput(100))
+		ledgerDBWrite.RegisterInput(wires.LedgerUpdate.GetBufferedOutput(100))
 		write := ledgerDBWrite.GetBufferedOutput(10)
 		for val := range write {
 			writeLedger(val.(*ledger.Entry))
@@ -133,8 +131,8 @@ func databaseWriter() {
 
 	go func() {
 		itemsDBWrite := duplicator.MakeDuplicator("portfolio-db-write")
-		itemsDBWrite.RegisterInput(wires.ItemsNewObjects.GetBufferedOutput(5))
-		itemsDBWrite.RegisterInput(wires.ItemsUpdate.GetBufferedOutput(5))
+		itemsDBWrite.RegisterInput(wires.ItemsNewObjects.GetBufferedOutput(100))
+		itemsDBWrite.RegisterInput(wires.ItemsUpdate.GetBufferedOutput(100))
 		write := itemsDBWrite.GetBufferedOutput(10)
 		for val := range write {
 			writeItem(val.(items.Item))
@@ -143,8 +141,8 @@ func databaseWriter() {
 
 	go func() {
 		notificationDBWrite := duplicator.MakeDuplicator("notification-db-write")
-		notificationDBWrite.RegisterInput(wires.NotificationNewObject.GetBufferedOutput(5))
-		notificationDBWrite.RegisterInput(wires.NotificationUpdate.GetBufferedOutput(5))
+		notificationDBWrite.RegisterInput(wires.NotificationNewObject.GetBufferedOutput(100))
+		notificationDBWrite.RegisterInput(wires.NotificationUpdate.GetBufferedOutput(100))
 		write := notificationDBWrite.GetBufferedOutput(10)
 		for val := range write {
 			writeNotification(val.(*notification.Notification))
@@ -153,8 +151,8 @@ func databaseWriter() {
 
 	go func() {
 		stockDBWrite := duplicator.MakeDuplicator("stock-db-write")
-		stockDBWrite.RegisterInput(wires.StocksNewObject.GetBufferedOutput(5))
-		stockDBWrite.RegisterInput(wires.StocksUpdate.GetBufferedOutput(5))
+		stockDBWrite.RegisterInput(wires.StocksNewObject.GetBufferedOutput(100))
+		stockDBWrite.RegisterInput(wires.StocksUpdate.GetBufferedOutput(100))
 		write := stockDBWrite.GetBufferedOutput(10)
 		for val := range write {
 			writeStock(val.(*valuable.Stock))

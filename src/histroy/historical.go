@@ -107,7 +107,7 @@ func MakeQuery(qm *messages.QueryMessage) *Query {
 		defer queryCacheLock.Release()
 		hash := makeQueryHash(q)
 		cacheItem, ok := queryCache[hash]
-		if !ok {
+		if ok {
 			if time.Since(cacheItem.lastUpdateTime) > qm.CacheDuration.Duration {
 				q.ResponseChannel <- cacheItem.response
 				cacheItem.lastUseTime = time.Now()
@@ -193,13 +193,13 @@ func successQuery(query *Query, values [][]interface{}) {
 				validTime:      query.Interval,
 				response:       response,
 			}
-			query.ResponseChannel <- response
+
 		} else {
 			queryCache[hash].lastUpdateTime = time.Now()
 			queryCache[hash].response.Points = values
+
 		}
-	} else {
-		query.ResponseChannel <- response
 	}
+	query.ResponseChannel <- response
 
 }
