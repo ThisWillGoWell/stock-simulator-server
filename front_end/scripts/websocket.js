@@ -77,7 +77,7 @@ if(token) {
 
 	function registerRoute(route, callback) {
 		router[route] = callback;
-	};
+	};+
 
 	init();
 
