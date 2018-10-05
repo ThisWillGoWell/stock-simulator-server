@@ -197,6 +197,7 @@ func successQuery(query *Query, values [][]interface{}) {
 		} else {
 			queryCache[hash].lastUpdateTime = time.Now()
 			queryCache[hash].response.Points = values
+			query.ResponseChannel <- response
 		}
 	} else {
 		query.ResponseChannel <- response
