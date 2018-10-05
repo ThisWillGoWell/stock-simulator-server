@@ -40,12 +40,12 @@ func (InsiderTraderItemType) RequiredLevel() int64 {
 }
 
 type InsiderTradingItem struct {
-	Type       InsiderTraderItemType
-	UserUuid   string           `json:"user_uuid"`
-	Uuid       string           `json:"uuid"`
-	Used       bool             `json:"used" change:"-"`
-	Result     map[string]int64 `json:"view,omitempty" change:"-"`
-	UpdateChan chan interface{} `json:"-"`
+	Type          InsiderTraderItemType
+	PortfolioUuid string           `json:"portfolio_uuid"`
+	Uuid          string           `json:"uuid"`
+	Used          bool             `json:"used" change:"-"`
+	Result        map[string]int64 `json:"target_prices,omitempty" change:"-"`
+	UpdateChan    chan interface{} `json:"-"`
 }
 
 func (it *InsiderTradingItem) GetItemType() ItemType {
@@ -59,14 +59,14 @@ func (it *InsiderTradingItem) GetId() string {
 	return it.Uuid
 }
 
-func (it *InsiderTradingItem) GetUserUuid() string {
-	return it.UserUuid
+func (it *InsiderTradingItem) GetPortfolioUuid() string {
+	return it.PortfolioUuid
 }
 func (it *InsiderTradingItem) GetUuid() string {
 	return it.Uuid
 }
-func (it *InsiderTradingItem) SetUserUuid(uuid string) {
-	it.UserUuid = uuid
+func (it *InsiderTradingItem) SetPortfolioUuid(uuid string) {
+	it.PortfolioUuid = uuid
 }
 
 func (it *InsiderTradingItem) HasBeenUsed() bool {
@@ -77,13 +77,21 @@ func (it *InsiderTradingItem) GetUpdateChan() chan interface{} {
 	return it.UpdateChan
 }
 
+func (it *InsiderTradingItem) Load() {
+
+}
+
+func (it *InsiderTradingItem) GetItem() interface{} {
+	return struct{}{}
+}
+
 func newInsiderTradingItem(userUuid string) *InsiderTradingItem {
 	uuid := utils.SerialUuid()
 	item := &InsiderTradingItem{
-		UserUuid:   userUuid,
-		Uuid:       uuid,
-		Used:       false,
-		UpdateChan: make(chan interface{}),
+		PortfolioUuid: userUuid,
+		Uuid:          uuid,
+		Used:          false,
+		UpdateChan:    make(chan interface{}),
 	}
 	utils.RegisterUuid(uuid, item)
 	return item

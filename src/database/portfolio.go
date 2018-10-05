@@ -14,14 +14,14 @@ var (
 		`uuid text NOT NULL,` +
 		`name text NOT NULL,` +
 		`wallet int NOT NULL,` +
-		`PRIMARY KEY(uuid)` +
 		`level int NOT NULL, ` +
+		`PRIMARY KEY(uuid) ` +
 		`);`
 
 	portfolioTableUpdateInsert = `INSERT into ` + portfolioTableName + `(uuid, name, wallet, level) values($1, $2, $3, $4) ` +
 		`ON CONFLICT (uuid) DO UPDATE SET wallet=EXCLUDED.wallet;`
 
-	portfolioTableQueryStatement = "SELECT uuid, name, wallet FROM " + portfolioTableName + `;`
+	portfolioTableQueryStatement = "SELECT uuid, name, wallet, level FROM " + portfolioTableName + `;`
 	//getCurrentPrice()
 )
 

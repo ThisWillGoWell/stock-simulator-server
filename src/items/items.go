@@ -7,6 +7,7 @@ import (
 	"github.com/stock-simulator-server/src/notification"
 	"github.com/stock-simulator-server/src/portfolio"
 	"github.com/stock-simulator-server/src/sender"
+	"github.com/stock-simulator-server/src/utils"
 )
 
 var ItemTypes = ItemMap()
@@ -35,13 +36,13 @@ type Item interface {
 	GetType() string
 	GetId() string
 	GetItemType() ItemType
-	GetUserUuid() string
+	GetPortfolioUuid() string
 	GetUuid() string
-	SetUserUuid(string)
+	SetPortfolioUuid(string)
 	Activate(interface{}) (interface{}, error)
 	HasBeenUsed() bool
-	View() interface{}
 	GetUpdateChan() chan interface{}
+	Load()
 }
 
 type UserInventory struct {
@@ -57,10 +58,18 @@ func makeItem(itemType ItemType, userUuid string) Item {
 	switch itemType.(type) {
 	case InsiderTraderItemType:
 		return newInsiderTradingItem(userUuid)
-	case MailItemType:
-		return newMailItem(userUuid)
 	}
 	return nil
+}
+
+func LoadItem(item Item) {
+	ItemLock.Acquire("load-item")
+	defer ItemLock.Release()
+	utils.RegisterUuid(item.GetUuid(), item)
+	if _, ok := ItemsPortInventory[item.GetPortfolioUuid()]; ok {
+		ItemsPortInventory[item.GetPortfolioUuid()] = make(map[string]Item)
+	}
+	ItemsPortInventory[item.GetPortfolioUuid()][item.GetUuid()] = item
 }
 
 func BuyItem(portUuid, userUuid, itemName string) (string, error) {
@@ -122,18 +131,18 @@ func getItem(itemId, portfolioUuid string) (Item, error) {
 	return item, nil
 }
 
-func ViewItem(itemId, userUuid string) (interface{}, error) {
-	ItemLock.Acquire("Use Item")
-	defer ItemLock.Release()
-	item, err := getItem(itemId, userUuid)
-	if err != nil {
-		return nil, err
-	}
-	if !item.HasBeenUsed() {
-		return nil, errors.New("Item has not been used")
-	}
-	return item.View(), nil
-}
+//func ViewItem(itemId, userUuid string) (interface{}, error) {
+//	ItemLock.Acquire("Use Item")
+//	defer ItemLock.Release()
+//	item, err := getItem(itemId, userUuid)
+//	if err != nil {
+//		return nil, err
+//	}
+//	if !item.HasBeenUsed() {
+//		return nil, errors.New("Item has not been used")
+//	}
+//	return item.View(), nil
+//}
 
 func Use(itemId, portfolioUuid, userUuid string, itemParameters interface{}) (interface{}, error) {
 	ItemLock.Acquire("Use Item")
@@ -174,4 +183,13 @@ func TransferItem(currentOwner, newOwner, itemId string) error {
 		delete(ItemsPortInventory, currentOwner)
 	}
 	return nil
+}
+
+func UnmarshalJsonItem(itemType, jsonStr string) Item {
+	var item Item
+	switch itemType {
+	case insiderTradingItemType:
+		item = &InsiderTradingItem{}
+	}
+	return item
 }

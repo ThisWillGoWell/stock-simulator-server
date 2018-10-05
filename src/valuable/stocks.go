@@ -102,7 +102,7 @@ func MakeStock(uuid, tickerID, name string, startPrice, openShares int64, runInt
 	Stocks[uuid] = stock
 	stock.UpdateChannel.EnableCopyMode()
 	change.RegisterPublicChangeDetect(stock)
-	wires.StocksUpdate.RegisterInput(stock.UpdateChannel.GetOutput())
+	wires.StocksUpdate.RegisterInput(stock.UpdateChannel.GetBufferedOutput(1000))
 	wires.StocksNewObject.Offer(stock)
 	utils.RegisterUuid(uuid, stock)
 	return stock, nil

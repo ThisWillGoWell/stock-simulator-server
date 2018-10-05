@@ -9,7 +9,7 @@ services:
       - db
       - ts
     volumes:
-      - {{CONFIG_FILE}}:opt/config/
+      - ${CONFIG_FILE}:opt/config/
     environment:
       CONFIG_FILE: opt/config/config.yaml
       DB_URI: host=db port=5432 user=starket password=wordpass dbname=starket_db sslmode=disable

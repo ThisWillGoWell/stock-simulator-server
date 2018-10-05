@@ -37,10 +37,11 @@ func main() {
 	disableDb := os.Getenv("DISABLE_DB") == "True"
 	serveLog := os.Getenv("SERVE_LOG") == "True"
 	autoLoad := os.Getenv("AUTO_LOAD") == "True"
+	disableDbWrite := os.Getenv("DISABLE_DB_WRITE") == "True"
 
 	//start DB
 	if !disableDb {
-		database.InitDatabase()
+		database.InitDatabase(disableDbWrite)
 	}
 	if serveLog {
 		filepath := os.Getenv("FILE_SERVE")
@@ -51,7 +52,7 @@ func main() {
 	//ledger.EntriesLock.EnableDebug()
 
 	//Wiring of system
-	wires.ConnectWires(disableDb)
+	wires.ConnectWires()
 	//this takes the subscribe output and converts it to a message
 	change.StartDetectChanges()
 	session.StartSessionCleaner()

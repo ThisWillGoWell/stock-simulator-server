@@ -21,10 +21,10 @@ var (
 		`PRIMARY KEY(uuid)` +
 		`);`
 
-	notificationTableUpdateInsert = `INSERT into ` + notificationTableName + `(uuid, userUuid, seen, timestamp, type, notification) values($1, $2, $3, $4, $5) ` +
+	notificationTableUpdateInsert = `INSERT into ` + notificationTableName + `(uuid, userUuid, seen, type, timestamp, notification) values($1, $2, $3, $4, $5, $6) ` +
 		`ON CONFLICT (uuid) DO UPDATE SET seen=EXCLUDED.seen`
 
-	notificationTableQueryStatement = "SELECT uuid, portfolio_id, stock_id, amount, investment_value FROM " + notificationTableName + `;`
+	notificationTableQueryStatement = "SELECT uuid, userUuid, seen, timestamp, type, notification FROM " + notificationTableName + `;`
 	//getCurrentPrice()
 )
 
@@ -70,7 +70,7 @@ func populateNotification() {
 
 	rows, err := db.Query(notificationTableQueryStatement)
 	if err != nil {
-		log.Fatal("error databse")
+		log.Fatal("error reading notifications databse")
 		panic("could not populate notifications: " + err.Error())
 	}
 	defer rows.Close()

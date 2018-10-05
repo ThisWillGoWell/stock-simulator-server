@@ -2,6 +2,7 @@ package database
 
 import (
 	"errors"
+
 	"github.com/stock-simulator-server/src/ledger"
 )
 

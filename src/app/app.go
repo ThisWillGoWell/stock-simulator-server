@@ -6,7 +6,9 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"os"
+	"time"
 
+	"github.com/stock-simulator-server/src/order"
 	"github.com/stock-simulator-server/src/portfolio"
 
 	"github.com/stock-simulator-server/src/utils"
@@ -57,6 +59,11 @@ func LoadConfig() {
 	}
 	for _, portfolio := range portfolio.Portfolios {
 		portfolio.Wallet = 10000000
+		for stockId := range valuable.Stocks {
+			r := order.MakePurchaseOrder(stockId, portfolio.Uuid, 1)
+			<-r.ResponseChannel
+			<-time.After(100 * time.Millisecond)
+		}
 	}
 
 }

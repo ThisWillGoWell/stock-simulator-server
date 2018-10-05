@@ -25,14 +25,10 @@ var NotificationNewObject = duplicator.MakeDuplicator("notification-entries-new"
 var GlobalNewObjects = duplicator.MakeDuplicator("global-new-objects")
 var GlobalDeletes = duplicator.MakeDuplicator("global-deletes")
 var GlobalNotifications = duplicator.MakeDuplicator("global-notifications")
-var GlobalUpdates = duplicator.MakeDuplicator("global-new-objects")
+var GlobalUpdates = duplicator.MakeDuplicator("global-updates")
 var Globals = duplicator.MakeDuplicator("global-broadcast")
 
-// change detector
-var PublicSubscribeInputs = duplicator.MakeDuplicator("subscribe-inputs")
-var PublicSubscribeChagneOutputs = duplicator.MakeDuplicator("public-subscribe-updates")
-
-func ConnectWires(diableDb bool) {
+func ConnectWires() {
 	// Enable Copy Mode on all the global new input channels
 	UsersNewObject.EnableCopyMode()
 	StocksNewObject.EnableCopyMode()
@@ -43,16 +39,16 @@ func ConnectWires(diableDb bool) {
 	// enable copy mode only account, the rest have copy mode on a channel before
 	UsersUpdate.EnableCopyMode()
 
-	GlobalNewObjects.RegisterInput(UsersNewObject.GetBufferedOutput(5))
-	GlobalNewObjects.RegisterInput(StocksNewObject.GetBufferedOutput(5))
-	GlobalNewObjects.RegisterInput(PortfolioNewObject.GetBufferedOutput(5))
-	GlobalNewObjects.RegisterInput(LedgerNewObject.GetBufferedOutput(5))
+	GlobalNewObjects.RegisterInput(UsersNewObject.GetBufferedOutput(10000))
+	GlobalNewObjects.RegisterInput(StocksNewObject.GetBufferedOutput(10000))
+	GlobalNewObjects.RegisterInput(PortfolioNewObject.GetBufferedOutput(10000))
+	GlobalNewObjects.RegisterInput(LedgerNewObject.GetBufferedOutput(10000))
 
-	GlobalUpdates.RegisterInput(ItemsUpdate.GetBufferedOutput(5))
-	GlobalUpdates.RegisterInput(StocksUpdate.GetBufferedOutput(5))
-	GlobalUpdates.RegisterInput(PortfolioUpdate.GetBufferedOutput(5))
-	GlobalUpdates.RegisterInput(LedgerUpdate.GetBufferedOutput(5))
-	GlobalUpdates.RegisterInput(UsersUpdate.GetBufferedOutput(5))
-	GlobalUpdates.RegisterInput(NotificationUpdate.GetBufferedOutput(5))
+	GlobalUpdates.RegisterInput(ItemsUpdate.GetBufferedOutput(10000))
+	GlobalUpdates.RegisterInput(StocksUpdate.GetBufferedOutput(10000))
+	GlobalUpdates.RegisterInput(PortfolioUpdate.GetBufferedOutput(10000))
+	GlobalUpdates.RegisterInput(LedgerUpdate.GetBufferedOutput(10000))
+	GlobalUpdates.RegisterInput(UsersUpdate.GetBufferedOutput(10000))
+	GlobalUpdates.RegisterInput(NotificationUpdate.GetBufferedOutput(10000))
 
 }

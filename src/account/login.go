@@ -58,7 +58,6 @@ Build a new user
 set their Password to that provided
 */
 func NewUser(username, displayName, password string) (string, error) {
-	uuid := utils.SerialUuid()
 
 	if len(username) > 20 {
 		return "", errors.New("username too long")
@@ -83,15 +82,17 @@ func NewUser(username, displayName, password string) (string, error) {
 	if !isAllowedCharacterDisplayName(displayName) {
 		return "", errors.New("display name contains invalid characters")
 	}
+	uuid := utils.SerialUuid()
+	portUuid := utils.SerialUuid()
 
 	hashedPassword := hashAndSalt(password)
-	user, err := MakeUser(uuid, username, displayName, hashedPassword, "", "{}")
+	user, err := MakeUser(uuid, username, displayName, hashedPassword, portUuid, "{}")
 	if err != nil {
 		utils.RemoveUuid(uuid)
+		utils.RemoveUuid(portUuid)
 		return "", err
 	}
-	port, _ := portfolio.NewPortfolio(uuid)
-	user.PortfolioId = port.Uuid
+	portfolio.NewPortfolio(portUuid, uuid)
 	sessionToken := session.NewSessionToken(user.Uuid)
 	wires.UsersNewObject.Offer(user)
 	return sessionToken, nil

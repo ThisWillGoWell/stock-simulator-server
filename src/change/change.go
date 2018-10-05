@@ -1,7 +1,6 @@
 package change
 
 import (
-	"fmt"
 	"reflect"
 
 	"github.com/stock-simulator-server/src/wires"
@@ -138,7 +137,7 @@ func StartDetectChanges() {
 	//SubscribeUpdateInputs.EnableCopyMode()
 	//SubscribeUpdateInputs.EnableDebug()
 	//SubscribeUpdateOutput.EnableDebug()
-	subscribeUpdateChannel := wires.GlobalUpdates.GetBufferedOutput(100)
+	subscribeUpdateChannel := wires.GlobalUpdates.GetBufferedOutput(10000)
 	go func() {
 		for updateObj := range subscribeUpdateChannel {
 			update, ok := updateObj.(Identifiable)
@@ -149,7 +148,7 @@ func StartDetectChanges() {
 
 			changeDetect, exists := subscribeables[update.GetType()+update.GetId()]
 			if !exists {
-				panic(fmt.Sprintf("change detect recived something it does not know: %s:%s", update.GetId(), update.GetType()))
+				continue
 			}
 
 			changedFields := make([]*ChangeField, 0)

@@ -47,9 +47,8 @@ func (port *Portfolio) GetType() string {
 	return ObjectType
 }
 
-func NewPortfolio(userUUID string) (*Portfolio, error) {
-	uuid := utils.SerialUuid()
-	return MakePortfolio(uuid, userUUID, 100000, 0)
+func NewPortfolio(portfolioUuid, userUuid string) (*Portfolio, error) {
+	return MakePortfolio(portfolioUuid, userUuid, 100000, 0)
 }
 
 func MakePortfolio(uuid, userUUID string, wallet, level int64) (*Portfolio, error) {
@@ -76,7 +75,7 @@ func MakePortfolio(uuid, userUUID string, wallet, level int64) (*Portfolio, erro
 	port.UpdateChannel.EnableCopyMode()
 	change.RegisterPublicChangeDetect(port)
 	wires.PortfolioNewObject.Offer(port)
-	wires.PortfolioUpdate.RegisterInput(port.UpdateChannel.GetOutput())
+	wires.PortfolioUpdate.RegisterInput(port.UpdateChannel.GetBufferedOutput(1000))
 	utils.RegisterUuid(uuid, port)
 	go port.valuableUpdate()
 	return port, nil
@@ -87,7 +86,7 @@ async code that gets called whenever a stock or a ledger that the portfolio owns
 This then triggers a recalc of net worth and offers its self up as a update
 */
 func (port *Portfolio) valuableUpdate() {
-	updateChannel := port.UpdateInput.GetOutput()
+	updateChannel := port.UpdateInput.GetBufferedOutput(1000)
 	for range updateChannel {
 		port.Update()
 	}

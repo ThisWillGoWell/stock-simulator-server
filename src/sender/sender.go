@@ -14,25 +14,25 @@ var GlobalMessages = duplicator.MakeDuplicator("global-messages")
 
 func RunGlobalSender() {
 	go func() {
-		out := wires.GlobalNewObjects.GetBufferedOutput(10)
+		out := wires.GlobalNewObjects.GetBufferedOutput(10000)
 		for ele := range out {
 			GlobalMessages.Offer(messages.NewObjectMessage(ele.(change.Identifiable)))
 		}
 	}()
 	go func() {
-		out := wires.GlobalDeletes.GetBufferedOutput(10)
+		out := wires.GlobalDeletes.GetBufferedOutput(10000)
 		for ele := range out {
 			GlobalMessages.Offer(messages.BuildDeleteMessage(ele.(change.Identifiable)))
 		}
 	}()
 	go func() {
-		out := wires.GlobalNotifications.GetBufferedOutput(10)
+		out := wires.GlobalNotifications.GetBufferedOutput(10000)
 		for ele := range out {
 			GlobalMessages.Offer(messages.BuildNotificationMessage(ele))
 		}
 	}()
 	go func() {
-		out := change.PublicSubscribeChange.GetBufferedOutput(10)
+		out := change.PublicSubscribeChange.GetBufferedOutput(100000)
 		for ele := range out {
 			GlobalMessages.Offer(messages.BuildUpdateMessage(ele.(change.Identifiable)))
 		}
@@ -61,12 +61,12 @@ func NewSender(userUuid string) *Sender {
 		Output:        duplicator.MakeDuplicator("output-message-" + userUuid),
 		close:         make(chan interface{}),
 	}
-
-	sender.Updates.RegisterInput(change.PublicSubscribeChange.GetBufferedOutput(10))
+	sender.Output.RegisterInput(GlobalMessages.GetBufferedOutput(10000))
 	sender.runSendDeletes()
 	sender.runSendObjects()
 	sender.runSendUpdates()
 	sender.runSendNotifications()
+	sender.Output.EnableSink()
 	Senders[userUuid] = sender
 	return sender
 }
@@ -78,8 +78,11 @@ func GetSender(userUuid string) *Sender {
 func (s *Sender) GetOutput() chan interface{} {
 	s.lock.Acquire("new output")
 	defer s.lock.Release()
+	if s.activeClients == 0 {
+		s.Output.DiableSink()
+	}
 	s.activeClients += 1
-	return s.Output.GetBufferedOutput(10)
+	return s.Output.GetBufferedOutput(1000)
 }
 
 func (s *Sender) CloseOutput(ch chan interface{}) {
@@ -87,6 +90,9 @@ func (s *Sender) CloseOutput(ch chan interface{}) {
 	defer s.lock.Release()
 	s.Output.UnregisterOutput(ch)
 	s.activeClients -= 1
+	if s.activeClients == 0 {
+		s.Output.EnableSink()
+	}
 }
 
 func (s *Sender) RegisterUpdateInput(ch chan interface{}) {
@@ -109,7 +115,7 @@ func (s *Sender) stop() {
 }
 
 func (s *Sender) runSendObjects() {
-	object := s.NewObjects.GetBufferedOutput(10)
+	object := s.NewObjects.GetBufferedOutput(10000)
 	go func() {
 		for {
 			select {
@@ -123,7 +129,7 @@ func (s *Sender) runSendObjects() {
 }
 
 func (s *Sender) runSendUpdates() {
-	object := s.Updates.GetBufferedOutput(10)
+	object := s.Updates.GetBufferedOutput(1000)
 	go func() {
 		for {
 			select {
@@ -137,7 +143,7 @@ func (s *Sender) runSendUpdates() {
 }
 
 func (s *Sender) runSendDeletes() {
-	object := s.Deletes.GetBufferedOutput(10)
+	object := s.Deletes.GetBufferedOutput(1000)
 	go func() {
 		for {
 			select {
@@ -153,7 +159,7 @@ func (s *Sender) runSendDeletes() {
 }
 
 func (s *Sender) runSendNotifications() {
-	notifications := s.Notifications.GetBufferedOutput(10)
+	notifications := s.Notifications.GetBufferedOutput(1000)
 	go func() {
 		for {
 			select {

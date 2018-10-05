@@ -21,7 +21,6 @@ import (
 	"github.com/stock-simulator-server/src/valuable"
 )
 
-var clients = make(map[*Client]bool)
 var clientsLock = lock.NewLock("clients-lock")
 var connections = make(map[string]map[int]*Client)
 var currentId = 0
@@ -248,13 +247,13 @@ func (client *Client) processItemMessage(m *messages.BaseMessage) {
 		} else {
 			client.sendMessage(messages.BuildItemBuySuccessMessage(itemMessage.O.(*messages.ItemBuyMessage).ItemName, m.RequestID, uuid))
 		}
-	case *messages.ItemViewMessage:
-		result, err := items.ViewItem(itemMessage.O.(*messages.ItemViewMessage).ItemUuid, client.user.Uuid)
-		if err != nil {
-			client.sendMessage(messages.BuildItemViewFailedMessage(itemMessage.O.(*messages.ItemViewMessage).ItemUuid, m.RequestID, err))
-		} else {
-			client.sendMessage(messages.BuildItemViewMessage(itemMessage.O.(*messages.ItemViewMessage).ItemUuid, m.RequestID, result))
-		}
+	//case *messages.ItemViewMessage:
+	//	result, err := items.ViewItem(itemMessage.O.(*messages.ItemViewMessage).ItemUuid, client.user.Uuid)
+	//	if err != nil {
+	//		client.sendMessage(messages.BuildItemViewFailedMessage(itemMessage.O.(*messages.ItemViewMessage).ItemUuid, m.RequestID, err))
+	//	} else {
+	//		client.sendMessage(messages.BuildItemViewMessage(itemMessage.O.(*messages.ItemViewMessage).ItemUuid, m.RequestID, result))
+	//	}
 	case *messages.ItemUseMessage:
 		result, err := items.Use(itemMessage.O.(*messages.ItemUseMessage).ItemUuid, client.user.PortfolioId, client.user.Uuid, itemMessage.O.(*messages.ItemUseMessage).UseParameters)
 		if err != nil {

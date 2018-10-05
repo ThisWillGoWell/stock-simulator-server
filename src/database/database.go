@@ -6,6 +6,10 @@ import (
 	"os"
 	"time"
 
+	"github.com/stock-simulator-server/src/items"
+
+	"github.com/stock-simulator-server/src/notification"
+
 	_ "github.com/lib/pq"
 	"github.com/stock-simulator-server/src/account"
 	"github.com/stock-simulator-server/src/duplicator"
@@ -23,9 +27,7 @@ var dbLock = lock.NewLock("db lock")
 
 var DatabseWriter = duplicator.MakeDuplicator("database-writer")
 
-func InitDatabase() {
-	DatabseWriter.RegisterInput(wires.GlobalUpdates.GetOutput())
-	DatabseWriter.RegisterInput(wires.GlobalNewObjects.GetOutput())
+func InitDatabase(disableDbWrite bool) {
 	dbConStr := os.Getenv("DB_URI")
 	// if the env is not set, default to use the local host default port
 	database, err := sql.Open("postgres", dbConStr)
@@ -67,7 +69,8 @@ func InitDatabase() {
 	initPortfolio()
 	initStocksHistory()
 	initPortfolioHistory()
-
+	initNotification()
+	initItems()
 	initLedgerHistory()
 	initAccount()
 
@@ -75,20 +78,23 @@ func InitDatabase() {
 	populateStocks()
 	populatePortfolios()
 	populateUsers()
+	populateItems()
+	populateNotification()
 
 	for _, l := range ledger.Entries {
 		port := portfolio.Portfolios[l.PortfolioId]
 		stock := valuable.Stocks[l.StockId]
 		port.UpdateInput.RegisterInput(stock.UpdateChannel.GetBufferedOutput(10))
 		port.UpdateInput.RegisterInput(l.UpdateChannel.GetBufferedOutput(10))
-
 	}
 	for _, port := range portfolio.Portfolios {
 		port.Update()
 	}
 
 	runHistoricalQueries()
-	go databaseWriter()
+	if !disableDbWrite {
+		go databaseWriter()
+	}
 
 }
 
@@ -115,7 +121,7 @@ func databaseWriter() {
 	}()
 
 	go func() {
-		ledgerDBWrite := duplicator.MakeDuplicator("user-db-write")
+		ledgerDBWrite := duplicator.MakeDuplicator("ledger-db-write")
 		ledgerDBWrite.RegisterInput(wires.LedgerNewObject.GetBufferedOutput(5))
 		ledgerDBWrite.RegisterInput(wires.LedgerUpdate.GetBufferedOutput(5))
 		write := ledgerDBWrite.GetBufferedOutput(10)
@@ -127,28 +133,26 @@ func databaseWriter() {
 
 	go func() {
 		itemsDBWrite := duplicator.MakeDuplicator("portfolio-db-write")
-		itemsDBWrite.RegisterInput(wires.PortfolioNewObject.GetBufferedOutput(5))
-		itemsDBWrite.RegisterInput(wires.PortfolioNewObject.GetBufferedOutput(5))
+		itemsDBWrite.RegisterInput(wires.ItemsNewObjects.GetBufferedOutput(5))
+		itemsDBWrite.RegisterInput(wires.ItemsUpdate.GetBufferedOutput(5))
 		write := itemsDBWrite.GetBufferedOutput(10)
 		for val := range write {
-			writePortfolio(val.(*portfolio.Portfolio))
-			writePortfolioHistory(val.(*portfolio.Portfolio))
+			writeItem(val.(items.Item))
 		}
 	}()
 
 	go func() {
-		notificationDBWrite := duplicator.MakeDuplicator("portfolio-db-write")
+		notificationDBWrite := duplicator.MakeDuplicator("notification-db-write")
 		notificationDBWrite.RegisterInput(wires.NotificationNewObject.GetBufferedOutput(5))
 		notificationDBWrite.RegisterInput(wires.NotificationUpdate.GetBufferedOutput(5))
 		write := notificationDBWrite.GetBufferedOutput(10)
 		for val := range write {
-			writePortfolio(val.(*portfolio.Portfolio))
-			writePortfolioHistory(val.(*portfolio.Portfolio))
+			writeNotification(val.(*notification.Notification))
 		}
 	}()
 
 	go func() {
-		stockDBWrite := duplicator.MakeDuplicator("portfolio-db-write")
+		stockDBWrite := duplicator.MakeDuplicator("stock-db-write")
 		stockDBWrite.RegisterInput(wires.StocksNewObject.GetBufferedOutput(5))
 		stockDBWrite.RegisterInput(wires.StocksUpdate.GetBufferedOutput(5))
 		write := stockDBWrite.GetBufferedOutput(10)
@@ -157,4 +161,5 @@ func databaseWriter() {
 			writeStockHistory(val.(*valuable.Stock))
 		}
 	}()
+
 }

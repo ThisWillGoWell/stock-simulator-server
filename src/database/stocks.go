@@ -1,9 +1,10 @@
 package database
 
 import (
-	"github.com/stock-simulator-server/src/valuable"
 	"log"
 	"time"
+
+	"github.com/stock-simulator-server/src/valuable"
 )
 
 var (
