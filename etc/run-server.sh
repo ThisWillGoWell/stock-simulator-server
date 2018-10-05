@@ -2,6 +2,7 @@
 echo hello world
 pwd=$(pwd)
 export FILE_SERVE=$(pwd)/front_end
+export CONFIG_FILE=$(pwd)/front_end
 #if [ "$HOSTNAME" = high-in-the-clouds ]; then
 
 #else
