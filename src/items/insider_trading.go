@@ -1,6 +1,8 @@
 package items
 
 import (
+	"fmt"
+
 	"github.com/stock-simulator-server/src/money"
 	"github.com/stock-simulator-server/src/utils"
 	"github.com/stock-simulator-server/src/valuable"
@@ -38,11 +40,12 @@ func (InsiderTraderItemType) RequiredLevel() int64 {
 }
 
 type InsiderTradingItem struct {
-	Type     InsiderTraderItemType
-	UserUuid string           `json:"user_uuid"`
-	Uuid     string           `json:"uuid"`
-	Used     bool             `json:"used"`
-	Result   map[string]int64 `json:"view,omitempty"`
+	Type       InsiderTraderItemType
+	UserUuid   string           `json:"user_uuid"`
+	Uuid       string           `json:"uuid"`
+	Used       bool             `json:"used" change:"-"`
+	Result     map[string]int64 `json:"view,omitempty" change:"-"`
+	UpdateChan chan interface{} `json:"-"`
 }
 
 func (it *InsiderTradingItem) GetItemType() ItemType {
@@ -70,12 +73,17 @@ func (it *InsiderTradingItem) HasBeenUsed() bool {
 	return it.Used
 }
 
+func (it *InsiderTradingItem) GetUpdateChan() chan interface{} {
+	return it.UpdateChan
+}
+
 func newInsiderTradingItem(userUuid string) *InsiderTradingItem {
 	uuid := utils.SerialUuid()
 	item := &InsiderTradingItem{
-		UserUuid: userUuid,
-		Uuid:     uuid,
-		Used:     false,
+		UserUuid:   userUuid,
+		Uuid:       uuid,
+		Used:       false,
+		UpdateChan: make(chan interface{}),
 	}
 	utils.RegisterUuid(uuid, item)
 	return item
@@ -97,4 +105,8 @@ func (it *InsiderTradingItem) Activate(interface{}) (interface{}, error) {
 
 func (it *InsiderTradingItem) View() interface{} {
 	return it.Result
+}
+
+func (u *InsiderTraderItemType) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, insiderTradingItemType)), nil
 }

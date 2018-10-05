@@ -1,17 +1,20 @@
 package notification
 
 import (
+	"encoding/json"
 	"time"
+
+	"github.com/stock-simulator-server/src/wires"
+
+	"github.com/stock-simulator-server/src/account"
 
 	"github.com/stock-simulator-server/src/lock"
 
-	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/utils"
 
 	"github.com/pkg/errors"
 )
 
-var Objects = duplicator.MakeDuplicator("new-notifications")
 var notifcationLock = lock.NewLock("notifications")
 var notifications = make(map[string]*Notification)
 var notificationsUserUuid = make(map[string]map[string]*Notification)
@@ -30,24 +33,25 @@ func NewNotification(userUuid, t string, notification interface{}) *Notification
 	return MakeNotification(uuid, userUuid, t, time.Now(), false, notification)
 }
 
-func MakeNotification(itemUuid, userUuid, t string, timestamp time.Time, seen bool, notification interface{}) *Notification {
+func MakeNotification(uuid, userUuid, t string, timestamp time.Time, seen bool, notification interface{}) *Notification {
 	notifcationLock.Acquire("get-all-notifications")
 	defer notifcationLock.Release()
 	note := &Notification{
-		Uuid:         itemUuid,
+		Uuid:         uuid,
 		UserUuid:     userUuid,
 		Type:         t,
 		Notification: notification,
 		Timestamp:    timestamp,
 		Seen:         seen,
 	}
-	notifications[itemUuid] = note
+	notifications[uuid] = note
 	if _, ok := notificationsUserUuid[userUuid]; !ok {
 		notificationsUserUuid[userUuid] = make(map[string]*Notification)
 	}
-	notificationsUserUuid[userUuid][itemUuid] = note
-	utils.RegisterUuid(itemUuid, note)
-	Objects.Offer(note)
+	notificationsUserUuid[userUuid][uuid] = note
+	utils.RegisterUuid(uuid, note)
+	wires.NotificationNewObject.Offer(note)
+	account.SendNotifcation(userUuid, note)
 	return note
 }
 
@@ -60,24 +64,7 @@ func AcknowledgeNotification(uuid, userUuid string) error {
 		return errors.New("user does not own notification, what are you doing?")
 	}
 	notification.Seen = true
-	Objects.Offer(notification)
 	return nil
-}
-
-type TradeNotification struct {
-	Success   bool   `json:"success"`
-	Amount    int64  `json:"amount"`
-	StockUuid string `json:"stock"`
-	Err       string `json:"error,omitempty"`
-}
-
-func NewTradeNotifcation(userUuid string, success bool, amount int64, stockUuid string, err error) *Notification {
-	return NewNotification(userUuid, "trade", &TradeNotification{
-		Success:   success,
-		Amount:    amount,
-		StockUuid: stockUuid,
-		Err:       err.Error(),
-	})
 }
 
 type MailNotification struct {
@@ -102,12 +89,31 @@ func GetAllNotifications(userUuid string) []*Notification {
 	notifcationLock.Acquire("get-all-notifications")
 	defer notifcationLock.Release()
 	notifications := make([]*Notification, 0)
-	for _, notification := range notifications {
+	for _, notification := range notificationsUserUuid[userUuid] {
 		notifications = append(notifications, notification)
 	}
 	return notifications
 }
 
+func JsonToNotifcation(jsonString, notifactionType string) interface{} {
+	var i interface{}
+	switch notifactionType {
+	case NewItemNotificationType:
+		i = ItemNotification{}
+	case UsedItemNotificationType:
+		i = ItemNotification{}
+	case TradeNotificationType:
+		i = TradeNotification{}
+	case SendMoneyNotificationType:
+		i = MoneyTransferNotification{}
+	case RecieveNotificationType:
+		i = MoneyTransferNotification{}
+	}
+	json.Unmarshal([]byte(jsonString), &i)
+	return i
+}
+
+//**
 // todo
 //
 //func StartCleanNotifications() {

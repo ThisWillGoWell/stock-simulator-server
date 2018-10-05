@@ -3,6 +3,8 @@ package account
 import (
 	"errors"
 
+	"github.com/stock-simulator-server/src/wires"
+
 	"github.com/stock-simulator-server/src/portfolio"
 	"github.com/stock-simulator-server/src/session"
 	"github.com/stock-simulator-server/src/utils"
@@ -47,7 +49,7 @@ func ConnectUser(sessionToken string) (*User, error) {
 		return nil, errors.New("user found in session list but not in current users")
 	}
 	user.Active = true
-	UpdateChannel.Offer(user)
+	wires.UsersUpdate.Offer(user)
 	return user, nil
 }
 
@@ -83,13 +85,14 @@ func NewUser(username, displayName, password string) (string, error) {
 	}
 
 	hashedPassword := hashAndSalt(password)
-	user, err := MakeUser(uuid, username, displayName, hashedPassword, "", `{"swag":"420"}`)
+	user, err := MakeUser(uuid, username, displayName, hashedPassword, "", "{}")
 	if err != nil {
 		utils.RemoveUuid(uuid)
 		return "", err
 	}
 	port, _ := portfolio.NewPortfolio(uuid)
-	user.PortfolioId = port.UUID
+	user.PortfolioId = port.Uuid
 	sessionToken := session.NewSessionToken(user.Uuid)
+	wires.UsersNewObject.Offer(user)
 	return sessionToken, nil
 }

@@ -51,7 +51,7 @@ func writePortfolioHistory(port *portfolio.Portfolio) {
 		ts.Close()
 		panic("could not begin portfolio history write init: " + err.Error())
 	}
-	_, err = tx.Exec(portfolioHistoryTableUpdateInsert, port.UUID, port.NetWorth, port.Wallet)
+	_, err = tx.Exec(portfolioHistoryTableUpdateInsert, port.Uuid, port.NetWorth, port.Wallet)
 	if err != nil {
 		tx.Rollback()
 		panic("error occurred while insert portfolio in table " + err.Error())

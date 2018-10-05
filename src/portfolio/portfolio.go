@@ -7,6 +7,7 @@ import (
 	"github.com/stock-simulator-server/src/change"
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/ledger"
+	"github.com/stock-simulator-server/src/level"
 	"github.com/stock-simulator-server/src/lock"
 	"github.com/stock-simulator-server/src/utils"
 	"github.com/stock-simulator-server/src/valuable"
@@ -25,7 +26,7 @@ Portfolios are the $$$ part of a user
 */
 type Portfolio struct {
 	UserUUID string `json:"user_uuid"`
-	UUID     string `json:"uuid"`
+	Uuid     string `json:"uuid"`
 	Wallet   int64  `json:"wallet" change:"-"`
 	NetWorth int64  `json:"net_worth" change:"-"`
 
@@ -34,12 +35,12 @@ type Portfolio struct {
 
 	UpdateChannel *duplicator.ChannelDuplicator `json:"-"`
 	UpdateInput   *duplicator.ChannelDuplicator `json:"-"`
-
-	Lock *lock.Lock `json:"-"`
+	Level         int64                         `json:"level" change:"-"`
+	Lock          *lock.Lock                    `json:"-"`
 }
 
 func (port *Portfolio) GetId() string {
-	return port.UUID
+	return port.Uuid
 }
 
 func (port *Portfolio) GetType() string {
@@ -48,10 +49,10 @@ func (port *Portfolio) GetType() string {
 
 func NewPortfolio(userUUID string) (*Portfolio, error) {
 	uuid := utils.SerialUuid()
-	return MakePortfolio(uuid, userUUID, 100000)
+	return MakePortfolio(uuid, userUUID, 100000, 0)
 }
 
-func MakePortfolio(uuid, userUUID string, wallet int64) (*Portfolio, error) {
+func MakePortfolio(uuid, userUUID string, wallet, level int64) (*Portfolio, error) {
 	//PortfoliosUpdateChannel.EnableDebug("port update")
 	PortfoliosLock.Acquire("new-portfolio")
 	defer PortfoliosLock.Release()
@@ -62,12 +63,13 @@ func MakePortfolio(uuid, userUUID string, wallet int64) (*Portfolio, error) {
 	port :=
 		&Portfolio{
 			UserUUID:      userUUID,
-			UUID:          uuid,
+			Uuid:          uuid,
 			Wallet:        wallet,
 			UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-update", uuid)),
 			Lock:          lock.NewLock(fmt.Sprintf("portfolio-%s", uuid)),
 			UpdateInput:   duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-valueable-update", uuid)),
 			NetWorth:      wallet,
+			Level:         level,
 		}
 	Portfolios[uuid] = port
 	//port.Lock.EnableDebug()
@@ -114,7 +116,7 @@ func GetPortfolio(userUUID string) (*Portfolio, error) {
 func (port *Portfolio) calculateNetWorth() int64 {
 
 	sum := int64(0)
-	for valueStr, entry := range ledger.EntriesPortfolioStock[port.UUID] {
+	for valueStr, entry := range ledger.EntriesPortfolioStock[port.Uuid] {
 		value := valuable.Stocks[valueStr]
 		sum += value.GetValue() * entry.Amount
 	}
@@ -135,4 +137,23 @@ func GetAllPortfolios() []*Portfolio {
 		i += 1
 	}
 	return lst
+}
+
+func (port *Portfolio) LevelUp() error {
+	port.Lock.Acquire("level up")
+	defer port.Lock.Release()
+	nextLevel := port.Level + 1
+	level, exists := level.Levels[nextLevel]
+	if !exists {
+		return errors.New("there is no next level")
+	}
+	if port.Wallet < level.Cost {
+		return errors.New("not enough $$")
+	}
+	port.Wallet = port.Wallet - level.Cost
+	port.Level = nextLevel
+
+	go port.Update()
+	wires.PortfolioUpdate.Offer(port)
+	return nil
 }

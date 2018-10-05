@@ -2,6 +2,7 @@ package order
 
 import (
 	"github.com/stock-simulator-server/src/ledger"
+	"github.com/stock-simulator-server/src/notification"
 	"github.com/stock-simulator-server/src/portfolio"
 	"github.com/stock-simulator-server/src/valuable"
 	"github.com/stock-simulator-server/src/wires"
@@ -85,7 +86,6 @@ func successOrder(o Order) {
 }
 
 func failureOrder(msg string, o Order) {
-
 	o.rc() <- &Response{
 		Order:   o,
 		Success: false,
@@ -154,6 +154,7 @@ func executeTrade(o *PurchaseOrder) {
 		ledgerEntry.InvestmentValue += costOfTrade
 		//add the holder amount
 		ledgerEntry.Amount += o.Amount
+
 		successOrder(o)
 	} else {
 		if !ledgerExists {
@@ -178,7 +179,7 @@ func executeTrade(o *PurchaseOrder) {
 		costOfTrade := amount * value.GetValue()
 		port.Wallet += costOfTrade
 		ledgerEntry.InvestmentValue -= costOfTrade
-		if ledgerEntry.Amount == 0{
+		if ledgerEntry.Amount == 0 {
 			ledgerEntry.InvestmentValue = 0
 		}
 		successOrder(o)
@@ -191,6 +192,7 @@ func executeTrade(o *PurchaseOrder) {
 		ledgerEntry.UpdateChannel.Offer(ledgerEntry)
 		// todo remove also
 	}
+	notification.DoneTradeNotification(port.UserUUID, value.Uuid, o.Amount)
 	go value.Update()
 	go port.Update()
 }
@@ -202,6 +204,10 @@ func executeTransfer(o *TransferOrder) {
 	port, exists := portfolio.Portfolios[o.PortfolioID]
 	if !exists {
 		failureOrder("giver portfolio not known", o)
+	}
+
+	if port.Level == 0 {
+		failureOrder("need to be level 1 to transfer money", o)
 	}
 
 	receiver, exists := portfolio.Portfolios[o.ReceiverID]
@@ -226,6 +232,7 @@ func executeTransfer(o *TransferOrder) {
 	receiver.Wallet += o.Amount
 	port.Wallet -= o.Amount
 	successOrder(o)
+	notification.SendMoneyTradeNotification(port.UserUUID, receiver.UserUUID, o.Amount)
 	go port.Update()
 	go receiver.Update()
 }

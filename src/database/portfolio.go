@@ -1,8 +1,9 @@
 package database
 
 import (
-	"github.com/stock-simulator-server/src/portfolio"
 	"log"
+
+	"github.com/stock-simulator-server/src/portfolio"
 )
 
 var (
@@ -14,9 +15,10 @@ var (
 		`name text NOT NULL,` +
 		`wallet int NOT NULL,` +
 		`PRIMARY KEY(uuid)` +
+		`level int NOT NULL, ` +
 		`);`
 
-	portfolioTableUpdateInsert = `INSERT into ` + portfolioTableName + `(uuid, name, wallet) values($1, $2, $3) ` +
+	portfolioTableUpdateInsert = `INSERT into ` + portfolioTableName + `(uuid, name, wallet, level) values($1, $2, $3, $4) ` +
 		`ON CONFLICT (uuid) DO UPDATE SET wallet=EXCLUDED.wallet;`
 
 	portfolioTableQueryStatement = "SELECT uuid, name, wallet FROM " + portfolioTableName + `;`
@@ -46,7 +48,7 @@ func writePortfolio(port *portfolio.Portfolio) {
 		db.Close()
 		panic("could not begin portfolio init: " + err.Error())
 	}
-	_, err = tx.Exec(portfolioTableUpdateInsert, port.UUID, port.UserUUID, port.Wallet)
+	_, err = tx.Exec(portfolioTableUpdateInsert, port.Uuid, port.UserUUID, port.Wallet, port.Level)
 	if err != nil {
 		tx.Rollback()
 		panic("error occurred while insert portfolio in table " + err.Error())
@@ -56,20 +58,20 @@ func writePortfolio(port *portfolio.Portfolio) {
 
 func populatePortfolios() {
 	var uuid, userUuid string
-	var wallet int64
+	var wallet, level int64
 
 	rows, err := db.Query(portfolioTableQueryStatement)
 	if err != nil {
-		log.Fatal("error quiering databse")
+		log.Fatal("error query database", err)
 		panic("could not populate portfolios: " + err.Error())
 	}
 	defer rows.Close()
 	for rows.Next() {
-		err := rows.Scan(&uuid, &userUuid, &wallet)
+		err := rows.Scan(&uuid, &userUuid, &wallet, &level)
 		if err != nil {
 			log.Fatal(err)
 		}
-		portfolio.MakePortfolio(uuid, userUuid, wallet)
+		portfolio.MakePortfolio(uuid, userUuid, wallet, level)
 	}
 	err = rows.Err()
 	if err != nil {

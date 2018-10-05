@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/stock-simulator-server/src/wires"
+
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
 )
@@ -136,12 +138,12 @@ func StartDetectChanges() {
 	//SubscribeUpdateInputs.EnableCopyMode()
 	//SubscribeUpdateInputs.EnableDebug()
 	//SubscribeUpdateOutput.EnableDebug()
-	subscribeUpdateChannel := PublicSubscribeChange.GetBufferedOutput(100)
+	subscribeUpdateChannel := wires.GlobalUpdates.GetBufferedOutput(100)
 	go func() {
 		for updateObj := range subscribeUpdateChannel {
 			update, ok := updateObj.(Identifiable)
 			if !ok {
-				panic("got a non identifiable in the change detector")
+				continue
 			}
 			subscribeablesLock.Acquire("detect change")
 

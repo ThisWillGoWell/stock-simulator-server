@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/stock-simulator-server/src/items"
+	"github.com/stock-simulator-server/src/messages"
+	"github.com/stock-simulator-server/src/sender"
 
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
@@ -13,7 +15,6 @@ import (
 	"github.com/stock-simulator-server/src/histroy"
 	"github.com/stock-simulator-server/src/ledger"
 	"github.com/stock-simulator-server/src/lock"
-	"github.com/stock-simulator-server/src/messages"
 	"github.com/stock-simulator-server/src/notification"
 	"github.com/stock-simulator-server/src/order"
 	"github.com/stock-simulator-server/src/portfolio"
@@ -119,9 +120,10 @@ func (client *Client) tx(sessionToken string) {
 	for _, v := range notification.GetAllNotifications(client.user.Uuid) {
 		client.sendMessage(messages.BuildNotificationMessage(v))
 	}
-	for _, v := range items.GetItemsForUser(client.user.Uuid) {
+	for _, v := range items.GetItemsForUser(client.user.PortfolioId) {
 		client.sendMessage(messages.NewObjectMessage(v))
 	}
+
 	//finally register the broadcast message as a input to the clients message sender
 	//do this after the payload to prevent an update from being sent before the object prototype is sent
 	send := client.user.Sender.GetOutput()
@@ -161,6 +163,10 @@ func (client *Client) rx() {
 			client.processTransferMessage(message)
 		case messages.SetAction:
 			client.processSetMessage(message)
+		case messages.ItemAction:
+			client.processItemMessage(message)
+		case messages.LevelUpAction:
+			client.processLevelUpAction(message)
 		default:
 			client.sendMessage(messages.NewErrorMessage("action is not known"))
 		}
@@ -192,7 +198,7 @@ func (client *Client) processChatMessage(message messages.Message) {
 	chatMessage.Author = client.user.Uuid
 	chatMessage.Timestamp = time.Now()
 	//database.SaveChatMessage(chatMessage.Author, chatMessage.Message)
-	account.GlobalMessages.Offer(messages.BuildChatMessage(message.(*messages.ChatMessage)))
+	sender.GlobalMessages.Offer(messages.BuildChatMessage(message.(*messages.ChatMessage)))
 }
 
 func (client *Client) processTradeMessage(baseMessage *messages.BaseMessage) {
@@ -232,27 +238,29 @@ func (client *Client) processQueryMessage(baseMessage *messages.BaseMessage) {
 	}()
 }
 
-func (client *Client) processItemMessage(m messages.BaseMessage) {
-	itemMessage := m.Msg.(messages.ItemMessage)
+func (client *Client) processItemMessage(m *messages.BaseMessage) {
+	itemMessage := m.Msg.(*messages.ItemMessage)
 	switch itemMessage.O.(type) {
-	case messages.ItemBuyMessage:
-		err := items.BuyItem(client.user.Uuid, itemMessage.O.(messages.ItemBuyMessage).ItemName)
+	case *messages.ItemBuyMessage:
+		uuid, err := items.BuyItem(client.user.PortfolioId, client.user.Uuid, itemMessage.O.(*messages.ItemBuyMessage).ItemName)
 		if err != nil {
-			client.sendMessage(messages.BuildItemBuyFailedMessage(itemMessage.O.(messages.ItemBuyMessage).ItemName, m.RequestID, err))
-		}
-	case messages.ItemViewMessage:
-		result, err := items.ViewItem(itemMessage.O.(messages.ItemViewMessage).ItemUuid, client.user.Uuid)
-		if err != nil {
-			client.sendMessage(messages.BuildItemViewFailedMessage(itemMessage.O.(messages.ItemViewMessage).ItemUuid, m.RequestID, err))
+			client.sendMessage(messages.BuildItemBuyFailedMessage(itemMessage.O.(*messages.ItemBuyMessage).ItemName, m.RequestID, err))
 		} else {
-			client.sendMessage(messages.BuildItemViewMessage(itemMessage.O.(messages.ItemViewMessage).ItemUuid, m.RequestID, result))
+			client.sendMessage(messages.BuildItemBuySuccessMessage(itemMessage.O.(*messages.ItemBuyMessage).ItemName, m.RequestID, uuid))
 		}
-	case messages.ItemUseMessage:
-		result, err := items.Use(itemMessage.O.(messages.ItemUseMessage).ItemUuid, client.user.Uuid, itemMessage.O.(messages.ItemUseMessage).UseParameters)
+	case *messages.ItemViewMessage:
+		result, err := items.ViewItem(itemMessage.O.(*messages.ItemViewMessage).ItemUuid, client.user.Uuid)
 		if err != nil {
-			client.sendMessage(messages.BuildItemUseFailedMessage(itemMessage.O.(messages.ItemUseMessage).ItemUuid, m.RequestID, err))
+			client.sendMessage(messages.BuildItemViewFailedMessage(itemMessage.O.(*messages.ItemViewMessage).ItemUuid, m.RequestID, err))
 		} else {
-			client.sendMessage(messages.BuildItemUseMessage(itemMessage.O.(messages.ItemUseMessage).ItemUuid, m.RequestID, result))
+			client.sendMessage(messages.BuildItemViewMessage(itemMessage.O.(*messages.ItemViewMessage).ItemUuid, m.RequestID, result))
+		}
+	case *messages.ItemUseMessage:
+		result, err := items.Use(itemMessage.O.(*messages.ItemUseMessage).ItemUuid, client.user.PortfolioId, client.user.Uuid, itemMessage.O.(*messages.ItemUseMessage).UseParameters)
+		if err != nil {
+			client.sendMessage(messages.BuildItemUseFailedMessage(itemMessage.O.(*messages.ItemUseMessage).ItemUuid, m.RequestID, err))
+		} else {
+			client.sendMessage(messages.BuildItemUseMessage(itemMessage.O.(*messages.ItemUseMessage).ItemUuid, m.RequestID, result))
 		}
 	}
 }
@@ -296,4 +304,9 @@ func (client *Client) processSetMessage(baseMessage *messages.BaseMessage) {
 	}
 	client.sendMessage(messages.BuildResponseMsg(response, baseMessage.RequestID))
 
+}
+
+func (client *Client) processLevelUpAction(baseMessage *messages.BaseMessage) {
+	err := portfolio.Portfolios[client.user.PortfolioId].LevelUp()
+	client.sendMessage(messages.BuildLevelUpResponse(baseMessage.RequestID, err))
 }

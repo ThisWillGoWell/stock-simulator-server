@@ -7,6 +7,8 @@ import (
 	"math/rand"
 	"os"
 
+	"github.com/stock-simulator-server/src/portfolio"
+
 	"github.com/stock-simulator-server/src/utils"
 	"github.com/stock-simulator-server/src/valuable"
 
@@ -52,6 +54,9 @@ func LoadConfig() {
 		if err != nil {
 			fmt.Println("error adding user: ", err)
 		}
+	}
+	for _, portfolio := range portfolio.Portfolios {
+		portfolio.Wallet = 10000000
 	}
 
 }

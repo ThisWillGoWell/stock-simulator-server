@@ -19,6 +19,9 @@ var StocksNewObject = duplicator.MakeDuplicator("new-valuable")
 var LedgerUpdate = duplicator.MakeDuplicator("ledger-entries-update")
 var LedgerNewObject = duplicator.MakeDuplicator("leger-entries-new")
 
+var NotificationUpdate = duplicator.MakeDuplicator("notification-entries-update")
+var NotificationNewObject = duplicator.MakeDuplicator("notification-entries-new")
+
 var GlobalNewObjects = duplicator.MakeDuplicator("global-new-objects")
 var GlobalDeletes = duplicator.MakeDuplicator("global-deletes")
 var GlobalNotifications = duplicator.MakeDuplicator("global-notifications")
@@ -35,13 +38,21 @@ func ConnectWires(diableDb bool) {
 	StocksNewObject.EnableCopyMode()
 	PortfolioNewObject.EnableCopyMode()
 	LedgerNewObject.EnableCopyMode()
+	NotificationNewObject.EnableCopyMode()
 
 	// enable copy mode only account, the rest have copy mode on a channel before
 	UsersUpdate.EnableCopyMode()
 
-	GlobalUpdates.RegisterInput(ItemsUpdate.GetOutput())
-	GlobalUpdates.RegisterInput(StocksUpdate.GetOutput())
-	GlobalUpdates.RegisterInput(PortfolioUpdate.GetOutput())
-	GlobalUpdates.RegisterInput(LedgerUpdate.GetOutput())
+	GlobalNewObjects.RegisterInput(UsersNewObject.GetBufferedOutput(5))
+	GlobalNewObjects.RegisterInput(StocksNewObject.GetBufferedOutput(5))
+	GlobalNewObjects.RegisterInput(PortfolioNewObject.GetBufferedOutput(5))
+	GlobalNewObjects.RegisterInput(LedgerNewObject.GetBufferedOutput(5))
+
+	GlobalUpdates.RegisterInput(ItemsUpdate.GetBufferedOutput(5))
+	GlobalUpdates.RegisterInput(StocksUpdate.GetBufferedOutput(5))
+	GlobalUpdates.RegisterInput(PortfolioUpdate.GetBufferedOutput(5))
+	GlobalUpdates.RegisterInput(LedgerUpdate.GetBufferedOutput(5))
+	GlobalUpdates.RegisterInput(UsersUpdate.GetBufferedOutput(5))
+	GlobalUpdates.RegisterInput(NotificationUpdate.GetBufferedOutput(5))
 
 }

@@ -43,11 +43,12 @@ func (MailItemType) GetActivateParameters() interface{} {
 }
 
 type MailItem struct {
-	Type     MailItemType       `json:"type"`
-	UserUuid string             `json:"user_uuid"`
-	Uuid     string             `json:"uuid"`
-	Used     bool               `json:"used"`
-	Result   MailItemParameters `json:"result,omitempty"`
+	Type       MailItemType       `json:"type"`
+	UserUuid   string             `json:"user_uuid"`
+	Uuid       string             `json:"uuid"`
+	Used       bool               `json:"used"`
+	Result     MailItemParameters `json:"result,omitempty"`
+	UpdateChan chan interface{}   `json:"-"`
 }
 
 func newMailItem(userUuid string) *MailItem {
@@ -91,6 +92,10 @@ func (it *MailItem) RequiredLevel() int64 {
 
 func (it *MailItem) View() interface{} {
 	return it.Result
+}
+
+func (it *MailItem) GetUpdateChan() chan interface{} {
+	return it.UpdateChan
 }
 
 func (it *MailItem) Activate(parameters interface{}) (interface{}, error) {

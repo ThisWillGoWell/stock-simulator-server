@@ -1,16 +1,15 @@
-package account
+package sender
 
 import (
 	"github.com/stock-simulator-server/src/change"
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
 	"github.com/stock-simulator-server/src/messages"
-	"github.com/stock-simulator-server/src/notification"
 	"github.com/stock-simulator-server/src/wires"
 )
 
-var UserObjectSubscribes = make(map[string]*duplicator.ChannelDuplicator)
-var UserNotifcations = make(map[string]*duplicator.ChannelDuplicator)
+var Senders = make(map[string]*Sender)
+
 var GlobalMessages = duplicator.MakeDuplicator("global-messages")
 
 func RunGlobalSender() {
@@ -29,7 +28,7 @@ func RunGlobalSender() {
 	go func() {
 		out := wires.GlobalNotifications.GetBufferedOutput(10)
 		for ele := range out {
-			GlobalMessages.Offer(messages.BuildNotificationMessage(ele.(*notification.Notification)))
+			GlobalMessages.Offer(messages.BuildNotificationMessage(ele))
 		}
 	}()
 	go func() {
@@ -40,7 +39,7 @@ func RunGlobalSender() {
 	}()
 }
 
-type sender struct {
+type Sender struct {
 	lock          *lock.Lock
 	activeClients int
 	NewObjects    *duplicator.ChannelDuplicator
@@ -51,8 +50,8 @@ type sender struct {
 	close         chan interface{}
 }
 
-func newSender(userUuid string) *sender {
-	sender := &sender{
+func NewSender(userUuid string) *Sender {
+	sender := &Sender{
 		lock:          lock.NewLock("client-user-Sender-" + userUuid),
 		activeClients: 0,
 		NewObjects:    duplicator.MakeDuplicator("objects-Sender-" + userUuid),
@@ -62,45 +61,39 @@ func newSender(userUuid string) *sender {
 		Output:        duplicator.MakeDuplicator("output-message-" + userUuid),
 		close:         make(chan interface{}),
 	}
+
+	sender.Updates.RegisterInput(change.PublicSubscribeChange.GetBufferedOutput(10))
 	sender.runSendDeletes()
 	sender.runSendObjects()
 	sender.runSendUpdates()
 	sender.runSendNotifications()
+	Senders[userUuid] = sender
 	return sender
 }
 
-func runSendItems() {
-	go func() {
-		for o := range wires.ItemsNewObjects.GetBufferedOutput(10) {
-			n := o.(notification.Notification)
-			user, exists := UserList[n.UserUuid]
-			if !exists {
-				panic("got a notification, but no user name")
-			}
-			user.Sender.NewObjects.Offer(n)
-		}
-	}()
+func GetSender(userUuid string) *Sender {
+	return Senders[userUuid]
 }
 
-func (s *sender) GetOutput() chan interface{} {
+func (s *Sender) GetOutput() chan interface{} {
 	s.lock.Acquire("new output")
 	defer s.lock.Release()
 	s.activeClients += 1
 	return s.Output.GetBufferedOutput(10)
 }
 
-func (s *sender) CloseOutput(ch chan interface{}) {
+func (s *Sender) CloseOutput(ch chan interface{}) {
 	s.lock.Acquire("close output")
 	defer s.lock.Release()
 	s.Output.UnregisterOutput(ch)
 	s.activeClients -= 1
 }
 
-func (s *sender) RegisterUpdateInput(ch chan interface{}) {
+func (s *Sender) RegisterUpdateInput(ch chan interface{}) {
 	s.Updates.RegisterInput(ch)
 }
 
-func (s *sender) stop() {
+func (s *Sender) stop() {
 	for i := 0; i < 4; i++ {
 		s.close <- nil
 	}
@@ -115,7 +108,7 @@ func (s *sender) stop() {
 	close(s.close)
 }
 
-func (s *sender) runSendObjects() {
+func (s *Sender) runSendObjects() {
 	object := s.NewObjects.GetBufferedOutput(10)
 	go func() {
 		for {
@@ -129,7 +122,7 @@ func (s *sender) runSendObjects() {
 	}()
 }
 
-func (s *sender) runSendUpdates() {
+func (s *Sender) runSendUpdates() {
 	object := s.Updates.GetBufferedOutput(10)
 	go func() {
 		for {
@@ -143,7 +136,7 @@ func (s *sender) runSendUpdates() {
 	}()
 }
 
-func (s *sender) runSendDeletes() {
+func (s *Sender) runSendDeletes() {
 	object := s.Deletes.GetBufferedOutput(10)
 	go func() {
 		for {
@@ -159,13 +152,13 @@ func (s *sender) runSendDeletes() {
 	}()
 }
 
-func (s *sender) runSendNotifications() {
+func (s *Sender) runSendNotifications() {
 	notifications := s.Notifications.GetBufferedOutput(10)
 	go func() {
 		for {
 			select {
 			case newNotifications := <-notifications:
-				s.Output.Offer(messages.BuildNotificationMessage(newNotifications.(*notification.Notification)))
+				s.Output.Offer(messages.BuildNotificationMessage(newNotifications))
 			case <-s.close:
 				break
 			}

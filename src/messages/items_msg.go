@@ -25,6 +25,7 @@ type ItemMessage struct {
 func (*ItemMessage) message() { return }
 
 type ItemBuyMessage struct {
+	ItemUid  string `json:"uuid"`
 	ItemName string `json:"item_name"`
 	Success  bool   `json:"success"`
 	Err      string `json:"err,omitempty"`
@@ -45,9 +46,24 @@ type ItemViewMessage struct {
 	Err      string      `json:"err"`
 }
 
+func BuildItemBuySuccessMessage(itemName, requestId, itemUuid string) *BaseMessage {
+	return &BaseMessage{
+		Action: ResponseAction,
+		Msg: &ItemMessage{
+			Action: BuyItemAction,
+			O: &ItemBuyMessage{
+				ItemName: itemName,
+				Success:  true,
+				ItemUid:  itemUuid,
+			},
+		},
+		RequestID: requestId,
+	}
+}
+
 func BuildItemBuyFailedMessage(itemName, requestId string, err error) *BaseMessage {
 	return &BaseMessage{
-		Action: ItemAction,
+		Action: ResponseAction,
 		Msg: &ItemMessage{
 			Action: BuyItemAction,
 			O: &ItemBuyMessage{
@@ -62,7 +78,7 @@ func BuildItemBuyFailedMessage(itemName, requestId string, err error) *BaseMessa
 
 func BuildItemUseFailedMessage(itemUuid, requestId string, err error) *BaseMessage {
 	return &BaseMessage{
-		Action: ItemAction,
+		Action: ResponseAction,
 		Msg: &ItemMessage{
 			Action: UseItemAction,
 			O: &ItemUseMessage{
@@ -77,7 +93,7 @@ func BuildItemUseFailedMessage(itemUuid, requestId string, err error) *BaseMessa
 
 func BuildItemUseMessage(itemUUid, requestId string, result interface{}) *BaseMessage {
 	return &BaseMessage{
-		Action: ItemAction,
+		Action: ResponseAction,
 		Msg: &ItemMessage{
 			Action: UseItemAction,
 			O: &ItemUseMessage{
@@ -92,7 +108,7 @@ func BuildItemUseMessage(itemUUid, requestId string, result interface{}) *BaseMe
 
 func BuildItemViewFailedMessage(itemUuid, requestId string, err error) *BaseMessage {
 	return &BaseMessage{
-		Action: ItemAction,
+		Action: ResponseAction,
 		Msg: &ItemMessage{
 			Action: ViewItemAction,
 			O: &ItemViewMessage{
@@ -107,7 +123,7 @@ func BuildItemViewFailedMessage(itemUuid, requestId string, err error) *BaseMess
 
 func BuildItemViewMessage(itemUUid, requestId string, result interface{}) *BaseMessage {
 	return &BaseMessage{
-		Action: ItemAction,
+		Action: ResponseAction,
 		Msg: &ItemMessage{
 			Action: ViewItemAction,
 			O: &ItemViewMessage{

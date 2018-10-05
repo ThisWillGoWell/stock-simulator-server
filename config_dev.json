@@ -2,21 +2,20 @@
   "stocks": {
     "CHUNT": {
       "name": "Slut Hut",
-      "change": "1s"
-    },
-    "ABBV": {
-      "name": "AbbVie Inc.",
-      "change": "10s"
+      "change": "30s"
     }
   },
   "accounts": {
     "Will": {
       "display_name": "Lil Guzman",
-      "password": "pass"
+      "password": "pass",
+      "wallet": 100000000
     },
-    "Chunt": {
-      "display_name": "Chuntastic",
-      "password": "pass"
+    "Billy": {
+      "display_name": "Big Guzman",
+      "password": "pass",
+      "wallet": 100000000
     }
+
   }
 }

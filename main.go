@@ -7,7 +7,8 @@ import (
 	"runtime"
 	"runtime/pprof"
 
-	"github.com/stock-simulator-server/src/account"
+	"github.com/stock-simulator-server/src/sender"
+
 	"github.com/stock-simulator-server/src/app"
 	"github.com/stock-simulator-server/src/change"
 	"github.com/stock-simulator-server/src/database"
@@ -54,7 +55,7 @@ func main() {
 	//this takes the subscribe output and converts it to a message
 	change.StartDetectChanges()
 	session.StartSessionCleaner()
-	account.RunUserSend()
+	sender.RunGlobalSender()
 
 	order.Run()
 	valuable.StartStockStimulation()

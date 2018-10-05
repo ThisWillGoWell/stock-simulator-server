@@ -2,8 +2,6 @@ package messages
 
 import (
 	"time"
-
-	"github.com/stock-simulator-server/src/notification"
 )
 
 const NotificationAction = "notification"
@@ -33,16 +31,10 @@ type NotificationAckMessage struct {
 
 func (*NotificationAckMessage) message() { return }
 
-func BuildNotificationMessage(n *notification.Notification) *BaseMessage {
+func BuildNotificationMessage(n interface{}) *BaseMessage {
 	return &BaseMessage{
 		Action: NotificationAction,
-		Msg: &NotificationMessage{
-			Notification: n.Notification,
-			Seen:         n.Seen,
-			Uuid:         n.Uuid,
-			Timestamp:    n.Timestamp,
-			Type:         n.Type,
-		},
+		Msg:    n,
 	}
 }
 

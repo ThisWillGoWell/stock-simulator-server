@@ -5,16 +5,17 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/stock-simulator-server/src/sender"
+
+	"github.com/stock-simulator-server/src/change"
+
 	"github.com/stock-simulator-server/src/wires"
 
 	"unicode"
 
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
-	"github.com/stock-simulator-server/src/notification"
-	"github.com/stock-simulator-server/src/portfolio"
 	"github.com/stock-simulator-server/src/session"
-	"github.com/stock-simulator-server/src/titles"
 	"github.com/stock-simulator-server/src/utils"
 )
 
@@ -24,9 +25,6 @@ var UserList = make(map[string]*User)
 // keep the username to uuid list
 var uuidList = make(map[string]string)
 var UserListLock = lock.NewLock("user-list")
-
-var NewObjectChannel = duplicator.MakeDuplicator("New User")
-var UpdateChannel = duplicator.MakeDuplicator("User Update")
 
 /*
 User Object
@@ -43,27 +41,8 @@ type User struct {
 	PortfolioId    string                        `json:"portfolio_uuid"`
 	Config         map[string]interface{}        `json:"-"`
 	ConfigStr      string                        `json:"-"`
-	Level          int64                         `json:"level" change:"-"`
 	UserUpdateChan *duplicator.ChannelDuplicator `json:"-"`
-	Sender         *sender                       `json:"-"`
-}
-
-func RunUserSend() {
-	runSendNotification()
-	runSendItems()
-}
-
-func runSendNotification() {
-	go func() {
-		for o := range notification.Objects.GetBufferedOutput(10) {
-			n := o.(notification.Notification)
-			user, exists := UserList[n.UserUuid]
-			if !exists {
-				panic("got a notification, but no user name")
-			}
-			user.Sender.Notifications.Offer(n)
-		}
-	}()
+	Sender         *sender.Sender                `json:"-"`
 }
 
 /**
@@ -128,8 +107,9 @@ func MakeUser(uuid, username, displayName, password, portfolioUUID, config strin
 		Config:         configMap,
 		ConfigStr:      config,
 		UserUpdateChan: duplicator.MakeDuplicator("user-" + uuid),
-		Sender:         newSender(uuid),
+		Sender:         sender.NewSender(uuid),
 	}
+	change.RegisterPublicChangeDetect(UserList[uuid])
 	wires.UsersNewObject.Offer(UserList[uuid])
 	utils.RegisterUuid(uuid, UserList[uuid])
 	return UserList[uuid], nil
@@ -223,26 +203,6 @@ func isAllowedCharacterUsername(s string) bool {
 	return true
 }
 
-func (user *User) LevelUp() error {
-	user.Lock.Acquire("level up")
-	port := portfolio.Portfolios[user.PortfolioId]
-	port.Lock.Acquire("level up")
-	nextLevel := user.Level + 1
-	nextTitle, exists := titles.Titles[nextLevel]
-	if !exists {
-		return errors.New("there is no next level")
-	}
-	if port.Wallet < nextTitle.Cost {
-		return errors.New("not enough $$")
-	}
-	port.Wallet = port.Wallet - nextTitle.Cost
-	user.Level = nextLevel
-
-	go port.Update()
-	wires.UsersUpdate.Offer(user)
-	return nil
-}
-
-func (user *User) AddNotification(msg *notification.Notification) {
-	user.Sender.Notifications.Offer(msg)
+func SendNotifcation(uuid string, note interface{}) {
+	UserList[uuid].Sender.Notifications.Offer(note)
 }

@@ -9,10 +9,12 @@ func (baseMessage *BaseMessage) IsQuery() bool {
 }
 
 type QueryMessage struct {
-	QueryUUID    string         `json:"uuid"`
-	QueryField   string         `json:"field"`
-	NumberPoints int            `json:"num_points"`
-	Length       utils.Duration `json:"length"`
+	QueryUUID     string         `json:"uuid"`
+	QueryField    string         `json:"field"`
+	NumberPoints  int            `json:"num_points"`
+	Length        utils.Duration `json:"length"`
+	UseCache      bool           `json:"use_cache"`
+	CacheDuration utils.Duration `json:"cache_duration"`
 }
 
 type QueryResponse struct {

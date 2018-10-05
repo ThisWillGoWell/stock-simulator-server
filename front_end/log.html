@@ -26,22 +26,37 @@
 
 
 <script language="javascript" type="text/javascript">
+    let objects = {};
+    let requests = {};
+    let requestId = 0;
+
+    let simulate = function(){
+        SendWs(levelUp());
+
+        SendWs(newItemBuy('insider'));
+        // use all items in inventory
+        setTimeout(function(){
+            for( var key in objects['item']){
+                SendWs(newUseItem(objects['item'][key]['uuid']))
+            }
+
+        }, 100)
+
+    } ;
 
     let useProd = false;
-    let httpUrl = location.protocol + "://"+ window.location.host
+    let httpUrl = location.protocol + "://"+ window.location.host;
 
-    let  websocketUrl =  "ws://" + window.location.host + '/ws'
-    if(location.protocol == "https") {
-        websocketUrl =  "wss://" + window.location.host + '/ws'
+    let  websocketUrl =  "ws://" + window.location.host + '/ws';
+    if(location.protocol === "https") {
+        websocketUrl =  "wss://" + window.location.host + '/ws';
     }
     if(useProd){
         websocketUrl = "wss://mockstarket.com/ws";
         httpUrl = "https://mockstarket.com";
     }
     let webSocket = null;
-    let objects = {};
-    let requests = {};
-    let requestId = 0;
+
 
     function init()
     {
@@ -94,12 +109,17 @@
         webSocket =  new WebSocket(websocketUrl)
         webSocket.onmessage = function(evt) {
             var msg = JSON.parse(evt.data);
-            onMessageRouter[msg.action](msg.msg);
+            if (msg.action in onMessageRouter){
+                onMessageRouter[msg.action](msg.msg);
+            }
             writeToScreen(syntaxHighlight(msg))
         };
         webSocket.onopen = function(evt) {
             let token = getToken('Will', 'pass');
             SendWs(newConnectMsg(token))
+            setTimeout(function(){
+                simulate()
+            }, 250)
         };
     }
 
@@ -150,15 +170,19 @@
     }
 
     function newItemBuy(itemType) {
-        return newBaseMsg('trade', {'action':'buy', O: {'item_name': itemType}})
+        return newBaseMsg('item', {'action':'buy', o: {'item_name': itemType}})
     }
 
-    function useItem(itemUuid, itemParamters) {
-        return newBaseMsg('trade', {'action': 'use', O: {'uuid': itemUuid, 'params': itemParamters }})
+    function newUseItem(itemUuid, itemParameters={}) {
+        return newBaseMsg('item', {'action': 'use', o: {'uuid': itemUuid, 'params': itemParameters }})
     }
 
-    function viewItem(itemUuid) {
-        return newBaseMsg('trade', {'action': 'use', O: {'uuid': itemUuid}})
+    function mewViewItem(itemUuid) {
+        return newBaseMsg('item', {'action': 'use', o: {'uuid': itemUuid}})
+    }
+
+    function levelUp() {
+        return newBaseMsg('level_up', {})
     }
 
     function newConnectMsg(token){

@@ -19,11 +19,12 @@ func (change *changeTest) GetType() string {
 
 func TestChange(t *testing.T) {
 	StartDetectChanges()
-	SubscribeUpdateInputs.EnableCopyMode()
+
+	PublicSubscribeChange.EnableCopyMode()
 	messagesReceived := 0
 	done := make(chan interface{})
 	go func() {
-		changes := SubscribeUpdateOutput.GetBufferedOutput(2)
+		changes := PublicSubscribeChange.GetBufferedOutput(2)
 		for c := range changes {
 			t.Log(c)
 			messagesReceived += 1
