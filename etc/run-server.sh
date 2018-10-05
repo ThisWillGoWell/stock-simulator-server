@@ -12,5 +12,5 @@ echo $FILE_SERVE
 docker-compose build --no-cache server
 docker-compose up -d
 docker-compose kill -s SIGHUP proxy
-docker-compose logs -f
+docker-compose logs server -f
 
