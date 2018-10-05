@@ -1,9 +1,10 @@
 package database
 
 import (
-	"github.com/stock-simulator-server/src/valuable"
 	"log"
 	"time"
+
+	"github.com/stock-simulator-server/src/valuable"
 )
 
 var (
@@ -16,7 +17,7 @@ var (
 		`name text NOT NULL,` +
 		`current_price int,` +
 		`open_shares int,` +
-		`change_interval numeric(16, 4), `+
+		`change_interval numeric(16, 4), ` +
 		`PRIMARY KEY(uuid)` +
 		`);`
 

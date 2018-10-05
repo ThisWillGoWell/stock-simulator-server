@@ -5,9 +5,10 @@ import (
 	"time"
 
 	"encoding/json"
+	"reflect"
+
 	"github.com/stock-simulator-server/src/deepcopy"
 	"github.com/stock-simulator-server/src/lock"
-	"reflect"
 )
 
 /**
@@ -24,7 +25,10 @@ type ChannelDuplicator struct {
 	debug     bool
 	debugName string
 	copy      bool
+	sink      bool
 	lock      *lock.Lock
+	close     chan interface{}
+	closed    chan interface{}
 }
 
 /**
@@ -40,8 +44,11 @@ func MakeDuplicator(name string) *ChannelDuplicator {
 		inputs:    make([]<-chan interface{}, 0),
 		transfer:  make(chan interface{}, 100),
 		debug:     false,
-		copy:      true,
+		copy:      false,
 		debugName: name,
+		sink:      false,
+		close:     make(chan interface{}),
+		closed:    make(chan interface{}),
 	}
 	chDoup.startDuplicator()
 
@@ -52,6 +59,14 @@ func MakeDuplicator(name string) *ChannelDuplicator {
 Copy mode is
 */
 func (ch *ChannelDuplicator) EnableCopyMode() {
+	ch.copy = true
+}
+
+func (ch *ChannelDuplicator) EnableSink() {
+	ch.copy = true
+}
+
+func (ch *ChannelDuplicator) DiableSink() {
 	ch.copy = true
 }
 
@@ -170,29 +185,43 @@ Start running the fan out from transfer to all outputs
 */
 func (ch *ChannelDuplicator) startDuplicator() {
 	go func() {
-		for nextValue := range ch.transfer {
-			ch.lock.Acquire("startDuplicator")
-
-			if ch.debug {
-				fmt.Println("sending down outputs on", ch.debugName)
-			}
-			for i, channel := range ch.outputs {
-				select {
-				case channel <- nextValue:
-					if ch.debug {
-						str, _ := json.Marshal(nextValue)
-						fmt.Println("sent to an output of", ch.debugName, "index", i, "vaule", string(str))
-					}
-					continue
-				default:
-					fmt.Println("missing messages on", ch.debugName, "index", i)
-					continue
+		run := true
+		for run {
+			select {
+			case nextValue := <-ch.transfer:
+				ch.lock.Acquire("startDuplicator")
+				if ch.debug {
+					fmt.Println("sending down outputs on", ch.debugName)
 				}
+				if !ch.sink {
+					for i, channel := range ch.outputs {
+						select {
+						case channel <- nextValue:
+							if ch.debug {
+								str, _ := json.Marshal(nextValue)
+								fmt.Println("sent to an output of", ch.debugName, "index", i, "vaule", string(str))
+							}
+							continue
+						default:
+							fmt.Println("missing messages on", ch.debugName, "index", i)
+							continue
+						}
+					}
+				}
+				ch.lock.Release()
+			case <-ch.close:
+				run = false
 			}
-			ch.lock.Release()
+		}
+		close(ch.transfer)
+		for _, ch := range ch.outputs {
+			close(ch)
 		}
 	}()
 
+}
+func (ch *ChannelDuplicator) StopDuplicator() {
+	ch.close <- nil
 }
 
 /**

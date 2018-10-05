@@ -3,12 +3,15 @@ package valuable
 import (
 	"errors"
 	"fmt"
-	"github.com/stock-simulator-server/src/duplicator"
-	"github.com/stock-simulator-server/src/lock"
-	"github.com/stock-simulator-server/src/utils"
 	"math/rand"
 	"reflect"
 	"time"
+
+	"github.com/stock-simulator-server/src/change"
+	"github.com/stock-simulator-server/src/duplicator"
+	"github.com/stock-simulator-server/src/lock"
+	"github.com/stock-simulator-server/src/utils"
+	"github.com/stock-simulator-server/src/wires"
 )
 
 const (
@@ -28,9 +31,9 @@ var Stocks = make(map[string]*Stock)
 
 func StartStockStimulation() {
 	/*
-	when simulation gets emitted, it will trigger all the tings listening to it
-	to run a session
-	 */
+		when simulation gets emitted, it will trigger all the tings listening to it
+		to run a session
+	*/
 	ticker := time.NewTicker(timeSimulationPeriod)
 	simulation := make(chan interface{})
 	timeSimulation.RegisterInput(simulation)
@@ -45,15 +48,15 @@ func StartStockStimulation() {
 
 //Stock type for storing the stock information
 type Stock struct {
-	Uuid          string                        `json:"uuid"`
-	Name          string                        `json:"name"`
-	TickerId      string                        `json:"ticker_id"`
-	CurrentPrice  int64                 	    `json:"current_price" change:"-"`
-	OpenShares    int64                      	`json:"open_shares" change:"-"`
-	ChangeDuration time.Duration				`json:"-"`
-	PriceChanger  PriceChange                   `json:"-"`
-	UpdateChannel *duplicator.ChannelDuplicator `json:"-"`
-	lock          *lock.Lock                    `json:"-"`
+	Uuid           string                        `json:"uuid"`
+	Name           string                        `json:"name"`
+	TickerId       string                        `json:"ticker_id"`
+	CurrentPrice   int64                         `json:"current_price" change:"-"`
+	OpenShares     int64                         `json:"open_shares" change:"-"`
+	ChangeDuration time.Duration                 `json:"-"`
+	PriceChanger   PriceChange                   `json:"-"`
+	UpdateChannel  *duplicator.ChannelDuplicator `json:"-"`
+	lock           *lock.Lock                    `json:"-"`
 }
 
 func (stock *Stock) GetType() string {
@@ -65,7 +68,7 @@ func NewStock(tickerID, name string, startPrice int64, runInterval time.Duration
 	ValuablesLock.Acquire("new-stock")
 	defer ValuablesLock.Release()
 
-	uuidString := utils.PseudoUuid()
+	uuidString := utils.SerialUuid()
 
 	return MakeStock(uuidString, tickerID, name, startPrice, 100, runInterval)
 }
@@ -78,13 +81,13 @@ func MakeStock(uuid, tickerID, name string, startPrice, openShares int64, runInt
 	}
 	stock := &Stock{
 		ChangeDuration: runInterval,
-		OpenShares:    openShares,
-		Uuid:          uuid,
-		lock:          lock.NewLock(fmt.Sprintf("stock-%s", tickerID)),
-		Name:          name,
-		TickerId:      tickerID,
-		CurrentPrice:  startPrice,
-		UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("stock-%s-update", tickerID)),
+		OpenShares:     openShares,
+		Uuid:           uuid,
+		lock:           lock.NewLock(fmt.Sprintf("stock-%s", tickerID)),
+		Name:           name,
+		TickerId:       tickerID,
+		CurrentPrice:   startPrice,
+		UpdateChannel:  duplicator.MakeDuplicator(fmt.Sprintf("stock-%s-update", tickerID)),
 	}
 	//stock.lock.EnableDebug()
 
@@ -93,13 +96,14 @@ func MakeStock(uuid, tickerID, name string, startPrice, openShares int64, runInt
 		TargetPrice:           int64(rand.Intn(100000)),
 		PercentToChangeTarget: .07,
 		Volatility:            5,
-		RandomNoise:			.07,
+		RandomNoise:           .07,
 	}
 	go stock.stockUpdateRoutine()
 	Stocks[uuid] = stock
 	stock.UpdateChannel.EnableCopyMode()
-	UpdateChannel.RegisterInput(stock.UpdateChannel.GetOutput())
-	NewObjectChannel.Offer(stock)
+	change.RegisterPublicChangeDetect(stock)
+	wires.StocksUpdate.RegisterInput(stock.UpdateChannel.GetBufferedOutput(1000))
+	wires.StocksNewObject.Offer(stock)
 	utils.RegisterUuid(uuid, stock)
 	return stock, nil
 }
@@ -138,15 +142,20 @@ func (stock *Stock) ChangeDetected() reflect.Type {
 // Some thing that can take in a stock and change the current price
 type PriceChange interface {
 	change(stock *Stock)
+	GetTargetPrice() int64
 }
 
 // Random Price implements priceChange
 type RandomPrice struct {
 	RunPercent            float64 `json:"run_percent"`
-	TargetPrice           int64 `json:"target_price"`
+	TargetPrice           int64   `json:"target_price"`
 	PercentToChangeTarget float64 `json:"change_percent"`
 	Volatility            float64 `json:"volatility"`
-	RandomNoise		  float64
+	RandomNoise           float64
+}
+
+func (randPrice *RandomPrice) GetTargetPrice() int64 {
+	return randPrice.TargetPrice
 }
 
 //change the stock using the changer
@@ -161,9 +170,9 @@ func (randPrice *RandomPrice) change(stock *Stock) {
 		randPrice.changeValues()
 	}
 
-	moveToTarget := int64(utils.RandRangeFloat(float64(randPrice.TargetPrice) * 0.9, float64(randPrice.TargetPrice) * 1.1 ))
+	moveToTarget := int64(utils.RandRangeFloat(float64(randPrice.TargetPrice)*0.9, float64(randPrice.TargetPrice)*1.1))
 
-	change := float64(moveToTarget - stock.CurrentPrice) /
+	change := float64(moveToTarget-stock.CurrentPrice) /
 		utils.MapNumFloat(randPrice.Volatility, volatilityMin, volatilityMax, volatilityMinTurns, volatilityMaxTurns)
 
 	if rand.Float64() <= randPrice.RandomNoise {
@@ -209,8 +218,8 @@ func GetAllStocks() []*Stock {
 	return v
 }
 
-func (stock *Stock) Update(){
-	stock.UpdateChannel.Offer(stock)
+func (s *Stock) Update() {
+	s.UpdateChannel.Offer(s)
 }
 
 /** ########################################

@@ -10,9 +10,9 @@ type Message interface {
 }
 
 type BaseMessage struct {
-	Action string      `json:"action"`
-	Msg    interface{} `json:"msg"`
-	RequestID string `json:"request_id,omitempty"`
+	Action    string      `json:"action"`
+	Msg       interface{} `json:"msg"`
+	RequestID string      `json:"request_id,omitempty"`
 }
 
 const ResponseAction = "response"
@@ -52,6 +52,10 @@ func (baseMessage *BaseMessage) UnmarshalJSON(data []byte) error {
 	// update is not here since it should never have to be Unmarshal
 	var message Message
 	switch actionType {
+	case NotificationAck:
+		message = &NotificationMessage{}
+	case NotificationAction:
+		message = &NotificationAckMessage{}
 	case ChatAction:
 		message = &ChatMessage{}
 	case TradeAction:
@@ -66,6 +70,10 @@ func (baseMessage *BaseMessage) UnmarshalJSON(data []byte) error {
 		message = &ConnectMessage{}
 	case SetAction:
 		message = &SetMessage{}
+	case ItemAction:
+		message = &ItemMessage{}
+	case LevelUpAction:
+		message = &LevelUpMessage{}
 	}
 
 	str, _ := json.Marshal(obj["msg"])
@@ -82,9 +90,8 @@ func (baseMessage *BaseMessage) UnmarshalJSON(data []byte) error {
 
 func BuildResponseMsg(response interface{}, requestID string) *BaseMessage {
 	return &BaseMessage{
-		Action: ResponseAction,
-		Msg: response,
-		RequestID:requestID,
+		Action:    ResponseAction,
+		Msg:       response,
+		RequestID: requestID,
 	}
 }
-

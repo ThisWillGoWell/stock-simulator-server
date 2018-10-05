@@ -2,8 +2,10 @@ package order
 
 import (
 	"github.com/stock-simulator-server/src/ledger"
+	"github.com/stock-simulator-server/src/notification"
 	"github.com/stock-simulator-server/src/portfolio"
 	"github.com/stock-simulator-server/src/valuable"
+	"github.com/stock-simulator-server/src/wires"
 )
 
 type Order interface {
@@ -11,8 +13,6 @@ type Order interface {
 }
 
 var orderChannel = make(chan Order, 30)
-
-
 
 func Run() {
 	go func() {
@@ -27,15 +27,14 @@ func Run() {
 	}()
 }
 
-
-type TransferOrder struct{
-	ReceiverID string `json:"receiver"`
-	PortfolioID string 	`json:"giver"`
-	Amount int64 `json:"amount"`
+type TransferOrder struct {
+	ReceiverID      string         `json:"receiver"`
+	PortfolioID     string         `json:"giver"`
+	Amount          int64          `json:"amount"`
 	ResponseChannel chan *Response `json:"-"`
 }
-func (to *TransferOrder) rc()chan *Response{return to.ResponseChannel}
 
+func (to *TransferOrder) rc() chan *Response { return to.ResponseChannel }
 
 /**
 Purchase order represents a single order
@@ -47,14 +46,13 @@ type PurchaseOrder struct {
 	Amount          int64          `json:"amount"`
 	ResponseChannel chan *Response `json:"-"`
 }
-func (po *PurchaseOrder) rc() chan *Response {return po.ResponseChannel}
 
-
+func (po *PurchaseOrder) rc() chan *Response { return po.ResponseChannel }
 
 type Response struct {
-	Order   Order 			`json:"order"`
-	Success bool           `json:"success"`
-	Err     string         `json:"err,omitempty"`
+	Order   Order  `json:"order"`
+	Success bool   `json:"success"`
+	Err     string `json:"err,omitempty"`
 }
 
 // note this does not validate if the stock exists or not, that's done in the trade() function
@@ -70,36 +68,30 @@ func MakePurchaseOrder(valuableID, portfolioUUID string, amount int64) *Purchase
 	return po
 }
 
-func MakeTransferOrder(giver, reciever string, amount int64) *TransferOrder{
+func MakeTransferOrder(giver, receiver string, amount int64) *TransferOrder {
 	to := &TransferOrder{
-		PortfolioID: giver,
-		ReceiverID: reciever,
-		Amount: amount,
+		PortfolioID:     giver,
+		ReceiverID:      receiver,
+		Amount:          amount,
 		ResponseChannel: make(chan *Response, 1),
 	}
 	orderChannel <- to
 	return to
 }
 
-func (po *PurchaseOrder) Execute() {
-
-}
-
 func successOrder(o Order) {
 	o.rc() <- &Response{
 		Order:   o,
-		Success: true,
-	}
+		Success: true}
 }
-func failureOrder(msg string, o Order) {
 
+func failureOrder(msg string, o Order) {
 	o.rc() <- &Response{
 		Order:   o,
 		Success: false,
 		Err:     msg,
 	}
 }
-
 
 // validate and make a trade
 // Purchase Order contains a reference to the order
@@ -162,6 +154,7 @@ func executeTrade(o *PurchaseOrder) {
 		ledgerEntry.InvestmentValue += costOfTrade
 		//add the holder amount
 		ledgerEntry.Amount += o.Amount
+
 		successOrder(o)
 	} else {
 		if !ledgerExists {
@@ -186,30 +179,37 @@ func executeTrade(o *PurchaseOrder) {
 		costOfTrade := amount * value.GetValue()
 		port.Wallet += costOfTrade
 		ledgerEntry.InvestmentValue -= costOfTrade
-		if ledgerEntry.Amount == 0{
+		if ledgerEntry.Amount == 0 {
 			ledgerEntry.InvestmentValue = 0
 		}
 		successOrder(o)
 	}
-	if !ledgerExists{
-		ledger.NewObjectChannel.Offer(ledgerEntry)
+	if !ledgerExists {
+		wires.LedgerUpdate.Offer(ledgerEntry)
 		port.UpdateInput.RegisterInput(value.UpdateChannel.GetBufferedOutput(10))
 
-	} else{
+	} else {
 		ledgerEntry.UpdateChannel.Offer(ledgerEntry)
 		// todo remove also
 	}
+	notification.DoneTradeNotification(port.UserUUID, value.Uuid, o.Amount)
 	go value.Update()
 	go port.Update()
 }
 
 func executeTransfer(o *TransferOrder) {
-	portfolio.PortfoliosLock.Acquire("moneyTransfer")
-	defer portfolio.PortfoliosLock.Release()
+	if o.ReceiverID == o.PortfolioID {
+		failureOrder("cant transfer to and from same account", o)
+	}
 	port, exists := portfolio.Portfolios[o.PortfolioID]
-	if !exists{
+	if !exists {
 		failureOrder("giver portfolio not known", o)
 	}
+
+	if port.Level == 0 {
+		failureOrder("need to be level 1 to transfer money", o)
+	}
+
 	receiver, exists := portfolio.Portfolios[o.ReceiverID]
 	if !exists {
 		failureOrder("portfolio does not exist, this is very bad", o)
@@ -219,17 +219,20 @@ func executeTransfer(o *TransferOrder) {
 	defer port.Lock.Release()
 	receiver.Lock.Acquire("transfer")
 	defer receiver.Lock.Release()
+
 	if o.Amount <= 0 {
 		failureOrder("invalid amount", o)
 		return
 	}
-	if o.Amount > port.Wallet{
+
+	if o.Amount > port.Wallet {
 		failureOrder("not enough money", o)
 		return
 	}
 	receiver.Wallet += o.Amount
 	port.Wallet -= o.Amount
 	successOrder(o)
+	notification.SendMoneyTradeNotification(port.UserUUID, receiver.UserUUID, o.Amount)
 	go port.Update()
 	go receiver.Update()
 }

@@ -5,66 +5,30 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pkg/errors"
+	"github.com/stock-simulator-server/src/items"
+	"github.com/stock-simulator-server/src/messages"
+	"github.com/stock-simulator-server/src/sender"
 
 	"github.com/gorilla/websocket"
+	"github.com/pkg/errors"
 	"github.com/stock-simulator-server/src/account"
-	"github.com/stock-simulator-server/src/change"
-	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/histroy"
 	"github.com/stock-simulator-server/src/ledger"
 	"github.com/stock-simulator-server/src/lock"
-	"github.com/stock-simulator-server/src/messages"
+	"github.com/stock-simulator-server/src/notification"
 	"github.com/stock-simulator-server/src/order"
 	"github.com/stock-simulator-server/src/portfolio"
 	"github.com/stock-simulator-server/src/valuable"
 )
 
-var clients = make(map[*Client]bool)
 var clientsLock = lock.NewLock("clients-lock")
 var connections = make(map[string]map[int]*Client)
-var BroadcastMessages = duplicator.MakeDuplicator("client-broadcast-messages")
-var currentId = 1
-var Updates = duplicator.MakeDuplicator("Client Updates")
-var NewObjects = duplicator.MakeDuplicator("Client New Objects")
+var currentId = 0
 
-/*
-This is responsive for accepting message duplicators and converting those objects
-into messages to then be fanned out to all clients
-*/
-func BroadcastMessageBuilder() {
-	//BroadcastMessages.EnableDebug()
-	updates := Updates.GetBufferedOutput(100)
-	go func() {
-		for update := range updates {
-			BroadcastMessages.Offer(messages.BuildUpdateMessage(update))
-		}
-	}()
-	newObjects := NewObjects.GetBufferedOutput(100)
-	go func() {
-		for newObject := range newObjects {
-			BroadcastMessages.Offer(messages.NewObjectMessage(newObject.(change.Identifiable)))
-		}
-	}()
-	//BroadcastMessagePrinter()
-}
-
-/**
-Debugging: prints all messages that are sent down a broadcast
-*/
-func BroadcastMessagePrinter() {
-	msgs := BroadcastMessages.GetBufferedOutput(100)
-	go func() {
-		for msg := range msgs {
-			str, err := json.Marshal(msg)
-			if err != nil {
-				panic(err)
-			} else {
-				fmt.Println(string(str))
-			}
-		}
-	}()
-}
+//var BroadcastMessages = duplicator.MakeDuplicator("client-broadcast-messages")
+//var currentId = 1
+//var Updates = duplicator.MakeDuplicator("Client Updates")
+//var NewObjects = duplicator.MakeDuplicator("Client New Objects")
 
 /**
 A client is a individual connection
@@ -74,11 +38,10 @@ Though messages that are responded to (query/trades) are only sent back
 to the client that sent it
 */
 type Client struct {
-	socketRx      chan string
-	socketTx      chan string
-	clientNum     int
-	messageSender *duplicator.ChannelDuplicator
-
+	socketRx    chan string
+	socketTx    chan string
+	clientNum   int
+	close       chan interface{}
 	broadcastTx chan messages.Message
 	broadcastRx chan messages.Message
 
@@ -86,18 +49,6 @@ type Client struct {
 
 	user   *account.User
 	active bool
-}
-
-func SendToUser(uuid string, value interface{}) {
-	clientsLock.Acquire("send-to-clients")
-	defer clientsLock.Release()
-	clients, exist := connections[uuid]
-	if !exist {
-		return
-	}
-	for i := range clients {
-		connections[uuid][i].messageSender.Offer(value)
-	}
 }
 
 /**
@@ -127,12 +78,12 @@ func InitialReceive(initialPayload string, tx, rx chan string) error {
 	}
 
 	client := &Client{
-		clientNum:     currentId,
-		user:          user,
-		socketRx:      rx,
-		socketTx:      tx,
-		messageSender: duplicator.MakeDuplicator("client-" + user.Uuid + "-message"),
-		active:        true,
+		clientNum: currentId,
+		user:      user,
+		socketRx:  rx,
+		socketTx:  tx,
+		active:    true,
+		close:     make(chan interface{}),
 	}
 	currentId += 1
 	_, exists := connections[user.Uuid]
@@ -141,11 +92,47 @@ func InitialReceive(initialPayload string, tx, rx chan string) error {
 	}
 	connections[user.Uuid][client.clientNum] = client
 
-	client.tx()
+	go client.tx(sessionToken)
 	go client.rx()
-	go client.initSession(sessionToken)
 	return nil
+}
 
+/**
+When a session is started, loop though all current cache and send them to the client
+Also send the success login to make sure that happens first on the login
+*/
+func (client *Client) tx(sessionToken string) {
+	client.sendMessage(messages.SuccessConnect(client.user.Uuid, sessionToken, client.user.Config))
+
+	for _, v := range account.GetAllUsers() {
+		client.sendMessage(messages.NewObjectMessage(v))
+	}
+	for _, v := range portfolio.GetAllPortfolios() {
+		client.sendMessage(messages.NewObjectMessage(v))
+	}
+	for _, v := range valuable.GetAllStocks() {
+		client.sendMessage(messages.NewObjectMessage(v))
+	}
+	for _, v := range ledger.GetAllLedgers() {
+		client.sendMessage(messages.NewObjectMessage(v))
+	}
+	for _, v := range notification.GetAllNotifications(client.user.Uuid) {
+		client.sendMessage(messages.BuildNotificationMessage(v))
+	}
+	for _, v := range items.GetItemsForUser(client.user.PortfolioId) {
+		client.sendMessage(messages.NewObjectMessage(v))
+	}
+
+	//finally register the broadcast message as a input to the clients message sender
+	//do this after the payload to prevent an update from being sent before the object prototype is sent
+	send := client.user.Sender.GetOutput()
+	go func() {
+		for msg := range send {
+			client.sendMessage(msg)
+		}
+	}()
+	<-client.close
+	client.user.Sender.CloseOutput(send)
 }
 
 /**
@@ -158,11 +145,13 @@ func (client *Client) rx() {
 		//attempt to
 		err := message.UnmarshalJSON([]byte(messageString))
 		if err != nil {
-			client.messageSender.Offer(messages.NewErrorMessage("err unmarshaling json"))
+			client.sendMessage(messages.NewErrorMessage("err unmarshaling json"))
 			continue
 		}
 
 		switch message.Action {
+		case messages.NotificationAck:
+			client.processAckMessage(message)
 		case messages.ChatAction:
 			client.processChatMessage(message.Msg.(messages.Message))
 		case messages.TradeAction:
@@ -173,8 +162,12 @@ func (client *Client) rx() {
 			client.processTransferMessage(message)
 		case messages.SetAction:
 			client.processSetMessage(message)
+		case messages.ItemAction:
+			client.processItemMessage(message)
+		case messages.LevelUpAction:
+			client.processLevelUpAction(message)
 		default:
-			client.messageSender.Offer(messages.NewErrorMessage("action is not known"))
+			client.sendMessage(messages.NewErrorMessage("action is not known"))
 		}
 	}
 	client.active = false
@@ -184,20 +177,8 @@ func (client *Client) rx() {
 	if len(connections[client.user.Uuid]) == 0 {
 		delete(connections, client.user.Uuid)
 	}
+	client.close <- nil
 	client.user.LogoutUser()
-}
-
-/**
-handle the transmit portion of the socket off the clients message sender douplicator
-*/
-func (client *Client) tx() {
-	// note the buffered output, number 100 was completely arbitrary
-	send := client.messageSender.GetBufferedOutput(100)
-	go func() {
-		for msg := range send {
-			client.sendMessage(msg)
-		}
-	}()
 }
 
 /**
@@ -216,7 +197,7 @@ func (client *Client) processChatMessage(message messages.Message) {
 	chatMessage.Author = client.user.Uuid
 	chatMessage.Timestamp = time.Now()
 	//database.SaveChatMessage(chatMessage.Author, chatMessage.Message)
-	BroadcastMessages.Offer(messages.BuildChatMessage(message.(*messages.ChatMessage)))
+	sender.GlobalMessages.Offer(messages.BuildChatMessage(message.(*messages.ChatMessage)))
 }
 
 func (client *Client) processTradeMessage(baseMessage *messages.BaseMessage) {
@@ -224,7 +205,7 @@ func (client *Client) processTradeMessage(baseMessage *messages.BaseMessage) {
 	po := order.MakePurchaseOrder(tradeMessage.StockId, client.user.PortfolioId, tradeMessage.Amount)
 	go func() {
 		response := <-po.ResponseChannel
-		SendToUser(client.user.Uuid, messages.BuildResponseMsg(response, baseMessage.RequestID))
+		client.user.Sender.Output.Offer(messages.BuildResponseMsg(response, baseMessage.RequestID))
 	}()
 }
 
@@ -239,6 +220,14 @@ func (client *Client) processTransferMessage(baseMessage *messages.BaseMessage) 
 	}()
 }
 
+func (client *Client) processAckMessage(baseMessage *messages.BaseMessage) {
+	ackMessage := baseMessage.Msg.(*messages.NotificationAckMessage)
+	err := notification.AcknowledgeNotification(ackMessage.Uuid, client.user.Uuid)
+	if err != nil {
+		client.sendMessage(messages.NewErrorMessage(err.Error()))
+	}
+}
+
 func (client *Client) processQueryMessage(baseMessage *messages.BaseMessage) {
 	queryMessage := baseMessage.Msg.(*messages.QueryMessage)
 	q := histroy.MakeQuery(queryMessage)
@@ -246,6 +235,33 @@ func (client *Client) processQueryMessage(baseMessage *messages.BaseMessage) {
 		response := <-q.ResponseChannel
 		client.sendMessage(messages.BuildResponseMsg(response, baseMessage.RequestID))
 	}()
+}
+
+func (client *Client) processItemMessage(m *messages.BaseMessage) {
+	itemMessage := m.Msg.(*messages.ItemMessage)
+	switch itemMessage.O.(type) {
+	case *messages.ItemBuyMessage:
+		uuid, err := items.BuyItem(client.user.PortfolioId, client.user.Uuid, itemMessage.O.(*messages.ItemBuyMessage).ItemName)
+		if err != nil {
+			client.sendMessage(messages.BuildItemBuyFailedMessage(itemMessage.O.(*messages.ItemBuyMessage).ItemName, m.RequestID, err))
+		} else {
+			client.sendMessage(messages.BuildItemBuySuccessMessage(itemMessage.O.(*messages.ItemBuyMessage).ItemName, m.RequestID, uuid))
+		}
+	//case *messages.ItemViewMessage:
+	//	result, err := items.ViewItem(itemMessage.O.(*messages.ItemViewMessage).ItemUuid, client.user.Uuid)
+	//	if err != nil {
+	//		client.sendMessage(messages.BuildItemViewFailedMessage(itemMessage.O.(*messages.ItemViewMessage).ItemUuid, m.RequestID, err))
+	//	} else {
+	//		client.sendMessage(messages.BuildItemViewMessage(itemMessage.O.(*messages.ItemViewMessage).ItemUuid, m.RequestID, result))
+	//	}
+	case *messages.ItemUseMessage:
+		result, err := items.Use(itemMessage.O.(*messages.ItemUseMessage).ItemUuid, client.user.PortfolioId, client.user.Uuid, itemMessage.O.(*messages.ItemUseMessage).UseParameters)
+		if err != nil {
+			client.sendMessage(messages.BuildItemUseFailedMessage(itemMessage.O.(*messages.ItemUseMessage).ItemUuid, m.RequestID, err))
+		} else {
+			client.sendMessage(messages.BuildItemUseMessage(itemMessage.O.(*messages.ItemUseMessage).ItemUuid, m.RequestID, result))
+		}
+	}
 }
 
 func (client *Client) processSetMessage(baseMessage *messages.BaseMessage) {
@@ -289,26 +305,7 @@ func (client *Client) processSetMessage(baseMessage *messages.BaseMessage) {
 
 }
 
-/**
-When a session is started, loop though all current cache and send them to the client
-Also send the success login to make sure that happens first on the login
-*/
-func (client *Client) initSession(sessionToken string) {
-	client.sendMessage(messages.SuccessConnect(client.user.Uuid, sessionToken, client.user.Config))
-
-	for _, v := range account.GetAllUsers() {
-		client.sendMessage(messages.NewObjectMessage(v))
-	}
-	for _, v := range portfolio.GetAllPortfolios() {
-		client.sendMessage(messages.NewObjectMessage(v))
-	}
-	for _, v := range valuable.GetAllStocks() {
-		client.sendMessage(messages.NewObjectMessage(v))
-	}
-	for _, v := range ledger.GetAllLedgers() {
-		client.sendMessage(messages.NewObjectMessage(v))
-	}
-	//finally register the broadcast message as a input to the clients message sender
-	//do this after the payload to prevent an update from being sent before the object prototype is sent
-	client.messageSender.RegisterInput(BroadcastMessages.GetBufferedOutput(50))
+func (client *Client) processLevelUpAction(baseMessage *messages.BaseMessage) {
+	err := portfolio.Portfolios[client.user.PortfolioId].LevelUp()
+	client.sendMessage(messages.BuildLevelUpResponse(baseMessage.RequestID, err))
 }

@@ -3,11 +3,15 @@ package portfolio
 import (
 	"errors"
 	"fmt"
+
+	"github.com/stock-simulator-server/src/change"
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/ledger"
+	"github.com/stock-simulator-server/src/level"
 	"github.com/stock-simulator-server/src/lock"
 	"github.com/stock-simulator-server/src/utils"
 	"github.com/stock-simulator-server/src/valuable"
+	"github.com/stock-simulator-server/src/wires"
 )
 
 const (
@@ -16,41 +20,38 @@ const (
 
 var Portfolios = make(map[string]*Portfolio)
 var PortfoliosLock = lock.NewLock("portfolios")
-var UpdateChannel = duplicator.MakeDuplicator("portfolio-update")
-var NewObjectChannel = duplicator.MakeDuplicator("new-portfolio")
 
 /**
 Portfolios are the $$$ part of a user
 */
 type Portfolio struct {
-	UserUUID string  `json:"user_uuid"`
-	UUID     string  `json:"uuid"`
-	Wallet   int64 `json:"wallet" change:"-"`
-	NetWorth int64 `json:"net_worth" change:"-"`
+	UserUUID string `json:"user_uuid"`
+	Uuid     string `json:"uuid"`
+	Wallet   int64  `json:"wallet" change:"-"`
+	NetWorth int64  `json:"net_worth" change:"-"`
 
 	//keeps track of how much $$$ they own, used for some slight optomization on calc networth
 	// stock_uuid -> ledgerObject
 
 	UpdateChannel *duplicator.ChannelDuplicator `json:"-"`
 	UpdateInput   *duplicator.ChannelDuplicator `json:"-"`
-
-	Lock *lock.Lock `json:"-"`
+	Level         int64                         `json:"level" change:"-"`
+	Lock          *lock.Lock                    `json:"-"`
 }
 
 func (port *Portfolio) GetId() string {
-	return port.UUID
+	return port.Uuid
 }
 
 func (port *Portfolio) GetType() string {
 	return ObjectType
 }
 
-func NewPortfolio(userUUID string) (*Portfolio, error) {
-	uuid := utils.PseudoUuid()
-	return MakePortfolio(uuid, userUUID, 100000)
+func NewPortfolio(portfolioUuid, userUuid string) (*Portfolio, error) {
+	return MakePortfolio(portfolioUuid, userUuid, 100000, 0)
 }
 
-func MakePortfolio(uuid, userUUID string, wallet int64) (*Portfolio, error) {
+func MakePortfolio(uuid, userUUID string, wallet, level int64) (*Portfolio, error) {
 	//PortfoliosUpdateChannel.EnableDebug("port update")
 	PortfoliosLock.Acquire("new-portfolio")
 	defer PortfoliosLock.Release()
@@ -61,18 +62,20 @@ func MakePortfolio(uuid, userUUID string, wallet int64) (*Portfolio, error) {
 	port :=
 		&Portfolio{
 			UserUUID:      userUUID,
-			UUID:          uuid,
+			Uuid:          uuid,
 			Wallet:        wallet,
 			UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-update", uuid)),
 			Lock:          lock.NewLock(fmt.Sprintf("portfolio-%s", uuid)),
 			UpdateInput:   duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-valueable-update", uuid)),
-			NetWorth: wallet,
+			NetWorth:      wallet,
+			Level:         level,
 		}
 	Portfolios[uuid] = port
 	//port.Lock.EnableDebug()
 	port.UpdateChannel.EnableCopyMode()
-	NewObjectChannel.Offer(port)
-	UpdateChannel.RegisterInput(port.UpdateChannel.GetOutput())
+	change.RegisterPublicChangeDetect(port)
+	wires.PortfolioNewObject.Offer(port)
+	wires.PortfolioUpdate.RegisterInput(port.UpdateChannel.GetBufferedOutput(1000))
 	utils.RegisterUuid(uuid, port)
 	go port.valuableUpdate()
 	return port, nil
@@ -83,13 +86,13 @@ async code that gets called whenever a stock or a ledger that the portfolio owns
 This then triggers a recalc of net worth and offers its self up as a update
 */
 func (port *Portfolio) valuableUpdate() {
-	updateChannel := port.UpdateInput.GetOutput()
+	updateChannel := port.UpdateInput.GetBufferedOutput(1000)
 	for range updateChannel {
 		port.Update()
 	}
 }
 
-func (port *Portfolio) Update(){
+func (port *Portfolio) Update() {
 	// need to acquire here or else deadlock on the trade
 	ledger.EntriesLock.Acquire("portfolio-update")
 	defer ledger.EntriesLock.Release()
@@ -112,7 +115,7 @@ func GetPortfolio(userUUID string) (*Portfolio, error) {
 func (port *Portfolio) calculateNetWorth() int64 {
 
 	sum := int64(0)
-	for valueStr, entry := range ledger.EntriesPortfolioStock[port.UUID] {
+	for valueStr, entry := range ledger.EntriesPortfolioStock[port.Uuid] {
 		value := valuable.Stocks[valueStr]
 		sum += value.GetValue() * entry.Amount
 	}
@@ -133,4 +136,23 @@ func GetAllPortfolios() []*Portfolio {
 		i += 1
 	}
 	return lst
+}
+
+func (port *Portfolio) LevelUp() error {
+	port.Lock.Acquire("level up")
+	defer port.Lock.Release()
+	nextLevel := port.Level + 1
+	level, exists := level.Levels[nextLevel]
+	if !exists {
+		return errors.New("there is no next level")
+	}
+	if port.Wallet < level.Cost {
+		return errors.New("not enough $$")
+	}
+	port.Wallet = port.Wallet - level.Cost
+	port.Level = nextLevel
+
+	go port.Update()
+	wires.PortfolioUpdate.Offer(port)
+	return nil
 }

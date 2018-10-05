@@ -4,68 +4,115 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
+	"github.com/stock-simulator-server/src/sender"
+
+	"github.com/stock-simulator-server/src/change"
+
+	"github.com/stock-simulator-server/src/wires"
+
+	"unicode"
+
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
+	"github.com/stock-simulator-server/src/session"
 	"github.com/stock-simulator-server/src/utils"
-	"unicode"
 )
 
 // keep the uuid to user
-var userList = make(map[string]*User)
+var UserList = make(map[string]*User)
 
 // keep the username to uuid list
 var uuidList = make(map[string]string)
-var userListLock = lock.NewLock("user-list")
-
-var NewObjectChannel = duplicator.MakeDuplicator("New User")
-var UpdateChannel = duplicator.MakeDuplicator("User Update")
-
+var UserListLock = lock.NewLock("user-list")
 
 /*
 User Object
 Represents a unique individual of the system
 */
 type User struct {
-	UserName      string     `json:"-"`
-	Password      string     `json:"-"`
-	DisplayName   string     `json:"display_name" change:"-"`
-	Uuid          string     `json:"-"`
-	Active        bool       `json:"active" change:"-"`
-	ActiveClients int64      `json:"-"`
-	Lock          *lock.Lock `json:"-"`
-	PortfolioId   string     `json:"portfolio_uuid"`
-	Config 		  map[string]interface{}	 `json:"-"`
-	ConfigStr     string			`json:"-"`
+	UserName       string                        `json:"-"`
+	Password       string                        `json:"-"`
+	DisplayName    string                        `json:"display_name" change:"-"`
+	Uuid           string                        `json:"-"`
+	Active         bool                          `json:"active" change:"-"`
+	ActiveClients  int64                         `json:"-"`
+	Lock           *lock.Lock                    `json:"-"`
+	PortfolioId    string                        `json:"portfolio_uuid"`
+	Config         map[string]interface{}        `json:"-"`
+	ConfigStr      string                        `json:"-"`
+	UserUpdateChan *duplicator.ChannelDuplicator `json:"-"`
+	Sender         *sender.Sender                `json:"-"`
+}
+
+/**
+Return a user provided the username and Password
+If the Password is correct return user, else return err
+*/
+func GetUser(username, password string) (*User, error) {
+	UserListLock.Acquire("get-user")
+	defer UserListLock.Release()
+	userUuid, exists := uuidList[username]
+	if !exists {
+		return nil, errors.New("user does not exist")
+	}
+	user := UserList[userUuid]
+
+	if !comparePasswords(user.Password, password) {
+		return nil, errors.New("password is incorrect")
+	}
+	user.Active = true
+	wires.UsersUpdate.Offer(user)
+	return user, nil
+}
+
+func RenewUser(sessionToken string) (*User, error) {
+	userId, err := session.GetUserId(sessionToken)
+	if err != nil {
+		return nil, err
+	}
+	UserListLock.Acquire("renew-user")
+	defer UserListLock.Release()
+	user, exists := UserList[userId]
+	if !exists {
+		return nil, errors.New("user found in session list but not in current users")
+	}
+	user.Active = true
+	wires.UsersUpdate.Offer(user)
+	return user, nil
 }
 
 func MakeUser(uuid, username, displayName, password, portfolioUUID, config string) (*User, error) {
-	userListLock.Acquire("new-user")
-	defer userListLock.Release()
+	UserListLock.Acquire("new-user")
+	defer UserListLock.Release()
 	_, userNameExists := uuidList[username]
 	if userNameExists {
 		return nil, errors.New("username already exists")
 	}
 	var configMap map[string]interface{}
 	err := json.Unmarshal([]byte(config), &configMap)
-	if err != nil{
+	if err != nil {
 		fmt.Println("error making config json in MakeUser: ", err)
 		configMap = make(map[string]interface{})
 	}
 	uuidList[username] = uuid
-	userList[uuid] = &User {
-		UserName:    username,
-		DisplayName: displayName,
-		Password:    password,
-		Uuid:        uuid,
-		PortfolioId: portfolioUUID,
-		Lock:        lock.NewLock("user"),
-		Active:      false,
-		Config:      configMap,
-		ConfigStr: config,
+	UserList[uuid] = &User{
+		UserName:       username,
+		DisplayName:    displayName,
+		Password:       password,
+		Uuid:           uuid,
+		PortfolioId:    portfolioUUID,
+		Lock:           lock.NewLock("user"),
+		Active:         false,
+		Config:         configMap,
+		ConfigStr:      config,
+		UserUpdateChan: duplicator.MakeDuplicator("user-" + uuid),
+		Sender:         sender.NewSender(uuid),
 	}
-	NewObjectChannel.Offer(userList[uuid])
-	utils.RegisterUuid(uuid, userList[uuid])
-	return userList[uuid], nil
+	change.RegisterPublicChangeDetect(UserList[uuid])
+	wires.UsersNewObject.Offer(UserList[uuid])
+	utils.RegisterUuid(uuid, UserList[uuid])
+	return UserList[uuid], nil
 
 }
 
@@ -82,7 +129,7 @@ func (user *User) LogoutUser() {
 	if user.ActiveClients == 0 {
 		user.Active = false
 	}
-	UpdateChannel.Offer(user)
+	wires.UsersUpdate.Offer(user)
 }
 
 func (user *User) GetId() string {
@@ -96,38 +143,34 @@ func (user *User) GetType() string {
 Turn the user map into a list so they can be sent to a rx client
 */
 func GetAllUsers() []*User {
-	userListLock.Acquire("get all users")
-	defer userListLock.Release()
-	lst := make([]*User, len(userList))
+	UserListLock.Acquire("get all users")
+	defer UserListLock.Release()
+	lst := make([]*User, len(UserList))
 	i := 0
-	for _, val := range userList {
+	for _, val := range UserList {
 		lst[i] = val
 		i += 1
 	}
 	return lst
 }
 
-func  (user *User) SetConfig(config map[string]interface{}){
+func (user *User) SetConfig(config map[string]interface{}) {
 	user.Config = config
 	configBytes, _ := json.Marshal(config)
 	user.ConfigStr = string(configBytes)
-	UpdateChannel.Offer(user)
 }
 
-
-func  (user *User) SetPassword(pass string) error{
-	if len(pass) > minPasswordLength{
+func (user *User) SetPassword(pass string) error {
+	if len(pass) > minPasswordLength {
 		return errors.New("password too short")
 	}
 	hashedPassword := hashAndSalt(pass)
 	user.Password = hashedPassword
-	UpdateChannel.Offer(user)
 	return nil
 }
 
-
-func  (user *User) SetDisplayName(displayName string)error{
-	if !isAllowedCharacterDisplayName(displayName){
+func (user *User) SetDisplayName(displayName string) error {
+	if !isAllowedCharacterDisplayName(displayName) {
 		return errors.New("display name contains invalid character")
 	}
 	if len(displayName) > maxDisplayNameLength {
@@ -138,7 +181,7 @@ func  (user *User) SetDisplayName(displayName string)error{
 	}
 
 	user.DisplayName = displayName
-	UpdateChannel.Offer(user)
+	wires.UsersUpdate.Offer(user)
 	return nil
 }
 
@@ -153,10 +196,13 @@ func isAllowedCharacterDisplayName(s string) bool {
 
 func isAllowedCharacterUsername(s string) bool {
 	for _, r := range s {
-		if !(unicode.IsLetter(r) || unicode.IsNumber(r)){
+		if !(unicode.IsLetter(r) || unicode.IsNumber(r)) {
 			return false
 		}
 	}
 	return true
 }
 
+func SendNotifcation(uuid string, note interface{}) {
+	UserList[uuid].Sender.Notifications.Offer(note)
+}

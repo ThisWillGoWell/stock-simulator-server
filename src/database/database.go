@@ -6,15 +6,18 @@ import (
 	"os"
 	"time"
 
+	"github.com/stock-simulator-server/src/items"
+
+	"github.com/stock-simulator-server/src/notification"
+
 	_ "github.com/lib/pq"
 	"github.com/stock-simulator-server/src/account"
-	"github.com/stock-simulator-server/src/change"
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/ledger"
 	"github.com/stock-simulator-server/src/lock"
 	"github.com/stock-simulator-server/src/portfolio"
-	"github.com/stock-simulator-server/src/utils"
 	"github.com/stock-simulator-server/src/valuable"
+	"github.com/stock-simulator-server/src/wires"
 )
 
 var db *sql.DB
@@ -24,7 +27,7 @@ var dbLock = lock.NewLock("db lock")
 
 var DatabseWriter = duplicator.MakeDuplicator("database-writer")
 
-func InitDatabase() {
+func InitDatabase(disableDbWrite bool) {
 	dbConStr := os.Getenv("DB_URI")
 	// if the env is not set, default to use the local host default port
 	database, err := sql.Open("postgres", dbConStr)
@@ -66,7 +69,8 @@ func InitDatabase() {
 	initPortfolio()
 	initStocksHistory()
 	initPortfolioHistory()
-
+	initNotification()
+	initItems()
 	initLedgerHistory()
 	initAccount()
 
@@ -74,46 +78,88 @@ func InitDatabase() {
 	populateStocks()
 	populatePortfolios()
 	populateUsers()
+	populateItems()
+	populateNotification()
 
 	for _, l := range ledger.Entries {
 		port := portfolio.Portfolios[l.PortfolioId]
 		stock := valuable.Stocks[l.StockId]
 		port.UpdateInput.RegisterInput(stock.UpdateChannel.GetBufferedOutput(10))
 		port.UpdateInput.RegisterInput(l.UpdateChannel.GetBufferedOutput(10))
-
 	}
 	for _, port := range portfolio.Portfolios {
 		port.Update()
 	}
 
 	runHistoricalQueries()
-	go databaseWriter()
+	if !disableDbWrite {
+		go databaseWriter()
+	}
 
 }
 
 func databaseWriter() {
-	write := DatabseWriter.GetBufferedOutput(1000)
-	for obj := range write {
-		// pull from uuid map since change-detect come across as change,
-		//todo fix race condition from update and pulling current val
-		val, exists := utils.GetVal(obj.(change.Identifiable).GetId())
-		if !exists {
-			panic("db write for uuid not in uuidmap: " + obj.(change.Identifiable).GetId())
-		}
-		switch val.(type) {
-		case *portfolio.Portfolio:
+	go func() {
+		portfolioDBWrite := duplicator.MakeDuplicator("portfolio-db-write")
+		portfolioDBWrite.RegisterInput(wires.PortfolioNewObject.GetBufferedOutput(5))
+		portfolioDBWrite.RegisterInput(wires.PortfolioNewObject.GetBufferedOutput(5))
+		write := portfolioDBWrite.GetBufferedOutput(10)
+		for val := range write {
 			writePortfolio(val.(*portfolio.Portfolio))
 			writePortfolioHistory(val.(*portfolio.Portfolio))
-		case *account.User:
+		}
+	}()
+
+	go func() {
+		userDBWrite := duplicator.MakeDuplicator("user-db-write")
+		userDBWrite.RegisterInput(wires.UsersNewObject.GetBufferedOutput(5))
+		userDBWrite.RegisterInput(wires.UsersUpdate.GetBufferedOutput(5))
+		write := userDBWrite.GetBufferedOutput(10)
+		for val := range write {
 			writeUser(val.(*account.User))
-		case *ledger.Entry:
+		}
+	}()
+
+	go func() {
+		ledgerDBWrite := duplicator.MakeDuplicator("ledger-db-write")
+		ledgerDBWrite.RegisterInput(wires.LedgerNewObject.GetBufferedOutput(5))
+		ledgerDBWrite.RegisterInput(wires.LedgerUpdate.GetBufferedOutput(5))
+		write := ledgerDBWrite.GetBufferedOutput(10)
+		for val := range write {
 			writeLedger(val.(*ledger.Entry))
 			writeLedgerHistory(val.(*ledger.Entry))
-		case *valuable.Stock:
+		}
+	}()
+
+	go func() {
+		itemsDBWrite := duplicator.MakeDuplicator("portfolio-db-write")
+		itemsDBWrite.RegisterInput(wires.ItemsNewObjects.GetBufferedOutput(5))
+		itemsDBWrite.RegisterInput(wires.ItemsUpdate.GetBufferedOutput(5))
+		write := itemsDBWrite.GetBufferedOutput(10)
+		for val := range write {
+			writeItem(val.(items.Item))
+		}
+	}()
+
+	go func() {
+		notificationDBWrite := duplicator.MakeDuplicator("notification-db-write")
+		notificationDBWrite.RegisterInput(wires.NotificationNewObject.GetBufferedOutput(5))
+		notificationDBWrite.RegisterInput(wires.NotificationUpdate.GetBufferedOutput(5))
+		write := notificationDBWrite.GetBufferedOutput(10)
+		for val := range write {
+			writeNotification(val.(*notification.Notification))
+		}
+	}()
+
+	go func() {
+		stockDBWrite := duplicator.MakeDuplicator("stock-db-write")
+		stockDBWrite.RegisterInput(wires.StocksNewObject.GetBufferedOutput(5))
+		stockDBWrite.RegisterInput(wires.StocksUpdate.GetBufferedOutput(5))
+		write := stockDBWrite.GetBufferedOutput(10)
+		for val := range write {
 			writeStock(val.(*valuable.Stock))
 			writeStockHistory(val.(*valuable.Stock))
-		default:
-			panic("deafult call of databse writer")
 		}
-	}
+	}()
+
 }

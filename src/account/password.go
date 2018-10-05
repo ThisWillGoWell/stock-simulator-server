@@ -32,6 +32,3 @@ func comparePasswords(hashedPwd string, plainPwd string) bool {
 
 	return true
 }
-
-
-

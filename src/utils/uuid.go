@@ -1,13 +1,14 @@
 package utils
 
 import (
-	"crypto/rand"
 	"fmt"
+
 	"github.com/stock-simulator-server/src/lock"
 )
 
 var uuidMap = make(map[string]interface{})
 var uuidLock = lock.NewLock("uuid-lock")
+var counterNum = 0
 
 /**
 this is one of the more controversial desgin choices I made
@@ -16,25 +17,18 @@ it keeps a map of all uuids and a pointer to that uuid so given a uuid, its type
 The problem here is uuids don't play well with large scale databases, and it would be better just to
 have the database be the one assigning uuid
 */
-func PseudoUuid() string {
+func SerialUuid() string {
 	uuidLock.Acquire("new uuid")
 	defer uuidLock.Release()
-	b := make([]byte, 16)
-	_, err := rand.Read(b)
-	if err != nil {
-		panic(err)
-	}
 
-	uuid := fmt.Sprintf("%X", b[0:7])
+	uuid := fmt.Sprintf("%d", counterNum)
+
 	for {
+		counterNum += 1
 		if _, exists := uuidMap[uuid]; !exists {
 			break
 		}
-		_, err = rand.Read(b)
-		if err != nil {
-			panic(err)
-		}
-		uuid = fmt.Sprintf("%X", b[0:7])
+		uuid = fmt.Sprintf("%d", counterNum)
 	}
 	uuidMap[uuid] = nil
 	return uuid

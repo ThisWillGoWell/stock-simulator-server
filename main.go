@@ -2,19 +2,21 @@ package main
 
 import (
 	"flag"
+	"log"
+	"os"
+	"runtime"
+	"runtime/pprof"
+
+	"github.com/stock-simulator-server/src/sender"
+
 	"github.com/stock-simulator-server/src/app"
 	"github.com/stock-simulator-server/src/change"
-	"github.com/stock-simulator-server/src/client"
 	"github.com/stock-simulator-server/src/database"
 	"github.com/stock-simulator-server/src/order"
 	"github.com/stock-simulator-server/src/session"
 	"github.com/stock-simulator-server/src/valuable"
 	"github.com/stock-simulator-server/src/web"
 	"github.com/stock-simulator-server/src/wires"
-	"log"
-	"os"
-	"runtime"
-	"runtime/pprof"
 )
 
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
@@ -35,10 +37,11 @@ func main() {
 	disableDb := os.Getenv("DISABLE_DB") == "True"
 	serveLog := os.Getenv("SERVE_LOG") == "True"
 	autoLoad := os.Getenv("AUTO_LOAD") == "True"
+	disableDbWrite := os.Getenv("DISABLE_DB_WRITE") == "True"
 
 	//start DB
 	if !disableDb {
-		database.InitDatabase()
+		database.InitDatabase(disableDbWrite)
 	}
 	if serveLog {
 		filepath := os.Getenv("FILE_SERVE")
@@ -47,19 +50,19 @@ func main() {
 	}
 	//valuable.ValuablesLock.EnableDebug()
 	//ledger.EntriesLock.EnableDebug()
-	
+
 	//Wiring of system
-	wires.ConnectWires(disableDb)
+	wires.ConnectWires()
 	//this takes the subscribe output and converts it to a message
-	client.BroadcastMessageBuilder()
 	change.StartDetectChanges()
 	session.StartSessionCleaner()
+	sender.RunGlobalSender()
 
 	order.Run()
 	valuable.StartStockStimulation()
 
-	if autoLoad{
-		go app.LoadVars()
+	if autoLoad {
+		go app.LoadConfig()
 	}
 	//go app.LoadVars()
 	go web.StartHandlers()

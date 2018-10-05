@@ -1,21 +1,51 @@
 package messages
 
-const AlertAction = "alert"
+import (
+	"time"
+)
 
-func (baseMessage *BaseMessage) IsAlert() bool {
-	return baseMessage.Action == AlertAction
+const NotificationAction = "notification"
+const NotificationAck = "ack"
+
+func (baseMessage *BaseMessage) IsNotification() bool {
+	return baseMessage.Action == NotificationAction
 }
 
-type AlertMessage struct {
-	Alert     interface{} `json:"alert"`
-	Type      string      `json:"type"`
+type NotificationMessage struct {
+	Notification interface{} `json:"notification"`
+	Type         string      `json:"type"`
+	Timestamp    time.Time   `json:"timestamp"`
+	Seen         bool        `json:"seen"`
+	Uuid         string      `json:"uuid"`
 }
 
-func (*AlertMessage) message() { return }
+func (*NotificationMessage) message() { return }
 
-func NewErrorMessage(err string) *AlertMessage {
-	return &AlertMessage{
-		Type:      "error",
-		Alert:     err,
+func (baseMessage *BaseMessage) IsNotificationAck() bool {
+	return baseMessage.Action == NotificationAck
+}
+
+type NotificationAckMessage struct {
+	Uuid string `json:"uuid"`
+}
+
+func (*NotificationAckMessage) message() { return }
+
+func BuildNotificationMessage(n interface{}) *BaseMessage {
+	return &BaseMessage{
+		Action: NotificationAction,
+		Msg:    n,
+	}
+}
+
+func NewErrorMessage(err string) *BaseMessage {
+	return &BaseMessage{
+		Action: NotificationAction,
+		Msg: &NotificationMessage{
+			Type:         "error",
+			Notification: err,
+			Timestamp:    time.Now(),
+			Seen:         false,
+		},
 	}
 }

@@ -1,10 +1,12 @@
 package change
 
 import (
+	"reflect"
+
+	"github.com/stock-simulator-server/src/wires"
+
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
-	"reflect"
-	"time"
 )
 
 /*
@@ -58,12 +60,28 @@ var (
 	// subscribeables is something that can be subscribed to
 	subscribeables        = make(map[string]*SubscribeUpdate)
 	subscribeablesLock    = lock.NewLock("subscribeables")
-	SubscribeUpdateInputs = duplicator.MakeDuplicator("subscribe-update-input")
-	SubscribeUpdateOutput = duplicator.MakeDuplicator("subscribe-update-output")
+	PublicSubscribeChange = duplicator.MakeDuplicator("subscribe-outputs")
 )
 
-func registerChangeDetect(o Identifiable) *SubscribeUpdate {
+func RegisterPublicChangeDetect(o Identifiable) error {
+	output := make(chan interface{})
+	PublicSubscribeChange.RegisterInput(output)
+	return registerChangeDetect(o, output)
+}
+
+func RegiserPrivateChangeDetect(o Identifiable, update chan interface{}) error {
+	return registerChangeDetect(o, update)
+}
+
+func registerChangeDetect(o Identifiable, outputChan chan interface{}) error {
 	//get the include tags
+	subscribeablesLock.Acquire("register-change")
+	defer subscribeablesLock.Release()
+
+	if _, ok := subscribeables[o.GetType()+o.GetId()]; ok {
+		panic("change detect already registered, check the code")
+	}
+
 	t := reflect.TypeOf(o)
 	if t.Kind() == reflect.Ptr || t.Kind() == reflect.Interface {
 		t = reflect.ValueOf(o).Elem().Type()
@@ -73,6 +91,7 @@ func registerChangeDetect(o Identifiable) *SubscribeUpdate {
 		Type:          o.GetType(),
 		Id:            o.GetId(),
 		changeDetects: make(map[string]*ChangeField),
+		TargetOutput:  outputChan,
 	}
 
 	for i := 0; i < t.NumField(); i++ {
@@ -91,7 +110,9 @@ func registerChangeDetect(o Identifiable) *SubscribeUpdate {
 			newChangeDetect.changeDetects[field.Name] = changeField
 		}
 	}
-	return newChangeDetect
+
+	subscribeables[o.GetType()+o.GetId()] = newChangeDetect
+	return nil
 }
 
 func getValue(o interface{}, name string) interface{} {
@@ -116,20 +137,20 @@ func StartDetectChanges() {
 	//SubscribeUpdateInputs.EnableCopyMode()
 	//SubscribeUpdateInputs.EnableDebug()
 	//SubscribeUpdateOutput.EnableDebug()
-	subscribeUpdateChannel := SubscribeUpdateInputs.GetBufferedOutput(100)
+	subscribeUpdateChannel := wires.GlobalUpdates.GetBufferedOutput(10000)
 	go func() {
 		for updateObj := range subscribeUpdateChannel {
 			update, ok := updateObj.(Identifiable)
 			if !ok {
-				panic("got a non identifiable in the change detector")
+				continue
 			}
 			subscribeablesLock.Acquire("detect change")
 
 			changeDetect, exists := subscribeables[update.GetType()+update.GetId()]
 			if !exists {
-				changeDetect = registerChangeDetect(update)
-				subscribeables[update.GetType()+update.GetId()] = changeDetect
+				continue
 			}
+
 			changedFields := make([]*ChangeField, 0)
 			changed := false
 			for filedName, fieldChange := range changeDetect.changeDetects {
@@ -142,22 +163,22 @@ func StartDetectChanges() {
 				}
 			}
 			if changed {
-				SubscribeUpdateOutput.Offer(&ChangeNotify{
+				changeDetect.TargetOutput <- &ChangeNotify{
 					Type:    changeDetect.Type,
 					Id:      changeDetect.Id,
 					Changes: changedFields,
-				})
+				}
 			}
 			subscribeablesLock.Release()
 		}
 	}()
-
 }
 
 type SubscribeUpdate struct {
 	Type          string
 	Id            string
 	changeDetects map[string]*ChangeField
+	TargetOutput  chan interface{} `json:"-"`
 }
 
 type ChangeField struct {
@@ -169,6 +190,7 @@ type ChangeNotify struct {
 	Type    string         `json:"type"`
 	Id      string         `json:"uuid"`
 	Changes []*ChangeField `json:"changes"`
+	Object  Identifiable   `json:"-"`
 }
 
 func (cn *ChangeNotify) GetId() string {
@@ -199,33 +221,6 @@ func GetCurrentValues() []*ChangeNotify {
 	return values
 }
 
-type changeTest struct {
-	Name string
-	Test int `change:"-"`
-}
-
-func (change *changeTest) GetId() string {
-	return change.Name
-}
-
-func (change *changeTest) GetType() string {
-	return "test"
-}
-
 func Test() {
-	StartDetectChanges()
-	SubscribeUpdateInputs.EnableCopyMode()
 
-	v := &changeTest{
-		Name: "this is my name",
-		Test: 1,
-	}
-	SubscribeUpdateInputs.Offer(v)
-	v.Test = 2
-	SubscribeUpdateInputs.Offer(v)
-	v.Test = 3
-	SubscribeUpdateInputs.Offer(v)
-	for {
-		time.Sleep(10 * time.Hour)
-	}
 }

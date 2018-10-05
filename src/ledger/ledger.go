@@ -2,6 +2,11 @@ package ledger
 
 import (
 	"fmt"
+
+	"github.com/stock-simulator-server/src/change"
+
+	"github.com/stock-simulator-server/src/wires"
+
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
 	"github.com/stock-simulator-server/src/utils"
@@ -17,9 +22,6 @@ var EntriesPortfolioStock = make(map[string]map[string]*Entry)
 // map of stock_uuid -> open shares
 var EntriesLock = lock.NewLock("ledger-entries-lock")
 
-var UpdateChannel = duplicator.MakeDuplicator("ledger-entries-update")
-var NewObjectChannel = duplicator.MakeDuplicator("leger-entries-new")
-
 /**
 Ledgers store who owns what stock
 They are all done though uuid strings since that's all that's required
@@ -28,13 +30,13 @@ They are stored in two maps
 2) given a portfolio uuid, get all stocks it owns
 */
 type Entry struct {
-	Lock          *lock.Lock                    `json:"-"`
-	Uuid          string                        `json:"uuid"`
-	PortfolioId   string                        `json:"portfolio_id"`
-	StockId       string                        `json:"stock_id"`
-	Amount        int64                         `json:"amount" change:"-"`
-	InvestmentValue int64						`json:"investment_value" change:"-"`
-	UpdateChannel *duplicator.ChannelDuplicator `json:"-"`
+	Lock            *lock.Lock                    `json:"-"`
+	Uuid            string                        `json:"uuid"`
+	PortfolioId     string                        `json:"portfolio_id"`
+	StockId         string                        `json:"stock_id"`
+	Amount          int64                         `json:"amount" change:"-"`
+	InvestmentValue int64                         `json:"investment_value" change:"-"`
+	UpdateChannel   *duplicator.ChannelDuplicator `json:"-"`
 }
 
 /**
@@ -46,20 +48,23 @@ func NewLedgerEntry(portfolioId, stockId string, lockAcquired bool) *Entry {
 		EntriesLock.Acquire("make ledger entry")
 		defer EntriesLock.Release()
 	}
-	uuid := utils.PseudoUuid()
+	uuid := utils.SerialUuid()
 
 	return MakeLedgerEntry(uuid, portfolioId, stockId, 0, 0)
 }
 
+/**
+Make a Ledger
+*/
 func MakeLedgerEntry(uuid, portfolioId, stockId string, amount, investmentVal int64) *Entry {
 
-	entry := &Entry {
-		Uuid:          uuid,
-		PortfolioId:   portfolioId,
-		Amount:        amount,
+	entry := &Entry{
+		Uuid:            uuid,
+		PortfolioId:     portfolioId,
+		Amount:          amount,
 		InvestmentValue: investmentVal,
-		StockId:       stockId,
-		UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("LedgerEntry-%s", uuid)),
+		StockId:         stockId,
+		UpdateChannel:   duplicator.MakeDuplicator(fmt.Sprintf("LedgerEntry-%s", uuid)),
 	}
 
 	Entries[uuid] = entry
@@ -73,8 +78,8 @@ func MakeLedgerEntry(uuid, portfolioId, stockId string, amount, investmentVal in
 	}
 	EntriesStockPortfolio[stockId][portfolioId] = entry
 	entry.UpdateChannel.EnableCopyMode()
-
-	UpdateChannel.RegisterInput(entry.UpdateChannel.GetOutput())
+	change.RegisterPublicChangeDetect(entry)
+	wires.LedgerUpdate.RegisterInput(entry.UpdateChannel.GetOutput())
 	utils.RegisterUuid(uuid, entry)
 	return entry
 }

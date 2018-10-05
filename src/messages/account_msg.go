@@ -13,11 +13,12 @@ func (baseMessage *BaseMessage) IsConnect() bool {
 }
 
 type AccountResponseMessage struct {
-	Success bool   `json:"success"`
-	Config map[string]interface{} `json:"config"`
-	SessionToken string `json:"token,omitempty"`
-	Uuid    string `json:"uuid,omitempty"`
-	Err     string `json:"err,omitempty"`
+	Success      bool                   `json:"success"`
+	Config       map[string]interface{} `json:"config"`
+	SessionToken string                 `json:"token,omitempty"`
+	Uuid         string                 `json:"uuid,omitempty"`
+	Err          string                 `json:"err,omitempty"`
+	Init         map[string]interface{} `json:"init,omitempty"`
 }
 
 func (*AccountResponseMessage) message() { return }
@@ -26,11 +27,11 @@ func SuccessConnect(userGuid, token string, config map[string]interface{}) *Base
 	return &BaseMessage{
 		Action: ConnectAction,
 		Msg: &AccountResponseMessage{
-			Success: true,
+			Success:      true,
 			SessionToken: token,
-			Uuid:    userGuid,
-			Err:     "",
-			Config: config,
+			Uuid:         userGuid,
+			Err:          "",
+			Config:       config,
 		},
 	}
 }

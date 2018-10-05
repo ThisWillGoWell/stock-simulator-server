@@ -8,8 +8,10 @@ services:
     depends_on:
       - db
       - ts
+    volumes:
+      - ${CONFIG_FILE}:opt/config/
     environment:
-      FILE_SERVE: opt/server/static
+      CONFIG_FILE: opt/config/config.yaml
       DB_URI: host=db port=5432 user=starket password=wordpass dbname=starket_db sslmode=disable
       TS_URI: host=ts port=5432 user=starket password=wordpass dbname=starket_ts sslmode=disable
   db:

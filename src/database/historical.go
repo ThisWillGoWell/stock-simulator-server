@@ -65,6 +65,7 @@ func makeHistoryTimeQuery(query *historicalTimeQuery) ([][]interface{}, error) {
 		return nil, err
 	}
 	return rowsToResponse(rows)
+
 }
 
 func rowsToResponse(rows *sql.Rows) ([][]interface{}, error) {

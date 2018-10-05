@@ -1,8 +1,9 @@
 package database
 
 import (
-	"github.com/stock-simulator-server/src/ledger"
 	"log"
+
+	"github.com/stock-simulator-server/src/ledger"
 )
 
 var (
@@ -46,7 +47,7 @@ func writeLedger(entry *ledger.Entry) {
 
 	if err != nil {
 		db.Close()
-		panic("could not begin ledger init" + err.Error() )
+		panic("could not begin ledger init" + err.Error())
 	}
 	_, err = tx.Exec(ledgerTableUpdateInsert, entry.Uuid, entry.PortfolioId, entry.StockId, entry.Amount, entry.InvestmentValue)
 	if err != nil {
@@ -57,7 +58,7 @@ func writeLedger(entry *ledger.Entry) {
 }
 
 func populateLedger() {
-	var uuid, portfolioId, stockId  string
+	var uuid, portfolioId, stockId string
 	var amount, investmentVal int64
 
 	rows, err := db.Query(ledgerTableQueryStatement)

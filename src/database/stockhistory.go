@@ -57,17 +57,17 @@ func writeStockHistory(stock *valuable.Stock) {
 	tx.Commit()
 }
 
-func MakeStockHistoryTimeQuery( uuid,timeLength, field, intervalLength string)([][]interface{}, error){
-	if _, valid := validStockFields[field]; !valid{
+func MakeStockHistoryTimeQuery(uuid, timeLength, field, intervalLength string) ([][]interface{}, error) {
+	if _, valid := validStockFields[field]; !valid {
 		return nil, errors.New("not valid choice")
 	}
 	return MakeHistoryTimeQuery(stocksHistoryTableName, uuid, timeLength, field, intervalLength)
 
 }
 
-func MakeStockHistoryLimitQuery(uuid, field string, limit int)([][]interface{}, error){
-	if _, valid := validStockFields[field]; !valid{
+func MakeStockHistoryLimitQuery(uuid, field string, limit int) ([][]interface{}, error) {
+	if _, valid := validStockFields[field]; !valid {
 		return nil, errors.New("not valid choice")
 	}
 	return MakeHistoryLimitQuery(stocksHistoryTableName, uuid, field, limit)
-	}
+}

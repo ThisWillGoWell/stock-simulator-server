@@ -1,8 +1,9 @@
 package database
 
 import (
-	"github.com/stock-simulator-server/src/account"
 	"log"
+
+	"github.com/stock-simulator-server/src/account"
 )
 
 var (
@@ -70,7 +71,7 @@ func populateUsers() {
 	for rows.Next() {
 		err := rows.Scan(&uuid, &name, &displayName, &password, &portfolioId, &config)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("error :", err)
 		}
 		account.MakeUser(uuid, name, displayName, password, portfolioId, config)
 	}
