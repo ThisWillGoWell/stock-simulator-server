@@ -1,3 +1,4 @@
+function load_investors_tab() {
   // Vue for all investors tab data
   var vm_investors_tab = new Vue({
     el: "#investors--view",
@@ -19,7 +20,7 @@
         var investors = Object.values(vm_portfolios.portfolios);
         // List of all ledger items
         var ledgerItems = Object.values(vm_ledger.ledger);
-
+  
         investors.map(function(d) {
           // Augment investor data
           d.name = vm_users.users[d.user_uuid].display_name;
@@ -35,10 +36,11 @@
             d.value = d.current_price * d.amount;
             return d;
           });
-
+  
           return d;
         });
         return investors;
       }
     }
   });
+}
