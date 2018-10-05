@@ -1,4 +1,3 @@
-if (vm_portfolios === undefined || vm_ledger === undefined || vm_stocks === undefined || vm_users === undefined) {
   // Vue for all investors tab data
   var vm_investors_tab = new Vue({
     el: "#investors--view",
@@ -46,4 +45,3 @@ if (vm_portfolios === undefined || vm_ledger === undefined || vm_stocks === unde
       }
     }
   });
-}
