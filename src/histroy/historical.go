@@ -191,6 +191,7 @@ func successQuery(query *Query, values [][]interface{}) {
 				lastUpdateTime: time.Now(),
 				lastUseTime:    time.Now(),
 				validTime:      query.Interval,
+				response:       response,
 			}
 			query.ResponseChannel <- response
 		} else {
