@@ -1,6 +1,5 @@
 var vm_store;
 
-
 function load_store_tab() {
     vm_store = new Vue({
         el: '#store--view',
@@ -18,8 +17,6 @@ function load_store_tab() {
         }
     })
 };
-
-
 
 function level_up() {
     

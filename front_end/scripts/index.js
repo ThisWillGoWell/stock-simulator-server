@@ -1,6 +1,5 @@
 // TODO break these out another file
-var REQUESTS = {};
-var REQUEST_ID = 1;
+
 
 /* Highest level Vue data object */
 var config = new Vue({
@@ -85,20 +84,6 @@ registerRoute("object", function(msg) {
       Vue.set(vm_users.users, msg.msg.uuid, msg.msg.object);
       break;
   }
-});
-
-
-registerRoute("response", function(msg) {
-  try {
-    REQUESTS[msg.request_id](msg);
-  } catch (err) {
-    console.error(err);
-    console.log("no request_id key for " + JSON.stringify(msg));
-    console.log(REQUESTS);
-    console.log(REQUEST_ID);
-  }
-  console.log(msg);
-  delete REQUESTS[msg.request_id];
 });
 
 
