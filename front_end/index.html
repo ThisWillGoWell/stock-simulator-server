@@ -246,7 +246,7 @@
 					</div>
 
 				<div id="user-info-container" class="nav-list">
-					<div class="username-text">{{ userDisplayName }}</div>
+					<div class="username-text">{{ userDisplayName + userDisplayTitle }}</div>
 					
 					
 				
@@ -451,6 +451,7 @@
 										  <thead>
 											<tr>
 											  <th scope="col" v-on:click="sortCol('ticker_id')" style="text-align: left; padding-left: 25px;">Name <i class="material-icons stock">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('level')">Level <i class="material-icons open-shares">arrow_drop_down</i></th>
 											  <th scope="col" v-on:click="sortCol('open_shares')">Actions <i class="material-icons open-shares">arrow_drop_down</i></th>
 											  <th scope="col" v-on:click="sortCol('current_price')">Cash <i class="material-icons cost">arrow_drop_down</i></th>
 											  <th scope="col" v-on:click="sortCol('open_shares')">Networth <i class="material-icons open-shares">arrow_drop_down</i></th>
@@ -464,6 +465,7 @@
 											  <th class="stock-ticker-id" scope="row" v-bind:tid="investor.name">
 												  <div class="stock-ticker-id">{{ investor.name }}</div>
 											  </th>
+											  <td>{{ investor.level }}</td>
 											  <td class="stock-open-shares">
 												  <ul class="action-list">
 													  <li class="action-btn star">
@@ -528,7 +530,7 @@
 											<div class="item-divider"></div>
 											<div class="item-effects">unlock cash transfer</div>
 											<div class="item-cost">$10,000</div>
-											<div class="buy-item-btn">BUY</div>
+											<div class="buy-item-btn" v-on:click="level_up()">BUY</div>
 										</div>
 									</li>
 									<li>

@@ -1,17 +1,5 @@
 var topBar;
 
-$(".account-settings-btn").click(function() {
-    // console.log("clicked");
-    $("#top-bar--container .account-settings-menu--container").toggleClass(
-        "open"
-    );
-});
-
-$("#account-settings-menu-close-btn").click(function() {
-    $("#top-bar--container .account-settings-menu--container").toggleClass(
-        "open"
-    );
-});
 
 function load_topbar_vue() {
     
@@ -52,13 +40,41 @@ function load_topbar_vue() {
       }
     },
     computed: {
-      userDisplayName: function() {
-        var currUserUUID = sessionStorage.getItem("uuid");
-        if (vm_users.users[currUserUUID] !== undefined) {
-          return vm_users.users[currUserUUID].display_name;
-        }
-        return "";
-      }
+        userDisplayName: function() {
+            var currUserUUID = sessionStorage.getItem("uuid");
+            if (vm_users.users[currUserUUID] !== undefined) {
+                return vm_users.users[currUserUUID].display_name;
+            }
+            return "";
+        },
+        userLevel: function() {
+            let currUserUUID = sessionStorage.getItem("uuid");
+            let folio = vm_portfolios.portfolios[vm_users.users[currUserUUID].portfolio_uuid];
+
+            return folio.level;
+        },
+        userDisplayTitle: function() {
+            let lvl = this.userLevel;
+            if (lvl == 0) {
+            return " the level 0 Wanker";
+            } else {
+            return " level " + lvl;
+            }
+        },
     }
   });
+
+  
+    $(".account-settings-btn").click(function() {
+        // console.log("clicked");
+        $("#top-bar--container .account-settings-menu--container").toggleClass(
+            "open"
+        );
+    });
+
+    $("#account-settings-menu-close-btn").click(function() {
+        $("#top-bar--container .account-settings-menu--container").toggleClass(
+            "open"
+        );
+    });
 }

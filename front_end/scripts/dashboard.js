@@ -21,6 +21,8 @@ function load_dashboard_tab() {
           // Change sorted column
           vm_dash_tab.sortBy = col;
         }
+        console.log(vm_dash_tab.sortBy);
+        console.log(vm_dash_tab.currUserStocks);
       },
       createPortfolioGraph: function() {
         // Get curr user portfolioUUID
@@ -88,11 +90,11 @@ function load_dashboard_tab() {
 
             // Sorting array of owned stocks
             ownedStocks = ownedStocks.sort(function(a, b) {
-              if (a[vm_dash_tab.sortBy] > b[vm_dash_tab.sortBy]) {
-                return -vm_dash_tab.sortDesc;
+              if (a[this.sortBy] > b[this.sortBy]) {
+                return -this.sortDesc;
               }
-              if (a[vm_dash_tab.sortBy] < b[vm_dash_tab.sortBy]) {
-                return vm_dash_tab.sortDesc;
+              if (a[this.sortBy] < b[this.sortBy]) {
+                return this.sortDesc;
               }
               return 0;
             });

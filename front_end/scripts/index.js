@@ -92,7 +92,7 @@ registerRoute("response", function(msg) {
   try {
     REQUESTS[msg.request_id](msg);
   } catch (err) {
-    console.log(err);
+    console.error(err);
     console.log("no request_id key for " + JSON.stringify(msg));
     console.log(REQUESTS);
     console.log(REQUEST_ID);
@@ -101,6 +101,10 @@ registerRoute("response", function(msg) {
   delete REQUESTS[msg.request_id];
 });
 
+registerRoute("notification", function(msg) {
+  Vue.set(vm_notify.notes, msg.msg.uuid, msg.msg);
+})
+
 registerRoute("alert", function(msg) {
   console.log(msg);
 });
@@ -108,8 +112,9 @@ registerRoute("alert", function(msg) {
 
 $(document).ready(function() {
   load_topbar_vue(); // topbar.js
+  load_notifications(); // notifications.js
   load_sidebar_vue(); // sidebar.js
-  load_dashboard_tab(); // dash.js
+  load_dashboard_tab(); // dashboard.js
   load_investors_tab(); // investors.js
   load_stocks_tab(); // stocks.js
   load_store_tab(); // store.js
@@ -128,6 +133,9 @@ $(document).ready(function() {
   console.log(vm_ledger.ledger);
   console.log("------ PORTFOLIOS ------");
   console.log(vm_portfolios.portfolios);
+  console.log("------ NOTIFICATIONS ------");
+  console.log(vm_notify.notes);
+  
 
   /* Vues that are used to display data */
 
@@ -143,10 +151,6 @@ $(document).ready(function() {
     }
   });
 
-
-
-
-  
 
   function createPortfolioGraph(portfolioUUID, location) {
     // Store graphing data
@@ -265,12 +269,13 @@ $(document).ready(function() {
     }
   });
 
-  $(".buy-item-btn").click(function(event) {
-    genericTextFieldModal.showModal = true;
-    //transferModal.investor_uuid = stock.uuid;
+  // $(".buy-item-btn").click(function(event) {
+  //   genericTextFieldModal.showModal = true;
+  //   //transferModal.investor_uuid = stock.uuid;
 
-    toggleGenericTextFieldModal();
-  });
+  //   toggleGenericTextFieldModal();
+  // });
+  
   $(".buy-item-btn").hover(function(event) {
     $(this)
       .parent(".card.item")

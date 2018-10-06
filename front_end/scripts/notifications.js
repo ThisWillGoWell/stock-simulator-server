@@ -23,3 +23,14 @@ function notify(message, success) {
 		.style('opacity', 0).style('top', '-60px');
 
 };
+
+var vm_notify;
+
+function load_notifications() {
+	vm_notify = new Vue({
+		data: {
+			notes: {},
+		},
+	});
+
+}

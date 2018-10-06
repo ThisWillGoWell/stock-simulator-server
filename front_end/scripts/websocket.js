@@ -43,7 +43,12 @@ if(token) {
 	    // console.log(msg);
 		
 		if (msg.action) {
-			router[msg.action](msg);
+			try {
+				router[msg.action](msg);
+			} catch (err) {
+				console.log(msg);
+				console.error(err);
+			}
 		} else {
 			if (msg.type == "error") {
 				console.log("ERROR")
