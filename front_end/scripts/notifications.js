@@ -27,6 +27,11 @@ function notify(message, success) {
 var vm_notify;
 
 function load_notifications() {
+	
+	registerRoute("notification", function(msg) {
+		Vue.set(vm_notify.notes, msg.msg.uuid, msg.msg);
+	});
+
 	vm_notify = new Vue({
 		data: {
 			notes: {},

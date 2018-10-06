@@ -6,7 +6,8 @@ function load_dashboard_tab() {
     el: "#dashboard--view",
     data: {
       sortBy: "amount",
-      sortDesc: 1
+      sortDesc: 1,
+      // userSocks: [],
     },
     methods: {
       toPrice: formatPrice,
@@ -21,15 +22,13 @@ function load_dashboard_tab() {
           // Change sorted column
           this.sortBy = col;
         }
-        console.log(this.sortBy);
-        console.log(this.currUserStocks);
       },
       createPortfolioGraph: function() {
         // Get curr user portfolioUUID
         let portfolioUUID = vm_dash_tab.currUserPortfolio.uuid;
         let location = "#portfolio-graph";
         createPortfolioGraph(portfolioUUID, location);
-      }
+      },
     },
     computed: {
       currUserPortfolio: function() {
@@ -89,20 +88,26 @@ function load_dashboard_tab() {
             });
 
             // Sorting array of owned stocks
+            
+            let byCol = this.sortBy;
+            let direction = this.sortDesc;
+
             ownedStocks = ownedStocks.sort(function(a, b) {
-              if (a[this.sortBy] > b[this.sortBy]) {
-                return -this.sortDesc;
+              if (a[byCol] > b[byCol]) {
+                return -direction;
               }
-              if (a[this.sortBy] < b[this.sortBy]) {
-                return this.sortDesc;
+              if (a[byCol] < b[byCol]) {
+                return direction;
               }
               return 0;
             });
+
             return ownedStocks;
           }
         }
         return [];
-      }
+      },
+
     }
   });
 
@@ -130,7 +135,7 @@ function createPortfolioGraph(portfolioUUID, location) {
   // Store graphing data
   var data = {
     data: {},
-    tags: {}
+    tags: {},
   };
   var responses = [];
   var requests = [];

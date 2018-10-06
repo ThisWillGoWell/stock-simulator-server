@@ -19,32 +19,32 @@ function load_stocks_tab() {
       // on column name clicks
       sortCol: function(col) {
         // If sorting by selected column
-        if (vm_stocks_tab.sortBy == col) {
+        if (this.sortBy == col) {
           // Change sort direction
           // console.log(col);
-          vm_stocks_tab.sortDesc = -vm_stocks_tab.sortDesc;
+          this.sortDesc = -this.sortDesc;
         } else {
           // Change sorted column
-          vm_stocks_tab.sortBy = col;
+          this.sortBy = col;
         }
       },
-      multiSort: function(col) {
-        // if old first sort is the new first sort
-        if (vm_stocks_tab.sortCols[0] === col) {
-          // change sort direction
-          vm_stocks_tab.sortDirections[0] *= -1;
-        } else {
-          // Where is the new sort column
-          let ind = vm_stocks_tab.sortCols.indexOf(col);
-          // Remove new column from old spot
-          vm_stocks_tab.sortCols.splice(ind, 1);
-          vm_stocks_tab.sortDirections.splice(ind, 1);
-          // Push to the beginning of the array
-          vm_stocks_tab.sortCols.unshift(col);
-          vm_stocks_tab.sortDirections.unshift(1);
-        }
-        vm_stocks_tab.reSort++;
-      },
+    //   multiSort: function(col) {
+    //     // if old first sort is the new first sort
+    //     if (this.sortCols[0] === col) {
+    //       // change sort direction
+    //       this.sortDirections[0] *= -1;
+    //     } else {
+    //       // Where is the new sort column
+    //       let ind = this.sortCols.indexOf(col);
+    //       // Remove new column from old spot
+    //       this.sortCols.splice(ind, 1);
+    //       this.sortDirections.splice(ind, 1);
+    //       // Push to the beginning of the array
+    //       this.sortCols.unshift(col);
+    //       this.sortDirections.unshift(1);
+    //     }
+    //     this.reSort++;
+    //   },
       createStockGraph: function(stockUUID) {
         let stock = Object.values(vm_stocks.stocks).filter(
           d => d.uuid === stockUUID
@@ -157,55 +157,58 @@ function load_stocks_tab() {
     },
     computed: {
       sortedStocks: function() {
-        // if (Object.keys(vm_stocks.stocks).length !== 0) {
-          // Turn to array and sort
-          var stock_array = Object.values(vm_stocks.stocks);
+        if (Object.keys(vm_stocks.stocks).length !== 0) {
+            // Turn to array and sort
+            var stock_array = Object.values(vm_stocks.stocks);
 
-          // Sorting array
-          stock_array = stock_array.sort(function(a, b) {
-            if (a[this.sortBy] > b[this.sortBy]) {
-              return -vm_stocks_tab.sortDesc;
+            let byCol = this.sortBy;
+            let direction = this.sortDesc;
+
+            // Sorting array
+            stock_array = stock_array.sort(function(a, b) {
+            if (a[byCol] > b[byCol]) {
+                return -direction;
             }
-            if (a[this.sortBy] < b[this.sortBy]) {
-              return this.sortDesc;
+            if (a[byCol] < b[byCol]) {
+                return direction;
             }
             return 0;
           });
           return stock_array;
-        // }
-        // return [];
-      },
-      multiSortStocks: function() {
-        if (Object.keys(vm_stocks.stocks).length !== 0) {
-          function sorter(a, b, ind) {
-            if (
-              a[vm_stocks_tab.sortCols[ind]] > b[vm_stocks_tab.sortCols[ind]]
-            ) {
-              return vm_stocks_tab.sortDirections[ind];
-            }
-            if (
-              a[vm_stocks_tab.sortCols[ind]] < b[vm_stocks_tab.sortCols[ind]]
-            ) {
-              return -vm_stocks_tab.sortDirections[ind];
-            }
-            if (ind === vm_stocks_tab.sortCols.length - 1) {
-              return 0;
-            } else {
-              return sorter(a, b, ind + 1);
-            }
-          }
-
-          // Get all stocks
-          var stock_array = Object.values(vm_stocks.stocks);
-          // Sort
-          stock_array = stock_array.sort(function(a, b) {
-            return sorter(a, b, 0);
-          });
-
-          return stock_array;
         }
         return [];
       },
+    //   multiSortStocks: function() {
+    //     if (Object.keys(vm_stocks.stocks).length !== 0) {
+    //       function sorter(a, b, ind) {
+    //         if (
+    //           a[vm_stocks_tab.sortCols[ind]] > b[vm_stocks_tab.sortCols[ind]]
+    //         ) {
+    //           return vm_stocks_tab.sortDirections[ind];
+    //         }
+    //         if (
+    //           a[vm_stocks_tab.sortCols[ind]] < b[vm_stocks_tab.sortCols[ind]]
+    //         ) {
+    //           return -vm_stocks_tab.sortDirections[ind];
+    //         }
+    //         if (ind === vm_stocks_tab.sortCols.length - 1) {
+    //           return 0;
+    //         } else {
+    //           return sorter(a, b, ind + 1);
+    //         }
+    //       }
+
+    //       // Get all stocks
+    //       var stock_array = Object.values(vm_stocks.stocks);
+    //       // Sort
+    //       stock_array = stock_array.sort(function(a, b) {
+    //         return sorter(a, b, 0);
+    //       });
+
+    //       return stock_array;
+    //     }
+    //     return [];
+    //   },
       highestStock: function() {
         if (Object.values(vm_stocks.stocks).length === 0) {
           return "";
