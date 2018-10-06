@@ -67,7 +67,7 @@ function load_stocks_tab() {
           uuid: stockUUID,
           field: "current_price",
           num_points: 1000,
-            use_cache:true,
+          use_cache: true,
           length: "100h"
         };
 

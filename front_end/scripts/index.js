@@ -111,13 +111,13 @@ registerRoute("alert", function(msg) {
 
 
 $(document).ready(function() {
-  load_topbar_vue(); // topbar.js
-  load_notifications(); // notifications.js
-  load_sidebar_vue(); // sidebar.js
   load_dashboard_tab(); // dashboard.js
   load_investors_tab(); // investors.js
   load_stocks_tab(); // stocks.js
   load_store_tab(); // store.js
+  load_topbar_vue(); // topbar.js
+  load_notifications(); // notifications.js
+  load_sidebar_vue(); // sidebar.js
   load_chat_vue(); // chat.js
   load_modal_vues(); // modal.js
 
@@ -135,6 +135,8 @@ $(document).ready(function() {
   console.log(vm_portfolios.portfolios);
   console.log("------ NOTIFICATIONS ------");
   console.log(vm_notify.notes);
+
+  console.log(vm_topBar.userLevel)
   
 
   /* Vues that are used to display data */
@@ -275,7 +277,7 @@ $(document).ready(function() {
 
   //   toggleGenericTextFieldModal();
   // });
-  
+
   $(".buy-item-btn").hover(function(event) {
     $(this)
       .parent(".card.item")

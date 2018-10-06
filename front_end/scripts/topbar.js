@@ -1,10 +1,10 @@
-var topBar;
+var vm_topBar;
 
 
 function load_topbar_vue() {
     
   // Vue for username top right
-  topBar = new Vue({
+  vm_topBar = new Vue({
     el: "#top-bar--container",
     methods: {
       logout: function(event) {
@@ -37,7 +37,7 @@ function load_topbar_vue() {
 
         // Reset display name
         $("#newDisplayName").val("");
-      }
+      },
     },
     computed: {
         userDisplayName: function() {
@@ -47,25 +47,11 @@ function load_topbar_vue() {
             }
             return "";
         },
-        userLevel: function() {
-            let currUserUUID = sessionStorage.getItem("uuid");
-            if (vm_users.users[currUserUUID] !== undefined) {
-                if (vm_portfolios.portfolios[vm_users.users[currUserUUID]] !== undefined) {
-                    let folio = vm_portfolios.portfolios[vm_users.users[currUserUUID].portfolio_uuid];
-                    return folio.level;
-                }
-            }
-            return "";
-        },
-        userDisplayTitle: function() {
-            let lvl = this.userLevel;
-            if (lvl == 0) {
-            return " the level 0 Wanker";
-            } else {
-            return " level " + lvl;
-            }
-        },
-    }
+      userLevel: function() {
+          return " level " + vm_dash_tab.currUserPortfolio.level;
+      },
+      
+    },
   });
 
   
