@@ -90,7 +90,8 @@ func InitDatabase(disableDbWrite bool) {
 	}
 
 	runHistoricalQueries()
-	if disableDbWrite {
+	if !disableDbWrite {
+		fmt.Println("starting db writer")
 		go databaseWriter()
 	}
 
