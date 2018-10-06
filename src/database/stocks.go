@@ -24,7 +24,7 @@ var (
 	stocksTableUpdateInsert = `INSERT into ` + stocksTableName + `(uuid, ticker_id, name, current_price, open_shares, change_interval) values($1, $2, $3, $4, $5, $6) ` +
 		`ON CONFLICT (uuid) DO UPDATE SET current_price=EXCLUDED.current_price, open_shares=EXCLUDED.open_shares`
 
-	stocksTableQueryStatement = "SELECT uuid, ticker_id, name, current_price, open_shares, change_interval FROM " + stocksTableName
+	stocksTableQueryStatement = "SELECT uuid, ticker_id, name, current_price, open_shares, z FROM " + stocksTableName
 	//getCurrentPrice()z
 )
 

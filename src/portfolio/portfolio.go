@@ -35,8 +35,9 @@ type Portfolio struct {
 
 	UpdateChannel *duplicator.ChannelDuplicator `json:"-"`
 	UpdateInput   *duplicator.ChannelDuplicator `json:"-"`
-	Level         int64                         `json:"level" change:"-"`
-	Lock          *lock.Lock                    `json:"-"`
+	Level         int64                         `json:"level" change:"-
+"`
+	Lock *lock.Lock `json:"-"`
 }
 
 func (port *Portfolio) GetId() string {
@@ -139,20 +140,19 @@ func GetAllPortfolios() []*Portfolio {
 }
 
 func (port *Portfolio) LevelUp() error {
-	port.Lock.Acquire("level up")
+	port.Lock.Acquire("l up")
 	defer port.Lock.Release()
 	nextLevel := port.Level + 1
-	level, exists := level.Levels[nextLevel]
+	l, exists := level.Levels[nextLevel]
 	if !exists {
-		return errors.New("there is no next level")
+		return errors.New("there is no next l")
 	}
-	if port.Wallet < level.Cost {
+	if port.Wallet < l.Cost {
 		return errors.New("not enough $$")
 	}
-	port.Wallet = port.Wallet - level.Cost
+	port.Wallet = port.Wallet - l.Cost
 	port.Level = nextLevel
 
 	go port.Update()
-	wires.PortfolioUpdate.Offer(port)
 	return nil
 }
