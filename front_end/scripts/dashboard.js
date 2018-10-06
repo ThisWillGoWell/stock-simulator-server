@@ -13,16 +13,16 @@ function load_dashboard_tab() {
       // on column name clicks
       sortCol: function(col) {
         // If sorting by selected column
-        if (vm_dash_tab.sortBy == col) {
+        if (this.sortBy == col) {
           // Change sort direction
           // console.log(col);
-          vm_dash_tab.sortDesc = -vm_dash_tab.sortDesc;
+          this.sortDesc = -this.sortDesc;
         } else {
           // Change sorted column
-          vm_dash_tab.sortBy = col;
+          this.sortBy = col;
         }
-        console.log(vm_dash_tab.sortBy);
-        console.log(vm_dash_tab.currUserStocks);
+        console.log(this.sortBy);
+        console.log(this.currUserStocks);
       },
       createPortfolioGraph: function() {
         // Get curr user portfolioUUID
