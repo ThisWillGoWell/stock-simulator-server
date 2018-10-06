@@ -46,12 +46,12 @@ function load_dashboard_tab() {
       },
       currUserStocks: function() {
         var currUserUUID = sessionStorage.getItem("uuid");
-        // if (vm_users.users[currUserUUID] !== undefined) {
+        if (vm_users.users[currUserUUID] !== undefined) {
           // Current users portfolio uuid
           var portfolio_uuid = vm_users.users[currUserUUID].portfolio_uuid;
 
           // If objects are in ledger
-          // if (Object.keys(vm_ledger.ledger).length !== 0) {
+          if (Object.keys(vm_ledger.ledger).length !== 0) {
             var ownedStocks = Object.values(vm_ledger.ledger).filter(
               d => d.portfolio_id === portfolio_uuid
             );
@@ -99,9 +99,9 @@ function load_dashboard_tab() {
               return 0;
             });
             return ownedStocks;
-        //   }
-        // }
-        // return [];
+          }
+        }
+        return [];
       }
     }
   });
