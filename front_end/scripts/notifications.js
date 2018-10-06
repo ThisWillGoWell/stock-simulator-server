@@ -23,3 +23,19 @@ function notify(message, success) {
 		.style('opacity', 0).style('top', '-60px');
 
 };
+
+var vm_notify;
+
+function load_notifications() {
+	
+	registerRoute("notification", function(msg) {
+		Vue.set(vm_notify.notes, msg.msg.uuid, msg.msg);
+	});
+
+	vm_notify = new Vue({
+		data: {
+			notes: {},
+		},
+	});
+
+}
