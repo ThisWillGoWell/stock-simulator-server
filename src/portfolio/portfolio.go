@@ -140,7 +140,7 @@ func GetAllPortfolios() []*Portfolio {
 }
 
 func (port *Portfolio) LevelUp() error {
-	port.Lock.Acquire("l up")
+	port.Lock.Acquire("level up")
 	defer port.Lock.Release()
 	nextLevel := port.Level + 1
 	l, exists := level.Levels[nextLevel]

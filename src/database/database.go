@@ -90,7 +90,7 @@ func InitDatabase(disableDbWrite bool) {
 	}
 
 	runHistoricalQueries()
-	if !disableDbWrite {
+	if disableDbWrite {
 		go databaseWriter()
 	}
 
@@ -153,7 +153,7 @@ func databaseWriter() {
 		stockDBWrite := duplicator.MakeDuplicator("stock-db-write")
 		stockDBWrite.RegisterInput(wires.StocksNewObject.GetBufferedOutput(5))
 		stockDBWrite.RegisterInput(wires.StocksUpdate.GetBufferedOutput(5))
-		write := stockDBWrite.GetBufferedOutput(100)
+		write := stockDBWrite.GetBufferedOutput(1000)
 		for val := range write {
 			writeStock(val.(*valuable.Stock))
 			writeStockHistory(val.(*valuable.Stock))
