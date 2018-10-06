@@ -1,6 +1,18 @@
+var vm_investors_tab;
+
+  $("table").on("click", "tr.investors", function(event) {
+    //var ticker_id = $(this).find('.stock-ticker-id').attr('tid');
+    //console.log("TID: "+ticker_id);
+    //var stock = Object.values(vm_users.stocks).filter(d => d.ticker_id === ticker_id)[0];
+    // Set show modal to true
+    //transferModal.showModal = true;
+    //transferModal.investor_uuid = stock.uuid;
+    //toggleTransferModal();
+  });
+
 function load_investors_tab() {
   // Vue for all investors tab data
-  var vm_investors_tab = new Vue({
+  vm_investors_tab = new Vue({
     el: "#investors--view",
     methods: {
       toPrice: formatPrice,
