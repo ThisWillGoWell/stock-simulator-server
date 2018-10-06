@@ -40,7 +40,7 @@ func initPortfolio() {
 }
 
 func writePortfolio(port *portfolio.Portfolio) {
-	dbLock.Acquire("update-stock")
+	dbLock.Acquire("update-portfolio")
 	defer dbLock.Release()
 	tx, err := db.Begin()
 

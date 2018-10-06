@@ -63,7 +63,7 @@ func populateLedger() {
 
 	rows, err := db.Query(ledgerTableQueryStatement)
 	if err != nil {
-		log.Fatal("error quiering databse")
+		log.Fatal("error quiering databse", err)
 		panic("could not populate portfolios: " + err.Error())
 	}
 	defer rows.Close()

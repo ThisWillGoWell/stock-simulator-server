@@ -64,7 +64,7 @@ func populateUsers() {
 
 	rows, err := db.Query(accountTableQueryStatement)
 	if err != nil {
-		log.Fatal("error quiering databse")
+		log.Fatal("error quiering databse", err)
 		panic("could not populate users: " + err.Error())
 	}
 	defer rows.Close()
