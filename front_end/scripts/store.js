@@ -23,7 +23,7 @@ function load_store_tab() {
 
 function level_up() {
     
-    // Set callback 
+    // Set callback
     REQUESTS[REQUEST_ID] = function (msg) {
         level_up_response(msg.msg.success, vm_store.currUserLevel);
     };
@@ -36,7 +36,7 @@ function level_up() {
 
 function level_up_response(success, level) {
     if (success) {
-        notify("Congrats you are level " + level, success);
+        notify("Congrats you are level " + (Number(level) + 1), success);
     } else {
         notify("Error leveling up, not enough money.", success);
     }
