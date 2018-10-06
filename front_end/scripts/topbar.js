@@ -50,10 +50,12 @@ function load_topbar_vue() {
         userLevel: function() {
             let currUserUUID = sessionStorage.getItem("uuid");
             if (vm_users.users[currUserUUID] !== undefined) {
-
-                let folio = vm_portfolios.portfolios[vm_users.users[currUserUUID].portfolio_uuid];
-                return folio.level;
+                if (vm_portfolios.portfolios[vm_users.users[currUserUUID]] !== undefined) {
+                    let folio = vm_portfolios.portfolios[vm_users.users[currUserUUID].portfolio_uuid];
+                    return folio.level;
+                }
             }
+            return "";
         },
         userDisplayTitle: function() {
             let lvl = this.userLevel;
