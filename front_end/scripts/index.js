@@ -101,9 +101,6 @@ registerRoute("response", function(msg) {
   delete REQUESTS[msg.request_id];
 });
 
-registerRoute("notification", function(msg) {
-  Vue.set(vm_notify.notes, msg.msg.uuid, msg.msg);
-})
 
 registerRoute("alert", function(msg) {
   console.log(msg);
