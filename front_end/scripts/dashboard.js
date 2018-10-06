@@ -103,4 +103,23 @@ function load_dashboard_tab() {
       }
     }
   });
+
+  // Set stock row clicks
+  $("#owned-stocks").on("click", "tr.clickable", function(event) {
+    var ticker_id = $(this)
+        .find(".stock-ticker-id")
+        .attr("tid");
+
+    console.log("TID: " + ticker_id);
+
+    var stock = Object.values(vm_stocks.stocks).filter(
+        d => d.ticker_id === ticker_id
+    )[0];
+
+    // Set show modal to true
+    buySellModal.showModal = true;
+    buySellModal.stock_uuid = stock.uuid;
+
+    toggleModal();
+  });
 }
