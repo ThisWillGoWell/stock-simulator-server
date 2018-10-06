@@ -1,6 +1,5 @@
 var vm_investors_tab;
 
-
 function load_investors_tab() {
   // Vue for all investors tab data
   vm_investors_tab = new Vue({

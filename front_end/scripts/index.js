@@ -154,66 +154,6 @@ $(document).ready(function() {
   });
 
 
-  function createPortfolioGraph(portfolioUUID, location) {
-    // Store graphing data
-    var data = {
-      data: {},
-      tags: {}
-    };
-    var responses = [];
-    var requests = [];
-
-    // Send data requests
-    ["net_worth", "wallet"].forEach(function(field) {
-      // Creating websocket message
-      let msg = {
-        uuid: portfolioUUID,
-        field: field,
-        num_points: 100,
-        length: "100h"
-      };
-
-      // Store request on front end
-      requests.push(REQUEST_ID.toString());
-      REQUESTS[REQUEST_ID] = function(msg) {
-        // Pull out the data and format it
-        var points = msg.msg.points;
-        points = points.map(function(d) {
-          return { time: d[0], value: d[1] };
-        });
-
-        // Store the data
-        data.data[msg.msg.message.field] = points;
-
-        // Make note the data is available
-        responses.push(msg.request_id);
-      };
-
-      // Send message
-      doSend("query", msg, REQUEST_ID.toString());
-
-      REQUEST_ID++;
-    });
-
-    var drawGraphOnceDone = null;
-
-    var stillWaiting = true;
-
-    drawGraphOnceDone = function() {
-      if (requests.every(r => responses.indexOf(r) > -1)) {
-        stillWaiting = false;
-      }
-
-      if (!stillWaiting) {
-        DrawLineGraph(location, data);
-      } else {
-        setTimeout(drawGraphOnceDone, 100);
-      }
-    };
-
-    setTimeout(drawGraphOnceDone, 100);
-  }
-
   var notification_sound = new Audio();
   notification_sound.src = "assets/sfx_pling.wav";
 
