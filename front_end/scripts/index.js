@@ -8,6 +8,12 @@ var config = new Vue({
   }
 });
 
+var vm_notify = new Vue({
+  data: {
+    notes: {},
+  },
+});
+
 var vm_stocks = new Vue({
   data: {
     stocks: {}
@@ -102,13 +108,11 @@ registerRoute("alert", function(msg) {
 
 
 $(document).ready(function() {
-  load_notifications(); // notifications.js
   load_dashboard_tab(); // dashboard.js
   load_investors_tab(); // investors.js
   load_stocks_tab(); // stocks.js
   load_store_tab(); // store.js
   load_topbar_vue(); // topbar.js
-  // load_notifications(); // notifications.js
   load_sidebar_vue(); // sidebar.js
   load_chat_vue(); // chat.js
   load_modal_vues(); // modal.js
