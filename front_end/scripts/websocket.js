@@ -80,7 +80,7 @@ if (token) {
 		var message = {
 			'action': action,
 			'msg': msg,
-			'request_id': REQUEST_ID
+			'request_id': REQUEST_ID.toString()
 		};
 		
 		REQUEST_ID++;

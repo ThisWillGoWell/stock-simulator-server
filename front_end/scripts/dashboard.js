@@ -7,7 +7,6 @@ function load_dashboard_tab() {
     data: {
       sortBy: "amount",
       sortDesc: 1,
-      // userSocks: [],
     },
     methods: {
       toPrice: formatPrice,

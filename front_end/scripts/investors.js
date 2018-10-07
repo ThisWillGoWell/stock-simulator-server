@@ -4,8 +4,24 @@ function load_investors_tab() {
   // Vue for all investors tab data
   vm_investors_tab = new Vue({
     el: "#investors--view",
+    data: {
+      sortBy: "name",
+      sortDesc: 1,
+    },
     methods: {
       toPrice: formatPrice,
+      // on column name clicks
+      sortCol: function(col) {
+        // If sorting by selected column
+        if (this.sortBy == col) {
+          // Change sort direction
+          // console.log(col);
+          this.sortDesc = -this.sortDesc;
+        } else {
+          // Change sorted column
+          this.sortBy = col;
+        }
+      },
       createGraph: function(portfolioUUID) {
         let location = "#investorGraph" + portfolioUUID;
         createPortfolioGraph(portfolioUUID, location);
@@ -41,6 +57,21 @@ function load_investors_tab() {
             
             return d;
           });
+
+          // Sort investors
+          let byCol = this.sortBy;
+          let direction = this.sortDesc;
+
+          investors = investors.sort(function(a, b) {
+            if (a[byCol] > b[byCol]) {
+              return -direction;
+            }
+            if (a[byCol] < b[byCol]) {
+              return direction;
+            }
+            return 0;
+          });
+
           return investors;
         }
       }
