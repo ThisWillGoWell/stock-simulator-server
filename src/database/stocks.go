@@ -15,8 +15,8 @@ var (
 		`uuid text NOT NULL,` +
 		`ticker_id text NOT NULL,` +
 		`name text NOT NULL,` +
-		`current_price int,` +
-		`open_shares int,` +
+		`current_price bigint,` +
+		`open_shares bigint,` +
 		`change_interval numeric(16, 4), ` +
 		`PRIMARY KEY(uuid)` +
 		`);`

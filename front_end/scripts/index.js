@@ -1,6 +1,5 @@
 // TODO break these out another file
-var REQUESTS = {};
-var REQUEST_ID = 1;
+
 
 /* Highest level Vue data object */
 var config = new Vue({
@@ -94,20 +93,6 @@ registerRoute("object", function(msg) {
 });
 
 
-registerRoute("response", function(msg) {
-  try {
-    REQUESTS[msg.request_id](msg);
-  } catch (err) {
-    console.error(err);
-    console.log("no request_id key for " + JSON.stringify(msg));
-    console.log(REQUESTS);
-    console.log(REQUEST_ID);
-  }
-  console.log(msg);
-  delete REQUESTS[msg.request_id];
-});
-
-
 registerRoute("alert", function(msg) {
   console.log(msg);
 });
@@ -117,6 +102,7 @@ registerRoute("alert", function(msg) {
 
 
 $(document).ready(function() {
+  load_notifications(); // notifications.js
   load_dashboard_tab(); // dashboard.js
   load_investors_tab(); // investors.js
   load_stocks_tab(); // stocks.js
@@ -158,10 +144,6 @@ $(document).ready(function() {
       }
     }
   });
-
-
-  var notification_sound = new Audio();
-  notification_sound.src = "assets/sfx_pling.wav";
 
 
   $(document).scroll(function() {
@@ -376,9 +358,4 @@ function renderContent(route) {
     }
 }
 
-  // SOUND EFFECTS
-
-  var notification_sound = new Audio();
-  notification_sound.src = "assets/sfx_pling.wav";
-  notification_sound.volume = 0.2;
 });

@@ -14,7 +14,7 @@ var (
 		`uuid text NOT NULL,` +
 		`portfolio_id text NOT NULL, ` +
 		`stock_id text NOT NULL, ` +
-		`amount int NULL` +
+		`amount bigint NULL` +
 		`);`
 	ledgerHistoryTSInit = `CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE; SELECT create_hypertable('` + ledgerHistoryTableName + `', 'time');`
 

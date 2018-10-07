@@ -12,8 +12,8 @@ var (
 		`( ` +
 		`time TIMESTAMPTZ NOT NULL,` +
 		`uuid text NOT NULL,` +
-		`net_worth int NULL,` +
-		`wallet int NULL` +
+		`net_worth bigint NULL,` +
+		`wallet bigint NULL` +
 		`);`
 	portfolioHistoryTSInit = `CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE; SELECT create_hypertable('` + portfolioHistoryTableName + `', 'time');`
 
