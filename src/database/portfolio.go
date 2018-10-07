@@ -13,7 +13,7 @@ var (
 		`id serial,` +
 		`uuid text NOT NULL,` +
 		`name text NOT NULL,` +
-		`bigint int NOT NULL,` +
+		`wallet bigint NOT NULL,` +
 		`level int NOT NULL, ` +
 		`PRIMARY KEY(uuid) ` +
 		`);`
