@@ -14,8 +14,8 @@ var (
 		`uuid text NOT NULL,` +
 		`portfolio_id text NOT NULL,` +
 		`stock_id text NOT NULL,` +
-		`amount int NOT NULL,` +
-		`investment_value int NOT NULL, ` +
+		`amount bigint NOT NULL,` +
+		`investment_value bigint NOT NULL, ` +
 		`PRIMARY KEY(uuid)` +
 		`);`
 
