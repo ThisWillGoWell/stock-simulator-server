@@ -49,6 +49,11 @@ var vm_users = new Vue({
 });
 
 
+registerRoute("notification", function(msg) {
+  Vue.set(vm_notify.notes, msg.msg.uuid, msg.msg);
+});
+
+
 registerRoute("connect", function(msg) {
   console.log("login recieved");
 
@@ -63,6 +68,7 @@ registerRoute("connect", function(msg) {
     Vue.set(config.config, msg.msg.uuid, msg.msg.config);
   }
 });
+
 
 registerRoute("object", function(msg) {
   switch (msg.msg.type) {
@@ -107,13 +113,16 @@ registerRoute("alert", function(msg) {
 });
 
 
+
+
+
 $(document).ready(function() {
   load_dashboard_tab(); // dashboard.js
   load_investors_tab(); // investors.js
   load_stocks_tab(); // stocks.js
   load_store_tab(); // store.js
   load_topbar_vue(); // topbar.js
-  load_notifications(); // notifications.js
+  // load_notifications(); // notifications.js
   load_sidebar_vue(); // sidebar.js
   load_chat_vue(); // chat.js
   load_modal_vues(); // modal.js
