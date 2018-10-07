@@ -45,15 +45,6 @@ type Item interface {
 	Load()
 }
 
-type UserInventory struct {
-	UpdateChan chan interface{}
-	Items      map[string]string `json:"items" change:"-"`
-}
-
-func (*UserInventory) GetType() string {
-	return "item_inventory"
-}
-
 func makeItem(itemType ItemType, userUuid string) Item {
 	switch itemType.(type) {
 	case InsiderTraderItemType:
