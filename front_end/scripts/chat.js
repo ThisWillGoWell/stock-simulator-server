@@ -1,6 +1,12 @@
 var vm_chat;
 
 
+// SOUND EFFECTS
+var notification_sound = new Audio();
+notification_sound.src = "assets/sfx_pling.wav";
+notification_sound.volume = 0.2;
+
+
 var debug_feed = $("#debug-module--container .debug-message--list");
 
 function appendNewMessage(msg, fromMe) {
@@ -169,7 +175,7 @@ function load_chat_vue() {
                     link.href = "assets/favicon_green_unread.png";
                     document.getElementsByTagName("head")[0].appendChild(link);
                     if (!vm_chat.mute_notification_sfx) {
-                    notification_sound.play();
+                        notification_sound.play();
                     }
                 } else {
                     console.log("all messages read");

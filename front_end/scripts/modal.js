@@ -42,7 +42,7 @@ function sendTrade() {
 
     // Send through WebSocket
     console.log(JSON.stringify(msg));
-    doSend("trade", msg, REQUEST_ID.toString());
+    doSend("trade", msg);
 
     REQUEST_ID++;
 
@@ -194,7 +194,7 @@ function load_modal_vues() {
             };
 
             // Send through WebSocket
-            doSend("transfer", msg, REQUEST_ID.toString());
+            doSend("transfer", msg);
 
             REQUEST_ID++;
 
