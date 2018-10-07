@@ -131,7 +131,7 @@ func databaseWriter() {
 	}()
 
 	go func() {
-		itemsDBWrite := duplicator.MakeDuplicator("portfolio-db-write")
+		itemsDBWrite := duplicator.MakeDuplicator("items-db-write")
 		itemsDBWrite.RegisterInput(wires.ItemsNewObjects.GetBufferedOutput(100))
 		itemsDBWrite.RegisterInput(wires.ItemsUpdate.GetBufferedOutput(100))
 		write := itemsDBWrite.GetBufferedOutput(1000)
