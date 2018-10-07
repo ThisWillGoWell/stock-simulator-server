@@ -1,6 +1,11 @@
 $( document ).ready(function() {
 
     let url = "https://mockstarket.com";
+    var port = location.port
+    if(port == "8000"){
+        url = "http://localhost:8000"
+    }
+
     let input_login_uid = $('#login-uid');
     let input_login_pw = $('#login-pw');
     let input_login_submit = $('#input-login-submit');

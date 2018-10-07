@@ -7,6 +7,11 @@ if(token) {
 	var externalServer = "mockstarket.com";
 	var localServer = window.location.host;
 	var wsUri = "wss://"+ externalServer + "/ws";
+	var port = location.port
+	if(port == "8000"){
+		wsUri = "ws://localhost:8000/ws"
+	}
+
 	var output;
 	var webSocket;
 

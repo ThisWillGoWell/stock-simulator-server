@@ -2,6 +2,7 @@ package order
 
 import (
 	"github.com/stock-simulator-server/src/ledger"
+	"github.com/stock-simulator-server/src/level"
 	"github.com/stock-simulator-server/src/notification"
 	"github.com/stock-simulator-server/src/portfolio"
 	"github.com/stock-simulator-server/src/valuable"
@@ -133,6 +134,7 @@ func executeTrade(o *PurchaseOrder) {
 			failureOrder("not enough open shares", o)
 			return
 		}
+
 		// does the account have enough money
 		costOfTrade := o.Amount * value.GetValue()
 		if costOfTrade > port.Wallet {
@@ -142,15 +144,26 @@ func executeTrade(o *PurchaseOrder) {
 		// any other checks?
 		// make the trade
 		// subtract from open shares
+		sharesCanOwn := level.Levels[port.Level].MaxSharesStock
+
+		// update the ledger entry to trigger update
+		if !ledgerExists {
+			if o.Amount > sharesCanOwn {
+				failureOrder("can't own that many shares", o)
+				return
+			}
+			ledgerEntry = ledger.NewLedgerEntry(o.PortfolioID, o.ValuableID, true)
+			port.UpdateInput.RegisterInput(ledgerEntry.UpdateChannel.GetBufferedOutput(10))
+		} else {
+			newShareCount := o.Amount + ledgerEntry.Amount
+			if newShareCount > sharesCanOwn {
+				failureOrder("can't own that many shares", o)
+				return
+			}
+		}
 		value.OpenShares -= o.Amount
 		// Update the portfolio with the new ledgerEntry
 		port.Wallet -= costOfTrade
-		// update the ledger entry to trigger update
-		if !ledgerExists {
-			ledgerEntry = ledger.NewLedgerEntry(o.PortfolioID, o.ValuableID, true)
-			port.UpdateInput.RegisterInput(ledgerEntry.UpdateChannel.GetBufferedOutput(10))
-
-		}
 		ledgerEntry.InvestmentValue += costOfTrade
 		//add the holder amount
 		ledgerEntry.Amount += o.Amount

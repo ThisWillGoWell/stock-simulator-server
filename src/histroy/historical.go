@@ -27,7 +27,7 @@ var queryCache = make(map[string]*queryCacheItem)
 var queryCacheLock = lock.NewLock("query-cache-lock")
 var expirationTime = time.Hour * 48
 
-func runCacheCleaner() {
+func RunCacheUpdater() {
 	go func() {
 		for {
 			queryCacheLock.Acquire("clean")
@@ -44,7 +44,7 @@ func runCacheCleaner() {
 				}
 			}
 			queryCacheLock.Release()
-			<-time.After(time.Minute * 5)
+			<-time.After(time.Minute * 1)
 		}
 	}()
 }
@@ -90,7 +90,7 @@ func BuildQuery(qm *messages.QueryMessage) *Query {
 		QueryField:      qm.QueryField,
 		Limit:           limit,
 		TimeInterval:    interval,
-		Interval:        duration,
+		Interval:        time.Duration(int(duration.Seconds()) / qm.NumberPoints * int(time.Second)),
 		TimeLength:      length,
 		ResponseChannel: make(chan *messages.QueryResponse, 1),
 	}

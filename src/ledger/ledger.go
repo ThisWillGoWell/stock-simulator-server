@@ -79,6 +79,7 @@ func MakeLedgerEntry(uuid, portfolioId, stockId string, amount, investmentVal in
 	EntriesStockPortfolio[stockId][portfolioId] = entry
 	entry.UpdateChannel.EnableCopyMode()
 	change.RegisterPublicChangeDetect(entry)
+	wires.LedgerNewObject.Offer(entry)
 	wires.LedgerUpdate.RegisterInput(entry.UpdateChannel.GetOutput())
 	utils.RegisterUuid(uuid, entry)
 	return entry
