@@ -192,6 +192,7 @@ func successQuery(query *Query, values [][]interface{}) {
 				lastUseTime:    time.Now(),
 				validTime:      query.Interval,
 				response:       response,
+				query:          query,
 			}
 
 		} else {
