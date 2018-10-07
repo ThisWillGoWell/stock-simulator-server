@@ -48,7 +48,8 @@ function load_topbar_vue() {
             return "";
         },
       userLevel: function() {
-          return " level " + vm_dash_tab.currUserPortfolio.level;
+        let lvl = vm_dash_tab.currUserPortfolio.level;
+        return " level " + lvl;
       },
       
     },

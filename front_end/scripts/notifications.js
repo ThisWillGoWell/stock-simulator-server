@@ -1,3 +1,10 @@
+var vm_notify = new Vue({
+	data: {
+		notes: {},
+	},
+});
+
+
 function notify(message, success) {
 
 	// Set text as the message
@@ -24,18 +31,5 @@ function notify(message, success) {
 
 };
 
-var vm_notify;
 
-function load_notifications() {
-	
-	registerRoute("notification", function(msg) {
-		Vue.set(vm_notify.notes, msg.msg.uuid, msg.msg);
-	});
 
-	vm_notify = new Vue({
-		data: {
-			notes: {},
-		},
-	});
-
-}

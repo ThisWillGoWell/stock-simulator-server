@@ -1,12 +1,17 @@
 // TODO break these out another file
-var REQUESTS = {};
-var REQUEST_ID = 1;
+
 
 /* Highest level Vue data object */
 var config = new Vue({
   data: {
     config: {}
   }
+});
+
+var vm_notify = new Vue({
+  data: {
+    notes: {},
+  },
 });
 
 var vm_stocks = new Vue({
@@ -49,6 +54,11 @@ var vm_users = new Vue({
 });
 
 
+registerRoute("notification", function(msg) {
+  Vue.set(vm_notify.notes, msg.msg.uuid, msg.msg);
+});
+
+
 registerRoute("connect", function(msg) {
   console.log("login recieved");
 
@@ -63,6 +73,7 @@ registerRoute("connect", function(msg) {
     Vue.set(config.config, msg.msg.uuid, msg.msg.config);
   }
 });
+
 
 registerRoute("object", function(msg) {
   switch (msg.msg.type) {
@@ -88,23 +99,12 @@ registerRoute("object", function(msg) {
 });
 
 
-registerRoute("response", function(msg) {
-  try {
-    REQUESTS[msg.request_id](msg);
-  } catch (err) {
-    console.error(err);
-    console.log("no request_id key for " + JSON.stringify(msg));
-    console.log(REQUESTS);
-    console.log(REQUEST_ID);
-  }
-  console.log(msg);
-  delete REQUESTS[msg.request_id];
-});
-
-
 registerRoute("alert", function(msg) {
   console.log(msg);
 });
+
+
+
 
 
 $(document).ready(function() {
@@ -113,7 +113,6 @@ $(document).ready(function() {
   load_stocks_tab(); // stocks.js
   load_store_tab(); // store.js
   load_topbar_vue(); // topbar.js
-  load_notifications(); // notifications.js
   load_sidebar_vue(); // sidebar.js
   load_chat_vue(); // chat.js
   load_modal_vues(); // modal.js
@@ -149,10 +148,6 @@ $(document).ready(function() {
       }
     }
   });
-
-
-  var notification_sound = new Audio();
-  notification_sound.src = "assets/sfx_pling.wav";
 
 
   $(document).scroll(function() {
@@ -367,9 +362,4 @@ function renderContent(route) {
     }
 }
 
-  // SOUND EFFECTS
-
-  var notification_sound = new Audio();
-  notification_sound.src = "assets/sfx_pling.wav";
-  notification_sound.volume = 0.2;
 });
