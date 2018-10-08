@@ -60,7 +60,7 @@ func AcknowledgeNotification(uuid, userUuid string) error {
 	if !ok {
 		return errors.New("notification uuid does not exist")
 	}
-	if notification.Uuid != userUuid {
+	if notification.UserUuid != userUuid {
 		return errors.New("user does not own notification, what are you doing?")
 	}
 	notification.Seen = true

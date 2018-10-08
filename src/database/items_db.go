@@ -39,13 +39,13 @@ func initItems() {
 }
 
 func writeItem(entry items.Item) {
-	dbLock.Acquire("update-notification")
+	dbLock.Acquire("update-item")
 	defer dbLock.Release()
 	tx, err := db.Begin()
 
 	if err != nil {
 		db.Close()
-		panic("could not begin notification init" + err.Error())
+		panic("could not begin item init" + err.Error())
 	}
 	item, err := json.Marshal(entry)
 	if err != nil {
