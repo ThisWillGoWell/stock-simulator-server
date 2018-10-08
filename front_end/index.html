@@ -7,7 +7,7 @@
 		<meta charset="utf-8">
 		<meta name="description" content="A mock stock market">
 		<meta name="keywords" content="mockstarket">
-		<link rel="author" href="Brennan Sieck, Will Gowell, Jake Elias" />
+		<link rel="author" href="Brennan Sieck, Will Gowell, Jakob Elias" />
 		
 		<meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
         <link href="https://fonts.googleapis.com/css?family=Mukta+Vaani:300,400,500,700" rel="stylesheet">
@@ -31,6 +31,7 @@
 		<script src="https://d3js.org/d3-time.v1.min.js"></script>
 		<script src="https://d3js.org/d3-time-format.v2.min.js"></script>
 
+		<script src="scripts/items.js"></script>
 		<script src="scripts/websocket.js"></script>
 		<script src="scripts/index.js"></script>
 		<script src="scripts/topbar.js"></script>
@@ -335,6 +336,49 @@
 								</div>
 							</div>
 							<div class="flex-column-100">
+								<div class="item-category buffer-top">MY ITEMS</div>
+							</div>
+							<div class="flex-column-100">
+								<!-- Brennan, might want to make these cards -->
+								<div class="card item-list">
+									<table class="table" id="owned-items">
+										<thead>
+									    	<tr>
+										    	<th scope="col" style="text-align: left; padding-left: 25px;">Item </th>
+										    </tr>
+										</thead>
+										<tbody>
+											<tr class="clickable" v-for="item in userItems" :key='item.uuid'>
+												<td>{{ item.Type }}</td>
+												<td v-on:click="useItem(item.uuid)">Use</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+							<div class="flex-column-100" id="insider-area">
+								<!-- Brennan, might want to make these cards -->
+								<div class="card insider-list">
+									<table class="table">
+										<thead>
+									    	<tr>
+										    	<th scope="col" style="text-align: left; padding-left: 25px;">Item </th>
+										    	<th>Target Price</th>
+										    	<th>Current Price</th>
+										    </tr>
+										</thead>
+										<tbody>
+											<tr class="clickable" v-for="stock in insiderStocks" :key='stock.name'>
+												<td>{{ stock.name }}</td>
+												<td>{{ stock.target_price }}</td>
+												<td>{{ stock.current_price }}</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+
+							<div class="flex-column-100">
 								<div class="portfolio-history">
 									<button id="portfolio-history-btn" v-on:click="createPortfolioGraph()">Log cash/networth history</button>
 								</div>
@@ -621,7 +665,7 @@
 									
 	
 										<div class="item-cost">$175,000</div>
-										<div class="buy-item-btn">BUY</div>
+										<div class="buy-item-btn" v-on:click="purchaseItem()">BUY</div>
 									</div>
 								</li>
 								<li>

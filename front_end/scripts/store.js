@@ -8,6 +8,7 @@ function load_store_tab() {
         },
         methods: {
             level_up: level_up,
+            purchaseItem: purchaseItem,
         },
         computed: {
             currUserLevel: function() {
@@ -18,18 +19,34 @@ function load_store_tab() {
     })
 };
 
+function purchaseItem() {
+    // Set callback
+    var callback = function (msg) {
+        console.log("nothing for purchaseItem callback");
+        console.log(msg)
+    };
+
+    var msg = {
+        "action": "buy",
+        "o": {
+            "item_name": "insider"
+        }
+    };
+    
+    doSend("item", msg, callback);
+
+};
+
 function level_up() {
     
     // Set callback
-    REQUESTS[REQUEST_ID] = function (msg) {
+    var callback = function (msg) {
         level_up_response(msg.msg.success, vm_store.currUserLevel);
     };
 
     // Send message
-    doSend("level_up", {}, REQUEST_ID.toString());// REDO REQUEST ID CALC EVERYWHERE
-    
-    REQUEST_ID++;
-}
+    doSend("level_up", {}, callback);// REDO REQUEST ID CALC EVERYWHERE
+};
 
 function level_up_response(success, level) {
     if (success) {
@@ -37,4 +54,4 @@ function level_up_response(success, level) {
     } else {
         notify("Error leveling up, not enough money.", success);
     }
-}
+};

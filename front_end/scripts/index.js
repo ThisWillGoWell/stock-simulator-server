@@ -26,6 +26,13 @@ var vm_portfolios = new Vue({
   }
 });
 
+var vm_items = new Vue({
+  data: {
+    items: {}
+  }
+  
+});
+
 var vm_users = new Vue({
   data: {
     users: {},
@@ -84,6 +91,10 @@ registerRoute("object", function(msg) {
     case "user":
       Vue.set(vm_users.users, msg.msg.uuid, msg.msg.object);
       break;
+
+    case "item":
+      Vue.set(vm_items.items, msg.msg.uuid, msg.msg.object);
+      break;
   }
 });
 
@@ -91,8 +102,6 @@ registerRoute("object", function(msg) {
 registerRoute("alert", function(msg) {
   console.log(msg);
 });
-
-
 
 
 
@@ -107,9 +116,10 @@ $(document).ready(function() {
   load_modal_vues(); // modal.js
 
 
-
   console.log("----- CONFIG -----");
   console.log(config.config);
+  console.log("----- USER ITEMS -----")
+  console.log(vm_items.items);
   console.log("----- USERS -----");
   console.log(vm_users.users);
   console.log("------ STOCKS ------");
@@ -120,9 +130,6 @@ $(document).ready(function() {
   console.log(vm_portfolios.portfolios);
   console.log("------ NOTIFICATIONS ------");
   console.log(vm_notify.notes);
-
-  console.log(vm_topBar.userLevel)
-  
 
   /* Vues that are used to display data */
 
@@ -288,67 +295,80 @@ $(document).ready(function() {
     });
   };
 
+  var itemUpdate = function(msg) {
+    var targetUUID = msg.msg.uuid;
+    msg.msg.changes.forEach(function(changeObject) {
+      // Variables needed to update the ledger item
+      var targetField = changeObject.field;
+      var targetChange = changeObject.value;
+
+      // Update ledger item
+      vm_items.items[targetUUID][targetField] = targetChange;
+    });
+  };
+
   
   registerRoute("update", function(msg) {
     var updateRouter = {
       stock: stockUpdate,
       ledger: ledgerUpdate,
       portfolio: portfolioUpdate,
-      user: userUpdate
+      user: userUpdate,
+      item: itemUpdate,
     };
     updateRouter[msg.msg.type](msg);
   });
 
 
 
-var allViews = $(".view");
-var dashboardView = $("#dashboard--view");
-var businessView = $("#business--view");
-var stocksView = $("#stocks--view");
-var investorsView = $("#investors--view");
-var futuresView = $("#futures--view");
-var storeView = $("#store--view");
-var currentViewName = $("#current-view");
+  var allViews = $(".view");
+  var dashboardView = $("#dashboard--view");
+  var businessView = $("#business--view");
+  var stocksView = $("#stocks--view");
+  var investorsView = $("#investors--view");
+  var futuresView = $("#futures--view");
+  var storeView = $("#store--view");
+  var currentViewName = $("#current-view");
 
-function renderContent(route) {
-    switch (route) {
-        case "dashboard":
-        allViews.removeClass("active");
-        dashboardView.addClass("active");
-        currentViewName[0].innerHTML = "Dashboard";
-        break;
+  function renderContent(route) {
+      switch (route) {
+          case "dashboard":
+          allViews.removeClass("active");
+          dashboardView.addClass("active");
+          currentViewName[0].innerHTML = "Dashboard";
+          break;
 
-        case "business":
-        allViews.removeClass("active");
-        businessView.addClass("active");
-        console.log(currentViewName);
-        currentViewName[0].innerHTML = "Business";
-        break;
+          case "business":
+          allViews.removeClass("active");
+          businessView.addClass("active");
+          console.log(currentViewName);
+          currentViewName[0].innerHTML = "Business";
+          break;
 
-        case "stocks":
-        allViews.removeClass("active");
-        stocksView.addClass("active");
-        currentViewName[0].innerHTML = "Stocks";
-        break;
+          case "stocks":
+          allViews.removeClass("active");
+          stocksView.addClass("active");
+          currentViewName[0].innerHTML = "Stocks";
+          break;
 
-        case "investors":
-        allViews.removeClass("active");
-        investorsView.addClass("active");
-        currentViewName[0].innerHTML = "Investors";
-        break;
+          case "investors":
+          allViews.removeClass("active");
+          investorsView.addClass("active");
+          currentViewName[0].innerHTML = "Investors";
+          break;
 
-        case "futures":
-        allViews.removeClass("active");
-        futuresView.addClass("active");
-        currentViewName[0].innerHTML = "Futures";
-        break;
+          case "futures":
+          allViews.removeClass("active");
+          futuresView.addClass("active");
+          currentViewName[0].innerHTML = "Futures";
+          break;
 
-        case "perks":
-        allViews.removeClass("active");
-        storeView.addClass("active");
-        currentViewName[0].innerHTML = "Store";
-        break;
-    }
-}
+          case "perks":
+          allViews.removeClass("active");
+          storeView.addClass("active");
+          currentViewName[0].innerHTML = "Store";
+          break;
+      }
+  }
 
 });
