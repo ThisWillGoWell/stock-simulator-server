@@ -110,8 +110,6 @@ if (token) {
 		delete REQUESTS[msg.request_id];
 	});
 
-	init();
-
 } else {
 
 	window.location.href = "/login.html";
