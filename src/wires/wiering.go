@@ -24,11 +24,6 @@ var NotificationUpdate = duplicator.MakeDuplicator("notification-entries-update"
 var NotificationNewObject = duplicator.MakeDuplicator("notification-new")
 var NotificationsDelete = duplicator.MakeDuplicator("notification-delete")
 
-var GlobalNewObjects = duplicator.MakeDuplicator("global-new-objects")
-var GlobalDeletes = duplicator.MakeDuplicator("global-deletes")
-var GlobalUpdates = duplicator.MakeDuplicator("global-updates")
-var Globals = duplicator.MakeDuplicator("global-broadcast")
-
 func ConnectWires() {
 	// Enable Copy Mode on all the global new input channels
 	UsersNewObject.EnableCopyMode()

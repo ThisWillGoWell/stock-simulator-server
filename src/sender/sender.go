@@ -21,7 +21,7 @@ func RunGlobalSender() {
 		globalObjects.RegisterInput(wires.StocksNewObject.GetBufferedOutput(10000))
 		globalObjects.RegisterInput(wires.PortfolioNewObject.GetBufferedOutput(10000))
 		globalObjects.RegisterInput(wires.LedgerNewObject.GetBufferedOutput(10000))
-		out := wires.GlobalNewObjects.GetBufferedOutput(100000)
+		out := globalObjects.GetBufferedOutput(100000)
 		for ele := range out {
 			GlobalMessages.Offer(messages.NewObjectMessage(ele.(change.Identifiable)))
 		}
@@ -96,8 +96,6 @@ func (s *Sender) stop() {
 	for i := 0; i < 4; i++ {
 		s.close <- nil
 	}
-	duplicator.UnlinkDouplicator(s.Output, wires.Globals)
-
 	s.Notifications.StopDuplicator()
 	s.Updates.StopDuplicator()
 	s.NewObjects.StopDuplicator()
