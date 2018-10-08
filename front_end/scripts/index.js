@@ -328,7 +328,8 @@ $(document).ready(function() {
       stock: stockUpdate,
       ledger: ledgerUpdate,
       portfolio: portfolioUpdate,
-      user: userUpdate
+      user: userUpdate,
+      item: itemUpdate,
     };
     updateRouter[msg.msg.type](msg);
   });
