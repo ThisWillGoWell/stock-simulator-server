@@ -26,14 +26,9 @@ function load_topbar_vue() {
           value: new_name
         };
 
-        REQUESTS[REQUEST_ID] = function(msg) {
-          alert("Display_name changed to: " + new_name);
-        };
         // Send through WebSocket
         console.log(JSON.stringify(msg));
-        doSend("set", msg, REQUEST_ID.toString());
-
-        REQUEST_ID++;
+        doSend("set", msg);
 
         // Reset display name
         $("#newDisplayName").val("");

@@ -1,21 +1,103 @@
+// Vue object for notifications
 var vm_notify = new Vue({
-	data: {
-		notes: {},
-	},
+  data: {
+    notes: {},
+  },
+});
+
+// Register route for websocket messages for notifications
+registerRoute("notification", function(msg) {
+	// Add notification to the list
+	Vue.set(vm_notify.notes, msg.msg.uuid, msg.msg);
+
+// TODO: do not route if the message has been seen
+	var seen = msg.msg.seen;
+	if (!seen) {
+		// Execute notification type
+		routeNote[msg.msg.type](msg.msg);
+	}
+
 });
 
 
-function notify(message, success) {
+var routeNote = {
+	trade: notifyTrade,
+	send_money: notifyTransfer,
+	recieve_money: notifyTransfer,
+};
+
+
+function notifyTransfer(msg) {
+	var color, message;
+	var success = msg.notification.success;
+
+	// Getting usernames
+	var receiver = msg.notification.receiver;
+	receiver = vm_users.users[receiver].display_name;
+
+	if (isRecent(msg.time, 30000)) {
+		// If trade was a success
+		if (success) {
+			// Getting amount 
+			var amount = msg.notification.amount;
+			message = "Sucessful tranfer of " + formatPrice(amount) + " to " + receiver + ".";
+			color = "#1abc9c";
+
+		} else {
+			message = "Tranfer to " + receiver + " failed.";
+			color = "#f44336";
+		}
+
+		notifyTopBar(message, color, success);
+	}
+};
+
+function notifyTrade(msg) {
+
+	var color, message;
+	var success = msg.notification.success;
+	
+	// Notify only if the trade was within the last minute
+	if (isRecent(msg.time, 30000)) {
+		// If trade was a success
+		if (success) {
+			var amount = Number(msg.notification.amount);
+			var tradeType = "";
+			if (amount < 0) {
+				tradeType = 'sell';
+				amount *= -1;
+			} else {
+				tradeType = 'buy';
+			}
+
+			var stock_item = vm_stocks.stocks[msg.notification.stock];
+
+			if (tradeType === 'sell') {
+				message = "Successful sale of " + amount + " " + stock_item.ticker_id + ".";
+			} else if (tradeType === 'buy') {
+				message = "Successful purchase of " + amount + " " + stock_ticker + "."; 
+			} else {
+				console.error("tradeType not set by server message");
+			}
+
+			color = "#1abc9c";
+
+		} else {
+
+			color = "#f44336";
+			message = "Trade failed.";
+		}
+
+		notifyTopBar(message, color, success);
+
+	}
+
+};
+
+function notifyTopBar(message, color, success) {
 
 	// Set text as the message
 	d3.select('#notification-module--container span').html(message);
-
-	// Set notification color
-	if (success) {
-		var color = "#1abc9c";
-	} else {
-		var color = "#f44336";
-	}
 
 	// Set color and start motion
 	d3.select('#notification-module--container')

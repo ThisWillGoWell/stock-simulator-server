@@ -69,7 +69,7 @@ function load_stocks_tab() {
         };
 
         // Store request on front end
-        REQUESTS[REQUEST_ID] = function(msg) {
+        var callback = function(msg) {
           // Pull out the data and format it
           var points = msg.msg.points;
           points = points.map(function(d) {
@@ -84,9 +84,8 @@ function load_stocks_tab() {
         };
 
         // Send message
-        doSend("query", msg, REQUEST_ID.toString());
+        doSend("query", msg, callback);
 
-        REQUEST_ID++;
       },
       createStocksGraph: function() {
         console.log("Creating stock graphs");
@@ -115,7 +114,7 @@ function load_stocks_tab() {
 
           // Store request on front end
           requests.push(REQUEST_ID.toString());
-          REQUESTS[REQUEST_ID] = function(msg) {
+          var callback = function(msg) {
             // Pull out the data and format it
             var points = msg.msg.points;
             points = points.map(function(d) {
@@ -131,9 +130,8 @@ function load_stocks_tab() {
           };
 
           // Send message
-          doSend("query", msg, REQUEST_ID.toString());
+          doSend("query", msg, callback);
 
-          REQUEST_ID++;
         });
 
         var drawGraphOnceDone = null;
