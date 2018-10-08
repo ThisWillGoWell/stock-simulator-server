@@ -119,7 +119,7 @@ $(document).ready(function() {
   setTimeout(function() {
     checkUsedItems(); // Display item perks that are in use 
     
-  }, 10);
+  }, 500);
 
 
   console.log("----- CONFIG -----");

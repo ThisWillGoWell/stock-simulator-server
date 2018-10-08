@@ -119,13 +119,13 @@ function load_dashboard_tab() {
           console.log(items);
           items.map(function(d) {
             if (d.used) {
-              d.used_status = 'Using';
+              d.used_status = 'Used';
             } else {
               d.used_status = 'Not Used';
             }
             return d;
           });
-          
+
           return items;
         }
         return {};

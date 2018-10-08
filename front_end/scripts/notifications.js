@@ -59,21 +59,19 @@ function notifyTransfer(msg) {
 	var receiver = msg.notification.receiver;
 	receiver = vm_users.users[receiver].display_name;
 
-	if (isRecent(msg.time, 30000)) {
-		// If trade was a success
-		if (success) {
-			// Getting amount 
-			var amount = msg.notification.amount;
-			message = "Sucessful tranfer of " + formatPrice(amount) + " to " + receiver + ".";
-			color = GREEN;
+	// If trade was a success
+	if (success) {
+		// Getting amount 
+		var amount = msg.notification.amount;
+		message = "Sucessful tranfer of " + formatPrice(amount) + " to " + receiver + ".";
+		color = GREEN;
 
-		} else {
-			message = "Tranfer to " + receiver + " failed.";
-			color = RED;
-		}
-
-		notifyTopBar(message, color, success);
+	} else {
+		message = "Tranfer to " + receiver + " failed.";
+		color = RED;
 	}
+
+	notifyTopBar(message, color, success);
 
 	// sendAck(msg.uuid);
 
@@ -84,40 +82,36 @@ function notifyTrade(msg) {
 	var color, message;
 	var success = msg.notification.success;
 	
-	// Notify only if the trade was within the last minute
-	if (isRecent(msg.time, 30000)) {
-		// If trade was a success
-		if (success) {
-			var amount = Number(msg.notification.amount);
-			var tradeType = "";
-			if (amount < 0) {
-				tradeType = 'sell';
-				amount *= -1;
-			} else {
-				tradeType = 'buy';
-			}
-
-			var stock_item = vm_stocks.stocks[msg.notification.stock];
-
-			if (tradeType === 'sell') {
-				message = "Successful sale of " + amount + " " + stock_item.ticker_id + ".";
-			} else if (tradeType === 'buy') {
-				message = "Successful purchase of " + amount + " " + stock_ticker + "."; 
-			} else {
-				console.error("tradeType not set by server message");
-			}
-
-			color = "#1abc9c";
-
+	// If trade was a success
+	if (success) {
+		var amount = Number(msg.notification.amount);
+		var tradeType = "";
+		if (amount < 0) {
+			tradeType = 'sell';
+			amount *= -1;
 		} else {
-
-			color = "#f44336";
-			message = "Trade failed.";
+			tradeType = 'buy';
 		}
 
-		notifyTopBar(message, color, success);
+		var stock_item = vm_stocks.stocks[msg.notification.stock];
 
+		if (tradeType === 'sell') {
+			message = "Successful sale of " + amount + " " + stock_item.ticker_id + ".";
+		} else if (tradeType === 'buy') {
+			message = "Successful purchase of " + amount + " " + stock_ticker + "."; 
+		} else {
+			console.error("tradeType not set by server message");
+		}
+
+		color = "#1abc9c";
+
+	} else {
+
+		color = "#f44336";
+		message = "Trade failed.";
 	}
+
+	notifyTopBar(message, color, success);
 
 	// sendAck(msg.uuid);
 
