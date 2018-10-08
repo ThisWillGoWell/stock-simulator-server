@@ -36,6 +36,7 @@ func RunCacheUpdater() {
 					delete(queryCache, queryKey)
 				} else {
 					if time.Since(queryItem.lastUpdateTime) > queryItem.validTime {
+						fmt.Println("updating query:", queryKey, time.Now())
 						go makeQuery(queryItem.query)
 						go func() {
 							<-queryItem.query.ResponseChannel

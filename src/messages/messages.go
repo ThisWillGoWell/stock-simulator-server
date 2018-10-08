@@ -53,9 +53,9 @@ func (baseMessage *BaseMessage) UnmarshalJSON(data []byte) error {
 	var message Message
 	switch actionType {
 	case NotificationAck:
-		message = &NotificationMessage{}
-	case NotificationAction:
 		message = &NotificationAckMessage{}
+	case NotificationAction:
+		message = &NotificationMessage{}
 	case ChatAction:
 		message = &ChatMessage{}
 	case TradeAction:
