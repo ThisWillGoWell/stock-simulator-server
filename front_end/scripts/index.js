@@ -26,6 +26,12 @@ var vm_portfolios = new Vue({
   }
 });
 
+var vm_items = new Vue({
+  data: {
+    items: {}
+  }
+});
+
 var vm_users = new Vue({
   data: {
     users: {},
@@ -84,8 +90,24 @@ registerRoute("object", function(msg) {
     case "user":
       Vue.set(vm_users.users, msg.msg.uuid, msg.msg.object);
       break;
+
+    case "item":
+      Vue.set(vm_items.items, msg.msg.uuid, msg.msg.object);
+      break;
   }
 });
+
+// "action": "object",
+//     "msg": {
+//         "type": "item",
+//         "uuid": "5",
+//         "object": {
+//             "Type": "insider",
+//             "user_uuid": "1",
+//             "uuid": "5",
+//             "used": false
+//         }
+//     }
 
 
 registerRoute("alert", function(msg) {
@@ -285,6 +307,18 @@ $(document).ready(function() {
 
       // Update ledger item
       vm_users.users[targetUUID][targetField] = targetChange;
+    });
+  };
+
+  var itemUpdate = function(msg) {
+    var targetUUID = msg.msg.uuid;
+    msg.msg.changes.forEach(function(changeObject) {
+      // Variables needed to update the ledger item
+      var targetField = changeObject.field;
+      var targetChange = changeObject.value;
+
+      // Update ledger item
+      vm_items.items[targetUUID][targetField] = targetChange;
     });
   };
 
