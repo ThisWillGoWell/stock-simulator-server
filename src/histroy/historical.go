@@ -103,21 +103,21 @@ prob should make sure they don't query like 1000 years or something
 */
 func MakeQuery(qm *messages.QueryMessage) *Query {
 	q := BuildQuery(qm)
-	if qm.UseCache {
+	if !qm.ForceUpdate {
 		queryCacheLock.Acquire("make-query")
-		defer queryCacheLock.Release()
 		hash := makeQueryHash(q)
 		cacheItem, ok := queryCache[hash]
 		if ok {
 			if time.Since(cacheItem.lastUpdateTime) > qm.CacheDuration.Duration {
 				q.ResponseChannel <- cacheItem.response
+				queryCacheLock.Release()
 				cacheItem.lastUseTime = time.Now()
 				return q
 			}
 		}
 
 	}
-
+	queryCacheLock.Release()
 	go makeQuery(q)
 	return q
 }
@@ -175,8 +175,6 @@ func failedQuery(query *Query, err error) {
 
 func successQuery(query *Query, values [][]interface{}) {
 	queryCacheLock.Acquire("success-query")
-	defer queryCacheLock.Release()
-
 	response := &messages.QueryResponse{
 		Success: true,
 		Error:   "",
@@ -202,6 +200,7 @@ func successQuery(query *Query, values [][]interface{}) {
 
 		}
 	}
+	queryCacheLock.Release()
 	query.ResponseChannel <- response
 
 }
