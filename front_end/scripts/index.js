@@ -107,8 +107,8 @@ registerRoute("alert", function(msg) {
 
 $(document).ready(function() {
   load_dashboard_tab(); // dashboard.js
-  load_investors_tab(); // investors.js
   load_stocks_tab(); // stocks.js
+  load_investors_tab(); // investors.js
   load_store_tab(); // store.js
   load_topbar_vue(); // topbar.js
   load_sidebar_vue(); // sidebar.js
@@ -119,7 +119,7 @@ $(document).ready(function() {
   setTimeout(function() {
     checkUsedItems(); // Display item perks that are in use 
     
-  }, 5000);
+  }, 10);
 
 
   console.log("----- CONFIG -----");
