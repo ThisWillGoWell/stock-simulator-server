@@ -47,7 +47,7 @@ function notifyNewItem(msg) {
 
 	notifyTopBar(message, color, success);
 
-	sendAck(msg.uuid);
+	// sendAck(msg.uuid);
 
 };
 
@@ -73,7 +73,7 @@ function notifyTransfer(msg) {
 
 	notifyTopBar(message, color, success);
 
-	sendAck(msg.uuid);
+	// sendAck(msg.uuid);
 
 };
 
@@ -113,7 +113,7 @@ function notifyTrade(msg) {
 
 	notifyTopBar(message, color, success);
 
-	sendAck(msg.uuid);
+	// sendAck(msg.uuid);
 
 };
 
