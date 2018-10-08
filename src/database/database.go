@@ -139,6 +139,12 @@ func databaseWriter() {
 			writeItem(val.(items.Item))
 		}
 	}()
+	go func() {
+		itemDelete := wires.ItemsDelete.GetBufferedOutput(100)
+		for item := range itemDelete {
+			deleteItem(item.(items.Item))
+		}
+	}()
 
 	go func() {
 		notificationDBWrite := duplicator.MakeDuplicator("notification-db-write")
@@ -147,6 +153,12 @@ func databaseWriter() {
 		write := notificationDBWrite.GetBufferedOutput(1000)
 		for val := range write {
 			writeNotification(val.(*notification.Notification))
+		}
+	}()
+	go func() {
+		notificationsDelete := wires.NotificationsDelete.GetBufferedOutput(100)
+		for note := range notificationsDelete {
+			deleteNotification(note.(*notification.Notification))
 		}
 	}()
 

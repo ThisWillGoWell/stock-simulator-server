@@ -2,7 +2,7 @@ package notification
 
 const TradeNotificationType = "trade"
 const SendMoneyNotificationType = "send_money"
-const RecieveNotificationType = "recieve_money"
+const RecieveNotificationType = "receive money"
 
 type TradeNotification struct {
 	Success   bool   `json:"success"`
@@ -21,6 +21,7 @@ func DoneTradeNotification(userUuid, stockUuid string, amount int64) {
 	NewNotification(userUuid, TradeNotificationType, &TradeNotification{
 		Amount:    amount,
 		StockUuid: stockUuid,
+		Success:   true,
 	})
 }
 

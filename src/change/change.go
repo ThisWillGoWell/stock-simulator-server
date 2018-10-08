@@ -69,8 +69,17 @@ func RegisterPublicChangeDetect(o Identifiable) error {
 	return registerChangeDetect(o, output)
 }
 
-func RegiserPrivateChangeDetect(o Identifiable, update chan interface{}) error {
+func RegisterPrivateChangeDetect(o Identifiable, update chan interface{}) error {
 	return registerChangeDetect(o, update)
+}
+
+func UnregisterChangeDetect(o Identifiable) {
+	subscribeablesLock.Acquire("unregister-change")
+	defer subscribeablesLock.Release()
+	if _, ok := subscribeables[o.GetType()+o.GetId()]; !ok {
+		panic("cant unregister change detect that does not exists" + o.GetType() + o.GetId())
+	}
+	delete(subscribeables, o.GetType()+o.GetId())
 }
 
 func registerChangeDetect(o Identifiable, outputChan chan interface{}) error {
@@ -137,6 +146,13 @@ func StartDetectChanges() {
 	//SubscribeUpdateInputs.EnableCopyMode()
 	//SubscribeUpdateInputs.EnableDebug()
 	//SubscribeUpdateOutput.EnableDebug()
+	allUpdates := duplicator.MakeDuplicator("all-updates")
+	allUpdates.RegisterInput(wires.ItemsUpdate.GetBufferedOutput(10000))
+	allUpdates.RegisterInput(wires.StocksUpdate.GetBufferedOutput(10000))
+	allUpdates.RegisterInput(wires.PortfolioUpdate.GetBufferedOutput(10000))
+	allUpdates.RegisterInput(wires.LedgerUpdate.GetBufferedOutput(10000))
+	allUpdates.RegisterInput(wires.UsersUpdate.GetBufferedOutput(10000))
+	allUpdates.RegisterInput(wires.NotificationUpdate.GetBufferedOutput(10000))
 	subscribeUpdateChannel := wires.GlobalUpdates.GetBufferedOutput(10000)
 	go func() {
 		for updateObj := range subscribeUpdateChannel {

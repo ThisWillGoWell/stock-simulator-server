@@ -52,6 +52,8 @@ func (baseMessage *BaseMessage) UnmarshalJSON(data []byte) error {
 	// update is not here since it should never have to be Unmarshal
 	var message Message
 	switch actionType {
+	case DeleteAction:
+		message = &DeleteMessage{}
 	case NotificationAck:
 		message = &NotificationAckMessage{}
 	case NotificationAction:

@@ -26,6 +26,7 @@ var (
 
 	notificationTableQueryStatement = "SELECT uuid, userUuid, seen, timestamp, type, notification FROM " + notificationTableName + `;`
 	//getCurrentPrice()
+	notificaionDeleteStatement = `DELETE from ` + notificationTableName + ` where uuid=$1`
 )
 
 func initNotification() {
@@ -79,11 +80,26 @@ func populateNotification() {
 		if err != nil {
 			log.Fatal("error in querying ledger: ", err)
 		}
-		note := notification.JsonToNotifcation(jsonString, notType)
+		note := notification.JsonToNotification(jsonString, notType)
 		notification.MakeNotification(uuid, userUuid, notType, t, seen, note)
 	}
 	err = rows.Err()
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func deleteNotification(note *notification.Notification) {
+	tx, err := db.Begin()
+	if err != nil {
+		db.Close()
+		panic("error opening db for deleting item: " + err.Error())
+	}
+	_, err = tx.Exec(notificaionDeleteStatement, note.Uuid)
+	if err != nil {
+		tx.Rollback()
+		panic("error delete item: " + err.Error())
+	}
+	tx.Commit()
+
 }
