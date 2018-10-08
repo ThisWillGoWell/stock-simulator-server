@@ -30,6 +30,7 @@ var vm_items = new Vue({
   data: {
     items: {}
   }
+  
 });
 
 var vm_users = new Vue({

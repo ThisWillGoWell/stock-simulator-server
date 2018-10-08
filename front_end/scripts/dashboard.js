@@ -7,6 +7,7 @@ function load_dashboard_tab() {
     data: {
       sortBy: "amount",
       sortDesc: 1,
+      insiderStocks: []
     },
     methods: {
       toPrice: formatPrice,
@@ -27,6 +28,9 @@ function load_dashboard_tab() {
         let portfolioUUID = vm_dash_tab.currUserPortfolio.uuid;
         let location = "#portfolio-graph";
         createPortfolioGraph(portfolioUUID, location);
+      },
+      useItem: function(item_uuid) {
+        useItem(item_uuid);
       },
     },
     computed: {
@@ -105,6 +109,15 @@ function load_dashboard_tab() {
           }
         }
         return [];
+      },
+      userItems: function() {
+        var currUserUUID = sessionStorage.getItem("uuid");
+        if (vm_users.users[currUserUUID] !== undefined) {
+          var currUserFolioUUID = vm_users.users[currUserUUID].portfolio_uuid;
+          var items = Object.values(vm_items.items).filter(d => d.portfolio_uuid === currUserFolioUUID);
+          return items;
+        }
+        return {};
       },
 
     }
