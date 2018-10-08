@@ -30,7 +30,7 @@ var vm_items = new Vue({
   data: {
     items: {}
   }
-  
+
 });
 
 var vm_users = new Vue({
@@ -114,6 +114,12 @@ $(document).ready(function() {
   load_sidebar_vue(); // sidebar.js
   load_chat_vue(); // chat.js
   load_modal_vues(); // modal.js
+  
+
+  setTimeout(function() {
+    checkUsedItems(); // Display item perks that are in use 
+    
+  }, 5000);
 
 
   console.log("----- CONFIG -----");

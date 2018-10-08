@@ -7,7 +7,7 @@ function load_dashboard_tab() {
     data: {
       sortBy: "amount",
       sortDesc: 1,
-      insiderStocks: []
+      insiderStocks: [],
     },
     methods: {
       toPrice: formatPrice,
@@ -115,6 +115,17 @@ function load_dashboard_tab() {
         if (vm_users.users[currUserUUID] !== undefined) {
           var currUserFolioUUID = vm_users.users[currUserUUID].portfolio_uuid;
           var items = Object.values(vm_items.items).filter(d => d.portfolio_uuid === currUserFolioUUID);
+          // Add used status
+          console.log(items);
+          items.map(function(d) {
+            if (d.used) {
+              d.used_status = 'Using';
+            } else {
+              d.used_status = 'Not Used';
+            }
+            return d;
+          });
+          
           return items;
         }
         return {};
