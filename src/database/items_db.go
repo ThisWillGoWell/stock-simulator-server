@@ -51,7 +51,7 @@ func writeItem(entry items.Item) {
 	if err != nil {
 	}
 
-	_, err = tx.Exec(itemsTableUpdateInsert, entry.GetUuid(), entry.GetType(), item)
+	_, err = tx.Exec(itemsTableUpdateInsert, entry.GetUuid(), entry.GetItemType().GetType(), item)
 	if err != nil {
 		tx.Rollback()
 		panic("error occurred while insert item in table " + err.Error())

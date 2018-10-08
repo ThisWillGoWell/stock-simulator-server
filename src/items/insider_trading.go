@@ -39,6 +39,10 @@ func (InsiderTraderItemType) RequiredLevel() int64 {
 	return 1
 }
 
+func (InsiderTraderItemType) UnmarshalJSON(data []byte) error {
+	return nil
+}
+
 type InsiderTradingItem struct {
 	Type          InsiderTraderItemType
 	PortfolioUuid string           `json:"portfolio_uuid"`

@@ -65,7 +65,7 @@ function load_stocks_tab() {
           field: "current_price",
           num_points: 1000,
           use_cache: true,
-          length: "100h"
+          length: "6h"
         };
 
         // Store request on front end
@@ -109,7 +109,7 @@ function load_stocks_tab() {
             field: "current_price",
             use_cache: true,
             num_points: 1000,
-            length: "100h"
+            length: "6h"
           };
 
           // Store request on front end

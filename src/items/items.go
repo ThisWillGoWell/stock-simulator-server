@@ -1,6 +1,9 @@
 package items
 
 import (
+	"encoding/json"
+	"log"
+
 	"github.com/pkg/errors"
 	"github.com/stock-simulator-server/src/change"
 	"github.com/stock-simulator-server/src/lock"
@@ -67,7 +70,7 @@ func LoadItem(item Item) {
 	ItemLock.Acquire("load-item")
 	defer ItemLock.Release()
 	utils.RegisterUuid(item.GetUuid(), item)
-	if _, ok := ItemsPortInventory[item.GetPortfolioUuid()]; ok {
+	if _, ok := ItemsPortInventory[item.GetPortfolioUuid()]; !ok {
 		ItemsPortInventory[item.GetPortfolioUuid()] = make(map[string]Item)
 	}
 	ItemsPortInventory[item.GetPortfolioUuid()][item.GetUuid()] = item
@@ -191,6 +194,10 @@ func UnmarshalJsonItem(itemType, jsonStr string) Item {
 	switch itemType {
 	case insiderTradingItemType:
 		item = &InsiderTradingItem{}
+	}
+	err := json.Unmarshal([]byte(jsonStr), &item)
+	if err != nil {
+		log.Fatal("error unmarshal json item", err.Error())
 	}
 	return item
 }

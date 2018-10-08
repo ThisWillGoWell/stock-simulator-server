@@ -169,8 +169,8 @@ function createPortfolioGraph(portfolioUUID, location) {
     let msg = {
       uuid: portfolioUUID,
       field: field,
-      num_points: 100,
-      length: "100h"
+      num_points: 1000,
+      length: "6h"
     };
 
     // Store request on front end
