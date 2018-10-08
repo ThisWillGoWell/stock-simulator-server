@@ -24,8 +24,28 @@ var routeNote = {
 	trade: notifyTrade,
 	send_money: notifyTransfer,
 	recieve_money: notifyTransfer,
+	new_item: notifyNewItem,
 };
 
+function sendAck(note_id, callback) {
+	var msg = {
+		'uuid': note_id
+	};
+	doSend('ack', msg);
+};
+
+function notifyNewItem(msg) {
+	var color = "blue";
+	var item = msg.notification.item_type;
+
+	var message = "Bought the " + item + " item";
+	var success = true;
+
+	notifyTopBar(message, color, success);
+
+	// sendAck(msg.uuid);
+
+};
 
 function notifyTransfer(msg) {
 	var color, message;
@@ -50,6 +70,9 @@ function notifyTransfer(msg) {
 
 		notifyTopBar(message, color, success);
 	}
+
+	// sendAck(msg.uuid);
+
 };
 
 function notifyTrade(msg) {
@@ -91,6 +114,8 @@ function notifyTrade(msg) {
 		notifyTopBar(message, color, success);
 
 	}
+
+	// sendAck(msg.uuid);
 
 };
 

@@ -8,6 +8,7 @@ function load_store_tab() {
         },
         methods: {
             level_up: level_up,
+            purchaseItem: purchaseItem,
         },
         computed: {
             currUserLevel: function() {
@@ -19,6 +20,20 @@ function load_store_tab() {
 };
 
 function purchaseItem() {
+    // Set callback
+    var callback = function (msg) {
+        console.log("nothing for purchaseItem callback");
+        console.log(msg)
+    };
+
+    var msg = {
+        "action": "buy",
+        "o": {
+            "item_name": "insider"
+        }
+    };
+    
+    doSend("item", msg, callback);
 
 };
 

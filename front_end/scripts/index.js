@@ -97,24 +97,10 @@ registerRoute("object", function(msg) {
   }
 });
 
-// "action": "object",
-//     "msg": {
-//         "type": "item",
-//         "uuid": "5",
-//         "object": {
-//             "Type": "insider",
-//             "user_uuid": "1",
-//             "uuid": "5",
-//             "used": false
-//         }
-//     }
-
 
 registerRoute("alert", function(msg) {
   console.log(msg);
 });
-
-
 
 
 
@@ -129,9 +115,10 @@ $(document).ready(function() {
   load_modal_vues(); // modal.js
 
 
-
   console.log("----- CONFIG -----");
   console.log(config.config);
+  console.log("----- USER ITEMS -----")
+  console.log(vm_items.items);
   console.log("----- USERS -----");
   console.log(vm_users.users);
   console.log("------ STOCKS ------");
@@ -142,9 +129,6 @@ $(document).ready(function() {
   console.log(vm_portfolios.portfolios);
   console.log("------ NOTIFICATIONS ------");
   console.log(vm_notify.notes);
-
-  console.log(vm_topBar.userLevel)
-  
 
   /* Vues that are used to display data */
 
