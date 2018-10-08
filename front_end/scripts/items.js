@@ -14,7 +14,12 @@ function useItem(item_uuid) {
 	};
 
 	var callback = function(msg) {
-		createInsiderArea(msg.msg.o);
+		if (msg.msg.o.success) {
+			createInsiderArea(msg.msg.o);
+		} else {
+			var message = msg.msg.o.err;
+			notifyTopBar(message, RED, msg.msg.o.success);
+		}
 	};
 
 	doSend('item', msg, callback);
@@ -41,7 +46,6 @@ function createInsiderArea(target_dict) {
 	var stocks = []; 
 	Object.keys(target_dict).forEach(function(d) {
 		var stock = vm_stocks.stocks[d];
-		console.log(stock);
 		var insiderStock = {
 			'name': stock.ticker_id,
 			'target_price': target_dict[d],

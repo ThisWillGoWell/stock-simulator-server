@@ -22,8 +22,17 @@ function load_store_tab() {
 function purchaseItem() {
     // Set callback
     var callback = function (msg) {
-        console.log("nothing for purchaseItem callback");
-        console.log(msg)
+        if (msg.msg.o.success) {
+            console.log("nothing for purchaseItem success callback");
+            console.log(msg);
+            
+        } else {
+
+            var message = msg.msg.o.err;
+            var color = RED;
+
+            notifyTopBar(message, color, msg.msg.o.success);
+        }
     };
 
     var msg = {
@@ -32,7 +41,7 @@ function purchaseItem() {
             "item_name": "insider"
         }
     };
-    
+
     doSend("item", msg, callback);
 
 };
@@ -41,17 +50,20 @@ function level_up() {
     
     // Set callback
     var callback = function (msg) {
-        level_up_response(msg.msg.success, vm_store.currUserLevel);
+        level_up_response(msg.msg, vm_store.currUserLevel);
     };
 
     // Send message
     doSend("level_up", {}, callback);// REDO REQUEST ID CALC EVERYWHERE
 };
 
-function level_up_response(success, level) {
-    if (success) {
-        notify("Congrats you are level " + (Number(level) + 1), success);
+function level_up_response(msg, level) {
+    if (msg.success) {
+        var message = "You are now level " + (level + 1) + ".";
+        notifyTopBar(message, GREEN)
     } else {
-        notify("Error leveling up, not enough money.", success);
+        var message = msg.err;
+
+        notifyTopBar(message, RED, msg.success);
     }
 };

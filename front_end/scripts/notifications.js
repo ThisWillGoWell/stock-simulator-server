@@ -5,6 +5,10 @@ var vm_notify = new Vue({
   },
 });
 
+var RED = "#f44336";
+var GREEN = "#1abc9c";
+var BLUE = "blue";
+
 // Register route for websocket messages for notifications
 registerRoute("notification", function(msg) {
 	// Add notification to the list
@@ -61,11 +65,11 @@ function notifyTransfer(msg) {
 			// Getting amount 
 			var amount = msg.notification.amount;
 			message = "Sucessful tranfer of " + formatPrice(amount) + " to " + receiver + ".";
-			color = "#1abc9c";
+			color = GREEN;
 
 		} else {
 			message = "Tranfer to " + receiver + " failed.";
-			color = "#f44336";
+			color = RED;
 		}
 
 		notifyTopBar(message, color, success);
