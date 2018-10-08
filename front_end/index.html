@@ -345,11 +345,14 @@
 										<thead>
 									    	<tr>
 										    	<th scope="col" style="text-align: left; padding-left: 25px;">Item </th>
+										    	<th scope="col" style="text-align: left; padding-left: 25px;">Status</th>
+										    	<th scope="col" style="text-align: left; padding-left: 25px;">Use</th>
 										    </tr>
 										</thead>
 										<tbody>
 											<tr class="clickable" v-for="item in userItems" :key='item.uuid'>
 												<td>{{ item.Type }}</td>
+												<td>{{ item.used_status }}</td>
 												<td v-on:click="useItem(item.uuid)">Use</td>
 											</tr>
 										</tbody>
