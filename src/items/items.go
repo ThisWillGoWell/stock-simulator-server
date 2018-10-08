@@ -8,6 +8,7 @@ import (
 	"github.com/stock-simulator-server/src/portfolio"
 	"github.com/stock-simulator-server/src/sender"
 	"github.com/stock-simulator-server/src/utils"
+	"github.com/stock-simulator-server/src/wires"
 )
 
 var ItemTypes = ItemMap()
@@ -100,7 +101,7 @@ func BuyItem(portUuid, userUuid, itemName string) (string, error) {
 	change.RegiserPrivateChangeDetect(newItem, newItem.GetUpdateChan())
 	sender.GetSender(port.UserUUID).NewObjects.Offer(newItem)
 	sender.GetSender(port.UserUUID).Updates.RegisterInput(newItem.GetUpdateChan())
-
+	wires.ItemsNewObjects.Offer(newItem)
 	notification.NewItemNotification(userUuid, itemType.GetName(), newItem.GetId())
 	return newItem.GetId(), nil
 }
