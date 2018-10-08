@@ -45,6 +45,7 @@ function reuseInsiderTrading(item) {
 function createInsiderArea(target_dict) {
 	var stocks = []; 
 	Object.keys(target_dict).forEach(function(d) {
+		console.log(d);
 		var stock = vm_stocks.stocks[d];
 		var insiderStock = {
 			'name': stock.ticker_id,
