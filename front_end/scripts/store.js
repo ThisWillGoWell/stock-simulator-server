@@ -18,18 +18,20 @@ function load_store_tab() {
     })
 };
 
+function purchaseItem() {
+
+};
+
 function level_up() {
     
     // Set callback
-    REQUESTS[REQUEST_ID] = function (msg) {
+    var callback = function (msg) {
         level_up_response(msg.msg.success, vm_store.currUserLevel);
     };
 
     // Send message
-    doSend("level_up", {}, REQUEST_ID.toString());// REDO REQUEST ID CALC EVERYWHERE
-    
-    REQUEST_ID++;
-}
+    doSend("level_up", {}, callback);// REDO REQUEST ID CALC EVERYWHERE
+};
 
 function level_up_response(success, level) {
     if (success) {
@@ -37,4 +39,4 @@ function level_up_response(success, level) {
     } else {
         notify("Error leveling up, not enough money.", success);
     }
-}
+};

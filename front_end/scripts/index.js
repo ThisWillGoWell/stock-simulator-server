@@ -335,54 +335,54 @@ $(document).ready(function() {
 
 
 
-var allViews = $(".view");
-var dashboardView = $("#dashboard--view");
-var businessView = $("#business--view");
-var stocksView = $("#stocks--view");
-var investorsView = $("#investors--view");
-var futuresView = $("#futures--view");
-var storeView = $("#store--view");
-var currentViewName = $("#current-view");
+  var allViews = $(".view");
+  var dashboardView = $("#dashboard--view");
+  var businessView = $("#business--view");
+  var stocksView = $("#stocks--view");
+  var investorsView = $("#investors--view");
+  var futuresView = $("#futures--view");
+  var storeView = $("#store--view");
+  var currentViewName = $("#current-view");
 
-function renderContent(route) {
-    switch (route) {
-        case "dashboard":
-        allViews.removeClass("active");
-        dashboardView.addClass("active");
-        currentViewName[0].innerHTML = "Dashboard";
-        break;
+  function renderContent(route) {
+      switch (route) {
+          case "dashboard":
+          allViews.removeClass("active");
+          dashboardView.addClass("active");
+          currentViewName[0].innerHTML = "Dashboard";
+          break;
 
-        case "business":
-        allViews.removeClass("active");
-        businessView.addClass("active");
-        console.log(currentViewName);
-        currentViewName[0].innerHTML = "Business";
-        break;
+          case "business":
+          allViews.removeClass("active");
+          businessView.addClass("active");
+          console.log(currentViewName);
+          currentViewName[0].innerHTML = "Business";
+          break;
 
-        case "stocks":
-        allViews.removeClass("active");
-        stocksView.addClass("active");
-        currentViewName[0].innerHTML = "Stocks";
-        break;
+          case "stocks":
+          allViews.removeClass("active");
+          stocksView.addClass("active");
+          currentViewName[0].innerHTML = "Stocks";
+          break;
 
-        case "investors":
-        allViews.removeClass("active");
-        investorsView.addClass("active");
-        currentViewName[0].innerHTML = "Investors";
-        break;
+          case "investors":
+          allViews.removeClass("active");
+          investorsView.addClass("active");
+          currentViewName[0].innerHTML = "Investors";
+          break;
 
-        case "futures":
-        allViews.removeClass("active");
-        futuresView.addClass("active");
-        currentViewName[0].innerHTML = "Futures";
-        break;
+          case "futures":
+          allViews.removeClass("active");
+          futuresView.addClass("active");
+          currentViewName[0].innerHTML = "Futures";
+          break;
 
-        case "perks":
-        allViews.removeClass("active");
-        storeView.addClass("active");
-        currentViewName[0].innerHTML = "Store";
-        break;
-    }
-}
+          case "perks":
+          allViews.removeClass("active");
+          storeView.addClass("active");
+          currentViewName[0].innerHTML = "Store";
+          break;
+      }
+  }
 
 });
