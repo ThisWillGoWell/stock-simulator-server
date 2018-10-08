@@ -363,12 +363,15 @@
 										<thead>
 									    	<tr>
 										    	<th scope="col" style="text-align: left; padding-left: 25px;">Item </th>
+										    	<th>Target Price</th>
+										    	<th>Current Price</th>
 										    </tr>
 										</thead>
 										<tbody>
 											<tr class="clickable" v-for="stock in insiderStocks" :key='stock.name'>
 												<td>{{ stock.name }}</td>
 												<td>{{ stock.target_price }}</td>
+												<td>{{ stock.current_price }}</td>
 											</tr>
 										</tbody>
 									</table>
