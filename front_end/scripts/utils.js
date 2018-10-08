@@ -1,3 +1,10 @@
+function isRecent(time, since) {
+	let noteTime = new Date(time);
+	let currTime = new Date();
+	let timeSince = currTime - noteTime;
+	return (timeSince < since);
+}
+
 function formatPrice(value) {
 	let val = (value/100).toFixed(2).toString();
 	val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");

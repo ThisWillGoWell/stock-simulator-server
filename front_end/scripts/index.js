@@ -8,12 +8,6 @@ var config = new Vue({
   }
 });
 
-var vm_notify = new Vue({
-  data: {
-    notes: {},
-  },
-});
-
 var vm_stocks = new Vue({
   data: {
     stocks: {}
@@ -51,11 +45,6 @@ var vm_users = new Vue({
       }
     }
   }
-});
-
-
-registerRoute("notification", function(msg) {
-  Vue.set(vm_notify.notes, msg.msg.uuid, msg.msg);
 });
 
 

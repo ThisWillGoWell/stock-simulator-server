@@ -31,20 +31,10 @@ function sendTrade() {
 
     // Sending through websocket
     console.log("SEND TRADE");
-
-    REQUESTS[REQUEST_ID] = function(msg) {
-        if (msg.msg.success) {
-            notify("Trade successful!", msg.msg.success);
-        } else {
-            notify("Trade unsuccessful: " + msg.msg.err, msg.msg.success);
-        }
-    };
+    console.log(JSON.stringify(msg));
 
     // Send through WebSocket
-    console.log(JSON.stringify(msg));
     doSend("trade", msg);
-
-    REQUEST_ID++;
 
     // Reset buy sell amount
     buySellModal.buySellAmount = 0;
@@ -176,27 +166,17 @@ function load_modal_vues() {
         submitTransfer: function() {
             // Get current amount
             let amt = Number($('#cash-transfer-amount').val());
-            console.log(amt);
             amt *= 100;
 
             // Creating message for the transfer
             var msg = {
-            amount: amt,
-            recipient: transferModal.recipient_uuid
-            };
-
-            REQUESTS[REQUEST_ID] = function(msg) {
-            if (msg.msg.success) {
-                notify("Transfer successful!", msg.msg.success);
-            } else {
-                notify("Transfer unsuccessful: " + msg.msg.err, msg.msg.success);
-            }
+                amount: amt,
+                recipient: transferModal.recipient_uuid
             };
 
             // Send through WebSocket
             doSend("transfer", msg);
 
-            REQUEST_ID++;
 
             // Close the modal
             toggleTransferModal();
