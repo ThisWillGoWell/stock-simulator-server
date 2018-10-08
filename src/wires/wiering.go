@@ -6,6 +6,7 @@ import (
 
 var ItemsNewObjects = duplicator.MakeDuplicator("items-new")
 var ItemsUpdate = duplicator.MakeDuplicator("items-update")
+var ItemsDelete = duplicator.MakeDuplicator("items-delete")
 
 var PortfolioUpdate = duplicator.MakeDuplicator("portfolio-update")
 var PortfolioNewObject = duplicator.MakeDuplicator("new-portfolio")
@@ -20,11 +21,11 @@ var LedgerUpdate = duplicator.MakeDuplicator("ledger-entries-update")
 var LedgerNewObject = duplicator.MakeDuplicator("leger-entries-new")
 
 var NotificationUpdate = duplicator.MakeDuplicator("notification-entries-update")
-var NotificationNewObject = duplicator.MakeDuplicator("notification-entries-new")
+var NotificationNewObject = duplicator.MakeDuplicator("notification-new")
+var NotificationsDelete = duplicator.MakeDuplicator("notification-delete")
 
 var GlobalNewObjects = duplicator.MakeDuplicator("global-new-objects")
 var GlobalDeletes = duplicator.MakeDuplicator("global-deletes")
-var GlobalNotifications = duplicator.MakeDuplicator("global-notifications")
 var GlobalUpdates = duplicator.MakeDuplicator("global-updates")
 var Globals = duplicator.MakeDuplicator("global-broadcast")
 
@@ -38,17 +39,5 @@ func ConnectWires() {
 
 	// enable copy mode only account, the rest have copy mode on a channel before
 	UsersUpdate.EnableCopyMode()
-
-	GlobalNewObjects.RegisterInput(UsersNewObject.GetBufferedOutput(10000))
-	GlobalNewObjects.RegisterInput(StocksNewObject.GetBufferedOutput(10000))
-	GlobalNewObjects.RegisterInput(PortfolioNewObject.GetBufferedOutput(10000))
-	GlobalNewObjects.RegisterInput(LedgerNewObject.GetBufferedOutput(10000))
-
-	GlobalUpdates.RegisterInput(ItemsUpdate.GetBufferedOutput(10000))
-	GlobalUpdates.RegisterInput(StocksUpdate.GetBufferedOutput(10000))
-	GlobalUpdates.RegisterInput(PortfolioUpdate.GetBufferedOutput(10000))
-	GlobalUpdates.RegisterInput(LedgerUpdate.GetBufferedOutput(10000))
-	GlobalUpdates.RegisterInput(UsersUpdate.GetBufferedOutput(10000))
-	GlobalUpdates.RegisterInput(NotificationUpdate.GetBufferedOutput(10000))
 
 }

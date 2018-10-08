@@ -20,7 +20,8 @@ var (
 	itemsTableUpdateInsert = `INSERT into ` + itemsTableName + `(uuid, type, item) values($1, $2, $3) ` +
 		`ON CONFLICT (uuid) DO UPDATE SET item=EXCLUDED.item`
 
-	itemsTableQueryStatement = "SELECT type, item FROM " + itemsTableName + `;`
+	itemsTableQueryStatement  = "SELECT type, item FROM " + itemsTableName + `;`
+	itemsTableDeleteStatement = "DELETE FROM " + itemsTableName + " where uuid=$1"
 	//getCurrentPrice()
 )
 
@@ -80,4 +81,19 @@ func populateItems() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func deleteItem(item items.Item) {
+	tx, err := db.Begin()
+	if err != nil {
+		db.Close()
+		panic("error opening db for deleteing item: " + err.Error())
+	}
+	_, err = tx.Exec(itemsTableDeleteStatement, item.GetUuid())
+	if err != nil {
+		tx.Rollback()
+		panic("error delete item: " + err.Error())
+	}
+	tx.Commit()
+
 }

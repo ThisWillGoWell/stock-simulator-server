@@ -117,7 +117,7 @@ func (client *Client) tx(sessionToken string) {
 		client.sendMessage(messages.NewObjectMessage(v))
 	}
 	for _, v := range notification.GetAllNotifications(client.user.Uuid) {
-		client.sendMessage(messages.BuildNotificationMessage(v))
+		client.sendMessage(messages.NewObjectMessage(v))
 	}
 	for _, v := range items.GetItemsForUser(client.user.PortfolioId) {
 		client.sendMessage(messages.NewObjectMessage(v))
@@ -166,6 +166,8 @@ func (client *Client) rx() {
 			client.processItemMessage(message)
 		case messages.LevelUpAction:
 			client.processLevelUpAction(message)
+		case messages.DeleteAction:
+			client.processDeleteAction(message)
 		default:
 			client.sendMessage(messages.NewErrorMessage("action is not known"))
 		}
@@ -308,4 +310,16 @@ func (client *Client) processSetMessage(baseMessage *messages.BaseMessage) {
 func (client *Client) processLevelUpAction(baseMessage *messages.BaseMessage) {
 	err := portfolio.Portfolios[client.user.PortfolioId].LevelUp()
 	client.sendMessage(messages.BuildLevelUpResponse(baseMessage.RequestID, err))
+}
+
+func (client *Client) processDeleteAction(baseMessage *messages.BaseMessage) {
+	deleteMsg := baseMessage.Msg.(*messages.DeleteMessage)
+	var err error
+	switch deleteMsg.Type {
+	case items.ItemIdentifiableType:
+		err = items.DeleteItem(deleteMsg.Uuid, client.user.PortfolioId)
+	case notification.IdentifiableType:
+		err = notification.DeleteNotification(deleteMsg.Uuid, client.user.Uuid)
+	}
+	client.sendMessage(messages.BuildDeleteResponseMsg(baseMessage.RequestID, err))
 }

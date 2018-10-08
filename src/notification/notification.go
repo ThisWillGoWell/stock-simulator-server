@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/stock-simulator-server/src/wires"
+	"github.com/stock-simulator-server/src/change"
 
-	"github.com/stock-simulator-server/src/account"
+	"github.com/stock-simulator-server/src/sender"
+
+	"github.com/stock-simulator-server/src/wires"
 
 	"github.com/stock-simulator-server/src/lock"
 
@@ -15,9 +17,11 @@ import (
 	"github.com/pkg/errors"
 )
 
-var notifcationLock = lock.NewLock("notifications")
+var notificationLock = lock.NewLock("notifications")
 var notifications = make(map[string]*Notification)
 var notificationsUserUuid = make(map[string]map[string]*Notification)
+
+const IdentifiableType = "notification"
 
 type Notification struct {
 	Uuid         string      `json:"uuid"`
@@ -34,8 +38,8 @@ func NewNotification(userUuid, t string, notification interface{}) *Notification
 }
 
 func MakeNotification(uuid, userUuid, t string, timestamp time.Time, seen bool, notification interface{}) *Notification {
-	notifcationLock.Acquire("get-all-notifications")
-	defer notifcationLock.Release()
+	notificationLock.Acquire("get-all-notifications")
+	defer notificationLock.Release()
 	note := &Notification{
 		Uuid:         uuid,
 		UserUuid:     userUuid,
@@ -51,7 +55,7 @@ func MakeNotification(uuid, userUuid, t string, timestamp time.Time, seen bool, 
 	notificationsUserUuid[userUuid][uuid] = note
 	utils.RegisterUuid(uuid, note)
 	wires.NotificationNewObject.Offer(note)
-	account.SendNotifcation(userUuid, note)
+	sender.SendNewObject(userUuid, note)
 	return note
 }
 
@@ -64,6 +68,12 @@ func AcknowledgeNotification(uuid, userUuid string) error {
 		return errors.New("user does not own notification, what are you doing?")
 	}
 	notification.Seen = true
+	sender.SendChangeUpdate(notification.UserUuid, &change.ChangeNotify{
+		Type:    notification.GetType(),
+		Id:      notification.GetId(),
+		Object:  notification,
+		Changes: []*change.ChangeField{{Field: "seen", Value: true}},
+	})
 	return nil
 }
 
@@ -86,8 +96,8 @@ func NewMailNotifcation(uuid, from string, text string, money int64) *Notificati
 }
 
 func GetAllNotifications(userUuid string) []*Notification {
-	notifcationLock.Acquire("get-all-notifications")
-	defer notifcationLock.Release()
+	notificationLock.Acquire("get-all-notifications")
+	defer notificationLock.Release()
 	notifications := make([]*Notification, 0)
 	for _, notification := range notificationsUserUuid[userUuid] {
 		notifications = append(notifications, notification)
@@ -95,9 +105,9 @@ func GetAllNotifications(userUuid string) []*Notification {
 	return notifications
 }
 
-func JsonToNotifcation(jsonString, notifactionType string) interface{} {
+func JsonToNotification(jsonString, notificationType string) interface{} {
 	var i interface{}
-	switch notifactionType {
+	switch notificationType {
 	case NewItemNotificationType:
 		i = ItemNotification{}
 	case UsedItemNotificationType:
@@ -111,6 +121,35 @@ func JsonToNotifcation(jsonString, notifactionType string) interface{} {
 	}
 	json.Unmarshal([]byte(jsonString), &i)
 	return i
+}
+
+func DeleteNotification(uuid, userUuid string) error {
+	notificationLock.Acquire("delete note")
+	defer notificationLock.Release()
+	if _, exists := notificationsUserUuid[userUuid]; !exists {
+		return errors.New("user does not have any notification")
+	}
+	note, exists := notificationsUserUuid[userUuid][uuid]
+	if !exists {
+		return errors.New("notification does not exist")
+	}
+	delete(notifications, uuid)
+	delete(notificationsUserUuid[note.UserUuid], uuid)
+	if len(notificationsUserUuid[note.UserUuid]) == 0 {
+		delete(notificationsUserUuid, note.UserUuid)
+	}
+	utils.RemoveUuid(uuid)
+	sender.SendDeleteObject(userUuid, note)
+	wires.NotificationsDelete.Offer(note)
+	return nil
+}
+
+func (note *Notification) GetId() string {
+	return note.Uuid
+}
+
+func (*Notification) GetType() string {
+	return IdentifiableType
 }
 
 //**

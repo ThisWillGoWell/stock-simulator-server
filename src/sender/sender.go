@@ -1,6 +1,8 @@
 package sender
 
 import (
+	"fmt"
+
 	"github.com/stock-simulator-server/src/change"
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
@@ -8,29 +10,23 @@ import (
 	"github.com/stock-simulator-server/src/wires"
 )
 
-var Senders = make(map[string]*Sender)
+var senders = make(map[string]*Sender)
 
 var GlobalMessages = duplicator.MakeDuplicator("global-messages")
 
 func RunGlobalSender() {
 	go func() {
-		out := wires.GlobalNewObjects.GetBufferedOutput(10000)
+		globalObjects := duplicator.MakeDuplicator("global-new-objects")
+		globalObjects.RegisterInput(wires.UsersNewObject.GetBufferedOutput(10000))
+		globalObjects.RegisterInput(wires.StocksNewObject.GetBufferedOutput(10000))
+		globalObjects.RegisterInput(wires.PortfolioNewObject.GetBufferedOutput(10000))
+		globalObjects.RegisterInput(wires.LedgerNewObject.GetBufferedOutput(10000))
+		out := wires.GlobalNewObjects.GetBufferedOutput(100000)
 		for ele := range out {
 			GlobalMessages.Offer(messages.NewObjectMessage(ele.(change.Identifiable)))
 		}
 	}()
-	go func() {
-		out := wires.GlobalDeletes.GetBufferedOutput(10000)
-		for ele := range out {
-			GlobalMessages.Offer(messages.BuildDeleteMessage(ele.(change.Identifiable)))
-		}
-	}()
-	go func() {
-		out := wires.GlobalNotifications.GetBufferedOutput(10000)
-		for ele := range out {
-			GlobalMessages.Offer(messages.BuildNotificationMessage(ele))
-		}
-	}()
+
 	go func() {
 		out := change.PublicSubscribeChange.GetBufferedOutput(100000)
 		for ele := range out {
@@ -50,7 +46,7 @@ type Sender struct {
 	close         chan interface{}
 }
 
-func NewSender(userUuid string) *Sender {
+func NewSender(userUuid, portfolioUuid string) *Sender {
 	sender := &Sender{
 		lock:          lock.NewLock("client-user-Sender-" + userUuid),
 		activeClients: 0,
@@ -67,12 +63,9 @@ func NewSender(userUuid string) *Sender {
 	sender.runSendUpdates()
 	sender.runSendNotifications()
 	sender.Output.EnableSink()
-	Senders[userUuid] = sender
+	senders[userUuid] = sender
+	senders[portfolioUuid] = sender
 	return sender
-}
-
-func GetSender(userUuid string) *Sender {
-	return Senders[userUuid]
 }
 
 func (s *Sender) GetOutput() chan interface{} {
@@ -148,8 +141,7 @@ func (s *Sender) runSendDeletes() {
 		for {
 			select {
 			case newObject := <-object:
-				s.Deletes.Offer(messages.BuildDeleteMessage(
-
+				s.Output.Offer(messages.BuildDeleteMessage(
 					newObject.(change.Identifiable)))
 			case <-s.close:
 				break
@@ -170,4 +162,36 @@ func (s *Sender) runSendNotifications() {
 			}
 		}
 	}()
+}
+
+func SendNewObject(id string, newObject change.Identifiable) {
+	if _, exists := senders[id]; !exists {
+		fmt.Println("cant find sender id during new: " + id)
+		return
+	}
+	senders[id].NewObjects.Offer(newObject)
+}
+
+func SendDeleteObject(id string, deleteObject change.Identifiable) {
+	if _, exists := senders[id]; !exists {
+		fmt.Println("cant find sender id during delete: " + id)
+		return
+	}
+	senders[id].Deletes.Offer(deleteObject)
+}
+
+func RegisterChangeUpdate(id string, changeChannel chan interface{}) {
+	if _, exists := senders[id]; !exists {
+		fmt.Println("cant find sender during add change update: " + id)
+		return
+	}
+	senders[id].Updates.RegisterInput(changeChannel)
+}
+
+func SendChangeUpdate(id string, changeNotify *change.ChangeNotify) {
+	if _, exists := senders[id]; !exists {
+		fmt.Println("cant find sender during add change update: " + id)
+		return
+	}
+	senders[id].Updates.Offer(changeNotify)
 }

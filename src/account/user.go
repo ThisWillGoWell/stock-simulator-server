@@ -107,7 +107,7 @@ func MakeUser(uuid, username, displayName, password, portfolioUUID, config strin
 		Config:         configMap,
 		ConfigStr:      config,
 		UserUpdateChan: duplicator.MakeDuplicator("user-" + uuid),
-		Sender:         sender.NewSender(uuid),
+		Sender:         sender.NewSender(uuid, portfolioUUID),
 	}
 	change.RegisterPublicChangeDetect(UserList[uuid])
 	wires.UsersNewObject.Offer(UserList[uuid])
