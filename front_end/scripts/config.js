@@ -1,7 +1,15 @@
-const MAX_FAVS = 10;
 var vm_config;
 
 function createConfig(config) {
+
+    if (jQuery.isEmptyObject(config)) {
+        config = {
+            fav: {
+                stocks: [],
+                users: [],
+            },
+        };
+    }
     vm_config = new Vue({
         data: {
             config: config
@@ -14,25 +22,19 @@ function createConfig(config) {
 
 // Method coming from stocks table favorite star
 function favoriteStock(uuid) {
-    console.log(uuid);
     
     var config = vm_config.config;
-    // Add fav area if not included already
-    if (config.fav === undefined) {
-        config.fav = {};
-    }
-    // Add fav.stocks if not included already
-    if (config.fav.stocks === undefined) {
-        config.fav.stocks = [];
-    }
-    // larger than 5?
-    if (config.fav.stocks.length > MAX_FAVS) {
-        config.fav.stocks.length.pop();
-    }
-    // Add new favorite
-    config.fav.stocks.unshift(uuid);
-    config.fav.stocks
+
+    // is stock in the list already
+    if (config.fav.stocks.indexOf(uuid) > -1) {
+        // remove the favorited stock 
+        config.fav.stocks.splice(config.fav.stocks.indexOf(uuid), 1);
     
+    } else {
+        // Add new favorite
+        config.fav.stocks.push(uuid);        
+
+    }
     updateConfig(config, 'fav', config.fav);
 
 };
@@ -40,24 +42,19 @@ function favoriteStock(uuid) {
 
 // Method coming from investors table favorite star
 function favoriteInvestor(uuid) {
-    console.log(uuid);
     
     var config = vm_config.config;
-    // Add fav area if not included already
-    if (config.fav === undefined) {
-        config.fav = {};
+
+    // is stock in the list already
+    if (config.fav.users.indexOf(uuid) > -1) {
+        // remove the favorited stock 
+        config.fav.users.splice(config.fav.users.indexOf(uuid), 1);
+
+    } else {
+        // Add new favorite
+        config.fav.users.push(uuid);
+
     }
-    // Add fav.stocks if not included already
-    if (config.fav.users === undefined) {
-        config.fav.users = [];
-    }
-    // larger than 5?
-    if (config.fav.users.length > MAX_FAVS) {
-        config.fav.users.length.pop();
-    }
-    // Add new favorite
-    config.fav.users.unshift(uuid);
-    console.log(config);
     updateConfig(config, 'fav', config.fav);
 
 };

@@ -448,7 +448,7 @@
 										  </thead>
 										  <tbody>
 											  <!-- https://vuejs.org/v2/guide/list.html :key is recommended in v.fors -->
-											<tr class="clickable" v-for="stock in sortedStocks" :key='stock.uuid' v-bind:uuid="stock.uuid">
+  												<tr class="clickable" v-for="stock in sortedStocks" :key='stock.uuid' v-bind:uuid="stock.uuid">
 												<!-- <td class="stock-open-shares favorite"><i class="material-icons star unfilled" >star</i></td> -->
 												<th class="stock-ticker-id" scope="row" v-bind:tid="stock.ticker_id">
 													<div class="stock-ticker-id">{{ stock.ticker_id }}</div>
@@ -456,7 +456,7 @@
 											  </th>
 											  <td class="stock-open-shares">
 													<ul class="action-list">
-													<li class="action-btn star">
+													<li class="action-btn star" v-on:click="toggleFavorite(stock.uuid)" v-bind:class="{ favorite: isFavoriteStock(stock.uuid) }">
 														  <i class="material-icons">
 																  star_rate
 																  </i>
@@ -515,7 +515,7 @@
 											  <td>{{ investor.level }}</td>
 											  <td class="stock-open-shares">
 												  <ul class="action-list">
-													  <li class="action-btn star" v-on:click="toggleFavorite(investor.uuid)">
+													  <li class="action-btn star" v-on:click="toggleFavorite(investor.uuid)" v-bind:class="{ favorite: isFavoriteInvestor(investor.uuid) }">
 															<i class="material-icons">
 																	star_rate
 																	</i>
@@ -534,7 +534,6 @@
 												
 												<!-- <div class="money-transfer-btn">SEND CASH</div> -->
 												</td>
-											  <td v-if="favoriteInvestor(investor.uuid)">MY FAV</td>
 											  <td class="stock-price" style="padding-right: 25px;">
 											  ${{ toPrice(investor.net_worth) }}</td>
 											  <td class="stock-open-shares" style="padding-right: 25px;">${{ toPrice(investor.wallet) }}</td>

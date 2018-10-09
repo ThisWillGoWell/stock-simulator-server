@@ -16,6 +16,14 @@ function load_stocks_tab() {
       toggleFavorite: function(uuid) {
         favoriteStock(uuid);
       },
+      isFavoriteStock: function(uuid) {
+        try {
+          return (vm_config.config.fav.stocks.indexOf(uuid) > -1);
+        } catch (err) {
+          console.error(err);
+          return false;
+        }
+      },
       // on column name clicks
       sortCol: function(col) {
         // If sorting by selected column

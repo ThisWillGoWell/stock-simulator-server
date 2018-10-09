@@ -35,7 +35,7 @@ function load_investors_tab() {
         transferModal.recipient_name = user.name;
         toggleTransferModal();
       },
-      favoriteInvestor: function(uuid) {
+      isFavoriteInvestor: function(uuid) {
         try {
           return (vm_config.config.fav.users.indexOf(uuid) > -1);
         } catch (err) {
