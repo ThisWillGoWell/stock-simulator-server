@@ -61,6 +61,7 @@ func makeItem(itemType ItemType, userUuid string) Item {
 func LoadItem(item Item) {
 	ItemLock.Acquire("load-item")
 	defer ItemLock.Release()
+	item.Load()
 	utils.RegisterUuid(item.GetUuid(), item)
 	if _, ok := ItemsPortInventory[item.GetPortfolioUuid()]; !ok {
 		ItemsPortInventory[item.GetPortfolioUuid()] = make(map[string]Item)
