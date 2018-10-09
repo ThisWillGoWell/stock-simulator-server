@@ -55,7 +55,7 @@ if (token) {
 				router[msg.action](msg);
 			} catch (err) {
 				console.log(msg);
-				console.error(err);
+				//console.error(err);
 			}
 		} else {
 			if (msg.type == "error") {

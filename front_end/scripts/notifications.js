@@ -148,12 +148,12 @@ function scrollTopBar(message) {
 	//Set up the element
 	mover
 		.style('opacity', 0)
-		.style('left', ((parent_right - el_width - 5) + 'px'))
+		.style('left', ((parent_right - el_width + 5) + 'px'))
 		.transition().duration(2000)
 		.style('opacity', 1);
 
 	mover
-		.transition().delay(1800).ease(d3.easeLinear).duration(8000)
+		.transition().delay(1800).ease(d3.easeLinear).duration(15000)
 		.style('left', parent_left + 5 + 'px');
 
 	mover
@@ -169,8 +169,8 @@ function scrollTopBar(message) {
 };
 
 // Let the page get going and then scroll
-setInterval(function() {
-	var stock = Object.values(vm_stocks.stocks)[Math.floor(Math.random()*Object.values(vm_stocks.stocks).length)];
-	scrollTopBar(stock.ticker_id + ": " + formatPrice(stock.current_price));
+// setInterval(function() {
+// 	var stock = Object.values(vm_stocks.stocks)[Math.floor(Math.random()*Object.values(vm_stocks.stocks).length)];
+// 	scrollTopBar(stock.ticker_id + ": " + formatPrice(stock.current_price));
 
-}, 2400);
+// }, 2400);

@@ -20,7 +20,7 @@ function load_stocks_tab() {
         try {
           return (vm_config.config.fav.stocks.indexOf(uuid) > -1);
         } catch (err) {
-          console.error(err);
+          //console.error(err);
           return false;
         }
       },
