@@ -59,7 +59,7 @@
     let httpUrl = location.protocol + "://"+ window.location.host;
 
     let  websocketUrl =  "ws://" + window.location.host + '/ws';
-    if(location.protocol == "https:") {
+    if(location.protocol === "https:") {
         websocketUrl =  "wss://" + window.location.host + '/ws';
     }
     if(forceUseProd){

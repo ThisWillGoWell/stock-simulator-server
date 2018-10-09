@@ -2,12 +2,6 @@
 
 
 /* Highest level Vue data object */
-var config = new Vue({
-  data: {
-    config: {}
-  }
-});
-
 var vm_stocks = new Vue({
   data: {
     stocks: {}
@@ -58,15 +52,15 @@ var vm_users = new Vue({
 registerRoute("connect", function(msg) {
   console.log("login recieved");
 
-  if (!msg.msg.success) {
+  if (msg.msg.success) {
+    console.log(msg);
+    sessionStorage.setItem("uuid", msg.msg.uuid);
+    createConfig(msg.msg.config);
+  } else {
     let err_msg = msg.msg.err;
     console.log(err_msg);
     console.log(msg);
     window.location.href = "/login.html";
-  } else {
-    console.log(msg);
-    sessionStorage.setItem("uuid", msg.msg.uuid);
-    Vue.set(config.config, msg.msg.uuid, msg.msg.config);
   }
 });
 
@@ -95,6 +89,14 @@ registerRoute("object", function(msg) {
     case "item":
       Vue.set(vm_items.items, msg.msg.uuid, msg.msg.object);
       break;
+    case "notification":
+      Vue.set(vm_notify.notes, msg.msg.uuid, msg.msg.object);
+      // If notification is not seen, notify user based on note type
+      if (!msg.msg.object.seen) {
+        // Execute notification type
+        routeNote[msg.msg.object.type](msg.msg.object);
+      }  
+      break;
   }
 });
 
@@ -106,7 +108,6 @@ registerRoute("alert", function(msg) {
 
 
 $(document).ready(function() {
-
   
   load_dashboard_tab(); // dashboard.js
   load_stocks_tab(); // stocks.js
@@ -124,8 +125,6 @@ $(document).ready(function() {
   }, 500);
 
 
-  console.log("----- CONFIG -----");
-  console.log(config.config);
   console.log("----- USER ITEMS -----")
   console.log(vm_items.items);
   console.log("----- USERS -----");
@@ -315,6 +314,18 @@ $(document).ready(function() {
     });
   };
 
+  var notificationUpdate = function(msg) {
+    var targetUUID = msg.msg.uuid;
+    msg.msg.changes.forEach(function(changeObject) {
+      // Variables needed to update the ledger item
+      var targetField = changeObject.field;
+      var targetChange = changeObject.value;
+
+      // Update ledger item
+      vm_notify.notes[targetUUID][targetField] = targetChange;
+    });
+  }
+
   
   registerRoute("update", function(msg) {
     var updateRouter = {
@@ -323,6 +334,7 @@ $(document).ready(function() {
       portfolio: portfolioUpdate,
       user: userUpdate,
       item: itemUpdate,
+      notification: notificationUpdate,
     };
     updateRouter[msg.msg.type](msg);
   });
@@ -334,7 +346,7 @@ $(document).ready(function() {
   var businessView = $("#business--view");
   var stocksView = $("#stocks--view");
   var investorsView = $("#investors--view");
-  var futuresView = $("#futures--view");
+  var settingsView = $("#settings--view");
   var storeView = $("#store--view");
   var currentViewName = $("#current-view");
 
@@ -365,10 +377,10 @@ $(document).ready(function() {
           currentViewName[0].innerHTML = "Investors";
           break;
 
-          case "futures":
+          case "settings":
           allViews.removeClass("active");
-          futuresView.addClass("active");
-          currentViewName[0].innerHTML = "Futures";
+          settingsView.addClass("active");
+          currentViewName[0].innerHTML = "Settings";
           break;
 
           case "perks":

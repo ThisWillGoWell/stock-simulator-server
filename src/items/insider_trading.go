@@ -82,7 +82,7 @@ func (it *InsiderTradingItem) GetUpdateChan() chan interface{} {
 }
 
 func (it *InsiderTradingItem) Load() {
-
+	it.UpdateChan = make(chan interface{})
 }
 
 func (it *InsiderTradingItem) GetItem() interface{} {

@@ -22,6 +22,9 @@ function load_investors_tab() {
           this.sortBy = col;
         }
       },
+      toggleFavorite: function(uuid) {
+        favoriteInvestor(uuid);
+      },
       createGraph: function(portfolioUUID) {
         let location = "#investorGraph" + portfolioUUID;
         createPortfolioGraph(portfolioUUID, location);
@@ -31,7 +34,15 @@ function load_investors_tab() {
         transferModal.recipient_uuid = user.uuid;
         transferModal.recipient_name = user.name;
         toggleTransferModal();
-      }
+      },
+      isFavoriteInvestor: function(uuid) {
+        try {
+          return (vm_config.config.fav.users.indexOf(uuid) > -1);
+        } catch (err) {
+          console.error(err);
+          return false;
+        }
+      },
     },
     computed: {
       investors: function() {
@@ -71,10 +82,10 @@ function load_investors_tab() {
             }
             return 0;
           });
-
+          
           return investors;
         }
-      }
+      },
     });
     
     // Set investor row clicking

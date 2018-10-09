@@ -9,20 +9,6 @@ var RED = "#f44336";
 var GREEN = "#1abc9c";
 var BLUE = "blue";
 
-// Register route for websocket messages for notifications
-registerRoute("notification", function(msg) {
-	// Add notification to the list
-	Vue.set(vm_notify.notes, msg.msg.uuid, msg.msg);
-
-// TODO: do not route if the message has been seen
-	var seen = msg.msg.seen;
-	if (!seen) {
-		// Execute notification type
-		routeNote[msg.msg.type](msg.msg);
-	}
-
-});
-
 
 var routeNote = {
 	trade: notifyTrade,
