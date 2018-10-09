@@ -14,7 +14,7 @@ function load_stocks_tab() {
     methods: {
       toPrice: formatPrice,
       toggleFavorite: function(uuid) {
-        console.log(uuid);
+        favoriteStock(uuid);
       },
       // on column name clicks
       sortCol: function(col) {

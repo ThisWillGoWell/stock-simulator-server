@@ -2,12 +2,6 @@
 
 
 /* Highest level Vue data object */
-var config = new Vue({
-  data: {
-    config: {}
-  }
-});
-
 var vm_stocks = new Vue({
   data: {
     stocks: {}
@@ -58,15 +52,15 @@ var vm_users = new Vue({
 registerRoute("connect", function(msg) {
   console.log("login recieved");
 
-  if (!msg.msg.success) {
+  if (msg.msg.success) {
+    console.log(msg);
+    sessionStorage.setItem("uuid", msg.msg.uuid);
+    Vue.set(vm_config.config, msg.msg.uuid, msg.msg.config);
+  } else {
     let err_msg = msg.msg.err;
     console.log(err_msg);
     console.log(msg);
     window.location.href = "/login.html";
-  } else {
-    console.log(msg);
-    sessionStorage.setItem("uuid", msg.msg.uuid);
-    Vue.set(config.config, msg.msg.uuid, msg.msg.config);
   }
 });
 
@@ -114,7 +108,6 @@ registerRoute("alert", function(msg) {
 
 
 $(document).ready(function() {
-
   
   load_dashboard_tab(); // dashboard.js
   load_stocks_tab(); // stocks.js
@@ -133,7 +126,7 @@ $(document).ready(function() {
 
 
   console.log("----- CONFIG -----");
-  console.log(config.config);
+  console.log(vm_config.config);
   console.log("----- USER ITEMS -----")
   console.log(vm_items.items);
   console.log("----- USERS -----");

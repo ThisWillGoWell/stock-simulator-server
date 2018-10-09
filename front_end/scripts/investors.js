@@ -22,6 +22,9 @@ function load_investors_tab() {
           this.sortBy = col;
         }
       },
+      toggleFavorite: function(uuid) {
+        favoriteInvestor(uuid);
+      },
       createGraph: function(portfolioUUID) {
         let location = "#investorGraph" + portfolioUUID;
         createPortfolioGraph(portfolioUUID, location);
