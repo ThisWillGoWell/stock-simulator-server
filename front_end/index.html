@@ -214,15 +214,15 @@
 							<i class="material-icons right-arrow">keyboard_arrow_right</i>
 						</button>
 					</li>
-					<!-- <li>
-						<button v-on:click="nav" data-route="futures">
-							<i class="material-icons menu-icon">swap_horiz</i>
-							<div class="menu-item-title">Futures</div>
+					<li>
+						<button v-on:click="nav" data-route="settings">
+							<i class="material-icons menu-icon">settings</i>
+							<div class="menu-item-title">Settings</div>
 							<i class="material-icons right-arrow">keyboard_arrow_right</i>
 						</button>
 					</li>
 					
-					<li>
+					<!-- <li>
 						<button v-on:click="nav" data-route="business">
 							<i class="material-icons menu-icon">store_mall_directory</i>
 							<div class="menu-item-title">Business</div>
@@ -314,13 +314,13 @@
 							<div class="flex-column-100">
 								<div class="card stock-list">
 									<table class="table" id="owned-stocks">
-										<thead>
+										<thead class="table-top-bar">
 									    	<tr>
 										    	<th scope="col" style="text-align: left; padding-left: 25px;" v-on:click="sortCol('stock_ticker')">Stock <i class="material-icons stock">arrow_drop_down</i></th>
-										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('amount')">Amount Owned <i class="material-icons stock">arrow_drop_down</i></th>
-										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('stock_price')">Current Price <i class="material-icons stock">arrow_drop_down</i></th>
-										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('stock_value')">Value <i class="material-icons stock">arrow_drop_down</i></th>
-										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('stock_roi')" >R.O.I. <i class="material-icons stock">arrow_drop_down</i></th>
+										    	<th scope="col" v-on:click="sortCol('amount')">Shares Owned <i class="material-icons stock">arrow_drop_down</i></th>
+										    	<th scope="col" v-on:click="sortCol('stock_price')">Current Price <i class="material-icons stock">arrow_drop_down</i></th>
+										    	<th scope="col" v-on:click="sortCol('stock_value')">Value <i class="material-icons stock">arrow_drop_down</i></th>
+										    	<th scope="col" v-on:click="sortCol('stock_roi')" >R.O.I. <i class="material-icons stock">arrow_drop_down</i></th>
 										    </tr>
 										</thead>
 										<tbody>
@@ -436,14 +436,14 @@
 								<div class="card stock-list">
 									<div id="stock-list">
 										<table class="table">
-										  <thead>
+										  <thead class="table-top-bar">
 											<tr>
 												<!-- <th scope="col" v-on:click="sortCol('favorite')" style="text-align: left; padding-left: 25px;"><i class="material-icons star">star</i> <i class="material-icons stock">arrow_drop_down</i></th>	 -->
 											  <th scope="col" v-on:click="sortCol('ticker_id')" style="text-align: left; padding-left: 25px;">Stock <i class="material-icons stock">arrow_drop_down</i></th>
 											  <th scope="col" v-on:click="sortCol('open_shares')">Actions</th>
 											  <th scope="col" v-on:click="sortCol('open_shares')">Open Shares <i class="material-icons open-shares">arrow_drop_down</i></th>
 											  <th scope="col" v-on:click="sortCol('change')">Change <i class="material-icons change">arrow_drop_down</i></th>
-											  <th scope="col" v-on:click="sortCol('current_price')" style="padding-right: 25px;">Cost <i class="material-icons cost">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('current_price')">Cost <i class="material-icons cost">arrow_drop_down</i></th>
 											</tr>
 										  </thead>
 										  <tbody>
@@ -550,11 +550,44 @@
 					</div>
 
 					<!-- TODO: this tab collides with the sidebar -->
-					<div id="futures--view" class="view">
+					<div id="settings--view" class="view">
 						<div class="flex-grid--container">
 							<div class="flex-column-100">
+								<div class="item-category buffer-top">ACCOUNT</div>
+							</div>
+							<div class="flex-column-100">
 								<div class="card">
-									<h1>FUTURES</h1>
+									<div class="settings-grp">
+										<div class="input-grp">
+											<div class="input-name">Change Display Name</div>
+											<input type="text" id="change-display-name" class="input-full-width">
+											<span class="input-focus-border"></span>
+											
+										</div>
+										<div class="input-grp">
+											<div class="change-setting-btn">SAVE</div>
+										</div>
+									</div>
+									
+								</div>
+								<div class="card">
+									<div class="settings-grp">
+										<div class="input-grp">
+											<div class="input-name">Change Password</div>
+											<input type="text" id="change-password" class="input-full-width">
+											<span class="input-focus-border"></span>
+											
+										</div>
+										<div class="input-grp">
+												<div class="input-name">Confirm Password</div>
+												<input type="text" id="change-password-confirm" class="input-full-width">
+												<span class="input-focus-border"></span>
+												
+											</div>
+										<div class="input-grp">
+											<div class="change-setting-btn">SAVE</div>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
