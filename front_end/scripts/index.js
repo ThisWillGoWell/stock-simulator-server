@@ -170,23 +170,37 @@ $(document).ready(function() {
 
 
 
-  // $("table").on("click", "tr td i.material-icons.star.unfilled", function(
-  //   event
-  // ) {
-  //   var ticker_id = $(this)
-  //     .find(".stock-ticker-id")
-  //     .attr("tid");
+  $("table").on("click", "tr td i.material-icons.star", function(event) {
+    var ticker_id = $(this)
+      .find(".stock-ticker-id")
+      .attr("tid");
 
-  //   console.log("TID: " + ticker_id + " has been favorited");
+    console.log("TID: " + ticker_id + " has been favorited");
 
-  //   //var stock = Object.values(vm_users.stocks).filter(d => d.ticker_id === ticker_id)[0];
+    //var stock = Object.values(vm_users.stocks).filter(d => d.ticker_id === ticker_id)[0];
 
-  //   // Set show modal to true
+    // Set show modal to true
 
-  //   //transferModal.investor_uuid = stock.uuid;
+    //transferModal.investor_uuid = stock.uuid;
 
-  //   vm_stocks_tab.toggleFavorite();
-  // });
+    //vm_stocks_tab.toggleFavorite();
+  });
+
+  $("table").on("click", "tr td i.material-icons.chart", function(event) {
+    var ticker_id = $(this)
+      .find(".stock-ticker-id")
+      .attr("tid");
+
+    console.log("SHOW CHART FOR: " + ticker_id);
+
+    //var stock = Object.values(vm_users.stocks).filter(d => d.ticker_id === ticker_id)[0];
+
+    // Set show modal to true
+
+    //transferModal.investor_uuid = stock.uuid;
+
+    //vm_stocks_tab.toggleFavorite();
+  });
 
   $("thead tr th").click(function(event) {
     if (
