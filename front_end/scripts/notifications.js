@@ -13,7 +13,7 @@ var BLUE = "blue";
 var routeNote = {
 	trade: notifyTrade,
 	send_money: notifyTransfer,
-	recieve_money: notifyTransfer,
+	receive_money: notifyTransfer,
 	new_item: notifyNewItem,
 };
 

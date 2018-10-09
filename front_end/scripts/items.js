@@ -31,7 +31,7 @@ function checkUsedItems() {
 
 	Object.values(vm_items.items).forEach(function(d) {
 		if (d.used) {
-			UseRouter[d.Type](d);
+			UseRouter[d.type](d);
 		}
 	});
 };
