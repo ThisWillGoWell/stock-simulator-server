@@ -55,7 +55,7 @@ registerRoute("connect", function(msg) {
   if (msg.msg.success) {
     console.log(msg);
     sessionStorage.setItem("uuid", msg.msg.uuid);
-    Vue.set(vm_config.config, msg.msg.uuid, msg.msg.config);
+    createConfig(msg.msg.config);
   } else {
     let err_msg = msg.msg.err;
     console.log(err_msg);
@@ -125,8 +125,6 @@ $(document).ready(function() {
   }, 500);
 
 
-  console.log("----- CONFIG -----");
-  console.log(vm_config.config);
   console.log("----- USER ITEMS -----")
   console.log(vm_items.items);
   console.log("----- USERS -----");

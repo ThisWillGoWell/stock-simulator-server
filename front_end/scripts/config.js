@@ -1,9 +1,16 @@
-var vm_config = new Vue({
-    data: {
-      config: {}
-    }
-});
+const MAX_FAVS = 10;
+var vm_config;
 
+function createConfig(config) {
+    vm_config = new Vue({
+        data: {
+            config: config
+        }
+    });
+    console.log("------ CONFIG ------");
+    console.log(vm_config.config);
+
+}
 
 // Method coming from stocks table favorite star
 function favoriteStock(uuid) {
@@ -19,14 +26,14 @@ function favoriteStock(uuid) {
         config.fav.stocks = [];
     }
     // larger than 5?
-    if (config.fav.stocks.length > 10) {
+    if (config.fav.stocks.length > MAX_FAVS) {
         config.fav.stocks.length.pop();
     }
     // Add new favorite
     config.fav.stocks.unshift(uuid);
     config.fav.stocks
     
-    updateConfig(config, 'stocks', config.fav.stocks);
+    updateConfig(config, 'fav', config.fav);
 
 };
 
@@ -45,13 +52,13 @@ function favoriteInvestor(uuid) {
         config.fav.users = [];
     }
     // larger than 5?
-    if (config.fav.users.length > 10) {
+    if (config.fav.users.length > MAX_FAVS) {
         config.fav.users.length.pop();
     }
     // Add new favorite
     config.fav.users.unshift(uuid);
-
-    updateConfig(config, 'users', config.fav.users);
+    console.log(config);
+    updateConfig(config, 'fav', config.fav);
 
 };
 
