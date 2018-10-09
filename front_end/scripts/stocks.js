@@ -235,6 +235,15 @@ function load_stocks_tab() {
           return mover.ticker_id;
         }
       },
+      mostChangePercent: function() {
+        if (Object.values(vm_stocks.stocks).length === 0) {
+          return "";
+        } else {
+          stocks = Object.values(vm_stocks.stocks).map(d => d);
+          var mover = stocks.reduce((a, b) => (a.change_percent > b.change_percent ? a : b));
+          return mover.ticker_id;
+        }
+      },
       lowestStock: function() {
         if (Object.values(vm_stocks.stocks).length === 0) {
           return "";

@@ -75,6 +75,7 @@ registerRoute("object", function(msg) {
     case "stock":
       // Add variables for stocks for vue module initialization
       msg.msg.object.change = 0;
+      msg.msg.object.changePercent = 0;
       Vue.set(vm_stocks.stocks, msg.msg.uuid, msg.msg.object);
       break;
 
@@ -244,6 +245,15 @@ $(document).ready(function() {
     }
   });
 
+  function findPercentChange(newPrice, oldPrice) {
+    if (newPrice > oldPrice) {
+      return ((newPrice - oldPrice)/oldPrice * 100).toFixed(2);
+    } else if (newPrice < oldPrice) {
+      return ((oldPrice - newPrice)/oldPrice * 100).toFixed(2);
+    } else {
+      return (0).toFixed(2);
+    }
+  };
 
   var stockUpdate = function(msg) {
     var targetUUID = msg.msg.uuid;
@@ -258,6 +268,10 @@ $(document).ready(function() {
         var currPrice = vm_stocks.stocks[targetUUID][targetField];
         // Adding change amount
         vm_stocks.stocks[targetUUID].change = targetChange - currPrice;
+
+        // Adding percent change amount
+        findPercentChange(targetChange, currPrice);
+
         // vm_stocks.stocks[targetUUID].change = Math.round((targetChange - currPrice) * 1000)/100000;
 
         // helper to color rows in the stock table
