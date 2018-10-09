@@ -67,6 +67,8 @@ func LoadItem(item Item) {
 	}
 	ItemsPortInventory[item.GetPortfolioUuid()][item.GetUuid()] = item
 	Items[item.GetUuid()] = item
+	change.RegisterPrivateChangeDetect(item, item.GetUpdateChan())
+	sender.RegisterChangeUpdate(item.GetPortfolioUuid(), item.GetUpdateChan())
 }
 
 func BuyItem(portUuid, userUuid, itemName string) (string, error) {
