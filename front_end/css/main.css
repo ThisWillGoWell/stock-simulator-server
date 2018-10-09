@@ -1419,7 +1419,7 @@ table tbody tr th{
 }
 
 table.table tbody tr td{
-    padding: 15px 0px;
+    padding: 15px 25px 15px 0px;
 }
 
 .updated {
@@ -1918,7 +1918,7 @@ tbody tr:hover .money-transfer-btn{
     position: relative;
 }
 
-#dashboard--view, #business--view, #stocks--view, #investors--view, #futures--view, #store--view{
+#dashboard--view, #business--view, #stocks--view, #investors--view, #settings--view, #store--view{
     position: absolute;
     top: 0;
     left: 0;
@@ -1933,7 +1933,7 @@ tbody tr:hover .money-transfer-btn{
     display: none;
 }
 
-#dashboard--view.active, #business--view.active, #stocks--view.active, #investors--view.active, #futures--view.active, #store--view.active {
+#dashboard--view.active, #business--view.active, #stocks--view.active, #investors--view.active, #settings--view.active, #store--view.active {
     opacity: 1;
     z-index: 110;
     transform: translateY(0px);
@@ -2158,6 +2158,40 @@ tbody tr:hover .money-transfer-btn{
     font-size: 18px;
     vertical-align: top;
     line-height: 35px;
+}
+
+.change-setting-btn {
+    background-color: #455A64;
+    text-align: center;
+    font-weight: 500;
+    color: #fff;
+    padding: 10px 35px;
+    line-height: 40px;
+    display: inline;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+table {
+    table-layout:fixed !important;
+}
+
+table thead.table-top-bar {
+    background-color: #34495e;
+    color: #fff;
+}
+
+table thead.table-top-bar tr th{
+    height: 75px;
+    line-height: 50px;
+    color: #fff;
+    font-weight: 500;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+table thead.table-top-bar tr th:hover{
+    background-color: #0277BD;
 }
 
 /* MEDIA QUERIES */

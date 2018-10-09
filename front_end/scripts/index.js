@@ -334,7 +334,7 @@ $(document).ready(function() {
   var businessView = $("#business--view");
   var stocksView = $("#stocks--view");
   var investorsView = $("#investors--view");
-  var futuresView = $("#futures--view");
+  var settingsView = $("#settings--view");
   var storeView = $("#store--view");
   var currentViewName = $("#current-view");
 
@@ -365,10 +365,10 @@ $(document).ready(function() {
           currentViewName[0].innerHTML = "Investors";
           break;
 
-          case "futures":
+          case "settings":
           allViews.removeClass("active");
-          futuresView.addClass("active");
-          currentViewName[0].innerHTML = "Futures";
+          settingsView.addClass("active");
+          currentViewName[0].innerHTML = "Settings";
           break;
 
           case "perks":
