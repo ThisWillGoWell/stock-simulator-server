@@ -95,6 +95,14 @@ registerRoute("object", function(msg) {
     case "item":
       Vue.set(vm_items.items, msg.msg.uuid, msg.msg.object);
       break;
+    case "notification":
+      Vue.set(vm_notify.notes, msg.msg.uuid, msg.msg.object);
+      // If notification is not seen, notify user based on note type
+      if (!msg.msg.object.seen) {
+        // Execute notification type
+        routeNote[msg.msg.object.type](msg.msg.object);
+      }  
+      break;
   }
 });
 
@@ -315,6 +323,18 @@ $(document).ready(function() {
     });
   };
 
+  var notificationUpdate = function(msg) {
+    var targetUUID = msg.msg.uuid;
+    msg.msg.changes.forEach(function(changeObject) {
+      // Variables needed to update the ledger item
+      var targetField = changeObject.field;
+      var targetChange = changeObject.value;
+
+      // Update ledger item
+      vm_notify.notes[targetUUID][targetField] = targetChange;
+    });
+  }
+
   
   registerRoute("update", function(msg) {
     var updateRouter = {
@@ -323,6 +343,7 @@ $(document).ready(function() {
       portfolio: portfolioUpdate,
       user: userUpdate,
       item: itemUpdate,
+      notification: notificationUpdate,
     };
     updateRouter[msg.msg.type](msg);
   });
