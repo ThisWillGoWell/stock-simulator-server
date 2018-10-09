@@ -516,7 +516,7 @@
 											  <td class="stock-open-shares">
 												  <ul class="action-list">
 													  <li class="action-btn star" v-on:click="toggleFavorite(investor.uuid)">
-															<i class="material-icons">
+															<i class="material-icons" v-if="favoriteInvestors">
 																	star_rate
 																	</i>
 													  </li>
@@ -534,7 +534,7 @@
 												
 												<!-- <div class="money-transfer-btn">SEND CASH</div> -->
 												</td>
-											  
+											  <td v-if="favoriteInvestor(investor.uuid)">MY FAV</td>
 											  <td class="stock-price" style="padding-right: 25px;">
 											  ${{ toPrice(investor.net_worth) }}</td>
 											  <td class="stock-open-shares" style="padding-right: 25px;">${{ toPrice(investor.wallet) }}</td>
