@@ -810,6 +810,38 @@ input[type=password]:focus ~ .input-focus-border{
 }
 
 
+#scroll-module--container {
+    position: fixed;
+    top: 20px;
+    right: 0px;
+    left: 0px;
+    z-index: 6;
+    margin: 0 auto;
+    height: 40px;
+    width: 620px;
+    border-radius: 25px;
+    background-color: #373e49;
+    background-image: radial-gradient(rgb(149, 143, 143), rgb(149, 143, 143),rgb(51, 45, 45));
+    opacity: 1;
+    text-align: center;
+
+    box-shadow: 0px -4px 23px 2px rgba(0,0,0,0.1);
+
+}
+#scroll-module--container span {
+    position: fixed;
+    opacity: 1;
+    top: 20px;
+    width: auto;
+    z-index: 7;
+    font-size: 16px;
+    height: 100%;
+    line-height: 40px;
+    color: #fff;
+    vertical-align: middle;
+    text-anchor: start;
+}
+
 #chat-module--container {
     position: fixed;
     bottom: 0;
