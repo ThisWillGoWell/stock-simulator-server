@@ -277,6 +277,7 @@ func (client *Client) processSetMessage(baseMessage *messages.BaseMessage) {
 			break
 		}
 		client.user.SetConfig(newConfig)
+
 		response = messages.BuildSuccessSet()
 	case "password":
 		newPassword, ok := setMessage.Value.(string)
