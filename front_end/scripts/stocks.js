@@ -175,7 +175,8 @@ function load_stocks_tab() {
             // Turn to array and sort
             var stock_array = Object.values(vm_stocks.stocks);
 
-            let byCol = this.sortBy;
+            var byCol = this.sortBy;
+            // Find which change are we sorting by
             if (byCol === "change" || byCol === "changePercent") {
               if (vm_config.config.settings.changePercent) {
                 byCol = "changePercent";
@@ -183,6 +184,7 @@ function load_stocks_tab() {
                 byCol = "change";
               }
             }
+
             let direction = this.sortDesc;
 
             // Sorting array
