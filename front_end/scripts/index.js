@@ -118,11 +118,11 @@ $(document).ready(function() {
   load_sidebar_vue(); // sidebar.js
   load_chat_vue(); // chat.js
   load_modal_vues(); // modal.js
+  load_settings_tab(); // settings.js
 
 
   setTimeout(function() {
     checkUsedItems(); // Display item perks that are in use 
-    
   }, 500);
 
 
@@ -245,15 +245,6 @@ $(document).ready(function() {
     }
   });
 
-  function findPercentChange(newPrice, oldPrice) {
-    if (newPrice > oldPrice) {
-      return ((newPrice - oldPrice)/oldPrice * 100).toFixed(2);
-    } else if (newPrice < oldPrice) {
-      return ((oldPrice - newPrice)/oldPrice * 100).toFixed(2);
-    } else {
-      return (0).toFixed(2);
-    }
-  };
 
   var stockUpdate = function(msg) {
     var targetUUID = msg.msg.uuid;
@@ -270,7 +261,7 @@ $(document).ready(function() {
         vm_stocks.stocks[targetUUID].change = targetChange - currPrice;
 
         // Adding percent change amount
-        findPercentChange(targetChange, currPrice);
+        vm_stocks.stocks[targetUUID].changePercent = findPercentChange(targetChange, currPrice);
 
         // vm_stocks.stocks[targetUUID].change = Math.round((targetChange - currPrice) * 1000)/100000;
 

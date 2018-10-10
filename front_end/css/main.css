@@ -815,7 +815,6 @@ input[type=password]:focus ~ .input-focus-border{
     top: 20px;
     right: 0px;
     left: 0px;
-    z-index: 6;
     margin: 0 auto;
     height: 40px;
     width: 620px;

@@ -13,6 +13,7 @@ function load_stocks_tab() {
     },
     methods: {
       toPrice: formatPrice,
+      formatPercent: formatPercent,
       toggleFavorite: function(uuid) {
         favoriteStock(uuid);
       },
@@ -162,6 +163,9 @@ function load_stocks_tab() {
       }
     },
     computed: {
+      changePercentSetting: function() {
+        return vm_config.config.settings.changePercent;
+      },
       sortedStocks: function() {
         if (Object.keys(vm_stocks.stocks).length !== 0) {
             // Turn to array and sort
