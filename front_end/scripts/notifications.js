@@ -145,32 +145,33 @@ function scrollTopBar(message) {
 	var bounds = mover.node().getBoundingClientRect();
 	var el_width = bounds.width;
 
-	//Set up the element
+	//Set up the element and fade in
 	mover
 		.style('opacity', 0)
-		.style('left', ((parent_right - el_width + 5) + 'px'))
+		.style('left', ((parent_right - el_width - 5) + 'px'))
 		.transition().duration(2000)
 		.style('opacity', 1);
-
+	
+	// set motion
 	mover
 		.transition().delay(1800).ease(d3.easeLinear).duration(15000)
-		.style('left', parent_left + 5 + 'px');
+		.style('left', (parent_left + 5) + 'px');
 
+	// Fade out
 	mover
-		.transition().delay(10000).duration(500)
+		.transition().delay(17000).duration(1000)
 		.style('opacity', 0);
 
-	// emove
+	// Remove once stopped and faded
 	mover
-		.transition().delay(12000).duration(0)
+		.transition().delay(18000).duration(0)
 		.remove();
 
-	// .remove();
 };
 
 // Let the page get going and then scroll
-// setInterval(function() {
-// 	var stock = Object.values(vm_stocks.stocks)[Math.floor(Math.random()*Object.values(vm_stocks.stocks).length)];
-// 	scrollTopBar(stock.ticker_id + ": " + formatPrice(stock.current_price));
+setInterval(function() {
+	var stock = Object.values(vm_stocks.stocks)[Math.floor(Math.random()*Object.values(vm_stocks.stocks).length)];
+	scrollTopBar(stock.ticker_id + ": " + formatPrice(stock.current_price));
 
-// }, 2400);
+}, 3000);
