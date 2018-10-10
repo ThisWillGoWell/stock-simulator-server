@@ -45,6 +45,7 @@
 		<script src="scripts/items.js"></script>
 		<script src="scripts/modal.js"></script>
         <script src="scripts/graphing.js"></script>
+        <script src="scripts/settings.js"></script>
 
     </head>
 
@@ -449,7 +450,7 @@
 											  <th scope="col" v-on:click="sortCol('ticker_id')" style="text-align: left; padding-left: 25px;">Stock <i class="material-icons stock">arrow_drop_down</i></th>
 											  <th scope="col" v-on:click="sortCol('open_shares')" style="padding-right: 25px;">Actions</th>
 											  <th scope="col" v-on:click="sortCol('open_shares')">Open Shares <i class="material-icons open-shares">arrow_drop_down</i></th>
-											  <th scope="col" v-on:click="sortCol('change')">Change <i class="material-icons change">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('change')">Last Change <i class="material-icons change">arrow_drop_down</i></th>
 											  <th scope="col" v-on:click="sortCol('current_price')">Cost <i class="material-icons cost">arrow_drop_down</i></th>
 											</tr>
 										  </thead>
@@ -477,7 +478,11 @@
 											  </ul>
 											  </td>
 											  <td class="stock-open-shares">{{ stock.open_shares }}</td>
-											  <td class="stock-change" style="padding-right: 15px;">
+											  <td v-if="changePercentSetting" class="stock-change" style="padding-right: 15px;">
+												  {{ formatPercent(stock.changePercent) }}
+												  <i class="material-icons">arrow_drop_down</i>
+											  </td>
+											  <td v-else class="stock-change" style="padding-right: 15px;">
 												  {{ toPrice(stock.change) }}
 												  <i class="material-icons">arrow_drop_down</i>
 											  </td>
@@ -592,6 +597,14 @@
 											</div>
 										<div class="input-grp">
 											<div class="change-setting-btn">SAVE</div>
+										</div>
+									</div>
+								</div>
+								<div class="card">
+									<div class="settings-grp">
+										<div class="input-grp">
+											Toggle display of stock changes as percentages instead of price change in dollars.
+											<div class="change-setting-btn" v-on:click="toggleChangePercentSetting()">Toggle</div>
 										</div>
 									</div>
 								</div>
@@ -770,7 +783,7 @@ done
 				</div>
 			</section>
 
-			<!-- <section id="scroll-module--container"></section> -->
+			<section id="scroll-module--container"></section>
 
 			<section id="debug-module--container" class="closed">
 				<div class="debug-title-bar">

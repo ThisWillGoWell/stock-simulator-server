@@ -12,6 +12,21 @@ function formatPrice(value) {
 
 };
 
+// Really?
+function formatPercent(value) {
+	return value+"%"
+};
+
+function findPercentChange(newPrice, oldPrice) {
+    if (newPrice > oldPrice) {
+      return ((newPrice - oldPrice)/oldPrice * 100).toFixed(2);
+    } else if (newPrice < oldPrice) {
+      return ((oldPrice - newPrice)/oldPrice * 100).toFixed(2);
+    } else {
+      return (0).toFixed(2);
+    }
+  };
+
 function abbrevPrice(value) {
 	// TODO if value is greater than something abbreviate
 	// Handle negative values for formatting change

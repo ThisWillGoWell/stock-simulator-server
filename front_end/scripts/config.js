@@ -8,6 +8,9 @@ function createConfig(config) {
                 stocks: [],
                 users: [],
             },
+            settings: {
+                changePercent: true,
+            }
         };
     }
     vm_config = new Vue({

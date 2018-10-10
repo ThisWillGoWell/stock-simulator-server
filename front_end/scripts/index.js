@@ -75,6 +75,7 @@ registerRoute("object", function(msg) {
     case "stock":
       // Add variables for stocks for vue module initialization
       msg.msg.object.change = 0;
+      msg.msg.object.changePercent = 0;
       Vue.set(vm_stocks.stocks, msg.msg.uuid, msg.msg.object);
       break;
 
@@ -117,11 +118,11 @@ $(document).ready(function() {
   load_sidebar_vue(); // sidebar.js
   load_chat_vue(); // chat.js
   load_modal_vues(); // modal.js
+  load_settings_tab(); // settings.js
 
 
   setTimeout(function() {
     checkUsedItems(); // Display item perks that are in use 
-    
   }, 500);
 
 
@@ -258,6 +259,10 @@ $(document).ready(function() {
         var currPrice = vm_stocks.stocks[targetUUID][targetField];
         // Adding change amount
         vm_stocks.stocks[targetUUID].change = targetChange - currPrice;
+
+        // Adding percent change amount
+        vm_stocks.stocks[targetUUID].changePercent = findPercentChange(targetChange, currPrice);
+
         // vm_stocks.stocks[targetUUID].change = Math.round((targetChange - currPrice) * 1000)/100000;
 
         // helper to color rows in the stock table
