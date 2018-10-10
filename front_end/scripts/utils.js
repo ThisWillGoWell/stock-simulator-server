@@ -12,16 +12,15 @@ function formatPrice(value) {
 
 };
 
-// Really?
 function formatPercent(value) {
-	return value+"%"
+	return Math.abs(value);
 };
 
 function findPercentChange(newPrice, oldPrice) {
     if (newPrice > oldPrice) {
       return ((newPrice - oldPrice)/oldPrice * 100).toFixed(2);
     } else if (newPrice < oldPrice) {
-      return ((oldPrice - newPrice)/oldPrice * 100).toFixed(2);
+      return ((oldPrice - newPrice)/oldPrice * -100).toFixed(2);
     } else {
       return (0).toFixed(2);
     }

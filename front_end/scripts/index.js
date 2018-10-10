@@ -261,7 +261,7 @@ $(document).ready(function() {
         vm_stocks.stocks[targetUUID].change = targetChange - currPrice;
 
         // Adding percent change amount
-        vm_stocks.stocks[targetUUID].changePercent = findPercentChange(targetChange, currPrice);
+        vm_stocks.stocks[targetUUID].changePercent = Number(findPercentChange(targetChange, currPrice));
 
         // vm_stocks.stocks[targetUUID].change = Math.round((targetChange - currPrice) * 1000)/100000;
 

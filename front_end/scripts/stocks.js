@@ -164,7 +164,11 @@ function load_stocks_tab() {
     },
     computed: {
       changePercentSetting: function() {
-        return vm_config.config.settings.changePercent;
+        if (vm_config === undefined) {
+          return false;
+        } else {
+          return vm_config.config.settings.changePercent;
+        }
       },
       sortedStocks: function() {
         if (Object.keys(vm_stocks.stocks).length !== 0) {
@@ -172,6 +176,11 @@ function load_stocks_tab() {
             var stock_array = Object.values(vm_stocks.stocks);
 
             let byCol = this.sortBy;
+            if (vm_config.config.settings.changePercent) {
+              byCol = "changePercent";
+            } else {
+              byCol = "change";
+            }
             let direction = this.sortDesc;
 
             // Sorting array
@@ -235,16 +244,11 @@ function load_stocks_tab() {
           return "";
         } else {
           stocks = Object.values(vm_stocks.stocks).map(d => d);
-          var mover = stocks.reduce((a, b) => (a.change > b.change ? a : b));
-          return mover.ticker_id;
-        }
-      },
-      mostChangePercent: function() {
-        if (Object.values(vm_stocks.stocks).length === 0) {
-          return "";
-        } else {
-          stocks = Object.values(vm_stocks.stocks).map(d => d);
-          var mover = stocks.reduce((a, b) => (a.change_percent > b.change_percent ? a : b));
+          if (vm_config.config.settings.changePercent) {
+            var mover = stocks.reduce((a, b) => (a.changePercent > b.changePercent ? a : b));
+          } else {
+            var mover = stocks.reduce((a, b) => (a.change > b.change ? a : b));
+          }
           return mover.ticker_id;
         }
       },
