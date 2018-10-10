@@ -33,11 +33,11 @@ function abbrevPrice(value) {
 		let val = (value/100).toFixed(2).toString();
 		val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 		return val;
-	} else if (value < 1000000000) {
+	} else if (value < 10000000) {
 		let val = ((value/100)/1000).toFixed(2).toString();
 		val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 		return val + "K";
-	} else if (value < 100000000000) {
+	} else if (value < 1000000000) {
 		let val = ((value/100)/1000000).toFixed(2).toString();
 		val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 		return val + "M";
