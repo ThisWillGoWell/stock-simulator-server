@@ -176,10 +176,12 @@ function load_stocks_tab() {
             var stock_array = Object.values(vm_stocks.stocks);
 
             let byCol = this.sortBy;
-            if (vm_config.config.settings.changePercent) {
-              byCol = "changePercent";
-            } else {
-              byCol = "change";
+            if (byCol === "change" || byCol === "changePercent") {
+              if (vm_config.config.settings.changePercent) {
+                byCol = "changePercent";
+              } else {
+                byCol = "change";
+              }
             }
             let direction = this.sortDesc;
 
