@@ -29,12 +29,35 @@ function sendTrade() {
         amount: buySellModal.buySellAmount
     };
 
+    var callback = function(msg) {
+        var success = msg.msg.success;
+
+        // If trade was a success
+	    if (success) {
+            // Vars needed to form note
+            var amount = Number(msg.msg.order.amount);
+            var stock_item = vm_stocks.stocks[msg.msg.order.stock];
+            
+            if (amount < 0) {
+                amount *= -1;
+                message = "Successful sale of " + amount + " " + stock_item.ticker_id + " stocks.";
+            } else {
+                message = "Successful purchase of " + amount + " " + stock_item.ticker_id + " stocks."; 
+            }
+            notifyTopBar(message, GREEN, success);
+
+        } else {
+            message = msg.msg.err;
+            notifyTopBar(message, RED, success);
+        }
+    };
+
     // Sending through websocket
     console.log("SEND TRADE");
     console.log(JSON.stringify(msg));
 
     // Send through WebSocket
-    doSend("trade", msg);
+    doSend("trade", msg, callback);
 
     // Reset buy sell amount
     buySellModal.buySellAmount = 0;

@@ -65,39 +65,27 @@ function notifyTransfer(msg) {
 
 function notifyTrade(msg) {
 
-	var color, message;
+	var message;
 	var success = msg.notification.success;
 	
 	// If trade was a success
 	if (success) {
+		// Vars needed to form note
 		var amount = Number(msg.notification.amount);
-		var tradeType = "";
-		if (amount < 0) {
-			tradeType = 'sell';
-			amount *= -1;
-		} else {
-			tradeType = 'buy';
-		}
-
 		var stock_item = vm_stocks.stocks[msg.notification.stock];
-
-		if (tradeType === 'sell') {
-			message = "Successful sale of " + amount + " " + stock_item.ticker_id + ".";
-		} else if (tradeType === 'buy') {
-			message = "Successful purchase of " + amount + " " + stock_ticker + "."; 
+		
+		if (amount < 0) {
+			amount *= -1;
+			message = "Successful sale of " + amount + " " + stock_item.ticker_id + " stocks.";
 		} else {
-			console.error("tradeType not set by server message");
+			message = "Successful purchase of " + amount + " " + stock_item.ticker_id + " stocks."; 
 		}
-
-		color = "#1abc9c";
+		notifyTopBar(message, GREEN, success);
 
 	} else {
-
-		color = "#f44336";
 		message = "Trade failed.";
+		notifyTopBar(message, RED, success);
 	}
-
-	notifyTopBar(message, color, success);
 
 	sendAck(msg.uuid);
 
