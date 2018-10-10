@@ -250,7 +250,7 @@
 					</div>
 
 				<div id="user-info-container" class="nav-list">
-					<div class="username-text">{{ userDisplayName + " " + userLevel }}</div>
+					<div class="username-text">{{ userDisplayName }}</div>
 					
 					
 				
@@ -260,12 +260,6 @@
 				<div class="account-settings-menu--container">
 					<i id="account-settings-menu-close-btn" class="material-icons">close</i>
 					<ul>
-						<li>
-							<textarea id="newDisplayName"></textarea>
-						</li>
-						<li>
-							<button id="changeDisplayName" v-on:click="changeDisplayName">Change Display Name</button>
-						</li>
 						<li>
 							<button id="btn-logout" v-on:click="logout">Logout</button>
 						</li>
@@ -576,10 +570,9 @@
 											
 										</div>
 										<div class="input-grp">
-											<div class="change-setting-btn">SAVE</div>
+											<div class="change-setting-btn" v-on:click="changeDisplayName()">SAVE</div>
 										</div>
 									</div>
-									
 								</div>
 								<div class="card">
 									<div class="settings-grp">
