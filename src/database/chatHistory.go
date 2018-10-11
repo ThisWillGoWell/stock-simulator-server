@@ -1,7 +1,5 @@
 package database
 
-import ()
-
 var (
 	chatHistoryTableName            = `chat_history`
 	chatHistoryTableCreateStatement = `CREATE TABLE IF NOT EXISTS ` + chatHistoryTableName +
@@ -19,7 +17,7 @@ var (
 )
 
 func initChatHistory() {
-	tx, err := ts.Begin()
+	tx, err := db.Begin()
 	if err != nil {
 		ts.Close()
 		panic("could not begin chat history init: " + err.Error())
@@ -29,7 +27,7 @@ func initChatHistory() {
 
 	}
 	tx.Commit()
-	tx, err = ts.Begin()
+	tx, err = db.Begin()
 	_, err = tx.Exec(chatHistoryTSInit)
 	if err != nil {
 		// pass on error
@@ -39,7 +37,7 @@ func initChatHistory() {
 
 func SaveChatMessage(uuid, message string) {
 
-	tx, err := ts.Begin()
+	tx, err := db.Begin()
 	if err != nil {
 		ts.Close()
 		panic("could not begin chat history init: " + err.Error())

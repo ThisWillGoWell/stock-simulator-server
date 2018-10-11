@@ -167,12 +167,12 @@ func (ch *ChannelDuplicator) Offer(value interface{}) {
 	if ch.debug {
 		fmt.Println("offering to transfer", ch.debugName)
 	}
-	if ch.copy && reflect.TypeOf(value).Kind() == reflect.Ptr {
+	if ch.copy && (reflect.TypeOf(value).Kind() == reflect.Ptr || reflect.TypeOf(value).Kind() == reflect.Slice) {
 		newVal := deepcopy.Copy(value)
 		//pass that pointer down the transfer line
 		if ch.debug {
 			str, _ := json.Marshal(newVal)
-			fmt.Println("offering copy to trasfer=", ch.debugName, "value=", string(str))
+			fmt.Println("offering copy to transfer=", ch.debugName, "value=", string(str))
 		}
 		ch.transfer <- newVal
 	} else {

@@ -27,9 +27,9 @@ var (
 )
 
 func initLedgerHistory() {
-	tx, err := ts.Begin()
+	tx, err := db.Begin()
 	if err != nil {
-		ts.Close()
+		db.Close()
 		panic("could not begin portfolio init: " + err.Error())
 	}
 	_, err = tx.Exec(ledgerHistoryTableCreateStatement)
@@ -37,7 +37,7 @@ func initLedgerHistory() {
 
 	}
 	tx.Commit()
-	tx, err = ts.Begin()
+	tx, err = db.Begin()
 	_, err = tx.Exec(ledgerHistoryTSInit)
 	if err != nil {
 
@@ -46,9 +46,9 @@ func initLedgerHistory() {
 }
 
 func writeLedgerHistory(entry *ledger.Entry) {
-	tx, err := ts.Begin()
+	tx, err := db.Begin()
 	if err != nil {
-		ts.Close()
+		db.Close()
 		panic("could not begin portfolio init: " + err.Error())
 	}
 	_, err = tx.Exec(ledgerHistoryTableUpdateInsert, entry.Uuid, entry.PortfolioId, entry.StockId, entry.Amount)

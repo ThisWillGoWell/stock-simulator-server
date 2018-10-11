@@ -3,6 +3,8 @@ package ledger
 import (
 	"fmt"
 
+	"github.com/stock-simulator-server/src/record"
+
 	"github.com/stock-simulator-server/src/change"
 
 	"github.com/stock-simulator-server/src/wires"
@@ -30,13 +32,13 @@ They are stored in two maps
 2) given a portfolio uuid, get all stocks it owns
 */
 type Entry struct {
-	Lock            *lock.Lock                    `json:"-"`
-	Uuid            string                        `json:"uuid"`
-	PortfolioId     string                        `json:"portfolio_id"`
-	StockId         string                        `json:"stock_id"`
-	Amount          int64                         `json:"amount" change:"-"`
-	InvestmentValue int64                         `json:"investment_value" change:"-"`
-	UpdateChannel   *duplicator.ChannelDuplicator `json:"-"`
+	Lock          *lock.Lock                    `json:"-"`
+	Uuid          string                        `json:"uuid"`
+	PortfolioId   string                        `json:"portfolio_id"`
+	StockId       string                        `json:"stock_id"`
+	Amount        int64                         `json:"amount" change:"-"`
+	UpdateChannel *duplicator.ChannelDuplicator `json:"-"`
+	RecordBookId  string                        `json:"record_book"`
 }
 
 /**
@@ -49,24 +51,25 @@ func NewLedgerEntry(portfolioId, stockId string, lockAcquired bool) *Entry {
 		defer EntriesLock.Release()
 	}
 	uuid := utils.SerialUuid()
+	recordId := utils.SerialUuid()
 
-	return MakeLedgerEntry(uuid, portfolioId, stockId, 0, 0)
+	return MakeLedgerEntry(uuid, portfolioId, stockId, recordId, 0)
 }
 
 /**
 Make a Ledger
 */
-func MakeLedgerEntry(uuid, portfolioId, stockId string, amount, investmentVal int64) *Entry {
+func MakeLedgerEntry(uuid, portfolioId, stockId, recordId string, amount int64) *Entry {
 
 	entry := &Entry{
-		Uuid:            uuid,
-		PortfolioId:     portfolioId,
-		Amount:          amount,
-		InvestmentValue: investmentVal,
-		StockId:         stockId,
-		UpdateChannel:   duplicator.MakeDuplicator(fmt.Sprintf("LedgerEntry-%s", uuid)),
+		Uuid:          uuid,
+		PortfolioId:   portfolioId,
+		Amount:        amount,
+		StockId:       stockId,
+		RecordBookId:  recordId,
+		UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("LedgerEntry-%s", uuid)),
 	}
-
+	record.MakeBook(recordId, uuid)
 	Entries[uuid] = entry
 	if EntriesPortfolioStock[portfolioId] == nil {
 		EntriesPortfolioStock[portfolioId] = make(map[string]*Entry)

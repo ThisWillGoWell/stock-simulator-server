@@ -15,14 +15,14 @@ var (
 		`portfolio_id text NOT NULL,` +
 		`stock_id text NOT NULL,` +
 		`amount bigint NOT NULL,` +
-		`investment_value bigint NOT NULL, ` +
+		`record_id text NOT NULL, ` +
 		`PRIMARY KEY(uuid)` +
 		`);`
 
-	ledgerTableUpdateInsert = `INSERT into ` + ledgerTableName + `(uuid, portfolio_id, stock_id, amount, investment_value) values($1, $2, $3, $4, $5) ` +
-		`ON CONFLICT (uuid) DO UPDATE SET amount=EXCLUDED.amount, investment_value=EXCLUDED.investment_value`
+	ledgerTableUpdateInsert = `INSERT into ` + ledgerTableName + `(uuid, portfolio_id, record_id, stock_id, amount ) values($1, $2, $3, $4, $5) ` +
+		`ON CONFLICT (uuid) DO UPDATE SET amount=EXCLUDED.amount`
 
-	ledgerTableQueryStatement = "SELECT uuid, portfolio_id, stock_id, amount, investment_value FROM " + ledgerTableName + `;`
+	ledgerTableQueryStatement = "SELECT uuid, portfolio_id, stock_id, record_id,  amount FROM " + ledgerTableName + `;`
 	//getCurrentPrice()
 )
 
@@ -49,7 +49,7 @@ func writeLedger(entry *ledger.Entry) {
 		db.Close()
 		panic("could not begin ledger init" + err.Error())
 	}
-	_, err = tx.Exec(ledgerTableUpdateInsert, entry.Uuid, entry.PortfolioId, entry.StockId, entry.Amount, entry.InvestmentValue)
+	_, err = tx.Exec(ledgerTableUpdateInsert, entry.Uuid, entry.PortfolioId, entry.RecordBookId, entry.StockId, entry.Amount)
 	if err != nil {
 		tx.Rollback()
 		panic("error occurred while insert ledger in table " + err.Error())
@@ -58,21 +58,21 @@ func writeLedger(entry *ledger.Entry) {
 }
 
 func populateLedger() {
-	var uuid, portfolioId, stockId string
-	var amount, investmentVal int64
+	var uuid, portfolioId, stockId, recordId string
+	var amount int64
 
 	rows, err := db.Query(ledgerTableQueryStatement)
 	if err != nil {
-		log.Fatal("error quiering databse", err)
+		log.Fatal("error query database", err)
 		panic("could not populate portfolios: " + err.Error())
 	}
 	defer rows.Close()
 	for rows.Next() {
-		err := rows.Scan(&uuid, &portfolioId, &stockId, &amount, &investmentVal)
+		err := rows.Scan(&uuid, &portfolioId, &stockId, &recordId, &amount)
 		if err != nil {
 			log.Fatal("error in querying ledger: ", err)
 		}
-		ledger.MakeLedgerEntry(uuid, portfolioId, stockId, amount, investmentVal)
+		ledger.MakeLedgerEntry(uuid, portfolioId, stockId, recordId, amount)
 	}
 	err = rows.Err()
 	if err != nil {

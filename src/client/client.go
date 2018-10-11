@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/stock-simulator-server/src/record"
+
 	"github.com/stock-simulator-server/src/items"
 	"github.com/stock-simulator-server/src/messages"
 	"github.com/stock-simulator-server/src/sender"
@@ -103,7 +105,6 @@ Also send the success login to make sure that happens first on the login
 */
 func (client *Client) tx(sessionToken string) {
 	client.sendMessage(messages.SuccessConnect(client.user.Uuid, sessionToken, client.user.Config))
-
 	for _, v := range account.GetAllUsers() {
 		client.sendMessage(messages.NewObjectMessage(v))
 	}
@@ -120,6 +121,13 @@ func (client *Client) tx(sessionToken string) {
 		client.sendMessage(messages.NewObjectMessage(v))
 	}
 	for _, v := range items.GetItemsForUser(client.user.PortfolioId) {
+		client.sendMessage(messages.NewObjectMessage(v))
+	}
+	for _, v := range record.GetAllBooks() {
+		client.sendMessage(messages.NewObjectMessage(v))
+	}
+
+	for _, v := range record.GetAllRecords() {
 		client.sendMessage(messages.NewObjectMessage(v))
 	}
 
@@ -207,7 +215,7 @@ func (client *Client) processTradeMessage(baseMessage *messages.BaseMessage) {
 	po := order.MakePurchaseOrder(tradeMessage.StockId, client.user.PortfolioId, tradeMessage.Amount)
 	go func() {
 		response := <-po.ResponseChannel
-		client.user.Sender.Output.Offer(messages.BuildResponseMsg(response, baseMessage.RequestID))
+		client.sendMessage(messages.BuildResponseMsg(response, baseMessage.RequestID))
 	}()
 }
 
