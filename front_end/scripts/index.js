@@ -366,6 +366,7 @@ $(document).ready(function() {
   var stocksView = $("#stocks--view");
   var investorsView = $("#investors--view");
   var settingsView = $("#settings--view");
+  var researchView = $("#research--view");
   var storeView = $("#store--view");
   var currentViewName = $("#current-view");
 
@@ -394,6 +395,12 @@ $(document).ready(function() {
           allViews.removeClass("active");
           investorsView.addClass("active");
           currentViewName[0].innerHTML = "Investors";
+          break;
+
+          case "research":
+          allViews.removeClass("active");
+          researchView.addClass("active");
+          currentViewName[0].innerHTML = "Research";
           break;
 
           case "settings":
