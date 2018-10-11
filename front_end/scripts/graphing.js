@@ -129,3 +129,8 @@ function DrawLineGraph(location, data, id) {
 	// 	.text('$');
 
 };
+
+$('#select-timeframe').selectize({
+    create: true,
+    sortField: 'text'
+});
