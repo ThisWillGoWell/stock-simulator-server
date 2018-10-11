@@ -2,195 +2,87 @@
   "stocks": {
     "CHUNT": {
       "name": "Slut Hut",
-      "change": "1s"
+      "change": "4s"
     },
-    "ABBV": {
-      "name": "AbbVie Inc.",
-      "change": "10s"
+    "KING": {
+      "name": "Paddle King",
+      "change": "4s"
     },
-    "ABT": {
-      "name": "Abbott Laboratories",
-      "change": "10s"
+    "MSTD": {
+      "name": "Mistwood",
+      "change": "4s"
     },
-    "ACN": {
-      "name": "Accenture plc",
-      "change": "10s"
+    "RPISD": {
+      "name": "Randy Pissman Decals",
+      "change": "4s"
     },
-    "AGN": {
-      "name": "Allergan plc",
-      "change": "10s"
+    "RVRB": {
+      "name": "Riva Boi",
+      "change": "4s"
     },
-    "AIG": {
-      "name": "American International Group Inc.",
-      "change": "10s"
+    "OSRS": {
+      "name": "Runescape",
+      "change": "4s"
     },
-    "ALL": {
-      "name": "Allstate Corp.",
-      "change": "10s"
+    "OW": {
+      "name": "Overwatch",
+      "change": "4s"
     },
-    "AMGN": {
-      "name": "Amgen Inc.",
-      "change": "10s"
+    "MRKT": {
+      "name": "Beach Market",
+      "change": "4s"
     },
-    "AMZN": {
-      "name": "Amazon.com",
-      "change": "10s"
+    "GWEN": {
+      "name": "Grandmas's Kitchen",
+      "change": "4s"
     },
-    "AXP": {
-      "name": "American Express Inc.",
-      "change": "10s"
+    "GUZ": {
+      "name": "Guzman Talent Agency",
+      "change": "4s"
     },
-    "BA": {
-      "name": "Boeing Co.",
-      "change": "10s"
+    "CANDLE": {
+      "name": "Serenity by Jane",
+      "change": "4s"
     },
-    "BAC": {
-      "name": "Bank of America Corp",
-      "change": "10s"
+    "PAPER": {
+      "name": "Dunder Mifflin",
+      "change": "4s"
     },
-    "BIIB": {
-      "name": "Biogen Idec",
-      "change": "10s"
+    "VANCE": {
+      "name": "Vance Refrigeration",
+      "change": "4s"
     },
-    "BK": {
-      "name": "The Bank of New York Mellon",
-      "change": "10s"
+    "CBL": {
+      "name": "Cable Town",
+      "change": "4s"
     },
-    "BKNG": {
-      "name": "Booking Holdings",
-      "change": "10s"
+    "WONK": {
+      "name": "Willy Wonka's Chocolate",
+      "change": "4s"
     },
-    "BLK": {
-      "name": "BlackRock Inc",
-      "change": "10s"
+    "CITY": {
+      "name": "City Wok",
+      "change": "4s"
     },
-    "BMY": {
-      "name": "Bristol-Myers Squibb",
-      "change": "10s"
+    "WIPE": {
+      "name": "Hawthorne Wipes",
+      "change": "4s"
     },
-    "BRK.B": {
-      "name": "Berkshire Hathaway",
-      "change": "10s"
+    "SAND": {
+      "name": "Shirley's Sandwiches",
+      "change": "4s"
     },
     "C": {
       "name": "Citigroup Inc",
-      "change": "10s"
+      "change": "4s"
     },
-    "CAT": {
-      "name": "Caterpillar Inc",
-      "change": "10s"
+    "SCOTT": {
+      "name": "Michal Scott Paper Company",
+      "change": "4s"
     },
-    "CELG": {
-      "name": "Celgene Corp",
-      "change": "10s"
-    },
-    "CL": {
-      "name": "Colgate-Palmolive Co.",
-      "change": "10s"
-    },
-    "CMCSA": {
-      "name": "Comcast Corporation",
-      "change": "10s"
-    },
-    "COF": {
-      "name": "Capital One Financial Corp.",
-      "change": "10s"
-    },
-    "COP": {
-      "name": "ConocoPhillips",
-      "change": "10s"
-    },
-    "COST": {
-      "name": "Costco",
-      "change": "10s"
-    },
-    "CVS": {
-      "name": "CVS Health",
-      "change": "10s"
-    },
-    "CVX": {
-      "name": "Chevron",
-      "change": "10s"
-    },
-    "DHR": {
-      "name": "Danaher",
-      "change": "10s"
-    },
-    "DIS": {
-      "name": "The Walt Disney Company",
-      "change": "10s"
-    },
-    "DUK": {
-      "name": "Duke Energy",
-      "change": "10s"
-    },
-    "EMR": {
-      "name": "Emerson Electric Co.",
-      "change": "10s"
-    },
-    "EXC": {
-      "name": "Exelon",
-      "change": "10s"
-    },
-    "F": {
-      "name": "Ford Motor",
-      "change": "10s"
-    },
-    "FB": {
-      "name": "Facebook",
-      "change": "10s"
-    },
-    "FDX": {
-      "name": "FedEx",
-      "change": "10s"
-    },
-    "FOX": {
-      "name": "21st Century Fox",
-      "change": "10s"
-    },
-    "GD": {
-      "name": "General Dynamics",
-      "change": "10s"
-    },
-    "GE": {
-      "name": "General Electric Co.",
-      "change": "10s"
-    },
-    "GILD": {
-      "name": "Gilead Sciences",
-      "change": "10s"
-    },
-    "GM": {
-      "name": "General Motors",
-      "change": "10s"
-    },
-    "GOOG": {
-      "name": "Alphabet Inc",
-      "change": "10s"
-    },
-    "GOOGL": {
-      "name": "Alphabet Inc",
-      "change": "10s"
-    },
-    "GS": {
-      "name": "Goldman Sachs",
-      "change": "10s"
-    },
-    "HAL": {
-      "name": "Halliburton",
-      "change": "10s"
-    },
-    "HD": {
-      "name": "Home Depot",
-      "change": "10s"
-    },
-    "HON": {
-      "name": "Honeywell",
-      "change": "10s"
-    },
-    "IBM": {
-      "name": "International Business Machines",
-      "change": "10s"
+    "SIC": {
+      "name": "Church Of Scientology",
+      "change": "4s"
     }
   },
   "accounts": {

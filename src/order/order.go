@@ -1,26 +1,37 @@
 package order
 
 import (
+	"github.com/pkg/errors"
 	"github.com/stock-simulator-server/src/ledger"
 	"github.com/stock-simulator-server/src/level"
 	"github.com/stock-simulator-server/src/notification"
 	"github.com/stock-simulator-server/src/portfolio"
+	"github.com/stock-simulator-server/src/record"
 	"github.com/stock-simulator-server/src/valuable"
 	"github.com/stock-simulator-server/src/wires"
 )
 
 type Order interface {
-	rc() chan *Response
+	rc() chan Response
+}
+
+type Response interface {
+	response()
+	IsSuccess() bool
+	GetError() string
 }
 
 var orderChannel = make(chan Order, 30)
+
+const BaseTaxRate = 0.12
+const TradeFee = 0.03
 
 func Run() {
 	go func() {
 		for o := range orderChannel {
 			switch o.(type) {
-			case *PurchaseOrder:
-				executeTrade(o.(*PurchaseOrder))
+			case *TradeOrder:
+				executeTrade(o.(*TradeOrder))
 			case *TransferOrder:
 				executeTransfer(o.(*TransferOrder))
 			}
@@ -29,41 +40,56 @@ func Run() {
 }
 
 type TransferOrder struct {
-	ReceiverID      string         `json:"receiver"`
-	PortfolioID     string         `json:"giver"`
-	Amount          int64          `json:"amount"`
-	ResponseChannel chan *Response `json:"-"`
+	ReceiverID      string        `json:"receiver"`
+	PortfolioID     string        `json:"giver"`
+	Amount          int64         `json:"amount"`
+	ResponseChannel chan Response `json:"-"`
 }
 
-func (to *TransferOrder) rc() chan *Response { return to.ResponseChannel }
+func (to *TransferOrder) rc() chan Response { return to.ResponseChannel }
 
 /**
 Purchase order represents a single order
 */
-type PurchaseOrder struct {
-	ValuableID      string         `json:"stock_id"`
-	PortfolioID     string         `json:"portfolio"`
-	ExchangeID      string         `json:"-"`
-	Amount          int64          `json:"amount"`
-	ResponseChannel chan *Response `json:"-"`
+type TradeOrder struct {
+	ValuableID      string        `json:"stock_id"`
+	PortfolioID     string        `json:"portfolio"`
+	ExchangeID      string        `json:"-"`
+	Amount          int64         `json:"amount"`
+	ResponseChannel chan Response `json:"-"`
 }
 
-func (po *PurchaseOrder) rc() chan *Response { return po.ResponseChannel }
+func (po *TradeOrder) rc() chan Response { return po.ResponseChannel }
 
-type Response struct {
-	Order   Order  `json:"order"`
-	Success bool   `json:"success"`
-	Err     string `json:"err,omitempty"`
+type BasicResponse struct {
+	Order        Order   `json:"order"`
+	OrderDetails Details `json:"details,omitempty"`
+	Success      bool    `json:"success"`
+	Err          string  `json:"err,omitempty"`
+}
+
+func (*BasicResponse) response()           {}
+func (br *BasicResponse) IsSuccess() bool  { return br.Success }
+func (br *BasicResponse) GetError() string { return br.Err }
+
+type Details struct {
+	SharePrice int64 `json:"share_price"`
+	ShareCount int64 `json:"share_count"`
+	ShareValue int64 `json:"shares_value"`
+	Tax        int64 `json:"tax"`
+	Fees       int64 `json:"fees"`
+	Bonus      int64 `json:"bonus"`
+	Result     int64 `json:"result"`
 }
 
 // note this does not validate if the stock exists or not, that's done in the trade() function
-func MakePurchaseOrder(valuableID, portfolioUUID string, amount int64) *PurchaseOrder {
-	po := &PurchaseOrder{
+func MakePurchaseOrder(valuableID, portfolioUUID string, amount int64) *TradeOrder {
+	po := &TradeOrder{
 		//ExchangeID:      exchangeID,
 		ValuableID:      valuableID,
 		PortfolioID:     portfolioUUID,
 		Amount:          amount,
-		ResponseChannel: make(chan *Response, 1),
+		ResponseChannel: make(chan Response, 1),
 	}
 	orderChannel <- po
 	return po
@@ -74,20 +100,21 @@ func MakeTransferOrder(giver, receiver string, amount int64) *TransferOrder {
 		PortfolioID:     giver,
 		ReceiverID:      receiver,
 		Amount:          amount,
-		ResponseChannel: make(chan *Response, 1),
+		ResponseChannel: make(chan Response, 1),
 	}
 	orderChannel <- to
 	return to
 }
 
-func successOrder(o Order) {
-	o.rc() <- &Response{
-		Order:   o,
-		Success: true}
+func successOrder(o Order, details Details) {
+	o.rc() <- &BasicResponse{
+		OrderDetails: details,
+		Order:        o,
+		Success:      true}
 }
 
 func failureOrder(msg string, o Order) {
-	o.rc() <- &Response{
+	o.rc() <- &BasicResponse{
 		Order:   o,
 		Success: false,
 		Err:     msg,
@@ -98,7 +125,7 @@ func failureOrder(msg string, o Order) {
 // Purchase Order contains a reference to the order
 // use failureTrade() and successTrade to send response down channel
 // Don't need to a lock around this since the portfolio holds it for that trade
-func executeTrade(o *PurchaseOrder) {
+func executeTrade(o *TradeOrder) {
 	//get the stock if it exists
 	//valuable.ValuablesLock.EnableDebug()
 	//ledger.EntriesLock.EnableDebug()
@@ -126,7 +153,7 @@ func executeTrade(o *PurchaseOrder) {
 	port.Lock.Acquire("trade")
 	defer port.Lock.Release()
 	ledgerEntry, ledgerExists := ledger.EntriesStockPortfolio[o.ValuableID][o.PortfolioID]
-
+	details := Details{}
 	if o.Amount > 0 {
 		//we have a buy
 		// are there enough shares
@@ -163,12 +190,11 @@ func executeTrade(o *PurchaseOrder) {
 		}
 		value.OpenShares -= o.Amount
 		// Update the portfolio with the new ledgerEntry
-		port.Wallet -= costOfTrade
-		ledgerEntry.InvestmentValue += costOfTrade
+		details = calculateBuyDetails(o, value, port)
+		port.Wallet += details.Result
 		//add the holder amount
 		ledgerEntry.Amount += o.Amount
-
-		successOrder(o)
+		successOrder(o, details)
 	} else {
 		if !ledgerExists {
 			failureOrder("not enough shares", o)
@@ -189,25 +215,82 @@ func executeTrade(o *PurchaseOrder) {
 		value.OpenShares += amount
 		// remove from ledger
 		ledgerEntry.Amount -= amount
-		costOfTrade := amount * value.GetValue()
-		port.Wallet += costOfTrade
-		ledgerEntry.InvestmentValue -= costOfTrade
-		if ledgerEntry.Amount == 0 {
-			ledgerEntry.InvestmentValue = 0
-		}
-		successOrder(o)
+		details := calculateSellDetails(o, value, port, ledgerEntry.RecordBookId)
+		port.Wallet += details.Result
+		successOrder(o, details)
 	}
 	if !ledgerExists {
 		wires.LedgerUpdate.Offer(ledgerEntry)
 		port.UpdateInput.RegisterInput(value.UpdateChannel.GetBufferedOutput(10))
-
 	} else {
 		ledgerEntry.UpdateChannel.Offer(ledgerEntry)
-		// todo remove also
 	}
+	record.NewRecord(ledgerEntry.RecordBookId, details.ShareCount, details.SharePrice, details.Tax, details.Fees, details.Bonus)
 	notification.DoneTradeNotification(port.UserUUID, value.Uuid, o.Amount)
 	go value.Update()
 	go port.Update()
+}
+
+func CalculateDetails(portfolioUuid, valuableUuid string, order *TradeOrder) (Details, error) {
+	v, ok := valuable.Stocks[valuableUuid]
+	if !ok {
+		return Details{}, errors.New("valuable id not found")
+	}
+	port, ok := portfolio.Portfolios[portfolioUuid]
+	if !ok {
+		return Details{}, errors.New("portfolio id not found")
+	}
+	v.GetLock().Acquire("calculate-order-details")
+	defer v.GetLock().Release()
+	port.Lock.Acquire("calculate-order-details")
+	defer port.Lock.Release()
+	var ledgerEntry *ledger.Entry
+	recordUuid := ""
+
+	if order.Amount > 0 {
+		return calculateBuyDetails(order, v, port), nil
+	} else {
+		ledgerPortfolio, ledgerExists := ledger.EntriesPortfolioStock[portfolioUuid]
+		if ledgerExists {
+			ledgerEntry, ledgerExists = ledgerPortfolio[v.Uuid]
+		}
+		if !ledgerExists {
+			return Details{}, errors.New("can't calculate sell order for ledger that does not exist")
+		}
+		recordUuid = ledgerEntry.RecordBookId
+		return calculateSellDetails(order, v, port, recordUuid), nil
+	}
+}
+
+func calculateBuyDetails(order *TradeOrder, v *valuable.Stock, port *portfolio.Portfolio) Details {
+	return Details{
+		SharePrice: v.CurrentPrice,
+		ShareCount: order.Amount,
+		ShareValue: v.CurrentPrice * order.Amount,
+		Tax:        0,
+		Fees:       0,
+		Bonus:      0,
+		Result:     v.CurrentPrice * order.Amount * -1,
+	}
+}
+
+func calculateSellDetails(order *TradeOrder, v *valuable.Stock, port *portfolio.Portfolio, recordUuid string) Details {
+	d := Details{
+		SharePrice: v.CurrentPrice,
+		ShareCount: order.Amount,
+		ShareValue: v.CurrentPrice * order.Amount * -1,
+	}
+	principle := record.GetPrinciple(recordUuid, order.Amount)
+	pbt := d.ShareValue - principle
+	taxes := 0.0
+	if pbt > 0 {
+		taxes = float64(pbt) * BaseTaxRate
+	}
+	fees := int64(float64(d.ShareValue) * TradeFee)
+	d.Tax = int64(taxes)
+	d.Fees = int64(fees)
+	d.Result = pbt - d.Tax - d.Fees + d.Bonus
+	return d
 }
 
 func executeTransfer(o *TransferOrder) {
@@ -244,7 +327,7 @@ func executeTransfer(o *TransferOrder) {
 	}
 	receiver.Wallet += o.Amount
 	port.Wallet -= o.Amount
-	successOrder(o)
+	successOrder(o, Details{})
 	notification.SendMoneyTradeNotification(port.UserUUID, receiver.UserUUID, o.Amount)
 	go port.Update()
 	go receiver.Update()

@@ -27,7 +27,7 @@ var (
 )
 
 func initPortfolioHistory() {
-	tx, err := ts.Begin()
+	tx, err := db.Begin()
 	if err != nil {
 		ts.Close()
 		panic("could not begin portfolio init: " + err.Error())
@@ -37,7 +37,7 @@ func initPortfolioHistory() {
 
 	}
 	tx.Commit()
-	tx, err = ts.Begin()
+	tx, err = db.Begin()
 	_, err = tx.Exec(portfolioHistoryTSInit)
 	if err != nil {
 
@@ -46,7 +46,7 @@ func initPortfolioHistory() {
 }
 
 func writePortfolioHistory(port *portfolio.Portfolio) {
-	tx, err := ts.Begin()
+	tx, err := db.Begin()
 	if err != nil {
 		ts.Close()
 		panic("could not begin portfolio history write init: " + err.Error())

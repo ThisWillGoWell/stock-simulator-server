@@ -6,6 +6,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/stock-simulator-server/src/record"
+
 	"github.com/stock-simulator-server/src/items"
 
 	"github.com/stock-simulator-server/src/notification"
@@ -45,23 +47,6 @@ func InitDatabase(disableDbWrite bool) {
 		<-time.After(time.Second)
 	}
 
-	conStr := os.Getenv("TS_URI")
-	timeseriers, err := sql.Open("postgres", conStr)
-	if err != nil {
-		panic("could not connect to database: " + err.Error())
-	}
-
-	ts = timeseriers
-
-	for i := 0; i < 10; i++ {
-		err := timeseriers.Ping()
-		if err == nil {
-			break
-		}
-		fmt.Println("waitng for connection to ts")
-		<-time.After(time.Second)
-	}
-
 	initLedger()
 	initStocks()
 	initPortfolio()
@@ -71,6 +56,7 @@ func InitDatabase(disableDbWrite bool) {
 	initItems()
 	initLedgerHistory()
 	initAccount()
+	initRecordHistory()
 
 	populateLedger()
 	populateStocks()
@@ -78,6 +64,7 @@ func InitDatabase(disableDbWrite bool) {
 	populateUsers()
 	populateItems()
 	populateNotification()
+	populateRecords()
 
 	for _, l := range ledger.Entries {
 		port := portfolio.Portfolios[l.PortfolioId]
@@ -170,6 +157,13 @@ func databaseWriter() {
 		for val := range write {
 			writeStock(val.(*valuable.Stock))
 			writeStockHistory(val.(*valuable.Stock))
+		}
+	}()
+
+	go func() {
+		recordsWrite := wires.RecordsNewObject.GetBufferedOutput(1000)
+		for val := range recordsWrite {
+			writeRecordHistory(val.(*record.Record))
 		}
 	}()
 

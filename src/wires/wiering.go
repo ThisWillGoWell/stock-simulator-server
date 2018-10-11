@@ -24,6 +24,10 @@ var NotificationUpdate = duplicator.MakeDuplicator("notification-entries-update"
 var NotificationNewObject = duplicator.MakeDuplicator("notification-new")
 var NotificationsDelete = duplicator.MakeDuplicator("notification-delete")
 
+var RecordsNewObject = duplicator.MakeDuplicator("records-new")
+var BookNewObject = duplicator.MakeDuplicator("book-new")
+var BookUpdate = duplicator.MakeDuplicator("book-update")
+
 func ConnectWires() {
 	// Enable Copy Mode on all the global new input channels
 	UsersNewObject.EnableCopyMode()
@@ -31,8 +35,10 @@ func ConnectWires() {
 	PortfolioNewObject.EnableCopyMode()
 	LedgerNewObject.EnableCopyMode()
 	NotificationNewObject.EnableCopyMode()
-
+	BookNewObject.EnableCopyMode()
 	// enable copy mode only account, the rest have copy mode on a channel before
 	UsersUpdate.EnableCopyMode()
+	ItemsUpdate.EnableCopyMode()
+	BookUpdate.EnableCopyMode()
 
 }

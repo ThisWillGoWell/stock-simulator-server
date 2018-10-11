@@ -158,6 +158,7 @@ func (user *User) SetConfig(config map[string]interface{}) {
 	user.Config = config
 	configBytes, _ := json.Marshal(config)
 	user.ConfigStr = string(configBytes)
+	wires.UsersUpdate.Offer(user)
 }
 
 func (user *User) SetPassword(pass string) error {
@@ -166,6 +167,7 @@ func (user *User) SetPassword(pass string) error {
 	}
 	hashedPassword := hashAndSalt(pass)
 	user.Password = hashedPassword
+	wires.UsersUpdate.Offer(user)
 	return nil
 }
 

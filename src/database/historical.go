@@ -60,7 +60,7 @@ func MakeHistoryTimeQuery(table, uuid, timeLength, field, intervalLength string)
 func makeHistoryTimeQuery(query *historicalTimeQuery) ([][]interface{}, error) {
 	//rows, err := tx.Query("SELECT time_bucket('60 seconds', time) AS tb, AVG(current_price) AS val FROM stocks_history  WHERE time > NOW() - interval '600 seconds' and uuid='E30B70AD77B26C' GROUP BY tb  ORDER BY tb DESC")
 	querySmt := fmt.Sprintf(historyTableTimeQuery, query.intervalLength, query.field, query.table, query.timeLength)
-	rows, err := ts.Query(querySmt, query.uuid)
+	rows, err := db.Query(querySmt, query.uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func MakeHistoryLimitQuery(table, uuid, field string, limit int) ([][]interface{
 
 func makeHistoricalLimitQuery(query *historicalLimitQuery) ([][]interface{}, error) {
 	querySmt := fmt.Sprintf(historyTableLimitQuery, query.field, query.table)
-	rows, err := ts.Query(querySmt, query.uuid, query.limit)
+	rows, err := db.Query(querySmt, query.uuid, query.limit)
 	defer rows.Close()
 	if err != nil {
 		return nil, err

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-docker-compose stop ts db server
-docker-compose rm -f ts db
+docker-compose stop db server
+docker-compose rm -f db
 docker volume rm -f stocksimulatorserver_db_volume stocksimulatorserver_ts_volume
-docker-compose up -d ts db
+docker-compose up -d db
