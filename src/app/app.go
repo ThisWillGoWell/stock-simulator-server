@@ -32,6 +32,7 @@ type ConfigJson struct {
 }
 
 func LoadConfig() {
+	fmt.Println("loading")
 	configFilePath := os.Getenv("CONFIG_FILE")
 	dat, err := ioutil.ReadFile(configFilePath)
 	if err != nil {
@@ -65,5 +66,6 @@ func LoadConfig() {
 			<-time.After(100 * time.Millisecond)
 		}
 	}
+	fmt.Println("loaded")
 
 }
