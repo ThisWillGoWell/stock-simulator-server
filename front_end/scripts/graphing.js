@@ -1,8 +1,14 @@
 
 function formatData(data) {
 
+	// Setting local time			
+	Object.values(data).forEach(function(d) {
+		d.forEach(function(i) {
+			i.time = new Date(i.time);
+		})
+	})
 	// if networth add points in to make a step graph
-	return data.data;
+	return data;
 	
 };
 
@@ -10,7 +16,7 @@ function formatData(data) {
 //			tags can pass the type of data being sent through so more data structuring can be done here like min an maxs 
 function DrawLineGraph(location, data, id) {
 	// Pulling out data, use tags to change data if need
-	var dat = formatData(data);
+	var dat = formatData(data.data);
 	var tags = data.tags;
 
 	// logging remove later
@@ -33,16 +39,14 @@ function DrawLineGraph(location, data, id) {
 		.attr('width', width)
 		.attr('height', height)
 		.append("g");
-
+	
 	let minTime = new Date('3000 Jan 1');
-	let maxTime = new Date();
+	let maxTime = new Date('1999 Jan 1');
 	let maxValue = 0;
 
 	for (var line_key in dat) {
 
 		dat[line_key].forEach(function(d) {
-			// formatting time IMPORTANT!
-			d.time = new Date(d.time.replace("T"," ").replace("Z", ""));
 			if (maxValue < d.value) {
 				maxValue = d.value;
 			}
