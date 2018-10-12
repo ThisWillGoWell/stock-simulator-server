@@ -76,6 +76,8 @@ func (baseMessage *BaseMessage) UnmarshalJSON(data []byte) error {
 		message = &ItemMessage{}
 	case LevelUpAction:
 		message = &LevelUpMessage{}
+	case ProspectTradeAction:
+		message = &TradeMessage{}
 	}
 
 	str, _ := json.Marshal(obj["msg"])

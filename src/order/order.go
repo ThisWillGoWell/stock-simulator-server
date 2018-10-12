@@ -1,7 +1,6 @@
 package order
 
 import (
-	"github.com/pkg/errors"
 	"github.com/stock-simulator-server/src/ledger"
 	"github.com/stock-simulator-server/src/level"
 	"github.com/stock-simulator-server/src/notification"
@@ -215,7 +214,7 @@ func executeTrade(o *TradeOrder) {
 		value.OpenShares += amount
 		// remove from ledger
 		ledgerEntry.Amount -= amount
-		details := calculateSellDetails(o, value, port, ledgerEntry.RecordBookId)
+		details = calculateSellDetails(o, value, port, ledgerEntry.RecordBookId)
 		port.Wallet += details.Result
 		successOrder(o, details)
 	}
@@ -231,14 +230,23 @@ func executeTrade(o *TradeOrder) {
 	go port.Update()
 }
 
-func CalculateDetails(portfolioUuid, valuableUuid string, order *TradeOrder) (Details, error) {
+func CalculateDetails(portfolioUuid, valuableUuid string, amount int64) *BasicResponse {
+	order := &TradeOrder{
+		ValuableID:  valuableUuid,
+		PortfolioID: portfolioUuid,
+		Amount:      amount,
+	}
+	response := &BasicResponse{Order: order}
+
 	v, ok := valuable.Stocks[valuableUuid]
 	if !ok {
-		return Details{}, errors.New("valuable id not found")
+		response.Err = "valuable id not found"
+		return response
 	}
 	port, ok := portfolio.Portfolios[portfolioUuid]
 	if !ok {
-		return Details{}, errors.New("portfolio id not found")
+		response.Err = "portfolio id not found"
+		return response
 	}
 	v.GetLock().Acquire("calculate-order-details")
 	defer v.GetLock().Release()
@@ -248,18 +256,22 @@ func CalculateDetails(portfolioUuid, valuableUuid string, order *TradeOrder) (De
 	recordUuid := ""
 
 	if order.Amount > 0 {
-		return calculateBuyDetails(order, v, port), nil
+		response.Success = true
+		response.OrderDetails = calculateBuyDetails(order, v, port)
 	} else {
 		ledgerPortfolio, ledgerExists := ledger.EntriesPortfolioStock[portfolioUuid]
 		if ledgerExists {
 			ledgerEntry, ledgerExists = ledgerPortfolio[v.Uuid]
 		}
 		if !ledgerExists {
-			return Details{}, errors.New("can't calculate sell order for ledger that does not exist")
+			response.Err = "can't calculate sell order for ledger that does not exist"
+		} else {
+			recordUuid = ledgerEntry.RecordBookId
+			response.Success = true
+			response.OrderDetails = calculateSellDetails(order, v, port, recordUuid)
 		}
-		recordUuid = ledgerEntry.RecordBookId
-		return calculateSellDetails(order, v, port, recordUuid), nil
 	}
+	return response
 }
 
 func calculateBuyDetails(order *TradeOrder, v *valuable.Stock, port *portfolio.Portfolio) Details {

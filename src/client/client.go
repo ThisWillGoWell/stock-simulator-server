@@ -176,6 +176,8 @@ func (client *Client) rx() {
 			client.processLevelUpAction(message)
 		case messages.DeleteAction:
 			client.processDeleteAction(message)
+		case messages.ProspectTradeAction:
+			client.processProspectMessage(message)
 		default:
 			client.sendMessage(messages.NewErrorMessage("action is not known"))
 		}
@@ -331,4 +333,11 @@ func (client *Client) processDeleteAction(baseMessage *messages.BaseMessage) {
 		err = notification.DeleteNotification(deleteMsg.Uuid, client.user.Uuid)
 	}
 	client.sendMessage(messages.BuildDeleteResponseMsg(baseMessage.RequestID, err))
+}
+
+func (client *Client) processProspectMessage(baseMessage *messages.BaseMessage) {
+	prospectMessage := baseMessage.Msg.(*messages.TradeMessage)
+	response := order.CalculateDetails(client.user.PortfolioId, prospectMessage.StockId, prospectMessage.Amount)
+	client.sendMessage(messages.BuildResponseMsg(response, baseMessage.RequestID))
+
 }
