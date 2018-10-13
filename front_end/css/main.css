@@ -2355,7 +2355,7 @@ svg {
 
 .graph-annotation {
     font-size: 16px;
-    cursor: crosshair;
+    cursor: move;
 }
 
 .graph-grid line {
