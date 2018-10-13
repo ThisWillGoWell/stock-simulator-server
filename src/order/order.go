@@ -224,7 +224,7 @@ func executeTrade(o *TradeOrder) {
 	} else {
 		ledgerEntry.UpdateChannel.Offer(ledgerEntry)
 	}
-	record.NewRecord(ledgerEntry.RecordBookId, details.ShareCount, details.SharePrice, details.Tax, details.Fees, details.Bonus)
+	record.NewRecord(ledgerEntry.RecordBookId, details.ShareCount, details.SharePrice, details.Tax, details.Fees, details.Bonus, details.Result)
 	notification.DoneTradeNotification(port.UserUUID, value.Uuid, o.Amount)
 	go value.Update()
 	go port.Update()
@@ -292,7 +292,7 @@ func calculateSellDetails(order *TradeOrder, v *valuable.Stock, port *portfolio.
 		ShareCount: order.Amount,
 		ShareValue: v.CurrentPrice * order.Amount * -1,
 	}
-	principle := record.GetPrinciple(recordUuid, order.Amount)
+	principle := record.GetPrinciple(recordUuid, order.Amount*-1)
 	pbt := d.ShareValue - principle
 	taxes := 0.0
 	if pbt > 0 {

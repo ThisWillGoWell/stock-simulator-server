@@ -17,7 +17,7 @@ var books = make(map[string]*Book)
 var records = make(map[string]*Record)
 
 const EntryIdentifiableType = "record_entry"
-const BookIdentifiableType = "record_Book"
+const BookIdentifiableType = "record_book"
 const BuyRecordType = "buy"
 const SellRecordType = "sell"
 
@@ -40,15 +40,15 @@ type ActiveBuyRecord struct {
 }
 
 type Record struct {
-	Uuid       string    `json:"uuid"`
-	SharePrice int64     `json:"share_price"`
-	Amount     int64     `json:"amount"`
-	Time       time.Time `json:"time"`
-	RecordUuid string    `json:"record_uuid"`
-	Fees       int64     `json:"fee"`
-	Taxes      int64     `json:"taxes"`
-	Bonus      int64     `json:"bonus"`
-	Result     int64     `json:"result"`
+	Uuid           string    `json:"uuid"`
+	SharePrice     int64     `json:"share_price"`
+	ShareCount     int64     `json:"share_count"`
+	Time           time.Time `json:"time"`
+	RecordBookUuid string    `json:"book_uuid"`
+	Fees           int64     `json:"fee"`
+	Taxes          int64     `json:"taxes"`
+	Bonus          int64     `json:"bonus"`
+	Result         int64     `json:"result"`
 }
 
 //func (br *BuyRecord) GetTime() time.Time {
@@ -61,12 +61,12 @@ type Record struct {
 //type SellRecord struct {
 //	Uuid       string `json:"uuid"`
 //	SharePrice int64  `json:"share_price"`
-//	Amount     int64  `json:"amount"`
+//	ShareCount     int64  `json:"amount"`
 //}
 
-func NewRecord(recordBookUuid string, amount, sharePrice, taxes, fees, bonus int64) {
+func NewRecord(recordBookUuid string, amount, sharePrice, taxes, fees, bonus, result int64) {
 	uuid := utils.SerialUuid()
-	MakeRecord(uuid, recordBookUuid, amount, sharePrice, taxes, fees, bonus, time.Now())
+	MakeRecord(uuid, recordBookUuid, amount, sharePrice, taxes, fees, bonus, result, time.Now())
 	//sender.SendNewObject(portfolioUuid, record)
 }
 
@@ -80,7 +80,7 @@ func MakeBook(uuid, ledgerUuid string) {
 	change.RegisterPublicChangeDetect(books[uuid])
 }
 
-func MakeRecord(uuid, recordBookUuid string, amount, sharePrice, taxes, fees, bonus int64, t time.Time) *Record {
+func MakeRecord(uuid, recordBookUuid string, amount, sharePrice, taxes, fees, bonus, result int64, t time.Time) *Record {
 	recordsLock.Acquire("new-record")
 	defer recordsLock.Release()
 
@@ -89,14 +89,15 @@ func MakeRecord(uuid, recordBookUuid string, amount, sharePrice, taxes, fees, bo
 		panic("record book not found " + recordBookUuid)
 	}
 	newRecord := &Record{
-		Uuid:       uuid,
-		SharePrice: sharePrice,
-		Time:       t,
-		Amount:     amount,
-		RecordUuid: recordBookUuid,
-		Fees:       fees,
-		Result:     amount*sharePrice - fees + bonus,
-		Taxes:      taxes,
+		Uuid:           uuid,
+		SharePrice:     sharePrice,
+		Time:           t,
+		ShareCount:     amount,
+		RecordBookUuid: recordBookUuid,
+		Fees:           fees,
+		Bonus:          bonus,
+		Result:         result,
+		Taxes:          taxes,
 	}
 	records[uuid] = newRecord
 	if amount > 0 {
@@ -122,8 +123,8 @@ func walkRecords(book *Book, shares int64, mark bool) int64 {
 		removedShares := activeBuyRecord.AmountLeft
 
 		if activeBuyRecord.AmountLeft >= sharesLeft {
-			sharesLeft = 0
 			removedShares = sharesLeft
+			sharesLeft = 0
 		} else {
 			sharesLeft = sharesLeft - activeBuyRecord.AmountLeft
 		}
