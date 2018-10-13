@@ -119,14 +119,15 @@ func walkRecords(book *Book, shares int64, mark bool) int64 {
 		lastAmountCleared = sharesLeft
 		activeBuyRecord := book.ActiveBuyRecords[amountCleared]
 		record := records[activeBuyRecord.RecordUuid]
-
-		totalCost += activeBuyRecord.AmountLeft * record.SharePrice
+		removedShares := activeBuyRecord.AmountLeft
 
 		if activeBuyRecord.AmountLeft >= sharesLeft {
 			sharesLeft = 0
+			removedShares = sharesLeft
 		} else {
 			sharesLeft = sharesLeft - activeBuyRecord.AmountLeft
 		}
+		totalCost += removedShares * record.SharePrice
 
 		if sharesLeft != 0 {
 			amountCleared += 1
