@@ -2347,6 +2347,27 @@ table thead.table-top-bar tr th:hover{
 }
 
 
+/* Graphing */
+
 svg {
     background-color: #FFF;
+}
+
+.graph-annotation {
+    font-size: 16px;
+    cursor: crosshair;
+}
+
+.graph-grid line {
+  stroke: lightgrey;
+  stroke-opacity: 0.7;
+  stroke-dasharray: 5;
+  shape-rendering: crispEdges;
+}
+
+.grid path {
+    stroke-width: 0;
+}
+.domain {
+    stroke: none;
 }
