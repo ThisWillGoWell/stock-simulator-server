@@ -71,110 +71,116 @@ function load_modal_vues() {
     buySellModal = new Vue({
         el: "#modal--container",
         data: {
-        showModal: false,
-        buySellAmount: 0,
-        isBuying: true,
-        stock_uuid: "OSRS"
+            showModal: false,
+            buySellAmount: 0,
+            isBuying: true,
+            stock_uuid: "OSRS",
+            prospectiveCash: 0,
         },
         methods: {
-        toPrice: formatPrice,
-        addAmount: function(amt) {
-            buySellModal.buySellAmount += amt;
-        },
-        clearAmount: function() {
-            buySellModal.buySellAmount = 0;
-        },
-        determineMax: function() {
-            if (buySellModal.isBuying) {
-            buySellModal.buySellAmount = buySellModal.stock.open_shares;
-            } else {
-            //determine current users holdings
-            let stock = vm_dash_tab.currUserStocks.filter(
-                d => d.stock_id === buySellModal.stock_uuid
-            )[0];
-            if (stock !== undefined) {
-                buySellModal.buySellAmount = stock.amount;
-            } else {
+            toPrice: formatPrice,
+            addAmount: function(amt) {
+                buySellModal.buySellAmount += amt;
+            },
+            clearAmount: function() {
                 buySellModal.buySellAmount = 0;
-            }
-            }
-        },
-        setIsBuying: function(bool) {
-            // Change buying or selling
-            buySellModal.isBuying = bool;
+            },
+            determineMax: function() {
+                if (buySellModal.isBuying) {
+                buySellModal.buySellAmount = buySellModal.stock.open_shares;
+                } else {
+                //determine current users holdings
+                let stock = vm_dash_tab.currUserStocks.filter(
+                    d => d.stock_id === buySellModal.stock_uuid
+                )[0];
+                if (stock !== undefined) {
+                    buySellModal.buySellAmount = stock.amount;
+                } else {
+                    buySellModal.buySellAmount = 0;
+                }
+                }
+            },
+            setIsBuying: function(bool) {
+                // Change buying or selling
+                buySellModal.isBuying = bool;
 
-            // Set styling
-            if (buySellModal.isBuying) {
-            $("#calc-btn-buy").addClass("fill");
-            $("#calc-btn-sell").removeClass("fill");
-            } else {
-            $("#calc-btn-sell").addClass("fill");
-            $("#calc-btn-buy").removeClass("fill");
+                // Set styling
+                if (buySellModal.isBuying) {
+                    $("#calc-btn-buy").addClass("fill");
+                    $("#calc-btn-sell").removeClass("fill");
+                } else {
+                    $("#calc-btn-sell").addClass("fill");
+                    $("#calc-btn-buy").removeClass("fill");
+                }
+            },
+            submitTrade: function() {
+                // Change amount depending on buy/sell
+                if (!buySellModal.isBuying) {
+                    buySellModal.buySellAmount *= -1;
+                }
+                sendTrade();
+                toggleModal();
+            },
+            closeModal: function() {
+                toggleModal();
+                buySellModal.buySellAmount = 0;
+                buySellModal.showModal = false;
+                buySellModal.isBuying = true;
             }
-        },
-        submitTrade: function() {
-            // Change amount depending on buy/sell
-            if (!buySellModal.isBuying) {
-            buySellModal.buySellAmount *= -1;
-            }
-            sendTrade();
-            toggleModal();
-        },
-        closeModal: function() {
-            toggleModal();
-            buySellModal.buySellAmount = 0;
-            buySellModal.showModal = false;
-            buySellModal.isBuying = true;
-        }
         },
         computed: {
-        stock: function() {
-            var clickedStock = Object.values(vm_stocks.stocks).filter(
-            d => d.uuid === buySellModal.stock_uuid
-            )[0];
-            return clickedStock;
-        },
-        user: function() {
-            var currUserUUID = sessionStorage.getItem("uuid");
-            if (vm_users.users[currUserUUID] !== undefined) {
-            var currUserFolioUUID = vm_users.users[currUserUUID].portfolio_uuid;
-            if (vm_portfolios.portfolios[currUserFolioUUID] !== undefined) {
-                var folio = vm_portfolios.portfolios[currUserFolioUUID];
-                folio.investments = folio.net_worth - folio.wallet;
-                return folio;
+            stock: function() {
+                var clickedStock = Object.values(vm_stocks.stocks).filter(
+                d => d.uuid === buySellModal.stock_uuid
+                )[0];
+                return clickedStock;
+            },
+            user: function() {
+                var currUserUUID = sessionStorage.getItem("uuid");
+                if (vm_users.users[currUserUUID] !== undefined) {
+                var currUserFolioUUID = vm_users.users[currUserUUID].portfolio_uuid;
+                if (vm_portfolios.portfolios[currUserFolioUUID] !== undefined) {
+                    var folio = vm_portfolios.portfolios[currUserFolioUUID];
+                    folio.investments = folio.net_worth - folio.wallet;
+                    return folio;
+                }
+                }
+                return {};
             }
-            }
-            return {};
-        }
         },
         watch: {
-        // Resetting amount if more than can be traded is selected
-        buySellAmount: function() {
-            if (buySellModal.isBuying) {
-            if (buySellModal.buySellAmount > buySellModal.stock.open_shares) {
-                buySellModal.buySellAmount = buySellModal.stock.open_shares;
-            }
-            // determine users cash and limit on purchase cost
-            let cash = buySellModal.user.wallet;
-            let purchase_val =
-                buySellModal.stock.current_price * buySellModal.buySellAmount;
-            if (purchase_val > cash) {
-                buySellModal.buySellAmount = Math.floor(
-                cash / buySellModal.stock.current_price
-                );
-            }
-            } else {
-            //determine current users holdings
-            let stock = vm_dash_tab.currUserStocks.filter(
-                d => d.stock_id == buySellModal.stock_uuid
-            )[0];
-            if (stock !== undefined) {
-                if (buySellModal.buySellAmount > stock.amount) {
-                buySellModal.buySellAmount = stock.amount;
+            // Resetting amount if more than can be traded is selected
+            buySellAmount: function() {
+                if (buySellModal.isBuying) {
+                    if (buySellModal.buySellAmount > buySellModal.stock.open_shares) {
+                        buySellModal.buySellAmount = buySellModal.stock.open_shares;
+                    }
+                    // determine users cash and limit on purchase cost
+                    let cash = buySellModal.user.wallet;
+                    let purchase_val =
+                        buySellModal.stock.current_price * buySellModal.buySellAmount;
+                    if (purchase_val > cash) {
+                        buySellModal.buySellAmount = Math.floor(
+                        cash / buySellModal.stock.current_price
+                        );
+                    }
+                } else {
+                    //determine current users holdings
+                    let stock = vm_dash_tab.currUserStocks.filter(
+                        d => d.stock_id == buySellModal.stock_uuid
+                    )[0];
+                    if (stock !== undefined) {
+                        if (buySellModal.buySellAmount > stock.amount) {
+                            buySellModal.buySellAmount = stock.amount;
+                        }
+                    }
                 }
+                // do a prospectiveTrade
+                console.log("DO PROSPECTIVE TRADE");
+                console.log(buySellModal.stock_uuid)
+                console.log(buySellModal.buySellAmount)
+                prospectiveTrade(buySellModal.stock_uuid, buySellModal.buySellAmount);
             }
-            }
-        }
         }
     });
 
@@ -211,12 +217,12 @@ function load_modal_vues() {
         }
         },
         watch: {
-        recipient_name: function() {
-            console.log("WEATCHERS GOING")
-            $('#cash-transfer-target').val(transferModal.recipient_name);
-            console.log(transferModal.recipient_name)
-            $('#cash-transfer-target').val();
-        }
+            recipient_name: function() {
+                console.log("WEATCHERS GOING")
+                $('#cash-transfer-target').val(transferModal.recipient_name);
+                console.log(transferModal.recipient_name)
+                $('#cash-transfer-target').val();
+            }
         }
     });
 
