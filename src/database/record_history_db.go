@@ -54,7 +54,7 @@ func writeRecordHistory(record *record.Record) {
 		ts.Close()
 		panic("could not begin record history init: " + err.Error())
 	}
-	_, err = tx.Exec(recordHistoryTableUpdateInsert, record.Uuid, record.SharePrice, record.RecordBookUuid, record.Fees, record.ShareCount, record.Taxes, record.Bonus)
+	_, err = tx.Exec(recordHistoryTableUpdateInsert, record.Uuid, record.SharePrice, record.RecordBookUuid, record.Fees, record.ShareCount, record.Taxes, record.Bonus, record.Result)
 	if err != nil {
 		tx.Rollback()
 		panic("error occurred while insert record in table " + err.Error())

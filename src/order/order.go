@@ -74,7 +74,7 @@ func (br *BasicResponse) GetError() string { return br.Err }
 type Details struct {
 	SharePrice int64 `json:"share_price"`
 	ShareCount int64 `json:"share_count"`
-	ShareValue int64 `json:"shares_value"`
+	ShareValue int64 `json:"shares_valuere"`
 	Tax        int64 `json:"tax"`
 	Fees       int64 `json:"fees"`
 	Bonus      int64 `json:"bonus"`
