@@ -85,7 +85,7 @@ function DrawLineGraph(location, data, id) {
 	var labels = [];
 
 	for (line_key in dat) {
-		const timeFormat = d3.timeFormat("%d-%b-%y")
+		const timeFormat = d3.timeFormat("%I:%M %p")
 		
 		var minY = Number.POSITIVE_INFINITY;
 		var maxY = Number.NEGATIVE_INFINITY;
@@ -140,7 +140,8 @@ function DrawLineGraph(location, data, id) {
 
 	// Creating axis
 	var xAxisCall = d3.axisBottom()
-		.tickFormat(d3.timeFormat("%a %I:%M%p"))
+		// %a for day of the week
+		.tickFormat(d3.timeFormat("%I:%M%p"))
 		.ticks(TICKS);
 	xAxisCall.scale(scaleTime);
 	var yAxisCall = d3.axisLeft()
