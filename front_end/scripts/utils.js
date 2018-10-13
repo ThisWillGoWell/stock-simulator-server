@@ -58,7 +58,7 @@ function abbrevPrice(value) {
 
 
 function formatDate12Hour(date) {
-  	let hours = date.getHours();
+	let hours = date.getHours();
 	let minutes = date.getMinutes();
 	let ampm = hours >= 12 ? 'pm' : 'am';
 	hours = hours % 12;

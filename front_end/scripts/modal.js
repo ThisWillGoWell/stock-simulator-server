@@ -36,7 +36,8 @@ function sendTrade() {
 	    if (success) {
             // Vars needed to form note
             var amount = Number(msg.msg.order.amount);
-            var stock_item = vm_stocks.stocks[msg.msg.order.stock];
+            console.log(msg.msg.order.stock_id)
+            var stock_item = vm_stocks.stocks[msg.msg.order.stock_id];
             
             if (amount < 0) {
                 amount *= -1;
