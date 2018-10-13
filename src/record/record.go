@@ -102,7 +102,7 @@ func MakeRecord(uuid, recordBookUuid string, amount, sharePrice, taxes, fees, bo
 	if amount > 0 {
 		book.ActiveBuyRecords = append(book.ActiveBuyRecords, ActiveBuyRecord{RecordUuid: uuid, AmountLeft: amount})
 	} else {
-		walkRecords(book, amount, true)
+		walkRecords(book, amount*-1, true)
 	}
 	wires.RecordsNewObject.Offer(newRecord)
 	wires.BookUpdate.Offer(book)
@@ -133,9 +133,12 @@ func walkRecords(book *Book, shares int64, mark bool) int64 {
 			amountCleared += 1
 		}
 	}
+	if sharesLeft == 0 {
+		amountCleared += 1
+	}
 	if mark {
-		book.ActiveBuyRecords = book.ActiveBuyRecords[amountCleared:]
 		book.ActiveBuyRecords[0].AmountLeft -= lastAmountCleared
+		book.ActiveBuyRecords = book.ActiveBuyRecords[amountCleared:]
 	}
 	return totalCost
 }
