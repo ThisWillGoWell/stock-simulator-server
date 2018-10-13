@@ -2355,6 +2355,8 @@ svg {
 
 .graph-annotation {
     font-size: 16px;
+}
+.annotation-note {
     cursor: move;
 }
 

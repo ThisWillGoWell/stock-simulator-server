@@ -48,6 +48,18 @@ var vm_users = new Vue({
   }
 });
 
+var vm_recordBook = new Vue({
+  data: {
+    records: {},
+  },
+});
+
+var vm_recordEntry = new Vue({
+  data: {
+    entries: {},
+  }
+});
+
 
 registerRoute("connect", function(msg) {
   console.log("login recieved");
@@ -98,6 +110,13 @@ registerRoute("object", function(msg) {
         routeNote[msg.msg.object.type](msg.msg.object);
       }  
       break;
+    case "record_Book":
+      Vue.set(vm_recordBook.records, msg.msg.uuid, msg.msg.object);
+      break;
+    case "record_entry":
+      msg.msg.object.time = Date(msg.msg.object.time);
+      Vue.set(vm_recordEntry.entries, msg.msg.uuid, msg.msg.object);
+      break;
   }
 });
 
@@ -138,11 +157,15 @@ $(document).ready(function() {
   console.log(vm_portfolios.portfolios);
   console.log("------ NOTIFICATIONS ------");
   console.log(vm_notify.notes);
+  console.log("------ RECORD BOOK ------");
+  console.log(vm_recordBook.records);
+  console.log("------ RECORD ENTRY ------");
+  console.log(vm_recordEntry.entries);
 
   /* Vues that are used to display data */
 
   // Vue for sidebar navigation
-  let vm_nav = new Vue({
+  var vm_nav = new Vue({
     el: "#nav",
     methods: {
       nav: function(event) {
@@ -345,7 +368,18 @@ $(document).ready(function() {
     });
   }
 
-  
+  var recordBookUpdate = function(msg) {
+    var targetUUID = msg.msg.uuid;
+    msg.msg.changes.forEach(function(changeObject) {
+      var targetField = changeObject.field;
+      var targetChange = changeObject.value;
+
+      vm_recordBook.records[targetUUID][targetField] = targetChange;
+      console.log(vm_recordBook.records);
+    })
+  };
+
+
   registerRoute("update", function(msg) {
     var updateRouter = {
       stock: stockUpdate,
@@ -354,10 +388,10 @@ $(document).ready(function() {
       user: userUpdate,
       item: itemUpdate,
       notification: notificationUpdate,
+      record_Book: recordBookUpdate,
     };
     updateRouter[msg.msg.type](msg);
   });
-
 
 
   var allViews = $(".view");
