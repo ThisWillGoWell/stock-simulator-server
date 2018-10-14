@@ -110,7 +110,7 @@ registerRoute("object", function(msg) {
         routeNote[msg.msg.object.type](msg.msg.object);
       }  
       break;
-    case "record_Book":
+    case "record_book":
       Vue.set(vm_recordBook.records, msg.msg.uuid, msg.msg.object);
       break;
     case "record_entry":
@@ -388,7 +388,7 @@ $(document).ready(function() {
       user: userUpdate,
       item: itemUpdate,
       notification: notificationUpdate,
-      record_Book: recordBookUpdate,
+      record_book: recordBookUpdate,
     };
     updateRouter[msg.msg.type](msg);
   });
@@ -453,4 +453,10 @@ $(document).ready(function() {
 
   init();
 
+
+  setTimeout(function () {
+    if (Object.keys(vm_ledger.ledger).length !== Object.keys(vm_recordBook.records).length) {
+      console.error("ledgere and record book lengths are not equal")
+    }
+  },5000);
 });
