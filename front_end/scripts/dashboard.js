@@ -155,60 +155,68 @@ function load_dashboard_tab() {
 }
 
 function createPortfolioGraph(portfolioUUID, location) {
-  // Store graphing data
-  var data = {
-    data: {},
-    tags: {},
-  };
-  var responses = [];
-  var requests = [];
-
-  // Send data requests
-  ["net_worth", "wallet"].forEach(function(field) {
-    // Creating websocket message
-    let msg = {
-      uuid: portfolioUUID,
-      field: field,
-      num_points: 1000,
-      length: "6h"
-    };
-
-    // Store request on front end
-    requests.push(REQUEST_ID.toString());
-    var callback = function(msg) {
-      // Pull out the data and format it
-      var points = msg.msg.points;
-      points = points.map(function(d) {
-        return { time: d[0], value: d[1] };
-      });
-
-      // Store the data
-      data.data[msg.msg.message.field] = points;
-
-      // Make note the data is available
-      responses.push(msg.request_id);
-    };
-
-    // Send message
-    doSend("query", msg, callback);
-
-  });
-
-  var drawGraphOnceDone = null;
-
-  var stillWaiting = true;
-
-  drawGraphOnceDone = function() {
-    if (requests.every(r => responses.indexOf(r) > -1)) {
-      stillWaiting = false;
-    }
-
-    if (!stillWaiting) {
-      DrawLineGraph(location, data);
-    } else {
-      setTimeout(drawGraphOnceDone, 100);
-    }
-  };
-
-  setTimeout(drawGraphOnceDone, 100);
+  // what it will be
+  var uuids = [portfolioUUID, portfolioUUID];
+  var fields = ['net_worth', 'wallet'];
+  queryDrawGraph(location, uuids, fields);
 }
+
+///// WHAT IT WAS
+// function createPortfolioGraph(portfolioUUID, location) {
+//   // Store graphing data
+//   var data = {
+//     data: {},
+//     tags: {},
+//   };
+//   var responses = [];
+//   var requests = [];
+
+//   // Send data requests
+//   ["net_worth", "wallet"].forEach(function(field) {
+//     // Creating websocket message
+//     let msg = {
+//       uuid: portfolioUUID,
+//       field: field,
+//       num_points: 1000,
+//       length: "6h"
+//     };
+
+//     // Store request on front end
+//     requests.push(REQUEST_ID.toString());
+//     var callback = function(msg) {
+//       // Pull out the data and format it
+//       var points = msg.msg.points;
+//       points = points.map(function(d) {
+//         return { time: d[0], value: d[1] };
+//       });
+
+//       // Store the data
+//       data.data[msg.msg.message.field] = points;
+
+//       // Make note the data is available
+//       responses.push(msg.request_id);
+//     };
+
+//     // Send message
+//     doSend("query", msg, callback);
+
+//   });
+
+//   var drawGraphOnceDone = null;
+
+//   var stillWaiting = true;
+
+//   drawGraphOnceDone = function() {
+//     if (requests.every(r => responses.indexOf(r) > -1)) {
+//       stillWaiting = false;
+//     }
+
+//     if (!stillWaiting) {
+//       DrawLineGraph(location, data);
+//     } else {
+//       setTimeout(drawGraphOnceDone, 100);
+//     }
+//   };
+
+//   setTimeout(drawGraphOnceDone, 100);
+// }

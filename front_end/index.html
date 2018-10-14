@@ -43,6 +43,7 @@
 		<script src="scripts/stocks.js"></script>
 		<script src="scripts/investors.js"></script>
 		<script src="scripts/store.js"></script>
+		<script src="scripts/research.js"></script>
 		<script src="scripts/items.js"></script>
 		<script src="scripts/modal.js"></script>
         <script src="scripts/graphing.js"></script>
@@ -569,22 +570,18 @@
 								<div id="chart-sandbox" class="card">
 									<div class="query-term-container">
 										<div class="query-term right">
-											<input type="text" placeholder="Choose a stock"/>
-											<i class="material-icons add-btn">
-											clear
-											</i>
+											<select id="research-graph-type-select" type="text" placeholder="Choose a graph type">
+												<option value="stock">Stock</option>
+												<option value="portfolio">Portfolio</option>
+											</select>
 										</div>
 										<div class="query-term right">
-											<input type="text" placeholder="Choose a stock"/>
-											<i class="material-icons add-btn">
-											clear
-											</i>
+											<select id="research-graph-stock-select" type="text" placeholder="Choose a graph type">
+											</select>
 										</div>
 										<div class="query-term right">
-											<input type="text" placeholder="Choose a stock"/>
-											<i class="material-icons add-btn">
-											clear
-											</i>
+											<select id="research-graph-user-select" type="text" placeholder="Choose a graph type">
+											</select>
 										</div>
 										<div class="query-term">
 											<input type="text" placeholder="Choose a stock"/>
@@ -592,7 +589,12 @@
 											clear
 											</i>
 										</div>
-										
+										<div>
+											<button v-on:click="drawGraph()">Create</button>
+										</div>
+										<div id="research-graph-svg-main">
+
+										</div>
 									</div>
 								</div>
 										<div class="card">

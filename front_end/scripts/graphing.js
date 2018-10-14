@@ -1,5 +1,6 @@
 
 const TICKS = 5;
+
 function formatData(data) {
 
 	// Setting local time			
@@ -13,9 +14,84 @@ function formatData(data) {
 	
 };
 
+// Get graph data
+function queryDrawGraph(location, uuids, fields) {
+	if (uuids.length !== fields.length) {
+		console.error("In getGraphData(): fields and uuids are not the same length");
+	}
+
+	var data = {
+	  data: {},
+	  tags: {},
+	};
+	
+	var stillWaiting = true;
+	var responses = [];
+	var requests = [];
+
+	uuids.forEach(function(d, i) {
+		console.log(i)
+		queryDB(uuids[i], fields[i], requests, responses, data);
+	});
+  
+	var drawGraphOnceDone = null;
+	drawGraphOnceDone = function() {
+	  if (requests.every(r => responses.indexOf(r) > -1)) {
+		stillWaiting = false;
+	  }
+  
+	  if (!stillWaiting) {
+		// returning data once done fetching it
+		console.log(data)
+		DrawLineGraph(location, data);
+	  } else {
+		setTimeout(drawGraphOnceDone, 100);
+	  }
+	};
+  
+	setTimeout(drawGraphOnceDone, 100);
+
+}
+
+
+// Store graphing data
+function queryDB(uuid, field, requests, responses, data, num_points = 1000, length = "6h", use_cache = true) {
+	var msg = {
+		uuid: uuid,
+		field: field,
+		num_points: num_points,
+		use_cache: use_cache,
+		length: length
+	}; 
+  
+	// Store request on front end
+	requests.push(REQUEST_ID.toString());
+	var callback = function(msg) {
+		console.log("GRAPH msg HERE")
+		console.log(msg)
+		// Pull out the data and format it
+		var points = msg.msg.points;
+		points = points.map(function(d) {
+			return { time: d[0], value: d[1] };
+		});
+
+		// Store the data
+		data.data[msg.msg.message.field] = points;
+
+		// Make note the data is available
+		responses.push(msg.request_id);
+	};
+  
+	// Send message
+	doSend("query", msg, callback);
+  
+}
+
+
 // TODO: tags for d3 plotting(title labels etc) sent with dat object in an serparate property
 //			tags can pass the type of data being sent through so more data structuring can be done here like min an maxs 
 function DrawLineGraph(location, data, id) {
+	console.log(data)
 	// Pulling out data, use tags to change data if need
 	var dat = formatData(data.data);
 	var tags = data.tags;
@@ -45,7 +121,7 @@ function DrawLineGraph(location, data, id) {
 	var maxTime = new Date('1999 Jan 1');
 	var maxValue = Number.NEGATIVE_INFINITY;
 	var minValue = Number.POSITIVE_INFINITY;
-	var minValueTime, maxValueTime;
+	// var minValueTime, maxValueTime;
 	for (var line_key in dat) {
 
 		dat[line_key].forEach(function(d) {
