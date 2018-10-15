@@ -27,7 +27,10 @@ function load_dashboard_tab() {
         // Get curr user portfolioUUID
         let portfolioUUID = vm_dash_tab.currUserPortfolio.uuid;
         let location = "#portfolio-graph";
-        createPortfolioGraph(portfolioUUID, location);
+        // what will the graph be
+        var uuids = [portfolioUUID, portfolioUUID];
+        var fields = ['net_worth', 'wallet'];
+        queryDrawGraph(location, uuids, fields);
       },
       useItem: function(item_uuid) {
         useItem(item_uuid);

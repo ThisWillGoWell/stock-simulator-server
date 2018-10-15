@@ -1,8 +1,7 @@
-
 const TICKS = 5;
 
-function formatData(data) {
 
+function formatData(data) {
 	// Setting local time			
 	Object.values(data).forEach(function(d) {
 		d.forEach(function(i) {
@@ -11,17 +10,16 @@ function formatData(data) {
 	})
 	// if networth add points in to make a step graph
 	return data;
-	
 };
 
 // Get graph data
-function queryDrawGraph(location, uuids, fields) {
+function queryDrawGraph(location, uuids, fields, append = false) {
 	if (uuids.length !== fields.length) {
 		console.error("In getGraphData(): fields and uuids are not the same length");
 	}
 
 	var data = {
-	  data: {},
+	  data: [],
 	  tags: {},
 	};
 	
@@ -41,9 +39,8 @@ function queryDrawGraph(location, uuids, fields) {
 	  }
   
 	  if (!stillWaiting) {
-		// returning data once done fetching it
-		console.log(data)
-		DrawLineGraph(location, data);
+		// draw graph once all the data is back
+		DrawLineGraph(location, data, append = append);
 	  } else {
 		setTimeout(drawGraphOnceDone, 100);
 	  }
@@ -76,7 +73,7 @@ function queryDB(uuid, field, requests, responses, data, num_points = 1000, leng
 		});
 
 		// Store the data
-		data.data[msg.msg.message.field] = points;
+		data.data.push(points);//[msg.msg.message.field] = points;
 
 		// Make note the data is available
 		responses.push(msg.request_id);
@@ -90,10 +87,12 @@ function queryDB(uuid, field, requests, responses, data, num_points = 1000, leng
 
 // TODO: tags for d3 plotting(title labels etc) sent with dat object in an serparate property
 //			tags can pass the type of data being sent through so more data structuring can be done here like min an maxs 
-function DrawLineGraph(location, data, id) {
+function DrawLineGraph(location, data, id, append) {
 	console.log(data)
 	// Pulling out data, use tags to change data if need
 	var dat = formatData(data.data);
+	console.log(dat)
+	
 	var tags = data.tags;
 
 	// logging remove later
@@ -112,6 +111,11 @@ function DrawLineGraph(location, data, id) {
 		'right': 60,
 	};
 	console.log(location);
+
+	if (!append) {
+		d3.select(location).selectAll('svg').remove();
+	}
+
 	var svg = d3.select(location).append('svg')
 		.attr('width', width)
 		.attr('height', height)
@@ -193,7 +197,7 @@ function DrawLineGraph(location, data, id) {
 		}].map(function (l) {
 			l.note = Object.assign({}, l.note, {
 				title: "$" + l.data.value,
-				label: "" + timeFormat(l.data.date) 
+				label: "" + timeFormat(l.data.date)
 			});
 			l.connector = {
 				end: "dot",

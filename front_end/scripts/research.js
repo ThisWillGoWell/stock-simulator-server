@@ -6,56 +6,79 @@ function load_research_tab() {
         el: "#research--view",
         methods: {
             drawGraph: function() {
-                console.log(getSelectized('#research-graph-type-select'))
-                DrawLingGraph("#research-graph-svg-main", getGraphingData);
+                // Get user set variables for graphing
+                var fields = [];
+                var uuids = [];
+                var type = getSelectized('#research-graph-type-select')[0];
+                if (type === "stock") {
+                    let selected = getSelectized('#research-graph-stock-select');
+                    selected.forEach(function(d) {
+                        uuids.push(d);
+                        fields.push('current_price');
+                    })
+                } else if (type === "portfolio") {
+                    let selected = getSelectized('#research-graph-user-select');
+                    selected.forEach(function(d) {
+                        uuids.push(d);
+                        uuids.push(d);
+                        fields.push('net_worth');
+                        fields.push('wallet');
+                    })
+                }
+
+                console.log(uuids)
+                console.log(fields)
+                // Create the graph
+                queryDrawGraph("#research-graph-svg-main", uuids, fields);
+
             },
             // updateSelections: function() {
-            //     // Show needed select boxes
-            //     // $('#research-graph-user-select').hide();
-            //     // Remove unneeded selection boxes
+            //     console.log("herer")
+            //     var type = getSelectized('#research-graph-type-select')[0];
+            //     if (type === 'stock') {
+            //         $('#research-graph-user-select').hide();
+            //         $('#research-graph-stock-select').show();
+            //     } else if (type === 'portfolio') {
+            //         $('#research-graph-stock-select').hide();
+            //         $('#research-graph-user-select').show();
+            //     }
             // }
-        }
+        },
     });
 
+    // Create selectize areas
     graphType = $('#research-graph-type-select').selectize({maxItems: 1});
-    // $('#research-graph-stock-select').selectize({maxItems: 5});
-    // $('#research-graph-user-select').selectize({maxItems: 5});
+    graphStocks = $('#research-graph-stock-select').selectize({maxItems: 5});
+    graphUsers = $('#research-graph-user-select').selectize({maxItems: 5});
+    // Start with users selection hidden
+    $('#research-graph-user-select').hide();
+
 };
 
 function updateResearchStocks() {
-    var stocks = Object.values(vm_stocks.stocks)
+    // Get the html element to update
+    var $select = $(document.getElementById('research-graph-stock-select'));
+    var selectize = $select[0].selectize;
+
+    Object.values(vm_stocks.stocks)
         .map(function(d) {
-            return {
-                uuid: d.uuid,
-                ticker_id: d.ticker_id
-            };
+            selectize.addOption({
+                value: d.uuid,
+                text: d.ticker_id
+            });
         });
-    console.log(stocks)
-    var options = d3.select('#research-graph-stock-select').selectAll('option')
-        .data(stocks, d => d.uuid);
-
-    options.exit().remove();
-
-    options.enter().append('option')
-        .attr('value', d => d.uuid)
-        .text(d => d.ticker_id);
 }
 
 function updateResearchUsers() {
-    var users = Object.values(vm_users.users)
-        .map(function(d) {
-            return {
-                uuid: d.portfolio_uuid,
-                name: d.display_name
-            };
+    // Get the html element to update
+    var $select = $(document.getElementById('research-graph-user-select'));
+    var selectize = $select[0].selectize;
+
+    Object.values(vm_users.users)
+        .forEach(function(d) {
+            selectize.addOption({
+                value: d.portfolio_uuid,
+                text: d.display_name
+            });
         });
-
-    var options = d3.select('#research-graph-user-select').selectAll('option')
-        .data(users, d => d.portfolio_uuid);
-
-    options.exit().remove();
-
-    options.enter().append('option')
-        .attr('value', d => d.uuid)
-        .text(d => d.name);
 }

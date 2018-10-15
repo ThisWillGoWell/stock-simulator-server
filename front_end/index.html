@@ -570,7 +570,7 @@
 								<div id="chart-sandbox" class="card">
 									<div class="query-term-container">
 										<div class="query-term right">
-											<select id="research-graph-type-select" type="text" placeholder="Choose a graph type">
+											<select id="research-graph-type-select" type="text" placeholder="Choose a graph type" v-on:change="updateSelections()">
 												<option value="stock">Stock</option>
 												<option value="portfolio">Portfolio</option>
 											</select>
@@ -592,17 +592,12 @@
 										<div>
 											<button v-on:click="drawGraph()">Create</button>
 										</div>
-										<div id="research-graph-svg-main">
-
-										</div>
 									</div>
-								</div>
-										<div class="card">
-	
-										</div>
+									<div id="research-graph-svg-main"></div>
 								</div>
 							</div>
 						</div>
+					</div>
 						<!-- TODO: this tab collides with the sidebar -->
 					<div id="settings--view" class="view">
 							<div class="flex-grid--container">
