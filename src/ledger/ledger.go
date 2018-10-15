@@ -69,7 +69,7 @@ func MakeLedgerEntry(uuid, portfolioId, stockId, recordId string, amount int64) 
 		RecordBookId:  recordId,
 		UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("LedgerEntry-%s", uuid)),
 	}
-	record.MakeBook(recordId, uuid)
+	record.MakeBook(recordId, uuid, portfolioId)
 	Entries[uuid] = entry
 	if EntriesPortfolioStock[portfolioId] == nil {
 		EntriesPortfolioStock[portfolioId] = make(map[string]*Entry)

@@ -3,6 +3,8 @@ package record
 import (
 	"time"
 
+	"github.com/stock-simulator-server/src/sender"
+
 	"github.com/stock-simulator-server/src/change"
 
 	"github.com/stock-simulator-server/src/wires"
@@ -15,6 +17,7 @@ import (
 var recordsLock = lock.NewLock("records")
 var books = make(map[string]*Book)
 var records = make(map[string]*Record)
+var portfolioBooks = make(map[string][]*Book)
 
 const EntryIdentifiableType = "record_entry"
 const BookIdentifiableType = "record_book"
@@ -31,6 +34,7 @@ const SellRecordType = "sell"
 type Book struct {
 	Uuid             string            `json:"uuid"`
 	LedgerUuid       string            `json:"ledger_uuid"`
+	PortfolioUuid    string            `json:"portfolio_uuid"`
 	ActiveBuyRecords []ActiveBuyRecord `json:"buy_records" change:"-"`
 }
 
@@ -70,14 +74,17 @@ func NewRecord(recordBookUuid string, amount, sharePrice, taxes, fees, bonus, re
 	//sender.SendNewObject(portfolioUuid, record)
 }
 
-func MakeBook(uuid, ledgerUuid string) {
+func MakeBook(uuid, ledgerUuid, portfolioUuid string) {
 
 	books[uuid] = &Book{
 		Uuid:             uuid,
 		LedgerUuid:       ledgerUuid,
+		PortfolioUuid:    portfolioUuid,
 		ActiveBuyRecords: make([]ActiveBuyRecord, 0),
 	}
-	change.RegisterPublicChangeDetect(books[uuid])
+	bookChange := make(chan interface{})
+	change.RegisterPrivateChangeDetect(books[uuid], bookChange)
+	sender.RegisterChangeUpdate(portfolioUuid, bookChange)
 }
 
 func MakeRecord(uuid, recordBookUuid string, amount, sharePrice, taxes, fees, bonus, result int64, t time.Time) *Record {
@@ -107,6 +114,7 @@ func MakeRecord(uuid, recordBookUuid string, amount, sharePrice, taxes, fees, bo
 	}
 	wires.RecordsNewObject.Offer(newRecord)
 	wires.BookUpdate.Offer(book)
+	sender.SendNewObject(book.PortfolioUuid, newRecord)
 	return newRecord
 }
 
@@ -149,6 +157,20 @@ func GetPrinciple(recordUuid string, shares int64) int64 {
 	recordsLock.Acquire("get-principle")
 	defer recordsLock.Release()
 	return walkRecords(book, shares, false)
+}
+
+func GetRecordsForPortfolio(portfolioUuid string) ([]*Book, []*Record) {
+	recordsLock.Acquire("get-records")
+	defer recordsLock.Release()
+	books := portfolioBooks[portfolioUuid]
+	portRecord := make([]*Record, 0)
+
+	for _, b := range books {
+		for _, active := range b.ActiveBuyRecords {
+			portRecord = append(portRecord, records[active.RecordUuid])
+		}
+	}
+	return books, portRecord
 }
 
 func GetAllBooks() []*Book {

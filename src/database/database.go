@@ -58,10 +58,10 @@ func InitDatabase(disableDbWrite bool) {
 	initAccount()
 	initRecordHistory()
 
-	populateLedger()
+	populateUsers()
 	populateStocks()
 	populatePortfolios()
-	populateUsers()
+	populateLedger()
 	populateItems()
 	populateNotification()
 	populateRecords()

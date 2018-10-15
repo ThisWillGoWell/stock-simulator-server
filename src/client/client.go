@@ -123,11 +123,11 @@ func (client *Client) tx(sessionToken string) {
 	for _, v := range items.GetItemsForUser(client.user.PortfolioId) {
 		client.sendMessage(messages.NewObjectMessage(v))
 	}
-	for _, v := range record.GetAllBooks() {
+	books, records := record.GetRecordsForPortfolio(client.user.PortfolioId)
+	for _, v := range books {
 		client.sendMessage(messages.NewObjectMessage(v))
 	}
-
-	for _, v := range record.GetAllRecords() {
+	for _, v := range records {
 		client.sendMessage(messages.NewObjectMessage(v))
 	}
 
