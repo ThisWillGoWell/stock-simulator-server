@@ -1,0 +1,78 @@
+{
+    "experience": {
+        "lvl_1": {
+            "level": 1,
+            "title": "Intern",
+            "note": "+2% bonus stock value\nunlock cash transfer",
+            "price": "$10,000"
+        },
+        "lvl_2": {
+            "level": 2,
+            "title": "Weekend Trader",
+            "note": "+4% bonus stock value",
+            "price": "$250,000"
+        },
+        "lvl_3": {
+            "level": 3,
+            "title": "Day Trader",
+            "note": "+7% bonus stock value",
+            "price": "$500,000"
+        },
+        "lvl_4": {
+            "level": 4,
+            "title": "Regional Manager",
+            "note": "+10% bonus stock value",
+            "price": "$1,000,000"
+        },
+        "lvl_5": {
+            "level": 5,
+            "title": "Vice President",
+            "note": "+12% bonus stock value",
+            "price": "$1,500,000"
+        },
+        "lvl_6": {
+            "level": 6,
+            "title": "CFO",
+            "note": "+14% bonus stock value",
+            "price": "$2,500,000"
+        },
+        "lvl_7": {
+            "level": 7,
+            "title": "Chairman",
+            "note": "+17% bonus stock value",
+            "price": "$5,000,000"
+        },
+        "lvl_8": {
+            "level": 8,
+            "title": "American Sniper",
+            "note": "+20% bonus stock value",
+            "price": "$10,000,000"
+        }
+    },
+    "abilities": {
+        "insider": {
+            "type": "insider",
+            "label": "INSIDER TRADING",
+            "note": "Allows player to see the target price of all stocks.",
+            "price": "$175,000"
+        },
+        "block_trading": {
+            "type": "black_trading",
+            "label": "BLOCK TRADING",
+            "note": "Stops another player from buying or selling for 5 minutes.",
+            "price": "$25,000"
+        },
+        "boost_gains": {
+            "type": "boost_gains",
+            "label": "BOOST GAINS",
+            "note": "25% higher returns on stock sales for 1 hour.",
+            "price": "$75,000"
+        },
+        "crash_market": {
+            "type": "crash_market",
+            "label": "CRASH THE MARKET",
+            "note": "Stops another player from buying or selling for 5 minutes.",
+            "price": "$25,000"
+        }
+    }
+}
