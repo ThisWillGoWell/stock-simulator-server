@@ -463,11 +463,5 @@ $(document).ready(function() {
   }
 
   init();
-
-
-  setTimeout(function () {
-    if (Object.keys(vm_ledger.ledger).length !== Object.keys(vm_recordBook.records).length) {
-      console.error("ledgere and record book lengths are not equal")
-    }
-  },5000);
+  
 });

@@ -1,18 +1,26 @@
 var vm_store;
+// Get item and level details
+var storeJSON = $.getJSON( "json/store.json", function(data) {
+    storeJSON = data;
+});
 
 function load_store_tab() {
+
     vm_store = new Vue({
         el: '#store--view',
         data: {
-
+            experience: storeJSON.experience,
+            items: storeJSON.abilities,
         },
         methods: {
             level_up: level_up,
             purchaseItem: purchaseItem,
+            isLevel: function(lvl) {
+                return this.currUserLevel >= lvl;
+            },
         },
         computed: {
             currUserLevel: function() {
-                console.log(vm_dash_tab.currUserPortfolio.level)
                 return vm_dash_tab.currUserPortfolio.level;
             }
         }
@@ -47,7 +55,6 @@ function purchaseItem() {
 };
 
 function level_up() {
-    
     // Set callback
     var callback = function (msg) {
         level_up_response(msg.msg, vm_store.currUserLevel);

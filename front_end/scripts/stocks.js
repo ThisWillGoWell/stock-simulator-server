@@ -1,6 +1,6 @@
 var vm_stocks_tab;
-
 function load_stocks_tab() {
+
   // Vue for all stocks tab data
   vm_stocks_tab = new Vue({
     el: "#stocks--view",

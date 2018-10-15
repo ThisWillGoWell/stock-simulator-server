@@ -193,9 +193,9 @@ function load_modal_vues() {
     transferModal = new Vue({
         el: "#transfer-Modal--container",
         data: {
-        showModal: false,
-        recipient_uuid: '',
-        recipient_name: '',
+            showModal: false,
+            recipient_uuid: '',
+            recipient_name: '',
         },
         methods: {
         submitTransfer: function() {
