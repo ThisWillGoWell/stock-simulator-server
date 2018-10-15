@@ -2347,6 +2347,10 @@ table thead.table-top-bar tr th:hover{
 }
 
 
+.item-disable {
+    background-color: black;
+}
+
 
 /* Graphing */
 svg {
