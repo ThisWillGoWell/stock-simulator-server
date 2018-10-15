@@ -5,6 +5,11 @@
 var vm_stocks = new Vue({
   data: {
     stocks: {}
+  },
+  watch: {
+    stocks: function() {
+      updateResearchStocks();
+    },
   }
 });
 
@@ -45,6 +50,11 @@ var vm_users = new Vue({
         }
       }
     }
+  },
+  watch: {
+    users: function() {
+      updateResearchUsers();
+    },
   }
 });
 
@@ -133,6 +143,7 @@ $(document).ready(function() {
   load_stocks_tab(); // stocks.js
   load_investors_tab(); // investors.js
   load_store_tab(); // store.js
+  load_research_tab(); //research.js
   load_topbar_vue(); // topbar.js
   load_sidebar_vue(); // sidebar.js
   load_chat_vue(); // chat.js

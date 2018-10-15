@@ -34,7 +34,6 @@ function notifyNewItem(msg) {
 	notifyTopBar(message, color, success);
 
 	sendAck(msg.uuid);
-
 };
 
 function notifyTransfer(msg) {

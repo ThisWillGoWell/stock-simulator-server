@@ -153,6 +153,7 @@ function load_stocks_tab() {
           }
 
           if (!stillWaiting) {
+            console.log(data);
             DrawLineGraph("#stock-graph", data);
           } else {
             setTimeout(drawGraphOnceDone, 100);

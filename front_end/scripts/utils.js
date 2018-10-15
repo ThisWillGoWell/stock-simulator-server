@@ -67,3 +67,13 @@ function formatDate12Hour(date) {
 	let strTime = hours + ':' + minutes + ' ' + ampm;
 	return strTime;
 };
+
+// get selected values from a selectize
+function getSelectized(loc) {
+	var $select = $(loc);
+	var selectize = $select[0].selectize;
+	var fields = $.map(selectize.items, function(val) {
+		return selectize.options[val].value;
+	});
+	return fields;
+}

@@ -34,6 +34,6 @@ function getUserStockRecord(user_uuid, stock_id) {
     console.log(userRecordEntries);
 }
 
-setInterval(function() {
-    getUserStockRecord(sessionStorage.getItem("uuid"), "12");
-}, 10000);
+// setInterval(function() {
+//     getUserStockRecord(sessionStorage.getItem("uuid"), "12");
+// }, 10000);
