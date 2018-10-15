@@ -72,10 +72,6 @@
       "name": "Shirley's Sandwiches",
       "change": "4s"
     },
-    "C": {
-      "name": "Citigroup Inc",
-      "change": "4s"
-    },
     "SCOTT": {
       "name": "Michal Scott Paper Company",
       "change": "4s"
@@ -83,6 +79,23 @@
     "SIC": {
       "name": "Church Of Scientology",
       "change": "4s"
+    },
+    "TLNX":{
+      "name": "Telnyx LLC",
+      "change": "3s"
+    },
+    "GE": {
+      "name":"General Electric",
+      "change": "3s"
+
+    },
+    "CBOI":{
+      "name": "C-Bio's Cytrynówka Inc",
+      "change":"3s"
+    },
+    "FANCY":{
+      "name":"Shoe La La",
+      "change":"3s"
     }
   },
   "accounts": {
