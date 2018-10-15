@@ -266,9 +266,15 @@ func CalculateDetails(portfolioUuid, valuableUuid string, amount int64) *BasicRe
 		if !ledgerExists {
 			response.Err = "can't calculate sell order for ledger that does not exist"
 		} else {
-			recordUuid = ledgerEntry.RecordBookId
-			response.Success = true
-			response.OrderDetails = calculateSellDetails(order, v, port, recordUuid)
+			if ledgerEntry.Amount < order.Amount {
+				response.Err = "don't own that many shares"
+
+			} else {
+				recordUuid = ledgerEntry.RecordBookId
+				response.Success = true
+				response.OrderDetails = calculateSellDetails(order, v, port, recordUuid)
+
+			}
 		}
 	}
 	return response
