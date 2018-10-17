@@ -2377,3 +2377,8 @@ svg {
 .domain {
     stroke: none;
 }
+
+.hover-overlay {
+    fill: none;
+    pointer-events: all;
+  }

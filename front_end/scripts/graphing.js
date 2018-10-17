@@ -163,7 +163,7 @@ function DrawLineGraph(location, data, id, append) {
 
         
     function waiting() {
-        idleTimeout = null;
+        waitingTimeout = null;
     }
     var delay = 500, waitingTimeout;
 
@@ -181,15 +181,15 @@ function DrawLineGraph(location, data, id, append) {
         }
         brushZoom();
     };
-
+    
     function brushZoom() {
         // Create transition
         var transition = svg.transition().duration(500);
-
+        
         svg.select("#x-axis").transition(transition).call(xAxisCall);
         // svg.select("#y-axis").transition(transition).call(yAxisCall);
-
-        svg.selectAll("path").attr('d', line);
+        
+        svg.selectAll(".graph-line").attr('d', line);
     };
 
     var brush = d3.brushX().on('end', brushEnd);
@@ -199,30 +199,34 @@ function DrawLineGraph(location, data, id, append) {
         .attr('class', 'graph-brush')
         .call(brush);
     
+    // Used when finding which point to tooltip
+    var bisectTime = d3.bisector(function(d) {
+            return d.time
+        }).left;
 
 	// Y grid
-	function yGrid() {		
+	function yGrid() {
 		return d3.axisLeft(scaleValue).ticks(TICKS);
 	}
 
 	var labels = [];
 
 	for (line_key in dat) {
-		const timeFormat = d3.timeFormat("%I:%M %p")
+		// const timeFormat = d3.timeFormat("%I:%M %p")
 		
-		var minY = Number.POSITIVE_INFINITY;
-		var maxY = Number.NEGATIVE_INFINITY;
-		var minX, maxX;
-		dat[line_key].forEach(function(d) {
-			if (minY > d.value) {
-				minY = d.value;
-				minX = d.time;
-			}
-			if (maxY < d.value) {
-				maxY = d.value;
-				maxX = d.time;
-			}
-		});
+		// var minY = Number.POSITIVE_INFINITY;
+		// var maxY = Number.NEGATIVE_INFINITY;
+		// var minX, maxX;
+		// dat[line_key].forEach(function(d) {
+		// 	if (minY > d.value) {
+		// 		minY = d.value;
+		// 		minX = d.time;
+		// 	}
+		// 	if (maxY < d.value) {
+		// 		maxY = d.value;
+		// 		maxX = d.time;
+		// 	}
+		// });
 
 		// //Add annotations
 		// var newLabels = [{
@@ -249,9 +253,14 @@ function DrawLineGraph(location, data, id, append) {
 		// 	return l;
 		// });
 
-		// newLabels.forEach(d => labels.push(d));
+        // newLabels.forEach(d => labels.push(d));
+        
+        // Sorting the data
+        // dat[line_key].sort(function(a,b) {
+        //     return a > b;
+        // });
 
-		let path = g.append('path');
+		let path = g.append('path').attr('class','graph-line');
 
 		// Adding line 
 		path.data([dat[line_key]]).attr('d', line).attr('stroke', 'black').attr('stroke-width', '2px').attr('fill', 'none');
@@ -262,7 +271,6 @@ function DrawLineGraph(location, data, id, append) {
 		// %a for day of the week
 		.tickFormat(d3.timeFormat("%I:%M%p"))
 		.ticks(TICKS);
-    // xAxisCall.scale(scaleTime);
     
     // Creating y axis 
 	var yAxisCall = d3.axisLeft(scaleValue)
@@ -270,7 +278,6 @@ function DrawLineGraph(location, data, id, append) {
 			return "$" + abbrevPrice(d);
 		})
 		.ticks(TICKS);
-	// yAxisCall.scale(scaleValue);
 
 	// Add axis
 	g.append('g')
@@ -279,8 +286,6 @@ function DrawLineGraph(location, data, id, append) {
 		.style('font-size', 12)
 		.call(xAxisCall)
 	    .selectAll("text")	
-	        .style("text-anchor", "end")
-	        .attr("transform", "rotate(-35)")
 	        .attr('font-size', '10px');
 
 	g.append('g')
@@ -290,14 +295,37 @@ function DrawLineGraph(location, data, id, append) {
 		.call(yAxisCall);
 
 	// Add gridlines
-	
 	// add the Y gridlines
 	g.append("g")			
 		.attr("class", "graph-grid")
 		.call(yGrid()
 			.tickSize(-width)
 			.tickFormat("")
-		)
+        )
+        
+    // Adding tooltip
+    var ttip = svg.append('g')
+        .attr('class', 'graph-tooltip')
+        .style('display', 'none');
+
+    // Adding hover tooltip layer
+    svg.append('rect')
+        .attr('class', 'hover-overlay')
+        .attr('width', width)
+        .attr('height', height)
+        .on('mouseover', function() { ttip.style('display', null); })
+        .on('mousemove', function() {
+            console.log(d3.mouse(this))
+            var xVal = scaleTime.invert(d3.mouse(this)[0]);
+            Object.values(dat).forEach(function(d) {
+                    var i = bisectTime(d, xVal, 1, d.length - 1 );
+                    var d0 = d[i - 1]; 
+                    var d1 = d[i];
+                    var dat = xVal - d0.time > d1.time - xVal ? d1 : d0;
+                    console.log(dat);
+                });
+        })
+        .on('mouseout', function() { ttip.style('display', 'none'); });
 
 	// Add graph title
 	if (tags) {
