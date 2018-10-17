@@ -119,7 +119,8 @@ function DrawLineGraph(location, data, id, append) {
 	var svg = d3.select(location).append('svg')
 		.attr('width', width)
 		.attr('height', height)
-		.append("g");
+    
+    var g = svg.append("g");
 	
 	var minTime = new Date('3000 Jan 1');
 	var maxTime = new Date('1999 Jan 1');
@@ -155,11 +156,53 @@ function DrawLineGraph(location, data, id, append) {
 		.domain([minValue - (minValue/10), maxValue + (maxValue/10)])
 		.range([height  - margin.top, margin.bottom]);
 
-		
+    // Creating the line logic
+    var line = d3.line()
+        .x(function(d) { return scaleTime(d.time); })
+        .y(function(d) { return scaleValue(d.value); });
+
+        
+    function waiting() {
+        idleTimeout = null;
+    }
+    var delay = 500, waitingTimeout;
+
+    // When brushing stops
+    function brushEnd() {
+        var event = d3.event.selection;
+        console.log(event)
+        if (!event) {
+            if (!waitingTimeout) return waitingTimeout = setTimeout(waiting, delay);
+            scaleTime.domain([minTime, maxTime]);
+        } else {
+            console.log(event)
+            scaleTime.domain([event[0], event[1]].map(scaleTime.invert, scaleTime));
+            svg.select('.graph-brush').call(brush.move, null);
+        }
+        brushZoom();
+    };
+
+    function brushZoom() {
+        // Create transition
+        var transition = svg.transition().duration(500);
+
+        svg.select("#x-axis").transition(transition).call(xAxisCall);
+        // svg.select("#y-axis").transition(transition).call(yAxisCall);
+
+        svg.selectAll("path").attr('d', line);
+    };
+
+    var brush = d3.brushX().on('end', brushEnd);
+
+    // Add brush
+    svg.append("g")
+        .attr('class', 'graph-brush')
+        .call(brush);
+    
+
 	// Y grid
 	function yGrid() {		
-		return d3.axisLeft(scaleValue)
-			.ticks(TICKS);
+		return d3.axisLeft(scaleValue).ticks(TICKS);
 	}
 
 	var labels = [];
@@ -181,58 +224,56 @@ function DrawLineGraph(location, data, id, append) {
 			}
 		});
 
-		//Add annotations
-		var newLabels = [{
-			data: { date: minX, value: formatPrice(minY) },
-				x: scaleTime(minX),
-				y: scaleValue(minY).toFixed(2),
-				dx: 10,
-				dy: 10
-			}, {
-			data: { date: maxX, value: formatPrice(maxY) },
-				x: scaleTime(maxX),
-				y:scaleValue(maxY).toFixed(2),	
-				dx: 10,
-				dy: 10
-		}].map(function (l) {
-			l.note = Object.assign({}, l.note, {
-				title: "$" + l.data.value,
-				label: "" + timeFormat(l.data.date)
-			});
-			l.connector = {
-				end: "dot",
-			};
+		// //Add annotations
+		// var newLabels = [{
+		// 	data: { date: minX, value: formatPrice(minY) },
+		// 		x: scaleTime(minX),
+		// 		y: scaleValue(minY).toFixed(2),
+		// 		dx: 10,
+		// 		dy: 10
+		// 	}, {
+		// 	data: { date: maxX, value: formatPrice(maxY) },
+		// 		x: scaleTime(maxX),
+		// 		y:scaleValue(maxY).toFixed(2),	
+		// 		dx: 10,
+		// 		dy: 10
+		// }].map(function (l) {
+		// 	l.note = Object.assign({}, l.note, {
+		// 		title: "$" + l.data.value,
+		// 		label: "" + timeFormat(l.data.date)
+		// 	});
+		// 	l.connector = {
+		// 		end: "dot",
+		// 	};
 
-			return l;
-		});
+		// 	return l;
+		// });
 
-		newLabels.forEach(d => labels.push(d));
+		// newLabels.forEach(d => labels.push(d));
 
-		let path = svg.append('path');
-
-		let line = d3.line()
-			.x(function(d) { return scaleTime(d.time); })
-			.y(function(d) { return scaleValue(d.value); });
+		let path = g.append('path');
 
 		// Adding line 
 		path.data([dat[line_key]]).attr('d', line).attr('stroke', 'black').attr('stroke-width', '2px').attr('fill', 'none');
 	}
 
-	// Creating axis
-	var xAxisCall = d3.axisBottom()
+	// Creating x axis
+	var xAxisCall = d3.axisBottom(scaleTime)
 		// %a for day of the week
 		.tickFormat(d3.timeFormat("%I:%M%p"))
 		.ticks(TICKS);
-	xAxisCall.scale(scaleTime);
-	var yAxisCall = d3.axisLeft()
+    // xAxisCall.scale(scaleTime);
+    
+    // Creating y axis 
+	var yAxisCall = d3.axisLeft(scaleValue)
 		.tickFormat(function(d) {
 			return "$" + abbrevPrice(d);
 		})
 		.ticks(TICKS);
-	yAxisCall.scale(scaleValue);
+	// yAxisCall.scale(scaleValue);
 
 	// Add axis
-	svg.append('g')
+	g.append('g')
 		.attr('id', 'x-axis')
 		.attr('transform', 'translate(0, '+ (height - (margin.top-5)) +')')
 		.style('font-size', 12)
@@ -242,7 +283,7 @@ function DrawLineGraph(location, data, id, append) {
 	        .attr("transform", "rotate(-35)")
 	        .attr('font-size', '10px');
 
-	svg.append('g')
+	g.append('g')
 		.attr('id', 'y-axis')
 		.attr('transform', 'translate(' + (margin.left-5) +', ' + '0' + ')')
 		.style('font-size', 12)
@@ -251,7 +292,7 @@ function DrawLineGraph(location, data, id, append) {
 	// Add gridlines
 	
 	// add the Y gridlines
-	svg.append("g")			
+	g.append("g")			
 		.attr("class", "graph-grid")
 		.call(yGrid()
 			.tickSize(-width)
@@ -260,9 +301,8 @@ function DrawLineGraph(location, data, id, append) {
 
 	// Add graph title
 	if (tags) {
-
 		if (tags.title) {
-			svg.append('text').text(tags.title)
+			g.append('text').text(tags.title)
 				.attr('class', 'stockGraph-title')
 				.attr('font-size', '20px')
 				.attr('text-anchor', 'middle')
@@ -271,21 +311,21 @@ function DrawLineGraph(location, data, id, append) {
 	}
 	console.log(labels)
 
-	var annotate = d3.annotation().annotations(labels).editMode(true)
-		.type(d3.annotationCallout)
-		.accessors({ 
-			x: d => scaleTime(d.date), 
-			y: d => scaleValue(d.value).toFixed(2)
-		  })
-		.accessorsInverse({
-			date: d => scaleTime.invert(d.x),
-			value: d => scaleValue.invert(d.y).toFixed(2) 
-		});
+	// var annotate = d3.annotation().annotations(labels).editMode(true)
+	// 	.type(d3.annotationCallout)
+	// 	.accessors({ 
+	// 		x: d => scaleTime(d.date), 
+	// 		y: d => scaleValue(d.value).toFixed(2)
+	// 	  })
+	// 	.accessorsInverse({
+	// 		date: d => scaleTime.invert(d.x),
+	// 		value: d => scaleValue.invert(d.y).toFixed(2) 
+	// 	});
 
-	// Adding annotations for extreme values
-	svg.append('g')
-		.attr('class', 'graph-annotation')
-		.call(annotate);
+	// // Adding annotations for extreme values
+	// svg.append('g')
+	// 	.attr('class', 'graph-annotation')
+	// 	.call(annotate);
 
 };
 	
