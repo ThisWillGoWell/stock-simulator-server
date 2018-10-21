@@ -11,6 +11,9 @@ const COLOR_PALETTE = [
 ];
 
 
+
+
+
 function formatData(data) {
 	// Setting local time			
 	Object.values(data).forEach(function(d) {
@@ -363,8 +366,11 @@ function DrawLineGraph(location, data, id, append) {
 		.call(yGrid()
 			.tickSize(-width)
 			.tickFormat("")
-		)
-		
+
+       
+
+
+
 	// Add graph title
 	if (tags) {
 		if (tags.title) {
