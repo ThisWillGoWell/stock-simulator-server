@@ -57,7 +57,9 @@
 	<body>
 
 		<div class="app--container" id="app--container">
-			
+			<section id="loader--container">
+				<div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+			</section>
 			<section id="modal--container">
 				<div class="modal-card" v-if="showModal">
 					<button v-on:click="closeModal()"><i class="material-icons">close</i></button>
@@ -649,14 +651,12 @@
 						</div>
 						<!-- TODO: this tab collides with the sidebar -->
 						<div id="store--view" class="view">
-							
 							<div class="flex-grid--container">
 								<div class="flex-column-100">
 									<div class="item-category buffer-top">EXPERIENCE</div>
 								</div>
 								<div class="flex-column-100">
 									<ul id="item-list">
-
 										<li v-for="level in experience" :key="level.label">
 											<div class="card item" v-bind:class="{ 'item-disable': isLevel(level.level)}">
 												<div class="item-name">{{ level.label }}</div>
@@ -667,18 +667,15 @@
 												<div class="buy-item-btn" v-on:click="level_up(level.level)">BUY</div>
 											</div>
 										</li>
-	
 									</ul>
-									
 								</div>
-								
-								
 								<div class="flex-column-100">
 									<div class="item-category buffer-top">ABILITIES</div>
 								</div>
 								<ul id="item-list">
 									<li v-for="item in items" :key="item.type">
 										<div class="card item">
+											
 											<div class="item-name">{{ item.label }}</div>
 											<div class="item-description">{{ item.note }}</div>
 										

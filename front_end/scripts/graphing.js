@@ -309,23 +309,23 @@ function DrawLineGraph(location, data, id, append) {
         .style('display', 'none');
 
     // Adding hover tooltip layer
-    svg.append('rect')
-        .attr('class', 'hover-overlay')
-        .attr('width', width)
-        .attr('height', height)
-        .on('mouseover', function() { ttip.style('display', null); })
-        .on('mousemove', function() {
-            console.log(d3.mouse(this))
-            var xVal = scaleTime.invert(d3.mouse(this)[0]);
-            Object.values(dat).forEach(function(d) {
-                    var i = bisectTime(d, xVal, 1, d.length - 1 );
-                    var d0 = d[i - 1]; 
-                    var d1 = d[i];
-                    var dat = xVal - d0.time > d1.time - xVal ? d1 : d0;
-                    console.log(dat);
-                });
-        })
-        .on('mouseout', function() { ttip.style('display', 'none'); });
+    // svg.append('rect')
+    //     .attr('class', 'hover-overlay')
+    //     .attr('width', width)
+    //     .attr('height', height)
+    //     .on('mouseover', function() { ttip.style('display', null); })
+    //     .on('mousemove', function() {
+    //         console.log(d3.mouse(this))
+    //         var xVal = scaleTime.invert(d3.mouse(this)[0]);
+    //         Object.values(dat).forEach(function(d) {
+    //                 var i = bisectTime(d, xVal, 1, d.length - 1 );
+    //                 var d0 = d[i - 1]; 
+    //                 var d1 = d[i];
+    //                 var dat = xVal - d0.time > d1.time - xVal ? d1 : d0;
+    //                 console.log(dat);
+    //             });
+    //     })
+    //     .on('mouseout', function() { ttip.style('display', 'none'); });
 
 	// Add graph title
 	if (tags) {
