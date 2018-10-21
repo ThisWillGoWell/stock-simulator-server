@@ -6,8 +6,21 @@ function formatData(data) {
 	Object.values(data).forEach(function(d) {
 		d.forEach(function(i) {
 			i.time = new Date(i.time);
-		})
-	})
+		});
+		
+		// Sorting by time
+		d.sort(function(a,b) {
+			if (a.time > b.time) {
+				return 1;
+			} else if (a.time < b.time) {
+				return -1;
+			} else {
+				return 0;
+			}
+		});
+	});
+
+
 	// if networth add points in to make a step graph
 	return data;
 };
@@ -28,7 +41,6 @@ function queryDrawGraph(location, uuids, fields, append = false) {
 	var requests = [];
 
 	uuids.forEach(function(d, i) {
-		console.log(i)
 		queryDB(uuids[i], fields[i], requests, responses, data);
 	});
   
@@ -73,7 +85,8 @@ function queryDB(uuid, field, requests, responses, data, num_points = 1000, leng
 		});
 
 		// Store the data
-		data.data.push(points);//[msg.msg.message.field] = points;
+		let key = msg.msg.message.field + "-" + msg.msg.message.uuid;
+		data.data[key] = points;//.push(points);//[msg.msg.message.field] = points;
 
 		// Make note the data is available
 		responses.push(msg.request_id);
@@ -84,11 +97,37 @@ function queryDB(uuid, field, requests, responses, data, num_points = 1000, leng
   
 }
 
+// Takes a legend lable key and cleans up uuids
+function cleanLegendLabel(label) {
+	var parts = label.split('-');
+	var field = parts[0];
+	var uuid = parts[1];
+	var label;
+
+	// According to the field get the object label
+	switch(field) {
+		case 'current_price':
+			label = vm_stocks.stocks[uuid].ticker_id;
+			break;
+		case 'net_worth':
+			label = vm_portfolios.portfolios[uuid].name;
+			label += "'s networth";
+			break;
+		case 'wallet':
+			label = vm_portfolios.portfolios[uuid].name;
+			label += "'s wallet";
+			break;
+	}
+
+	return label;
+}
+
 
 // TODO: tags for d3 plotting(title labels etc) sent with dat object in an serparate property
 //			tags can pass the type of data being sent through so more data structuring can be done here like min an maxs 
 function DrawLineGraph(location, data, id, append) {
 	console.log(data)
+
 	// Pulling out data, use tags to change data if need
 	var dat = formatData(data.data);
 	console.log(dat)
@@ -120,7 +159,7 @@ function DrawLineGraph(location, data, id, append) {
 		.attr('width', width)
 		.attr('height', height)
     
-    var g = svg.append("g");
+    var g = svg.append("g").attr("class", "line-area");
 	
 	var minTime = new Date('3000 Jan 1');
 	var maxTime = new Date('1999 Jan 1');
@@ -151,9 +190,9 @@ function DrawLineGraph(location, data, id, append) {
 	// Creating graph scales
 	var scaleTime = d3.scaleTime()
 		.domain([minTime, maxTime])
-		.range([margin.right, width - margin.left])
+		.range([margin.left, width - margin.right])
 	var scaleValue = d3.scaleLinear()
-		.domain([minValue - (minValue/10), maxValue + (maxValue/10)])
+		.domain([minValue - (maxValue/10), maxValue + (maxValue/10)])
 		.range([height  - margin.top, margin.bottom]);
 
     // Creating the line logic
@@ -197,74 +236,77 @@ function DrawLineGraph(location, data, id, append) {
     // Add brush
     svg.append("g")
         .attr('class', 'graph-brush')
+		.on('mouseover', function() { toolTips.style('display', null); })
+		.on('mousemove', function() {
+			var mouseX = d3.mouse(this)[0];
+			var mouseY = d3.mouse(this)[1];
+			var xVal = scaleTime.invert(mouseX);
+			var legendOffset = 10;
+			Object.keys(dat).forEach(function(key) {
+					// Get index of where a 'new' point would fit 
+					var i = bisectTime(dat[key], xVal, 1, dat[key].length - 1);
+					// Find points on either side
+					var d0 = dat[key][i - 1]; 
+					var d1 = dat[key][i];
+					// Compare which is closer
+					var tipPoint = xVal - d0.time > d1.time - xVal ? d1 : d0;
+
+					d3.select('#' + key).attr('transform', 'translate(' + scaleTime(tipPoint.time) + ',' + scaleValue(tipPoint.value) + ')');
+					d3.select('#legend-' + key).text(cleanLegendLabel(key) + ': $' + formatPrice(tipPoint.value));
+				});
+
+			legend.attr('transform', 'translate(' + (mouseX + 15) + ',' + (mouseY + 15) + ')');
+		})
+		.on('mouseout', function() { 
+			// Get max of each graph
+
+			toolTips.style('display', 'none'); })
         .call(brush);
     
     // Used when finding which point to tooltip
-    var bisectTime = d3.bisector(function(d) {
-            return d.time
-        }).left;
+    var bisectTime = d3.bisector(d => d.time).left;
 
-	// Y grid
+	// Creating graph legend
+	var legend = svg.append('g')
+		.attr('class', 'graph-legend')
+		.style('pointer-events', 'none');
+	
+		// Y grid
 	function yGrid() {
 		return d3.axisLeft(scaleValue).ticks(TICKS);
 	}
 
 	var labels = [];
-
+	var legendOffset = 0;
 	for (line_key in dat) {
-		// const timeFormat = d3.timeFormat("%I:%M %p")
-		
-		// var minY = Number.POSITIVE_INFINITY;
-		// var maxY = Number.NEGATIVE_INFINITY;
-		// var minX, maxX;
-		// dat[line_key].forEach(function(d) {
-		// 	if (minY > d.value) {
-		// 		minY = d.value;
-		// 		minX = d.time;
-		// 	}
-		// 	if (maxY < d.value) {
-		// 		maxY = d.value;
-		// 		maxX = d.time;
-		// 	}
-		// });
-
-		// //Add annotations
-		// var newLabels = [{
-		// 	data: { date: minX, value: formatPrice(minY) },
-		// 		x: scaleTime(minX),
-		// 		y: scaleValue(minY).toFixed(2),
-		// 		dx: 10,
-		// 		dy: 10
-		// 	}, {
-		// 	data: { date: maxX, value: formatPrice(maxY) },
-		// 		x: scaleTime(maxX),
-		// 		y:scaleValue(maxY).toFixed(2),	
-		// 		dx: 10,
-		// 		dy: 10
-		// }].map(function (l) {
-		// 	l.note = Object.assign({}, l.note, {
-		// 		title: "$" + l.data.value,
-		// 		label: "" + timeFormat(l.data.date)
-		// 	});
-		// 	l.connector = {
-		// 		end: "dot",
-		// 	};
-
-		// 	return l;
-		// });
-
-        // newLabels.forEach(d => labels.push(d));
-        
-        // Sorting the data
-        // dat[line_key].sort(function(a,b) {
-        //     return a > b;
-        // });
-
+		// Creating space for each line graph
 		let path = g.append('path').attr('class','graph-line');
 
 		// Adding line 
 		path.data([dat[line_key]]).attr('d', line).attr('stroke', 'black').attr('stroke-width', '2px').attr('fill', 'none');
+
+		console.log(line_key);
+		// Adding tooltip for each line
+		let ttip = svg.append('g')
+			.attr('class', 'graph-tooltip')
+			.attr('id', line_key)
+			
+		ttip.append("circle")
+			.attr('r', 10)
+			.style('fill', 'none')
+			.style('stroke', 'black');
+
+		legend.append('text')
+			.attr('id', 'legend-' + line_key)
+			.attr('class', 'legend-item')
+			.attr('y', legendOffset);
+
+		legendOffset += 15;
 	}
+
+	// Selecting all tooltips
+	var toolTips = d3.selectAll('.graph-tooltip');
+
 
 	// Creating x axis
 	var xAxisCall = d3.axisBottom(scaleTime)
@@ -296,12 +338,13 @@ function DrawLineGraph(location, data, id, append) {
 
 	// Add gridlines
 	// add the Y gridlines
-	g.append("g")			
+	g.append("g")
 		.attr("class", "graph-grid")
 		.call(yGrid()
 			.tickSize(-width)
 			.tickFormat("")
         )
+<<<<<<< HEAD
         
     // Adding tooltip
     var ttip = svg.append('g')
@@ -326,6 +369,8 @@ function DrawLineGraph(location, data, id, append) {
     //             });
     //     })
     //     .on('mouseout', function() { ttip.style('display', 'none'); });
+=======
+>>>>>>> 71a4de9139e96c1aa26cbb5c380bf056aae31673
 
 	// Add graph title
 	if (tags) {
@@ -338,23 +383,6 @@ function DrawLineGraph(location, data, id, append) {
 		}
 	}
 	console.log(labels)
-
-	// var annotate = d3.annotation().annotations(labels).editMode(true)
-	// 	.type(d3.annotationCallout)
-	// 	.accessors({ 
-	// 		x: d => scaleTime(d.date), 
-	// 		y: d => scaleValue(d.value).toFixed(2)
-	// 	  })
-	// 	.accessorsInverse({
-	// 		date: d => scaleTime.invert(d.x),
-	// 		value: d => scaleValue.invert(d.y).toFixed(2) 
-	// 	});
-
-	// // Adding annotations for extreme values
-	// svg.append('g')
-	// 	.attr('class', 'graph-annotation')
-	// 	.call(annotate);
-
 };
 	
 
