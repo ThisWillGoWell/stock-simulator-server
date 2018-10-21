@@ -1,12 +1,5 @@
 const TICKS = 5;
-const COLOR_1 = "#ef5350";
-const COLOR_2 = "#AB47BC";
-const COLOR_3 = "#5C6BC0";
-const COLOR_4 = "#29B6F6";
-const COLOR_5 = "#66BB6A";
-const COLOR_6 = "#FFCA28";
-const COLOR_7 = "#FF7043";
-const COLOR_8 = "#D4E157";
+
 
 
 
