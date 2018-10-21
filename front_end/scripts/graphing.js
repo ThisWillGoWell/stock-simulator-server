@@ -248,7 +248,9 @@ function DrawLineGraph(location, data, id, append) {
     // Add brush
     svg.append("g")
         .attr('class', 'graph-brush')
-		.on('mouseover', function() { toolTips.style('display', null); })
+		.on('mouseover', function() { 
+			toolTips.style('display', null); 
+		})
 		.on('mousemove', function() {
 			var mouseX = d3.mouse(this)[0];
 			var mouseY = d3.mouse(this)[1];
