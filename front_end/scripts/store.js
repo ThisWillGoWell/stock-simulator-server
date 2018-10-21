@@ -1,8 +1,10 @@
-var vm_store;
 // Get item and level details
 var storeJSON = $.getJSON( "json/store.json", function(data) {
     storeJSON = data;
+    console.log(storeJSON)
 });
+var vm_store;
+
 
 function load_store_tab() {
 
