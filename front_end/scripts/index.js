@@ -78,6 +78,9 @@ registerRoute("connect", function(msg) {
     console.log(msg);
     sessionStorage.setItem("uuid", msg.msg.uuid);
     createConfig(msg.msg.config);
+    setTimeout(function() {
+      $('#loader--container').addClass("exit");
+    }, 2000);
   } else {
     let err_msg = msg.msg.err;
     console.log(err_msg);
