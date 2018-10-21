@@ -265,12 +265,24 @@ function DrawLineGraph(location, data, id, append) {
 					d3.select('#' + key).attr('transform', 'translate(' + scaleTime(tipPoint.time) + ',' + scaleValue(tipPoint.value) + ')');
 					d3.select('#legend-' + key).html(cleanLegendLabel(key) + ': $' + formatPrice(tipPoint.value));
 				});
+			
+			// Get legend size
+			var w = legendParent.select('div').node().getBoundingClientRect().width;
+			var h = legendParent.select('div').node().getBoundingClientRect().height;
+
+			// orientate the legend correctly
 			if (scaleTime(mouseX) > scaleTime(width/2)) {
-				// get legend size
-				let wid = legendParent.select('div').node().getBoundingClientRect().width;
-				legendParent.attr('transform', 'translate(' + (mouseX - wid - 30) + ',' + (mouseY + 15) + ')');
+				if (scaleValue(mouseY) > scaleValue(height/2)) {
+					legendParent.attr('transform', 'translate(' + (mouseX - w - 30) + ',' + (mouseY + 15) + ')');
+				} else {
+					legendParent.attr('transform', 'translate(' + (mouseX - w - 30) + ',' + (mouseY - h - 30) + ')');
+				}
 			} else {
-				legendParent.attr('transform', 'translate(' + (mouseX + 15) + ',' + (mouseY + 15) + ')');
+				if (scaleValue(mouseY) > scaleValue(height/2)) {
+					legendParent.attr('transform', 'translate(' + (mouseX + 15) + ',' + (mouseY + 15) + ')');
+				} else {
+					legendParent.attr('transform', 'translate(' + (mouseX + 15) + ',' + (mouseY - h - 30) + ')');
+				}
 			}
 		})
 		.on('mouseout', function() { 

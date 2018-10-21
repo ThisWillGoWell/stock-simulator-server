@@ -22,11 +22,11 @@ function toggleGenericTextFieldModal() {
 //     $("#modal--container").removeClass("open");
 // });
 
-function sendTrade() {
+function sendTrade(stock_id, amt) {
     // Creating message for the trade request
     var msg = {
-        stock_id: buySellModal.stock_uuid,
-        amount: buySellModal.buySellAmount
+        stock_id: stock_id,
+        amount: amt
     };
 
     var callback = function(msg) {
