@@ -1,4 +1,14 @@
 const TICKS = 5;
+const COLOR_PALETTE = [
+	"#EF5350",
+	"#AB47BC",
+	"#5C6BC0",
+	"#29B6F6",
+	"#66BB6A",
+	"#FFCA28",
+	"#FF7043",
+	"#D4E157",
+];
 
 
 function formatData(data) {
@@ -240,7 +250,6 @@ function DrawLineGraph(location, data, id, append) {
 			var mouseX = d3.mouse(this)[0];
 			var mouseY = d3.mouse(this)[1];
 			var xVal = scaleTime.invert(mouseX);
-			var legendOffset = 10;
 			Object.keys(dat).forEach(function(key) {
 					// Get index of where a 'new' point would fit 
 					var i = bisectTime(dat[key], xVal, 1, dat[key].length - 1);
@@ -251,14 +260,18 @@ function DrawLineGraph(location, data, id, append) {
 					var tipPoint = xVal - d0.time > d1.time - xVal ? d1 : d0;
 
 					d3.select('#' + key).attr('transform', 'translate(' + scaleTime(tipPoint.time) + ',' + scaleValue(tipPoint.value) + ')');
-					d3.select('#legend-' + key).text(cleanLegendLabel(key) + ': $' + formatPrice(tipPoint.value));
+					d3.select('#legend-' + key).html(cleanLegendLabel(key) + ': $' + formatPrice(tipPoint.value));
 				});
-
-			legend.attr('transform', 'translate(' + (mouseX + 15) + ',' + (mouseY + 15) + ')');
+			if (scaleTime(mouseX) > scaleTime(width/2)) {
+				// get legend size
+				let wid = legendParent.select('div').node().getBoundingClientRect().width;
+				legendParent.attr('transform', 'translate(' + (mouseX - wid - 30) + ',' + (mouseY + 15) + ')');
+			} else {
+				legendParent.attr('transform', 'translate(' + (mouseX + 15) + ',' + (mouseY + 15) + ')');
+			}
 		})
 		.on('mouseout', function() { 
 			// Get max of each graph
-
 			toolTips.style('display', 'none'); })
         .call(brush);
     
@@ -266,23 +279,33 @@ function DrawLineGraph(location, data, id, append) {
     var bisectTime = d3.bisector(d => d.time).left;
 
 	// Creating graph legend
-	var legend = svg.append('g')
-		.attr('class', 'graph-legend')
-		.style('pointer-events', 'none');
+	var legendParent = svg.append('g')
+		// .attr('class', 'graph-legend')
+		.style('pointer-events', 'none')
+		
+	var legend = legendParent.append('foreignObject')
+		.append('xhtml:div')
+		.attr('class', 'graph-legend');
 	
-		// Y grid
+	
+	// Y grid
 	function yGrid() {
 		return d3.axisLeft(scaleValue).ticks(TICKS);
 	}
 
 	var labels = [];
-	var legendOffset = 0;
+	var i = 0;
+
 	for (line_key in dat) {
 		// Creating space for each line graph
 		let path = g.append('path').attr('class','graph-line');
 
 		// Adding line 
-		path.data([dat[line_key]]).attr('d', line).attr('stroke', 'black').attr('stroke-width', '2px').attr('fill', 'none');
+		path.data([dat[line_key]])
+			.attr('d', line)
+			.attr('stroke', COLOR_PALETTE[i])
+			.attr('stroke-width', '2px')
+			.attr('fill', 'none');
 
 		console.log(line_key);
 		// Adding tooltip for each line
@@ -292,19 +315,18 @@ function DrawLineGraph(location, data, id, append) {
 			
 		ttip.append("circle")
 			.attr('r', 4)
-			.style('fill', 'none')
-			.style('stroke', 'black');
+			.style('fill', COLOR_PALETTE[i]);
 
-		legend.append('text')
+		legend.append('span')
 			.attr('id', 'legend-' + line_key)
 			.attr('class', 'legend-item')
-			.attr('y', legendOffset);
+			.style('color', COLOR_PALETTE[i]);
 
-		legendOffset += 15;
+		i++;
 	}
 
 	// Selecting all tooltips
-	var toolTips = d3.selectAll('.graph-tooltip');
+	var toolTips = d3.selectAll('.graph-legend');
 
 
 	// Creating x axis
@@ -335,8 +357,7 @@ function DrawLineGraph(location, data, id, append) {
 		.style('font-size', 12)
 		.call(yAxisCall);
 
-	// Add gridlines
-	// add the Y gridlines
+	// adding horizontal gridlines
 	g.append("g")
 		.attr("class", "graph-grid")
 		.call(yGrid()
