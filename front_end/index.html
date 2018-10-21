@@ -58,7 +58,10 @@
 
 		<div class="app--container" id="app--container">
 			<section id="loader--container">
-				<div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+				<div class="loader-content">
+					<div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+					<div class="loader-message">loading stocks...</div>
+				</div>
 			</section>
 			<section id="modal--container">
 				<div class="modal-card" v-if="showModal">
@@ -339,7 +342,9 @@
 										<tbody>
 											<tr class="clickable" v-for="stock in currUserStocks" :key='stock.uuid' v-bind:uuid="stock.uuid">
 												<th class="stock-ticker-id" scope="row" v-bind:tid="stock.stock_ticker" style="line-height: 40px;">{{ stock.stock_ticker }}</th>
-												<td class="stock-price" style="text-align: right; padding-right: 25px;">{{ stock.amount }}</td>
+												<td class="stock-price" style="text-align: right; padding-right: 25px;">
+													<div class="sell-all-btn">SELL ALL ({{ stock.amount }})</div>
+												</td>
 												<td class="price-alter stock-price" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_price) }}</td>
 												<td class="price-alter stock-price" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_value) }}</td>
 												<td class="stock-change" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_roi) }}</td>
@@ -551,7 +556,7 @@
 													  </li>
 												</ul>
 												
-												<!-- <div class="money-transfer-btn">SEND CASH</div> -->
+												
 												</td>
 											  
 											  <td class="stock-open-shares" style="padding-right: 25px;">${{ toPrice(investor.wallet) }}</td>
