@@ -365,7 +365,7 @@ function DrawLineGraph(location, data, id, append) {
 		.attr("class", "graph-grid")
 		.call(yGrid()
 			.tickSize(-width)
-			.tickFormat("")
+			.tickFormat(""));
 
        
 
