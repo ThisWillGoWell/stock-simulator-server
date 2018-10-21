@@ -2311,6 +2311,27 @@ table thead.table-top-bar tr th:hover{
     border-left: 1px solid rgba(0,0,0,0.25);
 }
 
+.sell-all-btn {
+    padding: 0 20px;
+    border-radius: 50px;
+    display: inline-block;
+    color: rgba(0, 0, 0, 0.34);
+    background-color: rgba(0, 0, 0, 0.14);
+    -moz-transition: all ease-in-out 0.17s;
+    -o-transition: all ease-in-out 0.17s;
+    -webkit-transition: all ease-in-out 0.17s;
+    transition: all ease-in-out 0.17s;
+    font-size: 12px;
+    line-height: 40px;
+}
+
+.sell-all-btn:hover {
+    padding: 0 25px;
+    color: rgba(255, 255, 255, 1);
+    transform: translateX(3.125px);
+    background-color: #1abc9c;
+}
+
 /* LOADERS */
 
 #loader--container {
@@ -2335,16 +2356,35 @@ table thead.table-top-bar tr th:hover{
     
 }
 
-.lds-roller {
+#loader--container.exit .loader-content{
+    display: none;
+}
+
+.loader-content {
     position: absolute;
     top: 0;
     bottom: 0;
     left: 0;
     right: 0;
     margin: auto;
+    display: inline;
+    height: 100px;
+}
+.loader-message {
+    text-align: center;
+    color: #fafbfc;
+    font-size: 18px;
+    font-weight: 100;
+    display: block;
+    letter-spacing: 1px;
+    text-shadow: 2px 2px 3px rgba(0,0,0,0.1);
+}
+.lds-roller {
+    
     display: inline-block;
     width: 64px;
     height: 64px;
+    margin-bottom: 25px;
   }
   .lds-roller div {
     animation: lds-roller 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
@@ -2461,7 +2501,7 @@ table thead.table-top-bar tr th:hover{
     to   { opacity: 1; transform: translateX(0px) scaleY(1);}
 }
 
-/* .card.item:before {
+.card.item:before {
     position: absolute;
     top: 0;
     bottom: 0;
@@ -2479,7 +2519,7 @@ table thead.table-top-bar tr th:hover{
 .card.item.item-disable:before{
     pointer-events: none;
     background-color: rgba(0,0,0,1);
-} */
+}
 
 
 /* Graphing */
