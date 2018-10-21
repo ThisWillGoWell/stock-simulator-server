@@ -121,7 +121,6 @@ function cleanLegendLabel(label) {
 			label += "'s wallet";
 			break;
 	}
-
 	return label;
 }
 
@@ -295,7 +294,7 @@ function DrawLineGraph(location, data, id, append) {
 			.attr('id', line_key)
 			
 		ttip.append("circle")
-			.attr('r', 10)
+			.attr('r', 4)
 			.style('fill', 'none')
 			.style('stroke', 'black');
 
@@ -346,7 +345,10 @@ function DrawLineGraph(location, data, id, append) {
 		.call(yGrid()
 			.tickSize(-width)
 			.tickFormat("")
-        )
+
+       
+
+
 
 	// Add graph title
 	if (tags) {

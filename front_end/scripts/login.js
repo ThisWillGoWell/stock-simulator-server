@@ -186,11 +186,11 @@ $( document ).ready(function() {
           }
         },
         "size": {
-          "value": 5,
+          "value": 3,
           "random": true,
           "anim": {
             "enable": false,
-            "speed": 40,
+            "speed": 200,
             "size_min": 0.3,
             "sync": false
           }
@@ -204,7 +204,7 @@ $( document ).ready(function() {
         },
         "move": {
           "enable": true,
-          "speed": 2,
+          "speed": 0.5,
           "direction": "none",
           "random": false,
           "straight": false,
