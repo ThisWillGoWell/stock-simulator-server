@@ -73,6 +73,21 @@ function load_investors_tab() {
           let byCol = this.sortBy;
           let direction = this.sortDesc;
 
+          if (byCol === "favorites") {
+            favs = vm_config.config.fav.users;
+            investors = investors.sort(function(a, b) {
+              if (favs.indexOf(a.uuid) === favs.indexOf(b.uuid)) {
+                return 0;
+              }
+              if (favs.indexOf(a.uuid) > -1) {
+                return direction;
+              } else {
+                return -direction;
+              }
+            })
+            return investors;
+          }
+
           investors = investors.sort(function(a, b) {
             if (a[byCol] > b[byCol]) {
               return -direction;
