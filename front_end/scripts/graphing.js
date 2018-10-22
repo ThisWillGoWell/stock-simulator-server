@@ -1,4 +1,4 @@
-const TICKS = 5;
+const TICKS = 6;
 const COLOR_PALETTE = [
 	"#EF5350",
 	"#AB47BC",
@@ -202,7 +202,7 @@ function DrawLineGraph(location, data, id, append) {
 	// Creating graph scales
 	var scaleTime = d3.scaleTime()
 		.domain([minTime, maxTime])
-		.range([margin.left, width - margin.right])
+		.range([margin.left, width])
 	var scaleValue = d3.scaleLinear()
 		.domain([minValue - (maxValue/10), maxValue + (maxValue/10)])
 		.range([height  - margin.top, margin.bottom]);
@@ -328,6 +328,7 @@ function DrawLineGraph(location, data, id, append) {
 		// Adding tooltip for each line
 		let ttip = svg.append('g')
 			.attr('class', 'graph-tooltip')
+			.style('pointer-events', 'none')
 			.attr('id', line_key)
 			
 		ttip.append("circle")
