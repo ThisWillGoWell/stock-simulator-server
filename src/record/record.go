@@ -1,6 +1,7 @@
 package record
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/stock-simulator-server/src/sender"
@@ -125,29 +126,31 @@ func walkRecords(book *Book, shares int64, mark bool) int64 {
 	totalCost := int64(0)
 
 	for sharesLeft != 0 {
+		fmt.Println(shares, amountCleared, sharesLeft, len(book.ActiveBuyRecords))
+		if amountCleared >= len(book.ActiveBuyRecords) {
+			fmt.Println("WRONG")
+		}
 		lastAmountCleared = sharesLeft
 		activeBuyRecord := book.ActiveBuyRecords[amountCleared]
 		record := records[activeBuyRecord.RecordUuid]
 		removedShares := activeBuyRecord.AmountLeft
 
-		if activeBuyRecord.AmountLeft >= sharesLeft {
+		if activeBuyRecord.AmountLeft > sharesLeft {
 			removedShares = sharesLeft
 			sharesLeft = 0
 		} else {
 			sharesLeft = sharesLeft - activeBuyRecord.AmountLeft
+			amountCleared += 1
 		}
 		totalCost += removedShares * record.SharePrice
 
-		if sharesLeft != 0 {
-			amountCleared += 1
-		}
 	}
-	if sharesLeft == 0 {
-		amountCleared += 1
-	}
+
 	if mark {
-		book.ActiveBuyRecords[0].AmountLeft -= lastAmountCleared
 		book.ActiveBuyRecords = book.ActiveBuyRecords[amountCleared:]
+		if len(book.ActiveBuyRecords) != 0 {
+			book.ActiveBuyRecords[0].AmountLeft -= lastAmountCleared
+		}
 	}
 	return totalCost
 }
