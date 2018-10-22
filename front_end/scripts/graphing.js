@@ -14,13 +14,23 @@ const COLOR_PALETTE = [
 
 
 
-function formatData(data) {
+function formatData(data, showWallet) {
+
+	// Remove wallet data if needed
+	if (!showWallet) {
+		Object.keys(data).forEach(function(d) {
+			if (d.split('-')[0] === 'wallet') {
+				delete data[d];
+			}
+		});
+	}
+
 	// Setting local time			
 	Object.values(data).forEach(function(d) {
 		d.forEach(function(i) {
 			i.time = new Date(i.time);
 		});
-		
+
 		// Sorting by time
 		d.sort(function(a,b) {
 			if (a.time > b.time) {
@@ -33,13 +43,12 @@ function formatData(data) {
 		});
 	});
 
-
 	// if networth add points in to make a step graph
 	return data;
 };
 
 // Get graph data
-function queryDrawGraph(location, uuids, fields, append = false) {
+function queryDrawGraph(location, uuids, fields, append = false, showWallet = true) {
 	if (uuids.length !== fields.length) {
 		console.error("In getGraphData(): fields and uuids are not the same length");
 	}
@@ -65,7 +74,7 @@ function queryDrawGraph(location, uuids, fields, append = false) {
   
 	  if (!stillWaiting) {
 		// draw graph once all the data is back
-		DrawLineGraph(location, data, append = append);
+		DrawLineGraph(location, data, showWallet, append = append);
 	  } else {
 		setTimeout(drawGraphOnceDone, 100);
 	  }
@@ -137,11 +146,11 @@ function cleanLegendLabel(label) {
 
 // TODO: tags for d3 plotting(title labels etc) sent with dat object in an serparate property
 //			tags can pass the type of data being sent through so more data structuring can be done here like min an maxs 
-function DrawLineGraph(location, data, id, append) {
+function DrawLineGraph(location, data, showWallet, append) {
 	console.log(data)
 
 	// Pulling out data, use tags to change data if need
-	var dat = formatData(data.data);
+	var dat = formatData(data.data, showWallet);
 	console.log(dat)
 	
 	var tags = data.tags;
