@@ -10,10 +10,6 @@ const COLOR_PALETTE = [
 	"#D4E157",
 ];
 
-
-
-
-
 function formatData(data, showWallet) {
 
 	// Remove wallet data if needed
@@ -162,13 +158,13 @@ function DrawLineGraph(location, data, showWallet, append) {
 	console.log(data.tags);
 	// logging remove later
 
-	var width = 700;
+	// var width = 700;
 	var height = 500;
 	var margin = {
 		'top': 60,
 		'bottom': 60,
 		'left': 60,
-		'right': 60,
+		'right': 30,
 	};
 	console.log(location);
 
@@ -176,11 +172,20 @@ function DrawLineGraph(location, data, showWallet, append) {
 		d3.select(location).selectAll('svg').remove();
 	}
 
-	var svg = d3.select(location).append('svg')
-		.attr('width', width)
+	var svg = d3.select(location).append('svg');
+
+	// get svg width
+	var width = d3.select(location).node().getBoundingClientRect().width;
+
+	// Setting svg size
+	svg.attr('width', width)
 		.attr('height', height)
-    
-    var g = svg.append("g").attr("class", "line-area");
+	
+	// set up charting area
+	var g = svg.append("g").attr("class", "line-area")
+		.attr('width', width - margin.left - margin.right)
+		.attr('overflow', 'hidden')
+		// .attr('transform', 'translate(0,0)');
 	
 	var minTime = new Date('3000 Jan 1');
 	var maxTime = new Date('1999 Jan 1');
@@ -211,7 +216,7 @@ function DrawLineGraph(location, data, showWallet, append) {
 	// Creating graph scales
 	var scaleTime = d3.scaleTime()
 		.domain([minTime, maxTime])
-		.range([margin.left, width])
+		.range([margin.left, width - margin.right])
 	var scaleValue = d3.scaleLinear()
 		.domain([minValue - (maxValue/10), maxValue + (maxValue/10)])
 		.range([height  - margin.top, margin.bottom]);
@@ -370,7 +375,7 @@ function DrawLineGraph(location, data, showWallet, append) {
 		.ticks(TICKS);
 
 	// Add axis
-	g.append('g')
+	svg.append('g')
 		.attr('id', 'x-axis')
 		.attr('transform', 'translate(0, '+ (height - (margin.top-5)) +')')
 		.style('font-size', 12)
@@ -378,7 +383,7 @@ function DrawLineGraph(location, data, showWallet, append) {
 	    .selectAll("text")	
 	        .attr('font-size', '10px');
 
-	g.append('g')
+	svg.append('g')
 		.attr('id', 'y-axis')
 		.attr('transform', 'translate(' + (margin.left-5) +', ' + '0' + ')')
 		.style('font-size', 12)
