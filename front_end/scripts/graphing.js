@@ -9,6 +9,7 @@ const COLOR_PALETTE = [
 	"#FF7043",
 	"#D4E157",
 ];
+var GRAPH_NUM = 0;
 
 function formatData(data, showWallet) {
 
@@ -143,11 +144,13 @@ function cleanLegendLabel(label) {
 // TODO: tags for d3 plotting(title labels etc) sent with dat object in an serparate property
 //			tags can pass the type of data being sent through so more data structuring can be done here like min an maxs 
 function DrawLineGraph(location, data, showWallet, append) {
-	console.log(data)
+
+	var graphUUID = location + GRAPH_NUM;
+	// Increase graph uuid
+	GRAPH_NUM++;
 
 	// Pulling out data, use tags to change data if need
 	var dat = formatData(data.data, showWallet);
-	console.log(dat)
 	
 	var tags = data.tags;
 
@@ -163,10 +166,9 @@ function DrawLineGraph(location, data, showWallet, append) {
 	var margin = {
 		'top': 60,
 		'bottom': 60,
-		'left': 60,
+		'left': 80,
 		'right': 30,
 	};
-	console.log(location);
 
 	if (!append) {
 		d3.select(location).selectAll('svg').remove();
@@ -174,23 +176,18 @@ function DrawLineGraph(location, data, showWallet, append) {
 
 	var svg = d3.select(location).append('svg');
 
-// 	<defs>
-// 	<clipPath id="clipPath">
-// 		<rect x="15" y="15" width="40" height="40" />
-// 	</clipPath>
-// </defs>
 
-// get svg width
-var width = d3.select(location).node().getBoundingClientRect().width;
+	// get svg width
+	var width = d3.select(location).node().getBoundingClientRect().width;
 
 	// Setting svg size
 	svg.attr('width', width)
 		.attr('height', height);
 
-	// Clip outside of g
+	// Clip outside of line area g
 	svg.append('defs')
 	.append('clipPath')
-		.attr('id', 'line-area')
+		.attr('id', graphUUID)
 		.append('rect')
 			.attr('x', margin.left)
 			.attr('width', width - margin.left - margin.right)
@@ -199,7 +196,7 @@ var width = d3.select(location).node().getBoundingClientRect().width;
 	// set up charting area
 	var g = svg.append("g").attr("class", "line-area")
 		.attr('width', width - margin.left - margin.right)
-		.style('clip-path', 'url(#line-area)');
+		.style('clip-path', 'url(#' + graphUUID + ')');
 	
 	var minTime = new Date('3000 Jan 1');
 	var maxTime = new Date('1999 Jan 1');
@@ -246,32 +243,34 @@ var width = d3.select(location).node().getBoundingClientRect().width;
     }
     var delay = 500, waitingTimeout;
 
+
     // When brushing stops
     function brushEnd() {
         var event = d3.event.selection;
-        console.log(event)
         if (!event) {
             if (!waitingTimeout) return waitingTimeout = setTimeout(waiting, delay);
             scaleTime.domain([minTime, maxTime]);
         } else {
-            console.log(event)
             scaleTime.domain([event[0], event[1]].map(scaleTime.invert, scaleTime));
             svg.select('.graph-brush').call(brush.move, null);
         }
         brushZoom();
     };
-    
+	
+
+	// Action of zooming in
     function brushZoom() {
         // Create transition
         var transition = svg.transition().duration(500);
         
         svg.select("#x-axis").transition(transition).call(xAxisCall);
-        // svg.select("#y-axis").transition(transition).call(yAxisCall);
         
         svg.selectAll(".graph-line").attr('d', line);
     };
 
+
     var brush = d3.brushX().on('end', brushEnd);
+
 
     // Add brush
     svg.append("g")
@@ -352,7 +351,6 @@ var width = d3.select(location).node().getBoundingClientRect().width;
 			.attr('stroke-width', '2px')
 			.attr('fill', 'none');
 
-		console.log(line_key);
 		// Adding tooltip for each line
 		let ttip = svg.append('g')
 			.attr('class', 'graph-tooltip')
