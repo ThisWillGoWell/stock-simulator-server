@@ -174,18 +174,32 @@ function DrawLineGraph(location, data, showWallet, append) {
 
 	var svg = d3.select(location).append('svg');
 
-	// get svg width
-	var width = d3.select(location).node().getBoundingClientRect().width;
+// 	<defs>
+// 	<clipPath id="clipPath">
+// 		<rect x="15" y="15" width="40" height="40" />
+// 	</clipPath>
+// </defs>
+
+// get svg width
+var width = d3.select(location).node().getBoundingClientRect().width;
 
 	// Setting svg size
 	svg.attr('width', width)
-		.attr('height', height)
-	
+		.attr('height', height);
+
+	// Clip outside of g
+	svg.append('defs')
+	.append('clipPath')
+		.attr('id', 'line-area')
+		.append('rect')
+			.attr('x', margin.left)
+			.attr('width', width - margin.left - margin.right)
+			.attr('height', height);
+
 	// set up charting area
 	var g = svg.append("g").attr("class", "line-area")
 		.attr('width', width - margin.left - margin.right)
-		.attr('overflow', 'hidden')
-		// .attr('transform', 'translate(0,0)');
+		.style('clip-path', 'url(#line-area)');
 	
 	var minTime = new Date('3000 Jan 1');
 	var maxTime = new Date('1999 Jan 1');
