@@ -22,11 +22,11 @@ function toggleGenericTextFieldModal() {
 //     $("#modal--container").removeClass("open");
 // });
 
-function sendTrade() {
+function sendTrade(stock_id, amt) {
     // Creating message for the trade request
     var msg = {
-        stock_id: buySellModal.stock_uuid,
-        amount: buySellModal.buySellAmount
+        stock_id: stock_id,
+        amount: amt
     };
 
     var callback = function(msg) {
@@ -87,17 +87,18 @@ function load_modal_vues() {
             },
             determineMax: function() {
                 if (buySellModal.isBuying) {
-                buySellModal.buySellAmount = buySellModal.stock.open_shares;
+                    buySellModal.buySellAmount = buySellModal.stock.open_shares;
                 } else {
-                //determine current users holdings
-                let stock = vm_dash_tab.currUserStocks.filter(
-                    d => d.stock_id === buySellModal.stock_uuid
-                )[0];
-                if (stock !== undefined) {
-                    buySellModal.buySellAmount = stock.amount;
-                } else {
-                    buySellModal.buySellAmount = 0;
-                }
+                    //determine current users holdings
+                    let stock = vm_dash_tab.currUserStocks.filter(
+                        d => d.stock_id === buySellModal.stock_uuid
+                    )[0];
+                    
+                    if (stock !== undefined) {
+                        buySellModal.buySellAmount = stock.amount;
+                    } else {
+                        buySellModal.buySellAmount = 0;
+                    }
                 }
             },
             setIsBuying: function(bool) {
@@ -175,16 +176,16 @@ function load_modal_vues() {
                         }
                     }
                 }
-                // do a prospectiveTrade
-                console.log("DO PROSPECTIVE TRADE");
-                console.log(buySellModal.stock_uuid)
-                console.log(buySellModal.buySellAmount)
-                if (buySellModal.isBuying) {
-                    var amount = buySellModal.buySellAmount;
-                } else {
-                    var amount = buySellModal.buySellAmount * (-1);
-                }
-                prospectiveTrade(buySellModal.stock_uuid, amount);
+                // // do a prospectiveTrade
+                // console.log("DO PROSPECTIVE TRADE");
+                // console.log(buySellModal.stock_uuid)
+                // console.log(buySellModal.buySellAmount)
+                // if (buySellModal.isBuying) {
+                //     var amount = buySellModal.buySellAmount;
+                // } else {
+                //     var amount = buySellModal.buySellAmount * (-1);
+                // }
+                // prospectiveTrade(buySellModal.stock_uuid, amount);
             }
         }
     });
@@ -193,9 +194,9 @@ function load_modal_vues() {
     transferModal = new Vue({
         el: "#transfer-Modal--container",
         data: {
-        showModal: false,
-        recipient_uuid: '',
-        recipient_name: '',
+            showModal: false,
+            recipient_uuid: '',
+            recipient_name: '',
         },
         methods: {
         submitTransfer: function() {

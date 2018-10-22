@@ -29,7 +29,7 @@ function load_research_tab() {
                 console.log(uuids)
                 console.log(fields)
                 // Create the graph
-                queryDrawGraph("#research-graph-svg-main", uuids, fields);
+                queryDrawGraph("#research-graph-svg-main", uuids, fields, false, false);
 
             },
             // updateSelections: function() {

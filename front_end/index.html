@@ -31,6 +31,7 @@
 		<script src="https://d3js.org/d3-time.v1.min.js"></script>
 		<script src="https://d3js.org/d3-time-format.v2.min.js"></script>
 		<script src="scripts/d3/d3-annotation.js"></script>
+		<script src="scripts/d3/d3-brush.js"></script>
 		<script src="scripts/selectize.min.js"></script>
 		<script src="scripts/websocket.js"></script>
 		<script src="scripts/config.js"></script>
@@ -56,7 +57,12 @@
 	<body>
 
 		<div class="app--container" id="app--container">
-			
+			<section id="loader--container">
+				<div class="loader-content">
+					<div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+					<div class="loader-message">loading stocks...</div>
+				</div>
+			</section>
 			<section id="modal--container">
 				<div class="modal-card" v-if="showModal">
 					<button v-on:click="closeModal()"><i class="material-icons">close</i></button>
@@ -336,7 +342,9 @@
 										<tbody>
 											<tr class="clickable" v-for="stock in currUserStocks" :key='stock.uuid' v-bind:uuid="stock.uuid">
 												<th class="stock-ticker-id" scope="row" v-bind:tid="stock.stock_ticker" style="line-height: 40px;">{{ stock.stock_ticker }}</th>
-												<td class="stock-price" style="text-align: right; padding-right: 25px;">{{ stock.amount }}</td>
+												<td class="stock-price" style="text-align: right; padding-right: 25px;">
+													<div class="sell-all-btn" v-on:click='sellAll(stock.uuid)'>SELL ALL ({{ stock.amount }})</div>
+												</td>
 												<td class="price-alter stock-price" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_price) }}</td>
 												<td class="price-alter stock-price" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_value) }}</td>
 												<td class="stock-change" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_roi) }}</td>
@@ -520,8 +528,6 @@
 											  <th scope="col" v-on:click="sortCol('wallet')">Cash <i class="material-icons open-shares">arrow_drop_down</i></th>
 											  <th scope="col" v-on:click="sortCol('net_worth')">Networth <i class="material-icons cost">arrow_drop_down</i></th>
 											  
-											  
-											  
 											</tr>
 										  </thead>
 										  <tbody>
@@ -550,7 +556,7 @@
 													  </li>
 												</ul>
 												
-												<!-- <div class="money-transfer-btn">SEND CASH</div> -->
+												
 												</td>
 											  
 											  <td class="stock-open-shares" style="padding-right: 25px;">${{ toPrice(investor.wallet) }}</td>
@@ -650,147 +656,40 @@
 						</div>
 						<!-- TODO: this tab collides with the sidebar -->
 						<div id="store--view" class="view">
-							
 							<div class="flex-grid--container">
 								<div class="flex-column-100">
 									<div class="item-category buffer-top">EXPERIENCE</div>
 								</div>
 								<div class="flex-column-100">
 									<ul id="item-list">
-										<li>
-											<div class="card item">
-												<div class="item-name">LEVEL 1</div>
-												<div class="item-effects title">"Intern"</div>
+										<li v-for="level in experience" :key="level.label">
+											<div class="card item" v-bind:class="{ 'item-disable': isLevel(level.level)}">
+												<div class="item-name">{{ level.label }}</div>
+												<div class="item-effects title">{{ level.title }}</div>
 												<div class="item-divider"></div>
-												<div class="item-effects">+2% bonus stock value</div>
-												<div class="item-divider"></div>
-												<div class="item-effects">unlock cash transfer</div>
-												<div class="item-cost">$10,000</div>
-												<div class="buy-item-btn" v-on:click="level_up()">BUY</div>
+												<div class="item-effects">{{ level.note }}</div>
+												<div class="item-cost">{{ level.price }}</div>
+												<div class="buy-item-btn" v-on:click="level_up(level.level)">BUY</div>
 											</div>
 										</li>
-										<li>
-												<div class="card item">
-														<div class="item-name">LEVEL 2</div>
-														<div class="item-effects title">"Weekend Trader"</div>
-														<div class="item-divider"></div>
-														<div class="item-effects">+4% bonus stock value</div>
-														
-														<div class="item-cost">$250,000</div>
-														<div class="buy-item-btn">BUY</div>
-													</div>
-										</li>
-										<li>
-												<div class="card item">
-														<div class="item-name">LEVEL 3</div>
-														<div class="item-effects title">"Day Trader"</div>
-														<div class="item-divider"></div>
-														<div class="item-effects">+7% bonus stock value</div>
-														
-														<div class="item-cost">$500,000</div>
-														<div class="buy-item-btn">BUY</div>
-													</div>
-										</li>
-										<li>
-												<div class="card item">
-														<div class="item-name">LEVEL 4</div>
-														<div class="item-effects title">"Regional Manager"</div>
-														<div class="item-divider"></div>
-														<div class="item-effects">+10% bonus stock value</div>
-														<div class="item-cost">$1,000,000</div>
-														<div class="buy-item-btn">BUY</div>
-													</div>
-										</li>
-										<li>
-												<div class="card item">
-														<div class="item-name">LEVEL 5</div>
-														<div class="item-effects title">"Vice President"</div>
-														<div class="item-divider"></div>
-														<div class="item-effects">+12% bonus stock value</div>
-														<div class="item-cost">$1,500,000</div>
-														<div class="buy-item-btn">BUY</div>
-													</div>
-											</li>
-											<li>
-													<div class="card item">
-															<div class="item-name">LEVEL 6</div>
-															<div class="item-effects title">"CFO"</div>
-															<div class="item-divider"></div>
-															<div class="item-effects">+14% bonus stock value</div>
-															<div class="item-cost">$2,500,000</div>
-															<div class="buy-item-btn">BUY</div>
-														</div>
-											</li>
-											<li>
-													<div class="card item">
-															<div class="item-name">LEVEL 7</div>
-															<div class="item-effects title">"Chairman"</div>
-															<div class="item-divider"></div>
-															<div class="item-effects">+17% bonus stock value</div>
-															
-															<div class="item-cost">$5,000,000</div>
-															<div class="buy-item-btn">BUY</div>
-														</div>
-											</li>
-											<li>
-													<div class="card item">
-															<div class="item-name">LEVEL 8</div>
-															<div class="item-effects title">"American Sniper"</div>
-															<div class="item-divider"></div>
-															<div class="item-effects">+20% bonus stock value</div>
-															<div class="item-cost">$10,000,000</div>
-															<div class="buy-item-btn">BUY</div>
-														</div>
-											</li>
 									</ul>
-									
 								</div>
-								
-								
 								<div class="flex-column-100">
 									<div class="item-category buffer-top">ABILITIES</div>
 								</div>
 								<ul id="item-list">
-									<li>
+									<li v-for="item in items" :key="item.type">
 										<div class="card item">
-											<div class="item-name">INSIDER TRADING</div>
-											<div class="item-description">Allows player to see the target price of all stocks.</div>
+											
+											<div class="item-name">{{ item.label }}</div>
+											<div class="item-description">{{ item.note }}</div>
 										
 		
-											<div class="item-cost">$175,000</div>
+											<div class="item-cost">{{ item.price }}</div>
 											<div class="buy-item-btn" v-on:click="purchaseItem()">BUY</div>
 										</div>
 									</li>
-									<li>
-										<div class="card item">
-											<div class="item-name">BLOCK TRADING</div>
-											<div class="item-description">Stops another player from buying or selling stocks for 5 minutes.</div>
-										
-		
-											<div class="item-cost">$25,000</div>
-											<div class="buy-item-btn">BUY</div>
-										</div>
-									</li>
-									<li>
-										<div class="card item">
-											<div class="item-name">BOOST GAINS</div>
-											<div class="item-description">25% higher returns on stock sales for 1 hour.</div>
-										
-		
-											<div class="item-cost">$75,000</div>
-											<div class="buy-item-btn">BUY</div>
-										</div>
-									</li>
-									<li>
-										<div class="card item">
-											<div class="item-name">CRASH THE MARKET</div>
-											<div class="item-description">Resets the target prices of all stocks.</div>
-											<div class="item-cost">$900,000</div>
-											<div class="buy-item-btn">BUY</div>
-										</div>
-									</li>
 								</ul>
-								
 							</div>
 						</div>
 					</div>

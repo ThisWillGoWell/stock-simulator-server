@@ -35,6 +35,11 @@ function load_dashboard_tab() {
       useItem: function(item_uuid) {
         useItem(item_uuid);
       },
+      sellAll: function(stock_id) {
+        var amt = this.currUserStocks.filter(d => d.uuid === stock_id)[0].amount;
+        var id = this.currUserStocks.filter(d => d.uuid === stock_id)[0].stock_id;
+        sendTrade(id, (-1)*amt);
+      },
     },
     computed: {
       currUserPortfolio: function() {
