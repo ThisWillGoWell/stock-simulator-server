@@ -314,14 +314,17 @@ func calculateSellDetails(order *TradeOrder, v *valuable.Stock, port *portfolio.
 func executeTransfer(o *TransferOrder) {
 	if o.ReceiverID == o.PortfolioID {
 		failureOrder("cant transfer to and from same account", o)
+		return
 	}
 	port, exists := portfolio.Portfolios[o.PortfolioID]
 	if !exists {
 		failureOrder("giver portfolio not known", o)
+		return
 	}
 
 	if port.Level == 0 {
 		failureOrder("need to be level 1 to transfer money", o)
+		return
 	}
 
 	receiver, exists := portfolio.Portfolios[o.ReceiverID]

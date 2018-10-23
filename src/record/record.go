@@ -71,7 +71,8 @@ type Record struct {
 
 func NewRecord(recordBookUuid string, amount, sharePrice, taxes, fees, bonus, result int64) {
 	uuid := utils.SerialUuid()
-	MakeRecord(uuid, recordBookUuid, amount, sharePrice, taxes, fees, bonus, result, time.Now())
+	r := MakeRecord(uuid, recordBookUuid, amount, sharePrice, taxes, fees, bonus, result, time.Now())
+	wires.RecordsNewObject.Offer(r)
 	//sender.SendNewObject(portfolioUuid, record)
 }
 
@@ -113,7 +114,8 @@ func MakeRecord(uuid, recordBookUuid string, amount, sharePrice, taxes, fees, bo
 	} else {
 		walkRecords(book, amount*-1, true)
 	}
-	wires.RecordsNewObject.Offer(newRecord)
+	utils.RegisterUuid(uuid, newRecord)
+
 	wires.BookUpdate.Offer(book)
 	sender.SendNewObject(book.PortfolioUuid, newRecord)
 	return newRecord

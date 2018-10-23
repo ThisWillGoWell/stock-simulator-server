@@ -38,7 +38,6 @@ func SerialUuid() string {
 			uuid = fmt.Sprintf("%d", counterNum)
 		}
 	}
-
 	uuidMap[uuid] = nil
 	return uuid
 }

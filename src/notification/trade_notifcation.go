@@ -31,7 +31,7 @@ func SendMoneyTradeNotification(senderUuid, receiverUuid string, amount int64) {
 		Receiver: receiverUuid,
 		Amount:   amount,
 	})
-	NewNotification(senderUuid, RecieveNotificationType, MoneyTransferNotification{
+	NewNotification(receiverUuid, RecieveNotificationType, MoneyTransferNotification{
 		Sender:   senderUuid,
 		Receiver: receiverUuid,
 		Amount:   amount,

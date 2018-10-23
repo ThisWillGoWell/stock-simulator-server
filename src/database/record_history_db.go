@@ -78,6 +78,7 @@ func populateRecords() {
 			panic(err)
 			log.Fatal(err)
 		}
+
 		record.MakeRecord(uuid, recordUuid, amount, sharePrice, taxes, fees, bonus, result, t)
 	}
 	err = rows.Err()
