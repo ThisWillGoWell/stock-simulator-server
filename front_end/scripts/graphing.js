@@ -9,10 +9,7 @@ const COLOR_PALETTE = [
 	"#FF7043",
 	"#D4E157",
 ];
-
-
-
-
+var GRAPH_NUM = 0;
 
 function formatData(data, showWallet) {
 
@@ -147,11 +144,13 @@ function cleanLegendLabel(label) {
 // TODO: tags for d3 plotting(title labels etc) sent with dat object in an serparate property
 //			tags can pass the type of data being sent through so more data structuring can be done here like min an maxs 
 function DrawLineGraph(location, data, showWallet, append) {
-	console.log(data)
+
+	var graphUUID = location + GRAPH_NUM;
+	// Increase graph uuid
+	GRAPH_NUM++;
 
 	// Pulling out data, use tags to change data if need
 	var dat = formatData(data.data, showWallet);
-	console.log(dat)
 	
 	var tags = data.tags;
 
@@ -162,25 +161,42 @@ function DrawLineGraph(location, data, showWallet, append) {
 	console.log(data.tags);
 	// logging remove later
 
-	var width = 700;
+	// var width = 700;
 	var height = 500;
 	var margin = {
 		'top': 60,
 		'bottom': 60,
-		'left': 60,
-		'right': 60,
+		'left': 80,
+		'right': 30,
 	};
-	console.log(location);
 
 	if (!append) {
 		d3.select(location).selectAll('svg').remove();
 	}
 
-	var svg = d3.select(location).append('svg')
-		.attr('width', width)
-		.attr('height', height)
-    
-    var g = svg.append("g").attr("class", "line-area");
+	var svg = d3.select(location).append('svg');
+
+
+	// get svg width
+	var width = d3.select(location).node().getBoundingClientRect().width;
+
+	// Setting svg size
+	svg.attr('width', width)
+		.attr('height', height);
+
+	// Clip outside of line area g
+	svg.append('defs')
+	.append('clipPath')
+		.attr('id', graphUUID)
+		.append('rect')
+			.attr('x', margin.left)
+			.attr('width', width - margin.left - margin.right)
+			.attr('height', height);
+
+	// set up charting area
+	var g = svg.append("g").attr("class", "line-area")
+		.attr('width', width - margin.left - margin.right)
+		.style('clip-path', 'url(#' + graphUUID + ')');
 	
 	var minTime = new Date('3000 Jan 1');
 	var maxTime = new Date('1999 Jan 1');
@@ -211,7 +227,7 @@ function DrawLineGraph(location, data, showWallet, append) {
 	// Creating graph scales
 	var scaleTime = d3.scaleTime()
 		.domain([minTime, maxTime])
-		.range([margin.left, width])
+		.range([margin.left, width - margin.right])
 	var scaleValue = d3.scaleLinear()
 		.domain([minValue - (maxValue/10), maxValue + (maxValue/10)])
 		.range([height  - margin.top, margin.bottom]);
@@ -227,32 +243,34 @@ function DrawLineGraph(location, data, showWallet, append) {
     }
     var delay = 500, waitingTimeout;
 
+
     // When brushing stops
     function brushEnd() {
         var event = d3.event.selection;
-        console.log(event)
         if (!event) {
             if (!waitingTimeout) return waitingTimeout = setTimeout(waiting, delay);
             scaleTime.domain([minTime, maxTime]);
         } else {
-            console.log(event)
             scaleTime.domain([event[0], event[1]].map(scaleTime.invert, scaleTime));
             svg.select('.graph-brush').call(brush.move, null);
         }
         brushZoom();
     };
-    
+	
+
+	// Action of zooming in
     function brushZoom() {
         // Create transition
         var transition = svg.transition().duration(500);
         
         svg.select("#x-axis").transition(transition).call(xAxisCall);
-        // svg.select("#y-axis").transition(transition).call(yAxisCall);
         
         svg.selectAll(".graph-line").attr('d', line);
     };
 
+
     var brush = d3.brushX().on('end', brushEnd);
+
 
     // Add brush
     svg.append("g")
@@ -333,7 +351,6 @@ function DrawLineGraph(location, data, showWallet, append) {
 			.attr('stroke-width', '2px')
 			.attr('fill', 'none');
 
-		console.log(line_key);
 		// Adding tooltip for each line
 		let ttip = svg.append('g')
 			.attr('class', 'graph-tooltip')
@@ -370,7 +387,7 @@ function DrawLineGraph(location, data, showWallet, append) {
 		.ticks(TICKS);
 
 	// Add axis
-	g.append('g')
+	svg.append('g')
 		.attr('id', 'x-axis')
 		.attr('transform', 'translate(0, '+ (height - (margin.top-5)) +')')
 		.style('font-size', 12)
@@ -378,7 +395,7 @@ function DrawLineGraph(location, data, showWallet, append) {
 	    .selectAll("text")	
 	        .attr('font-size', '10px');
 
-	g.append('g')
+	svg.append('g')
 		.attr('id', 'y-axis')
 		.attr('transform', 'translate(' + (margin.left-5) +', ' + '0' + ')')
 		.style('font-size', 12)

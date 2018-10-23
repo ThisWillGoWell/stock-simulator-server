@@ -2525,6 +2525,7 @@ table thead.table-top-bar tr th:hover{
 /* Graphing */
 svg {
     background-color: #FFF;
+    width: 100%;
 }
 
 .graph-annotation {

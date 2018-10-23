@@ -173,6 +173,9 @@ function load_stocks_tab() {
       },
       sortedStocks: function() {
         if (Object.keys(vm_stocks.stocks).length !== 0) {
+            
+            let direction = this.sortDesc;
+            
             // Turn to array and sort
             var stock_array = Object.values(vm_stocks.stocks);
 
@@ -184,9 +187,20 @@ function load_stocks_tab() {
               } else {
                 byCol = "change";
               }
+            } else if (byCol === "favorites") {
+              favs = vm_config.config.fav.stocks;
+              stock_array = stock_array.sort(function(a, b) {
+                if (favs.indexOf(a.uuid) === favs.indexOf(b.uuid)) {
+                  return 0;
+                }
+                if (favs.indexOf(a.uuid) > -1) {
+                  return direction;
+                } else {
+                  return -direction;
+                }
+              })
+              return stock_array;
             }
-
-            let direction = this.sortDesc;
 
             // Sorting array
             stock_array = stock_array.sort(function(a, b) {
