@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/stock-simulator-server/src/money"
+
 	"github.com/stock-simulator-server/src/change"
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/ledger"
@@ -49,7 +51,7 @@ func (port *Portfolio) GetType() string {
 }
 
 func NewPortfolio(portfolioUuid, userUuid string) (*Portfolio, error) {
-	return MakePortfolio(portfolioUuid, userUuid, 100000, 0)
+	return MakePortfolio(portfolioUuid, userUuid, 10*money.Thousand, 0)
 }
 
 func MakePortfolio(uuid, userUUID string, wallet, level int64) (*Portfolio, error) {

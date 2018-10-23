@@ -7,6 +7,12 @@ import (
 	"math/rand"
 	"os"
 
+	"github.com/stock-simulator-server/src/session"
+
+	"github.com/stock-simulator-server/src/money"
+
+	"github.com/stock-simulator-server/src/portfolio"
+
 	"github.com/stock-simulator-server/src/utils"
 	"github.com/stock-simulator-server/src/valuable"
 
@@ -49,10 +55,14 @@ func LoadConfig() {
 	}
 
 	for username, userConfig := range config.Accounts {
-		_, err = account.NewUser(username, userConfig.Name, userConfig.Password)
+		token, err := account.NewUser(username, userConfig.Name, userConfig.Password)
 		if err != nil {
 			fmt.Println("error adding user: ", err)
+		} else {
+			user, _ := session.GetUserId(token)
+			portfolio.Portfolios[account.UserList[user].PortfolioId].Wallet = 100 * money.Thousand
 		}
+
 	}
 
 	fmt.Println("loaded")

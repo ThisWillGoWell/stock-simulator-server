@@ -307,7 +307,7 @@ func calculateSellDetails(order *TradeOrder, v *valuable.Stock, port *portfolio.
 	fees := int64(float64(d.ShareValue) * TradeFee)
 	d.Tax = int64(taxes)
 	d.Fees = int64(fees)
-	d.Result = pbt - d.Tax - d.Fees + d.Bonus
+	d.Result = d.ShareValue - d.Tax - d.Fees + d.Bonus
 	return d
 }
 
