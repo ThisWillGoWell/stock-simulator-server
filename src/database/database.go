@@ -6,6 +6,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/stock-simulator-server/src/log"
+
 	"github.com/stock-simulator-server/src/record"
 
 	"github.com/stock-simulator-server/src/items"
@@ -33,6 +35,8 @@ func InitDatabase(disableDbWrite bool) {
 	database, err := sql.Open("postgres", dbConStr)
 	fmt.Println(dbConStr)
 	if err != nil {
+		log.Alerts.Fatal("could not connect to database: " + err.Error())
+		log.Log.Fatal("could not connect to database: " + err.Error())
 		panic("could not connect to database: " + err.Error())
 	}
 	db = database
@@ -43,7 +47,7 @@ func InitDatabase(disableDbWrite bool) {
 		if err == nil {
 			break
 		}
-		fmt.Println("waitng for connection to db")
+		fmt.Println("	waitng for connection to db")
 		<-time.After(time.Second)
 	}
 

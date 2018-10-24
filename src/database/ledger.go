@@ -1,9 +1,8 @@
 package database
 
 import (
-	"log"
-
 	"github.com/stock-simulator-server/src/ledger"
+	"github.com/stock-simulator-server/src/log"
 )
 
 var (
@@ -30,6 +29,7 @@ func initLedger() {
 	tx, err := db.Begin()
 	if err != nil {
 		db.Close()
+		log.Alerts.Fatal("could not begin ledger init: ", err.Error())
 		panic("could not begin ledger init: " + err.Error())
 	}
 	_, err = tx.Exec(ledgerTableCreateStatement)
@@ -63,19 +63,19 @@ func populateLedger() {
 
 	rows, err := db.Query(ledgerTableQueryStatement)
 	if err != nil {
-		log.Fatal("error query database", err)
+		//log.Fatal("error query database", err)
 		panic("could not populate portfolios: " + err.Error())
 	}
 	defer rows.Close()
 	for rows.Next() {
 		err := rows.Scan(&uuid, &portfolioId, &stockId, &recordId, &amount)
 		if err != nil {
-			log.Fatal("error in querying ledger: ", err)
+			//log.Fatal("error in querying ledger: ", err)
 		}
 		ledger.MakeLedgerEntry(uuid, portfolioId, stockId, recordId, amount)
 	}
 	err = rows.Err()
 	if err != nil {
-		log.Fatal(err)
+		//log.Fatal(err)
 	}
 }

@@ -2,10 +2,12 @@ package main
 
 import (
 	"flag"
-	"log"
 	"os"
 	"runtime"
 	"runtime/pprof"
+
+	"github.com/stock-simulator-server/src/alert"
+	"github.com/stock-simulator-server/src/log"
 
 	"github.com/stock-simulator-server/src/histroy"
 
@@ -29,10 +31,10 @@ func main() {
 	if *cpuprofile != "" {
 		f, err := os.Create(*cpuprofile)
 		if err != nil {
-			log.Fatal("could not create CPU profile: ", err)
+			log.Log.Fatal("could not create CPU profile: ", err)
 		}
 		if err := pprof.StartCPUProfile(f); err != nil {
-			log.Fatal("could not start CPU profile: ", err)
+			log.Log.Fatal("could not start CPU profile: ", err)
 		}
 		defer pprof.StopCPUProfile()
 	}
@@ -52,7 +54,8 @@ func main() {
 	}
 	//valuable.ValuablesLock.EnableDebug()
 	//ledger.EntriesLock.EnableDebug()
-
+	log.Init(alert.Init(os.Getenv("DISCORD_TOKEN"), "504397270075179029"))
+	log.Alerts.Info("Starting App")
 	//Wiring of system
 	wires.ConnectWires()
 	//this takes the subscribe output and converts it to a message
@@ -73,11 +76,11 @@ func main() {
 	if *memprofile != "" {
 		f, err := os.Create(*memprofile)
 		if err != nil {
-			log.Fatal("could not create memory profile: ", err)
+			log.Log.Fatal("could not create memory profile: ", err)
 		}
 		runtime.GC() // get up-to-date statistics
 		if err := pprof.WriteHeapProfile(f); err != nil {
-			log.Fatal("could not write memory profile: ", err)
+			log.Log.Fatal("could not write memory profile: ", err)
 		}
 		f.Close()
 	}

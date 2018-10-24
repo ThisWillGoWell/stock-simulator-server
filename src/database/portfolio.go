@@ -1,8 +1,7 @@
 package database
 
 import (
-	"log"
-
+	"github.com/stock-simulator-server/src/log"
 	"github.com/stock-simulator-server/src/portfolio"
 )
 
@@ -29,6 +28,8 @@ func initPortfolio() {
 	tx, err := db.Begin()
 	if err != nil {
 		db.Close()
+		log.Alerts.Fatal("could not begin stocks init", err.Error())
+		log.Log.Fatal("could not begin stocks init", err.Error())
 		panic("could not begin stocks init: " + err.Error())
 	}
 	_, err = tx.Exec(portfolioTableCreateStatement)
@@ -62,19 +63,19 @@ func populatePortfolios() {
 
 	rows, err := db.Query(portfolioTableQueryStatement)
 	if err != nil {
-		log.Fatal("error query database", err)
+		log.Alerts.Fatal("error query database", err)
 		panic("could not populate portfolios: " + err.Error())
 	}
 	defer rows.Close()
 	for rows.Next() {
 		err := rows.Scan(&uuid, &userUuid, &wallet, &level)
 		if err != nil {
-			log.Fatal(err)
+			log.Alerts.Fatal(err)
 		}
 		portfolio.MakePortfolio(uuid, userUuid, wallet, level)
 	}
 	err = rows.Err()
 	if err != nil {
-		log.Fatal(err)
+		log.Alerts.Fatal(err)
 	}
 }
