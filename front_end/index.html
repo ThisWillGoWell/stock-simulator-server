@@ -663,7 +663,7 @@
 								<div class="flex-column-100">
 									<ul id="item-list">
 										<li v-for="level in experience" :key="level.label">
-											<div class="card item" v-bind:class="{ 'item-disable': isLevel(level.level)}">
+											<div class="card item" v-bind:class="{ 'item-disable': !isNextLevel(level.level)}">
 												<div class="item-name">{{ level.label }}</div>
 												<div class="item-effects title">{{ level.title }}</div>
 												<div class="item-divider"></div>
@@ -713,12 +713,8 @@
 			</section>
 
 			<section id="notification-module--container">
-				<div class="notification-title-bar">
-					<span></span>
-					<i class="material-icons">
-done
-</i>
-				</div>
+				<ul id="notification-list"></ul>
+				
 			</section>
 
 			<section id="scroll-module--container"></section>
