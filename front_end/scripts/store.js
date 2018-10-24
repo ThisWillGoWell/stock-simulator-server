@@ -17,8 +17,32 @@ function load_store_tab() {
         methods: {
             level_up: level_up,
             purchaseItem: purchaseItem,
-            isLevel: function(lvl) {
-                return this.currUserLevel >= lvl;
+            isNextLevel: function(lvl) {
+                
+                // if (this.currUserLevel >= lvl) {
+                //     return true;
+                // } else if (this.currUserLevel >= lvl+1){
+                //     return true;
+                // }
+                return this.currUserLevel == (lvl-1);
+            },
+            isLowerThanLevel: function(lvl) {
+                
+                // if (this.currUserLevel >= lvl) {
+                //     return true;
+                // } else if (this.currUserLevel >= lvl+1){
+                //     return true;
+                // }
+                return this.currUserLevel > lvl;
+            },
+            isHigherThanLevel: function(lvl) {
+                
+                // if (this.currUserLevel >= lvl) {
+                //     return true;
+                // } else if (this.currUserLevel >= lvl+1){
+                //     return true;
+                // }
+                return this.currUserLevel < lvl;
             },
         },
         computed: {
