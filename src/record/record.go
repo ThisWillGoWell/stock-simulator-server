@@ -84,6 +84,10 @@ func MakeBook(uuid, ledgerUuid, portfolioUuid string) {
 		PortfolioUuid:    portfolioUuid,
 		ActiveBuyRecords: make([]ActiveBuyRecord, 0),
 	}
+	if _, ok := portfolioBooks[portfolioUuid]; !ok {
+		portfolioBooks[portfolioUuid] = make([]*Book, 0)
+	}
+	portfolioBooks[portfolioUuid] = append(portfolioBooks[portfolioUuid], books[uuid])
 	bookChange := make(chan interface{})
 	change.RegisterPrivateChangeDetect(books[uuid], bookChange)
 	sender.RegisterChangeUpdate(portfolioUuid, bookChange)
@@ -126,7 +130,9 @@ func walkRecords(book *Book, shares int64, mark bool) int64 {
 	lastAmountCleared := int64(0)
 	sharesLeft := shares
 	totalCost := int64(0)
-
+	if book.Uuid == "63" {
+		fmt.Println("hello")
+	}
 	for sharesLeft != 0 {
 		if amountCleared >= len(book.ActiveBuyRecords) {
 			fmt.Println("WRONG")
@@ -138,6 +144,10 @@ func walkRecords(book *Book, shares int64, mark bool) int64 {
 
 		if activeBuyRecord.AmountLeft > sharesLeft {
 			removedShares = sharesLeft
+			sharesLeft = 0
+		} else if activeBuyRecord.AmountLeft == sharesLeft {
+			lastAmountCleared = 0
+			amountCleared += 1
 			sharesLeft = 0
 		} else {
 			sharesLeft = sharesLeft - activeBuyRecord.AmountLeft
