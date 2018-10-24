@@ -96,6 +96,10 @@
     "FANCY":{
       "name":"Shoe La La",
       "change":"3s"
+    },
+    "WOLF":{
+      "name": "Wolf Cola",
+      "change":"3s"
     }
   },
   "accounts": {
