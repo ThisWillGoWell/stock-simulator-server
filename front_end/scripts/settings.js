@@ -10,7 +10,13 @@ function load_settings_tab() {
                 // Change value
                 config.settings.changePercent = !config.settings.changePercent;
                 //Send update
-                updateConfig(config, 'settings', config.settings)
+                updateConfig(config, 'settings', config.settings);
+            },
+            toggleSellAllButton: function() {
+                var config = vm_config.config;
+                console.log(config)
+                config.settings.sellAll = !config.settings.sellAll;
+                updateConfig(config, 'settings', config.settings);
             },
             changeDisplayName: function() {
                 // Get entered display name

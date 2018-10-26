@@ -139,6 +139,13 @@ function load_dashboard_tab() {
         }
         return {};
       },
+      sellAllSetting: function() {
+        if (vm_config === undefined) {
+          return false;
+        } else {
+          return vm_config.config.settings.sellAll;
+        }
+      },
     }
   });
 
