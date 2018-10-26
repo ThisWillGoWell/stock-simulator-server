@@ -1,5 +1,4 @@
 function getUserRecordBook(userLedger) {
-
     var userRecordBook = Object.values(vm_recordBook.records)
         .filter(d => userLedger.indexOf(d.ledger_uuid) > -1)
 
@@ -33,7 +32,3 @@ function getUserStockRecord(user_uuid, stock_id) {
     console.log(userRecordBook);
     console.log(userRecordEntries);
 }
-
-// setInterval(function() {
-//     getUserStockRecord(sessionStorage.getItem("uuid"), "12");
-// }, 10000);

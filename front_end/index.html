@@ -350,6 +350,10 @@
 												<td class="stock-change" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_roi) }}</td>
 												
 											</tr>
+											<tr v-if="currUserStocks != []">
+												<!-- TODO add click text to move to stocks tab  -->
+												<td colspan="5">Move to the <span class="clickable-text">Stocks tab</span> to start investing.</td>
+											</tr>
 										</tbody>
 									</table>
 								</div>
@@ -572,6 +576,10 @@
 					</div>
 					<div id="research--view" class="view">
 						<div class="flex-grid--container">
+							
+							<div class="flex-column-100">
+								<div class="item-category buffer-top">GRAPHING</div>
+							</div>
 							<div class="flex-column-100">
 								<div id="chart-sandbox" class="card">
 									<div class="query-term-container">
@@ -601,6 +609,9 @@
 									</div>
 									<div id="research-graph-svg-main"></div>
 								</div>
+							</div>
+							<div class="flex-column-100">
+								<div class="item-category buffer-top">TRADE HISTORY</div>
 							</div>
 						</div>
 					</div>
