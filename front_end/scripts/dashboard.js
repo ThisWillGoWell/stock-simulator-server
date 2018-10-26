@@ -118,7 +118,7 @@ function load_dashboard_tab() {
               }
               return 0;
             });
-
+            console.log(ownedStocks);
             return ownedStocks;
           }
         }
