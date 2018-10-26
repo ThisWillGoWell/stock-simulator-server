@@ -190,7 +190,12 @@ function load_chat_vue() {
                     link.href = "assets/favicon_green.png";
                     document.getElementsByTagName("head")[0].appendChild(link);
                 }
-            }
+            },
+            showingChat: function() {
+                if (this.showingChat === false) {
+                    $("#chat-text-input").blur();
+                }
+            },
         }
     });
     
