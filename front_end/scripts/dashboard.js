@@ -86,21 +86,20 @@ function load_dashboard_tab() {
               // TODO: css changes done here talk to brennan about his \ux22 magic
               // helper to color rows in the stock table
               var targetChangeElem = $(
-                "tr[uuid=\x22" +
-                  d.stock_uuid +
-                  "\x22].clickable > td.stock-change"
+                'tr[uuid="dash' + d.stock_uuid + '"].clickable > td.stock-change'
               );
+              console.log(targetChangeElem);
               // targetChangeElem.addClass("rising");
-              // if (d.stock_roi > 0) {
-              // 	targetChangeElem.removeClass("falling");
-              // 	targetChangeElem.addClass("rising");
+              if (d.stock_roi > 0) {
+              	targetChangeElem.removeClass("falling");
+              	targetChangeElem.addClass("rising");
               // } else if (d.stock_roi === 0) {
               // 	targetChangeElem.removeClass("falling");
               // 	targetChangeElem.removeClass("rising");
-              // } else {
-              // 	targetChangeElem.removeClass("rising");
-              // 	targetChangeElem.addClass("falling");
-              // }
+              } else {
+              	targetChangeElem.removeClass("rising");
+              	targetChangeElem.addClass("falling");
+              }
               return d;
             });
 
@@ -118,7 +117,6 @@ function load_dashboard_tab() {
               }
               return 0;
             });
-            console.log(ownedStocks);
             return ownedStocks;
           }
         }

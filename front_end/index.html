@@ -340,7 +340,7 @@
 										    </tr>
 										</thead>
 										<tbody>
-											<tr class="clickable" v-for="stock in currUserStocks" :key='stock.uuid' v-bind:uuid="stock.uuid">
+											<tr class="clickable" v-for="stock in currUserStocks" :key='stock.uuid' v-bind:uuid="'dash' + stock.uuid">
 												<th class="stock-ticker-id" scope="row" v-bind:tid="stock.stock_ticker" style="line-height: 40px;">{{ stock.stock_ticker }}</th>
 												<td class="stock-price" style="text-align: right; padding-right: 25px;">
 													<div class="sell-all-btn" v-on:click='sellAll(stock.uuid)'>SELL ALL ({{ stock.amount }})</div>

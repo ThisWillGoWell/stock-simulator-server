@@ -305,7 +305,6 @@ $(document).ready(function() {
         // vm_stocks.stocks[targetUUID].change = Math.round((targetChange - currPrice) * 1000)/100000;
 
         // helper to color rows in the stock table
-        var targetElem = $("tr[uuid=\x22" + targetUUID + "\x22]");
         var targetChangeElem = $(
           "tr[uuid=\x22" + targetUUID + "\x22] > td.stock-change"
         );

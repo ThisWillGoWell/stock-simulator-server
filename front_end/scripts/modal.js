@@ -177,15 +177,15 @@ function load_modal_vues() {
                     }
                 }
                 // do a prospectiveTrade
-                console.log("DO PROSPECTIVE TRADE");
-                console.log(buySellModal.stock_uuid)
-                console.log(buySellModal.buySellAmount)
-                if (buySellModal.isBuying) {
-                    var amount = buySellModal.buySellAmount;
-                } else {
-                    var amount = buySellModal.buySellAmount * (-1);
-                }
-                prospectiveTrade(buySellModal.stock_uuid, amount);
+                // console.log("DO PROSPECTIVE TRADE");
+                // console.log(buySellModal.stock_uuid);
+                // console.log(buySellModal.buySellAmount);
+                // if (buySellModal.isBuying) {
+                //     var amount = buySellModal.buySellAmount;
+                // } else {
+                //     var amount = buySellModal.buySellAmount * (-1);
+                // }
+                // prospectiveTrade(buySellModal.stock_uuid, amount);
             }
         }
     });
