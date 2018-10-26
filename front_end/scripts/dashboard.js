@@ -79,7 +79,6 @@ function load_dashboard_tab() {
                 d.stock_roi = getROI(portfolio_uuid, d.stock_id, d.stock_price);
               }
               catch(err) {
-                console.error(err);
                 d.stock_roi = 0;
               }
 
