@@ -277,7 +277,8 @@ $( document ).ready(function() {
         Http.send();
 
         if (Http.status !== 200) {
-            console.error(Http.responseText);
+            console.log(Http.responseText);
+            loginFailed(Http.responseText);
             return null;
         } else {
             sessionStorage.setItem('token', Http.responseText);
@@ -304,10 +305,17 @@ $( document ).ready(function() {
     };
 
     function getLogin() {
+        // Remove failed login message
+        $('#login-failed-message').text("");
+
         let input_uid = $('#login-uid').val();
         let input_pw = $('#login-pw').val();
 
         getToken(input_uid, input_pw);
+    }
+
+    function loginFailed(msg) {
+        $('#login-failed-message').text(msg);
     }
 
     $('#input-login-submit').click(function() {
