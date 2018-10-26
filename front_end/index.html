@@ -347,9 +347,13 @@
 										<tbody>
 											<tr class="clickable" v-for="stock in currUserStocks" :key='stock.uuid' v-bind:uuid="'dash' + stock.uuid">
 												<th class="stock-ticker-id" scope="row" v-bind:tid="stock.stock_ticker" style="line-height: 40px;">{{ stock.stock_ticker }}</th>
-												<td class="stock-price" style="text-align: right; padding-right: 25px;">
+												<td v-if="sellAllSetting" class="stock-price" style="text-align: right; padding-right: 25px;">
+													<div class="">{{ stock.amount }}</div>
+												</td>
+												<td v-else class="stock-change" style="text-align: right; padding-right: 25px;">
 													<div class="sell-all-btn" v-on:click='sellAll(stock.uuid)'>SELL ALL ({{ stock.amount }})</div>
 												</td>
+												
 												<td class="price-alter stock-price" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_price) }}</td>
 												<td class="price-alter stock-price" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_value) }}</td>
 												<td class="stock-change" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_roi) }}</td>
@@ -491,7 +495,7 @@
 																  star_rate
 																  </i>
 													</li>
-													
+
 													<li class="action-btn chart" v-on:click="showChart(stock.uuid)">
 														  <i class="material-icons">
 																  show_chart
@@ -623,11 +627,11 @@
 						<!-- TODO: this tab collides with the sidebar -->
 					<div id="settings--view" class="view">
 							<div class="flex-grid--container">
-								<div class="flex-column-100">
+								<div class="flex-column-33">
 									<div class="item-category buffer-top">ACCOUNT</div>
 								</div>
 								<div class="flex-column-100">
-									<div class="card">
+									<div class="card flex-column-33">
 										<div class="settings-grp">
 											<div class="input-grp">
 												<div class="input-name">Change Display Name</div>
@@ -640,7 +644,7 @@
 											</div>
 										</div>
 									</div>
-									<div class="card">
+									<div class="card flex-column-33">
 										<div class="settings-grp">
 											<div class="input-grp">
 												<div class="input-name">Change Password</div>
@@ -659,11 +663,19 @@
 											</div>
 										</div>
 									</div>
-									<div class="card">
+									<div class="card flex-column-33">
 										<div class="settings-grp">
 											<div class="input-grp">
-												Toggle display of stock changes as percentages instead of price change in dollars.
+												Toggle stock changes as percentages instead of price change in dollars.
 												<div class="change-setting-btn" v-on:click="toggleChangePercentSetting()">Toggle</div>
+											</div>
+										</div>
+									</div>
+									<div class="card flex-column-33">
+										<div class="settings-grp">
+											<div class="input-grp">
+												Toggle Sell All button within the Dashboard tab.
+												<div class="change-setting-btn" v-on:click="toggleSellAllButton()">Toggle</div>
 											</div>
 										</div>
 									</div>

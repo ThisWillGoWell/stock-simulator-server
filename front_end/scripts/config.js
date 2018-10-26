@@ -9,7 +9,8 @@ function createConfig(config) {
                 users: [],
             },
             settings: {
-                changePercent: true,
+                changePercent: false,
+                sellAll: false,
             }
         };
     }
