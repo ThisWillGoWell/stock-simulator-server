@@ -75,7 +75,13 @@ function load_dashboard_tab() {
                 d.stock_ticker = vm_stocks.stocks[d.stock_id].ticker_id;
                 d.stock_price = vm_stocks.stocks[d.stock_id].current_price;
                 d.stock_value = Number(d.stock_price) * Number(d.amount);
-                d.stock_roi = getROI(portfolio_uuid, d.stock_id, d.stock_price);
+                try {
+                  d.stock_roi = getROI(portfolio_uuid, d.stock_id, d.stock_price);
+                } 
+                catch(err) {
+                  console.error(err);
+                  d.stock_roi = 0;
+                }
 
               // TODO: css changes done here talk to brennan about his \ux22 magic
               // helper to color rows in the stock table
@@ -124,7 +130,6 @@ function load_dashboard_tab() {
           var currUserFolioUUID = vm_users.users[currUserUUID].portfolio_uuid;
           var items = Object.values(vm_items.items).filter(d => d.portfolio_uuid === currUserFolioUUID);
           // Add used status
-          console.log(items);
           items.map(function(d) {
             if (d.used) {
               d.used_status = 'Used';
@@ -169,18 +174,22 @@ function getROI(portfolio_uuid, stock_id, stock_price) {
     d.stock_uuid = vm_ledger.ledger[d.ledger_uuid].stock_id;
     return d;
   });
-  console.log(userRecordsBooks);
   var book = userRecordsBooks.filter(d => d.stock_uuid === stock_id)[0];
-
-  var pricePaid = 0;
-  var amountOwned = 0;
-
-  book.buy_records.forEach(function(d) {
-    amountOwned += d.AmountLeft;
-    pricePaid += vm_recordEntry.entries[d.RecordUuid].result;
-  });
-
-  return amountOwned*stock_price + pricePaid;
+  if (book !== undefined) {
+    var pricePaid = 0;
+    var amountOwned = 0;
+  
+    book.buy_records.forEach(function(d) {
+      // Wait until entry has arrived
+      if (vm_recordEntry.entries[d.RecordUuid] !== undefined) {
+        pricePaid += vm_recordEntry.entries[d.RecordUuid].result;
+      }
+      amountOwned += d.AmountLeft;
+    });
+  
+    return amountOwned*stock_price + pricePaid;
+  }
+  return 0;
 }
 
 function createPortfolioGraph(portfolioUUID, location) {
