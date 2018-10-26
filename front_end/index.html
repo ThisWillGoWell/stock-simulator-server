@@ -69,6 +69,11 @@
 					<div id="trade--view">
 						<div class="modal-stock-id">{{ stock.ticker_id }} </div>
 						<div>Prospective cash: ${{ prospectiveCash }}</div>						
+						<div>Prospective fees: ${{ prospectiveFees }}</div>						
+						<div>Prospective bonus: ${{ prospectiveBonus }}</div>						
+						<div>Prospective share count: {{ prospectiveShareCount }}</div>						
+						<div>Prospective tax: ${{ prospectiveTax }}</div>						
+						<div>Prospective result: ${{ prospectiveResult }}</div>						
 						<div class="flex-grid--container no-padding">
 							<div class="flex-column-50">
 								<div id="calc-btn-buy" class="card calc-btn fill green no-buffer-top" v-on:click="setIsBuying(true)">BUY</div>
