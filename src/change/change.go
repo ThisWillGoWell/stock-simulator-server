@@ -1,6 +1,7 @@
 package change
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/stock-simulator-server/src/wires"
@@ -86,6 +87,9 @@ func registerChangeDetect(o Identifiable, outputChan chan interface{}) error {
 	//get the include tags
 	subscribeablesLock.Acquire("register-change")
 	defer subscribeablesLock.Release()
+	if o.GetId() == "291" {
+		fmt.Println("")
+	}
 
 	if _, ok := subscribeables[o.GetType()+o.GetId()]; ok {
 		panic("change detect already registered, check the code")
