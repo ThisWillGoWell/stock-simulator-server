@@ -76,6 +76,11 @@ function load_modal_vues() {
             isBuying: true,
             stock_uuid: "OSRS",
             prospectiveCash: 0,
+            prospectiveBonus: 0,
+            prospectiveFees: 0,
+            prospectiveShareCount: 0,
+            prospectiveTax: 0,
+            prospectiveResult: 0,
         },
         methods: {
             toPrice: formatPrice,
@@ -177,15 +182,15 @@ function load_modal_vues() {
                     }
                 }
                 // do a prospectiveTrade
-                // console.log("DO PROSPECTIVE TRADE");
-                // console.log(buySellModal.stock_uuid);
-                // console.log(buySellModal.buySellAmount);
-                // if (buySellModal.isBuying) {
-                //     var amount = buySellModal.buySellAmount;
-                // } else {
-                //     var amount = buySellModal.buySellAmount * (-1);
-                // }
-                // prospectiveTrade(buySellModal.stock_uuid, amount);
+                console.log("DO PROSPECTIVE TRADE");
+                console.log(buySellModal.stock_uuid);
+                console.log(buySellModal.buySellAmount);
+                if (buySellModal.isBuying) {
+                    var amount = buySellModal.buySellAmount;
+                } else {
+                    var amount = buySellModal.buySellAmount * (-1);
+                }
+                prospectiveTrade(buySellModal.stock_uuid, amount);
             }
         }
     });

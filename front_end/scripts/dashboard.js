@@ -88,7 +88,6 @@ function load_dashboard_tab() {
               var targetChangeElem = $(
                 'tr[uuid="dash' + d.stock_uuid + '"].clickable > td.stock-change'
               );
-              console.log(targetChangeElem);
               // targetChangeElem.addClass("rising");
               if (d.stock_roi > 0) {
               	targetChangeElem.removeClass("falling");
