@@ -65,23 +65,23 @@ function load_dashboard_tab() {
           if (Object.keys(vm_ledger.ledger).length !== 0) {
             var ownedStocks = Object.values(vm_ledger.ledger).filter(
               d => d.portfolio_id === portfolio_uuid
-              );
+            );
+            
+            // Remove stocks that user owns 0 of
+            ownedStocks = ownedStocks.filter(d => d.amount !== 0);
+            // Augmenting owned stocks
+            ownedStocks = ownedStocks.map(function(d) {
               
-              // Remove stocks that user owns 0 of
-              ownedStocks = ownedStocks.filter(d => d.amount !== 0);
-              // Augmenting owned stocks
-              ownedStocks = ownedStocks.map(function(d) {
-                
-                d.stock_ticker = vm_stocks.stocks[d.stock_id].ticker_id;
-                d.stock_price = vm_stocks.stocks[d.stock_id].current_price;
-                d.stock_value = Number(d.stock_price) * Number(d.amount);
-                try {
-                  d.stock_roi = getROI(portfolio_uuid, d.stock_id, d.stock_price);
-                } 
-                catch(err) {
-                  console.error(err);
-                  d.stock_roi = 0;
-                }
+              d.stock_ticker = vm_stocks.stocks[d.stock_id].ticker_id;
+              d.stock_price = vm_stocks.stocks[d.stock_id].current_price;
+              d.stock_value = Number(d.stock_price) * Number(d.amount);
+              try {
+                d.stock_roi = getROI(portfolio_uuid, d.stock_id, d.stock_price);
+              }
+              catch(err) {
+                console.error(err);
+                d.stock_roi = 0;
+              }
 
               // TODO: css changes done here talk to brennan about his \ux22 magic
               // helper to color rows in the stock table
@@ -118,7 +118,7 @@ function load_dashboard_tab() {
               }
               return 0;
             });
-
+            console.log(ownedStocks);
             return ownedStocks;
           }
         }
@@ -143,7 +143,6 @@ function load_dashboard_tab() {
         }
         return {};
       },
-
     }
   });
 
@@ -188,8 +187,7 @@ function getROI(portfolio_uuid, stock_id, stock_price) {
     });
   
     return amountOwned*stock_price + pricePaid;
-  }
-  return 0;
+  } else return 0;
 }
 
 function createPortfolioGraph(portfolioUUID, location) {
