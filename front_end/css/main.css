@@ -209,6 +209,9 @@ h1 {
     padding-left: 15px;
     padding-right: 55%;
 }
+.multi-input-container input[type=text]::placeholder { 
+    color: rgba(0, 0, 0, 0.15);
+}
 .multi-input-container input[type=text]:focus{
     border-bottom: none;
     padding-left: 15px;
@@ -274,6 +277,7 @@ h1 {
     height: 25px;
     font-size: 16px;
     color: #757575;
+    font-weight: 100;
 }
 
 .receipt-info .receipt-line.divider {
@@ -289,6 +293,21 @@ h1 {
 
 .receipt-line span.right{
     float: right;
+}
+
+.receipt-line span.positive{
+    color: #00E676;
+}
+
+.receipt-line span.negative{
+    color: #f44336;
+}
+
+.receipt-line span.total{
+    color: #4d4d4d;
+    font-weight: 300;
+    font-size: 22px;
+    letter-spacing: 1px;
 }
 
 .input-full-width {
@@ -2656,7 +2675,7 @@ table thead.table-top-bar tr th:hover{
     
 }
 
-.card.item.item-disable:before{
+/* .card.item.item-disable:before{
     position: absolute;
     top: 0;
     bottom: 0;
@@ -2664,13 +2683,35 @@ table thead.table-top-bar tr th:hover{
     left: 0;
     content: "";
     z-index: 10;
-    background-color: rgba(0,0,0,0);
+    background-color: rgba(0,0,0,0.5);
     -moz-transition: all ease-in-out 0.17s;
     -o-transition: all ease-in-out 0.17s;
     -webkit-transition: all ease-in-out 0.17s;
     transition: all ease-in-out 0.17s;
     pointer-events: none;
-    background-color: rgba(0,0,0,1);
+    
+} */
+
+.item-locked-layer.item-disabled {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    z-index: 10;
+    line-height: 290px;
+    text-align: center;
+    background-color: rgba(0,0,0,0.5);
+    -moz-transition: all ease-in-out 0.17s;
+    -o-transition: all ease-in-out 0.17s;
+    -webkit-transition: all ease-in-out 0.17s;
+    transition: all ease-in-out 0.17s;
+    pointer-events: none;
+}
+
+.item-locked-layer i{
+    color: #fff;
+    font-size: 48px;
 }
 
 /* Graphing */
