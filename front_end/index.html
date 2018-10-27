@@ -68,7 +68,7 @@
 					<button v-on:click="closeModal()"><i class="material-icons">close</i></button>
 					<div id="trade--view">
 						<div class="modal-stock-id">{{ stock.ticker_id }} </div>
-						<div>Prospective cash: ${{ prospectiveCash }}</div>						
+											
 						<div class="flex-grid--container no-padding">
 							<div class="flex-column-50">
 								<div id="calc-btn-buy" class="card calc-btn fill green no-buffer-top" v-on:click="setIsBuying(true)">BUY</div>
@@ -76,7 +76,39 @@
 							<div class="flex-column-50">
 								<div id="calc-btn-sell" class="card calc-btn red no-buffer-top" v-on:click="setIsBuying(false)">SELL</div>
 							</div>
-							<div class="flex-column-50">
+							<div class="flex-column-100" style="padding: 0 15px;">
+								<div class="multi-input-container no-select">
+									<ul>
+										<li v-on:click="addAmount(1)" class="mini-calc-btn">+1</li>
+										<li v-on:click="addAmount(5)" class="mini-calc-btn">+5</li>
+										<li v-on:click="addAmount(25)" class="mini-calc-btn">+25</li>
+										<li v-on:click="determineMax()" class="mini-calc-btn max">MAX</li>
+										<li v-on:click="clearAmount()" class="mini-calc-btn clear">CLEAR</li>
+										
+									</ul>
+									<input id="buy-sell-amount-input" type="text" class="input-full-width" placeholder="Enter quantity">
+								</div>
+								<div class="receipt-info">
+									<div class="receipt-line">
+										<span class="left">Available Cash</span>
+										<span class="right">${{ prospectiveCash }}</span>
+									</div>
+									<div class="receipt-line">
+										<span class="left">Cost per Share</span>
+										<span class="right">${{ toPrice(stock.current_price) }}</span>
+									</div>
+									<div class="receipt-line">
+										<span class="left">Quantity</span>
+										<span class="right">{{ buySellAmount }}</span>
+									</div>
+									<div class="receipt-line divider"></div>
+									<div class="receipt-line">
+										<span class="left">Total</span>
+										<span class="right">${{ toPrice(buySellAmount * stock.current_price) }}</span>
+									</div>
+								</div>
+							</div>
+							<!-- <div class="flex-column-50">
 								<div class="card calc-btn" v-on:click="addAmount(1)">1</div>
 							</div>
 							<div class="flex-column-50">
@@ -93,11 +125,11 @@
 							</div>
 							<div class="flex-column-50">
 							  <div class="card calc-btn" v-on:click="determineMax()">MAX</div>
-							</div>
-							<div class="flex-column-100">
+							</div> -->
+							<!-- <div class="flex-column-100">
 								<div class="card calc-btn clear" v-on:click="clearAmount()" data-val="0">CLEAR</div>
-							</div>
-							<div class="flex-column-100" style="padding: 0 15px;">
+							</div> -->
+							<!-- <div class="flex-column-100" style="padding: 0 15px;">
 								<table class="table">
 									<thead>
 
@@ -115,7 +147,7 @@
 										</tr>
 									</tbody>
 								</table>
-							</div>
+							</div> -->
 							
 							<div class="flex-column-100">
 								<div id="trade-request-submit" class="card calc-btn green no-buffer-top" v-on:click="submitTrade()">CONFIRM</div>
