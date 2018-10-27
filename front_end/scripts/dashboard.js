@@ -172,7 +172,7 @@ function load_dashboard_tab() {
 function getROI(portfolio_uuid, stock_id, stock_price) {
   var userRecordsBooks = Object.values(vm_recordBook.records).filter(d => d.portfolio_uuid === portfolio_uuid);
   // Add stock id to record books 
-  userRecordsBooks.forEach(function(d){
+  userRecordsBooks.forEach(function(d) {
     d.stock_uuid = vm_ledger.ledger[d.ledger_uuid].stock_id;
     return d;
   });

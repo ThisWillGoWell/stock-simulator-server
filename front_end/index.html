@@ -599,18 +599,12 @@
 											</select>
 										</div>
 										<div class="query-term right">
-											<select id="research-graph-stock-select" type="text" placeholder="Choose a graph type">
+											<select id="research-graph-stock-select" type="text" placeholder="Choose a stock">
 											</select>
 										</div>
 										<div class="query-term right">
-											<select id="research-graph-user-select" type="text" placeholder="Choose a graph type">
+											<select id="research-graph-user-select" type="text" placeholder="Choose a user">
 											</select>
-										</div>
-										<div class="query-term">
-											<input type="text" placeholder="Choose a stock"/>
-											<i class="material-icons add-btn">
-											clear
-											</i>
 										</div>
 										<div>
 											<button v-on:click="drawGraph()">Create</button>
@@ -620,7 +614,39 @@
 								</div>
 							</div>
 							<div class="flex-column-100">
-								<div class="item-category buffer-top">TRADE HISTORY</div>
+								<div class="item-category buffer-top">TRADE HISTORY
+									<!-- <div class="flex-column-100"> -->
+										<div class="flex-column-33">
+											<div class="card">
+												<table class="table">
+													<thead class="table-top-bar">
+														<tr>
+															<th scope="col" v-on:click="sortCol('time')">Time</th>
+															<th scope="col" v-on:click="sortCol('results')">Result</th>
+															<th scope="col" v-on:click="sortCol('bonus')">Bonus</th>
+														</tr>
+													</thead>
+													<tbody>
+														<tr v-for="trade in tradeHistory" :key='trade.uuid' v-bind:uuid="'trade' + trade.uuid" v-on:click='openTradeHistory(trade.uuid)'>
+															<th scope="row" v-bind:tid="trade.time">{{ trade.time }}</th>
+															<td>${{ trade.result }}</td>
+															<td>{{ trade.bonus }}</td>
+															
+														</tr>
+													</tbody>
+												</table>
+											</div>
+										</div>
+										<div class="flex-column-33">
+											<div class="card">
+												<div class="receipt">
+													<div>{{ receipt.time }}</div>
+													<div>{{ receipt.ticker }}</div>
+												</div>
+											</div>
+										</div>
+									<!-- </div> -->
+								</div>
 							</div>
 						</div>
 					</div>

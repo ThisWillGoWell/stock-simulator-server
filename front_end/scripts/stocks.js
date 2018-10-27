@@ -161,6 +161,23 @@ function load_stocks_tab() {
         };
 
         setTimeout(drawGraphOnceDone, 100);
+      },
+      openModal: function() {
+        var ticker_id = $(this)
+            .find(".stock-ticker-id")
+            .attr("tid");
+
+        console.log("TID: " + ticker_id);
+
+        var stock = Object.values(vm_stocks.stocks).filter(
+            d => d.ticker_id === ticker_id
+        )[0];
+
+        // Set show modal to true
+        buySellModal.showModal = true;
+        buySellModal.stock_uuid = stock.uuid;
+
+        toggleModal();
       }
     },
     computed: {
