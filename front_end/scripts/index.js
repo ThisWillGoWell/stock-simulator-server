@@ -144,6 +144,7 @@ registerRoute("alert", function(msg) {
 
 $(document).ready(function() {
   
+  load_settings_tab(); // settings.js
   load_dashboard_tab(); // dashboard.js
   load_stocks_tab(); // stocks.js
   load_investors_tab(); // investors.js
@@ -153,7 +154,6 @@ $(document).ready(function() {
   load_sidebar_vue(); // sidebar.js
   load_chat_vue(); // chat.js
   load_modal_vues(); // modal.js
-  load_settings_tab(); // settings.js
 
 
   setTimeout(function() {

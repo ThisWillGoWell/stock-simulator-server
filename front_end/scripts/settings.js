@@ -10,7 +10,19 @@ function load_settings_tab() {
                 // Change value
                 config.settings.changePercent = !config.settings.changePercent;
                 //Send update
-                updateConfig(config, 'settings', config.settings)
+                updateConfig(config, 'settings', config.settings);
+            },
+            toggleSellAllButton: function() {
+                var config = vm_config.config;
+                config.settings.sellAll = !config.settings.sellAll;
+                updateConfig(config, 'settings', config.settings);
+            },
+            toggleRealValuesSetting: function() {
+                var config = vm_config.config;
+                config.settings.realValuesSetting = !config.settings.realValuesSetting;
+                updateConfig(config, 'settings', config.settings);
+
+                vm_dash_tab.realValueSetting = config.settings.realValuesSetting;
             },
             changeDisplayName: function() {
                 // Get entered display name

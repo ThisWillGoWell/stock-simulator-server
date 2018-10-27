@@ -92,6 +92,7 @@ func MakeBook(uuid, ledgerUuid, portfolioUuid string) {
 	change.RegisterPrivateChangeDetect(books[uuid], bookChange)
 	sender.RegisterChangeUpdate(portfolioUuid, bookChange)
 	sender.SendNewObject(portfolioUuid, books[uuid])
+	utils.RegisterUuid(uuid, books[uuid])
 }
 
 func MakeRecord(uuid, recordBookUuid string, amount, sharePrice, taxes, fees, bonus, result int64, t time.Time) *Record {

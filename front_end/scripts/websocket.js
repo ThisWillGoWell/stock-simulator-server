@@ -106,7 +106,6 @@ if (token) {
 			console.log(REQUESTS);
 			console.log(REQUEST_ID);
 		}
-		console.log(msg);
 		delete REQUESTS[msg.request_id];
 	});
 
