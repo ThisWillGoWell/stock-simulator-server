@@ -50,7 +50,6 @@ function load_research_tab() {
             openTradeHistory: function(uuid) {
                 var trade = this.tradeHistory.filter(d => d.uuid === uuid)[0];
 
-                
                 console.log(trade);
                 
                 this.receipt.ticker = vm_stocks.stocks[trade.stock_uuid].ticker_id;

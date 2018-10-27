@@ -11,6 +11,7 @@ function createConfig(config) {
             settings: {
                 changePercent: false,
                 sellAll: false,
+                realValuesSetting: false,
             }
         };
     }
@@ -86,3 +87,17 @@ function updateConfig(new_config, new_key, new_value) {
 
     doSend('set', msg, callback);
 };
+
+
+// Getters
+function getRealValuesSetting() {
+    if (vm_config !== undefined) {
+        return vm_config.config.settings.realValuesSetting;
+    } else return false;
+}
+
+function getSellAllSetting() {
+    if (vm_config !== undefined) {
+        return vm_config.config.settings.sellAll;
+    } else return false;
+}

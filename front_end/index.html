@@ -196,9 +196,11 @@
 					<p v-if="getCurrentUser(users)">{{ getCurrentUser(users) }}</p>
 				</div> -->
 				<div id="stats--view">
-					<div class="stat-value blue"><i class="material-icons menu-icon">business</i>${{ toPrice(currUserPortfolio.net_worth) }}</div>
+					<div v-if="realValuesSetting()" class="stat-value blue"><i class="material-icons menu-icon">business</i>${{ toPrice(currUserPortfolio.realNetworth) }}</div>
+					<div v-else class="stat-value blue"><i class="material-icons menu-icon">business</i>${{ toPrice(currUserPortfolio.net_worth) }}</div>
 					<div class="stat-value green"><i class="material-icons menu-icon">local_atm</i>${{ toPrice(currUserPortfolio.wallet) }}</div>
-					<div class="stat-value orange"><i class="material-icons menu-icon">trending_up</i>${{ toPrice(currUserPortfolio.investments) }}</div>
+					<div v-if="realValuesSetting()" class="stat-value blue"><i class="material-icons menu-icon">trending_up</i>${{ toPrice(currUserPortfolio.stocksValue) }}</div>
+					<div v-else class="stat-value blue"><i class="material-icons menu-icon">trending_up</i>${{ toPrice(currUserPortfolio.investments) }}</div>
 				</div>
 				<ul id="nav">
 					<li>
@@ -300,7 +302,11 @@
 								<div class="card small">
 									<div class="stat-value blue">
 										<i class="material-icons menu-icon">business</i>
-										<div class="card-details">
+										<div v-if="realValuesSetting" class="card-details">
+											<p><span class="small-money">$</span>{{ toPrice(currUserPortfolio.realNetworth) }}</p>
+											<div class="card-category">REAL NETWORTH</div>
+										</div>
+										<div v-else class="card-details">
 											<p><span class="small-money">$</span>{{ toPrice(currUserPortfolio.net_worth) }}</p>
 											<div class="card-category">NETWORTH</div>
 										</div>
@@ -322,7 +328,11 @@
 								<div class="card small">
 									<div class="stat-value orange">
 										<i class="material-icons menu-icon">trending_up</i>
-										<div class="card-details">
+										<div v-if="realValuesSetting" class="card-details">
+											<p><span class="small-money">$</span>{{ toPrice(currUserPortfolio.stocksValue) }}</p>
+											<div class="card-category">INVESTMENTS</div>
+										</div>
+										<div v-else class="card-details">
 											<p><span class="small-money">$</span>{{ toPrice(currUserPortfolio.investments) }}</p>
 											<div class="card-category">INVESTMENTS</div>
 										</div>
@@ -347,7 +357,7 @@
 										<tbody>
 											<tr class="clickable" v-for="stock in currUserStocks" :key='stock.uuid' v-bind:uuid="'dash' + stock.uuid">
 												<th class="stock-ticker-id" scope="row" v-bind:tid="stock.stock_ticker" style="line-height: 40px;">{{ stock.stock_ticker }}</th>
-												<td v-if="sellAllSetting" class="stock-price" style="text-align: right; padding-right: 25px;">
+												<td v-if="sellAllSetting()" class="stock-price" style="text-align: right; padding-right: 25px;">
 													<div class="">{{ stock.amount }}</div>
 												</td>
 												<td v-else class="stock-change" style="text-align: right; padding-right: 25px;">
@@ -702,6 +712,15 @@
 											<div class="input-grp">
 												Toggle Sell All button within the Dashboard tab.
 												<div class="change-setting-btn" v-on:click="toggleSellAllButton()">Toggle</div>
+											</div>
+										</div>
+									</div>
+									</div>
+									<div class="card flex-column-33">
+										<div class="settings-grp">
+											<div class="input-grp">
+												Toggle investments and net worth to be calculate with bonuses, fees, and taxes.
+												<div class="change-setting-btn" v-on:click="toggleRealValuesSetting()">Toggle</div>
 											</div>
 										</div>
 									</div>

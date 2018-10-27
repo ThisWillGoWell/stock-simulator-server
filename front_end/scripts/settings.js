@@ -14,9 +14,15 @@ function load_settings_tab() {
             },
             toggleSellAllButton: function() {
                 var config = vm_config.config;
-                console.log(config)
                 config.settings.sellAll = !config.settings.sellAll;
                 updateConfig(config, 'settings', config.settings);
+            },
+            toggleRealValuesSetting: function() {
+                var config = vm_config.config;
+                config.settings.realValuesSetting = !config.settings.realValuesSetting;
+                updateConfig(config, 'settings', config.settings);
+
+                vm_dash_tab.realValueSetting = config.settings.realValuesSetting;
             },
             changeDisplayName: function() {
                 // Get entered display name

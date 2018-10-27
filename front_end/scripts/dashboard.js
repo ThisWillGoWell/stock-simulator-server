@@ -40,6 +40,8 @@ function load_dashboard_tab() {
         var id = this.currUserStocks.filter(d => d.uuid === stock_id)[0].stock_id;
         sendTrade(id, (-1)*amt);
       },
+      realValuesSetting: getRealValuesSetting,
+      sellAllSetting: getSellAllSetting,
     },
     computed: {
       currUserPortfolio: function() {
@@ -49,6 +51,14 @@ function load_dashboard_tab() {
           if (vm_portfolios.portfolios[currUserFolioUUID] !== undefined) {
             var folio = vm_portfolios.portfolios[currUserFolioUUID];
             folio.investments = folio.net_worth - folio.wallet;
+
+            // Adding real networth
+            if (folio.stocksValue === undefined) folio.stocksValue = 0;
+            if (folio.stocks === undefined) folio.stocks = [];
+            console.log(folio)
+            console.log(folio.stocks)
+            prospectStockValues(folio.stocks, folio.stocksValue);
+
             return folio;
           }
         }
@@ -139,13 +149,13 @@ function load_dashboard_tab() {
         }
         return {};
       },
-      sellAllSetting: function() {
-        if (vm_config === undefined) {
-          return false;
-        } else {
-          return vm_config.config.settings.sellAll;
-        }
-      },
+      // sellAllSetting: function() {
+      //   if (vm_config === undefined) {
+      //     return false;
+      //   } else {
+      //     return vm_config.config.settings.sellAll;
+      //   }
+      // },
     }
   });
 
