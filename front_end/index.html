@@ -662,74 +662,73 @@
 					</div>
 						<!-- TODO: this tab collides with the sidebar -->
 					<div id="settings--view" class="view">
-							<div class="flex-grid--container">
-								<div class="flex-column-33">
-									<div class="item-category buffer-top">ACCOUNT</div>
+						<div class="flex-grid--container">
+							<div class="flex-column-33">
+								<div class="item-category buffer-top">ACCOUNT</div>
+							</div>
+							<div class="flex-column-100">
+								<div class="card flex-column-33">
+									<div class="settings-grp">
+										<div class="input-grp">
+											<div class="input-name">Change Display Name</div>
+											<input type="text" id="change-display-name" class="input-full-width">
+											<span class="input-focus-border"></span>
+											
+										</div>
+										<div class="input-grp">
+											<div class="change-setting-btn" v-on:click="changeDisplayName()">SAVE</div>
+										</div>
+									</div>
 								</div>
-								<div class="flex-column-100">
-									<div class="card flex-column-33">
-										<div class="settings-grp">
-											<div class="input-grp">
-												<div class="input-name">Change Display Name</div>
-												<input type="text" id="change-display-name" class="input-full-width">
+								<div class="card flex-column-33">
+									<div class="settings-grp">
+										<div class="input-grp">
+											<div class="input-name">Change Password</div>
+											<input type="text" id="change-password" class="input-full-width">
+											<span class="input-focus-border"></span>
+											
+										</div>
+										<div class="input-grp">
+												<div class="input-name">Confirm Password</div>
+												<input type="text" id="change-password-confirm" class="input-full-width">
 												<span class="input-focus-border"></span>
 												
 											</div>
-											<div class="input-grp">
-												<div class="change-setting-btn" v-on:click="changeDisplayName()">SAVE</div>
-											</div>
+										<div class="input-grp">
+											<div class="change-setting-btn">SAVE</div>
 										</div>
 									</div>
-									<div class="card flex-column-33">
-										<div class="settings-grp">
-											<div class="input-grp">
-												<div class="input-name">Change Password</div>
-												<input type="text" id="change-password" class="input-full-width">
-												<span class="input-focus-border"></span>
-												
-											</div>
-											<div class="input-grp">
-													<div class="input-name">Confirm Password</div>
-													<input type="text" id="change-password-confirm" class="input-full-width">
-													<span class="input-focus-border"></span>
-													
-												</div>
-											<div class="input-grp">
-												<div class="change-setting-btn">SAVE</div>
-											</div>
+								</div>
+								<div class="card flex-column-33">
+									<div class="settings-grp">
+										<div class="input-grp">
+											Toggle stock changes as percentages instead of price change in dollars.
+											<div class="change-setting-btn" v-on:click="toggleChangePercentSetting()">Toggle</div>
 										</div>
 									</div>
-									<div class="card flex-column-33">
-										<div class="settings-grp">
-											<div class="input-grp">
-												Toggle stock changes as percentages instead of price change in dollars.
-												<div class="change-setting-btn" v-on:click="toggleChangePercentSetting()">Toggle</div>
-											</div>
+								</div>
+								<div class="card flex-column-33">
+									<div class="settings-grp">
+										<div class="input-grp">
+											Toggle Sell All button within the Dashboard tab.
+											<div class="change-setting-btn" v-on:click="toggleSellAllButton()">Toggle</div>
 										</div>
 									</div>
-									<div class="card flex-column-33">
-										<div class="settings-grp">
-											<div class="input-grp">
-												Toggle Sell All button within the Dashboard tab.
-												<div class="change-setting-btn" v-on:click="toggleSellAllButton()">Toggle</div>
-											</div>
-										</div>
-									</div>
-									</div>
-									<div class="card flex-column-33">
-										<div class="settings-grp">
-											<div class="input-grp">
-												Toggle investments and net worth to be calculate with bonuses, fees, and taxes.
-												<div class="change-setting-btn" v-on:click="toggleRealValuesSetting()">Toggle</div>
-											</div>
+								</div>
+								</div>
+								<div class="card flex-column-33">
+									<div class="settings-grp">
+										<div class="input-grp">
+											Toggle investments and net worth to be calculate with bonuses, fees, and taxes.
+											<div class="change-setting-btn" v-on:click="toggleRealValuesSetting()">Toggle</div>
 										</div>
 									</div>
 								</div>
 							</div>
 						</div>
-						<!-- TODO: this tab collides with the sidebar -->
 					</div>
-					
+						<!-- TODO: this tab collides with the sidebar -->
+
 					<div id="store--view" class="view">
 						<div class="flex-grid--container">
 							<div class="flex-column-100">
