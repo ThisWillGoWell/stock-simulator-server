@@ -416,10 +416,10 @@
 												<td class="stock-change" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_roi) }}</td>
 												
 											</tr>
-											<tr v-if="currUserStocks != []">
-												<!-- TODO add click text to move to stocks tab  -->
+											<!-- <tr v-if="currUserStocks != []">
+												
 												<td colspan="5">Move to the <span class="clickable-text">Stocks tab</span> to start investing.</td>
-											</tr>
+											</tr> -->
 										</tbody>
 									</table>
 								</div>
@@ -794,7 +794,7 @@
 											<div class="item-divider"></div>
 											<div class="item-effects">{{ level.note }}</div>
 											<div class="item-cost">{{ level.price }}</div>
-											<div class="buy-item-btn" v-on:click="level_up(level.level)">BUY</div>
+											<div class="buy-item-btn" v-on:click="level_up(level.level)" v-bind:class="{ 'item-disabled': !isNextLevel(level.level)}">BUY</div>
 										</div>
 									</li>
 								</ul>
