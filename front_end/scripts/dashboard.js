@@ -55,8 +55,6 @@ function load_dashboard_tab() {
             // Adding real networth
             if (folio.stocksValue === undefined) folio.stocksValue = 0;
             if (folio.stocks === undefined) folio.stocks = [];
-            console.log(folio)
-            console.log(folio.stocks)
             prospectStockValues(folio.stocks, folio.stocksValue);
 
             return folio;
