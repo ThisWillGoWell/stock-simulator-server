@@ -30,6 +30,9 @@ function prospectStockValues(stocks, realStockValue) {
     var requests = [];
     
     stocks.forEach(function(d) {
+        if (d.amount == 0) {
+            return 0;
+        }
         requests.push(REQUEST_ID.toString());
         var callback = function(msg) {
             if (msg.msg.success) {
