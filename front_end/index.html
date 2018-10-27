@@ -302,7 +302,7 @@
 								<div class="card small">
 									<div class="stat-value blue">
 										<i class="material-icons menu-icon">business</i>
-										<div v-if="realValuesSetting" class="card-details">
+										<div v-if="realValuesSetting()" class="card-details">
 											<p><span class="small-money">$</span>{{ toPrice(currUserPortfolio.realNetworth) }}</p>
 											<div class="card-category">REAL NETWORTH</div>
 										</div>
@@ -328,7 +328,7 @@
 								<div class="card small">
 									<div class="stat-value orange">
 										<i class="material-icons menu-icon">trending_up</i>
-										<div v-if="realValuesSetting" class="card-details">
+										<div v-if="realValuesSetting()" class="card-details">
 											<p><span class="small-money">$</span>{{ toPrice(currUserPortfolio.stocksValue) }}</p>
 											<div class="card-category">INVESTMENTS</div>
 										</div>

@@ -40,8 +40,8 @@ function load_dashboard_tab() {
         var id = this.currUserStocks.filter(d => d.uuid === stock_id)[0].stock_id;
         sendTrade(id, (-1)*amt);
       },
-      realValuesSetting: getRealValuesSetting,
       sellAllSetting: getSellAllSetting,
+      realValuesSetting: getRealValuesSetting,
     },
     computed: {
       currUserPortfolio: function() {
