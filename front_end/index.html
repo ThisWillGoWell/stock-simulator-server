@@ -620,7 +620,31 @@
 								</div>
 							</div>
 							<div class="flex-column-100">
-								<div class="item-category buffer-top">TRADE HISTORY</div>
+								<div class="item-category buffer-top">TRADE HISTORY
+									<div class="flex-column-100">
+										<div class="card">
+											<div class="flex-column-50">
+												<table class="table">
+													<thead class="table-top-bar">
+														<tr>
+															<th scope="col" v-on:click="sortCol('time')">Time</th>
+															<th scope="col" v-on:click="sortCol('results')">Result</th>
+															<th scope="col" v-on:click="sortCol('bonus')">Bonus</th>
+														</tr>
+													</thead>
+													<tbody>
+														<tr class="clickable" v-for="trade in tradeHistory" :key='trade.uuid' v-bind:uuid="'trade' + trade.uuid">
+															<th class="trade-time" scope="row" v-bind:tid="trade.time" style="line-height: 40px;">{{ trade.time }}</th>
+															<td class="trade-result" style="text-align: right; padding-right: 25px;">${{ trade.result }}</td>
+															<td class="trade-bonus" style="text-align: right; padding-right: 25px;">{{ trade.bonus }}</td>
+															
+														</tr>
+													</tbody>
+												</table>
+											</div>
+										</div>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>

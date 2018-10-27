@@ -43,7 +43,19 @@ function load_research_tab() {
             //         $('#research-graph-user-select').show();
             //     }
             // }
+            
         },
+        computed: {
+            tradeHistory: function() {
+                var entries = Object.values(vm_recordEntry.entries)
+                    .map(function(d) {
+                        d.portfolio_uuid = vm_recordBook.records[d.book_uuid];
+                        return d; 
+                    });
+                    // entries = entries.filter(d => d.portfolio_uuid === )
+                    return entries;
+            }
+        }
     });
 
     // Create selectize areas
