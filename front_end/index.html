@@ -69,12 +69,12 @@
 					<div id="trade--view">
 						<div class="modal-stock-id">{{ stock.ticker_id }} </div>
 
-						<div>Prospective cash: ${{ prospectiveCash }}</div>						
+						<!-- <div>Prospective cash: ${{ prospectiveCash }}</div>						
 						<div>Prospective fees: ${{ prospectiveFees }}</div>						
 						<div>Prospective bonus: ${{ prospectiveBonus }}</div>						
 						<div>Prospective share count: {{ prospectiveShareCount }}</div>						
 						<div>Prospective tax: ${{ prospectiveTax }}</div>						
-						<div>Prospective result: ${{ prospectiveResult }}</div>						
+						<div>Prospective result: ${{ prospectiveResult }}</div>						 -->
 
 						<div class="flex-grid--container no-padding">
 							<div class="flex-column-50">
@@ -108,10 +108,23 @@
 										<span class="left">Quantity</span>
 										<span class="right">{{ buySellAmount }}</span>
 									</div>
+									<div class="receipt-line">
+										<span class="left negative">Taxes</span>
+										<span class="right negative">-${{ prospectiveTax }}</span>
+									</div>
+									<div class="receipt-line">
+										<span class="left negative">Fees</span>
+										<span class="right negative">-${{ prospectiveFees }}</span>
+									</div>
+									<div class="receipt-line">
+										<span class="left positive">Bonus</span>
+										<span class="right positive">+${{ prospectiveBonus }}</span>
+									</div>
+									
 									<div class="receipt-line divider"></div>
 									<div class="receipt-line">
-										<span class="left">Total</span>
-										<span class="right">${{ toPrice(buySellAmount * stock.current_price) }}</span>
+										<span class="left total">Total</span>
+										<span class="right total">${{ prospectiveResult }}</span>
 									</div>
 								</div>
 							</div>
@@ -233,8 +246,8 @@
 					<div v-if="realValuesSetting()" class="stat-value blue"><i class="material-icons menu-icon">business</i>${{ toPrice(currUserPortfolio.realNetworth) }}</div>
 					<div v-else class="stat-value blue"><i class="material-icons menu-icon">business</i>${{ toPrice(currUserPortfolio.net_worth) }}</div>
 					<div class="stat-value green"><i class="material-icons menu-icon">local_atm</i>${{ toPrice(currUserPortfolio.wallet) }}</div>
-					<div v-if="realValuesSetting()" class="stat-value blue"><i class="material-icons menu-icon">trending_up</i>${{ toPrice(currUserPortfolio.stocksValue) }}</div>
-					<div v-else class="stat-value blue"><i class="material-icons menu-icon">trending_up</i>${{ toPrice(currUserPortfolio.investments) }}</div>
+					<div v-if="realValuesSetting()" class="stat-value orange"><i class="material-icons menu-icon">trending_up</i>${{ toPrice(currUserPortfolio.stocksValue) }}</div>
+					<div v-else class="stat-value orange"><i class="material-icons menu-icon">trending_up</i>${{ toPrice(currUserPortfolio.investments) }}</div>
 				</div>
 				<ul id="nav">
 					<li>
@@ -629,10 +642,6 @@
 					</div>
 					<div id="research--view" class="view">
 						<div class="flex-grid--container">
-							
-							<div class="flex-column-100">
-								<div class="item-category buffer-top">GRAPHING</div>
-							</div>
 							<div class="flex-column-100">
 								<div id="chart-sandbox" class="card">
 									<div class="query-term-container">
@@ -658,42 +667,44 @@
 								</div>
 							</div>
 							<div class="flex-column-100">
-								<div class="item-category buffer-top">TRADE HISTORY
-									<!-- <div class="flex-column-100"> -->
-										<div class="flex-column-33">
-											<div class="card">
-												<table class="table">
-													<thead class="table-top-bar">
-														<tr>
-															<th scope="col" v-on:click="sortCol('time')">Time</th>
-															<th scope="col" v-on:click="sortCol('results')">Result</th>
-															<th scope="col" v-on:click="sortCol('bonus')">Bonus</th>
-														</tr>
-													</thead>
-													<tbody>
-														<tr v-for="trade in tradeHistory" :key='trade.uuid' v-bind:uuid="'trade' + trade.uuid" v-on:click='openTradeHistory(trade.uuid)'>
-															<th scope="row" v-bind:tid="trade.time">{{ trade.time }}</th>
-															<td>${{ trade.result }}</td>
-															<td>{{ trade.bonus }}</td>
-															
-														</tr>
-													</tbody>
-												</table>
-											</div>
+									<div class="flex-column-100">
+										<div class="item-category buffer-top">TRADE HISTORY</div>
+									</div>
+								<!-- <div class="flex-column-100"> -->
+									<div class="flex-column-100">
+										<div class="card">
+											<table class="table">
+												<thead class="table-top-bar">
+													<tr>
+														<th scope="col" v-on:click="sortCol('time')">Time</th>
+														<th scope="col" v-on:click="sortCol('results')">Result</th>
+														<th scope="col" v-on:click="sortCol('bonus')">Bonus</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr v-for="trade in tradeHistory" :key='trade.uuid' v-bind:uuid="'trade' + trade.uuid" v-on:click='openTradeHistory(trade.uuid)'>
+														<th scope="row" v-bind:tid="trade.time">{{ trade.time }}</th>
+														<td>${{ trade.result }}</td>
+														<td>{{ trade.bonus }}</td>
+														
+													</tr>
+												</tbody>
+											</table>
 										</div>
-										<div class="flex-column-33">
+									</div>
+										<!-- <div class="flex-column-100">
 											<div class="card">
 												<div class="receipt">
 													<div>{{ receipt.time }}</div>
 													<div>{{ receipt.ticker }}</div>
 												</div>
 											</div>
-										</div>
+										</div> -->
 									<!-- </div> -->
 								</div>
 							</div>
 						</div>
-					</div>
+					
 						<!-- TODO: this tab collides with the sidebar -->
 					<div id="settings--view" class="view">
 						<div class="flex-grid--container">
@@ -701,7 +712,7 @@
 								<div class="item-category buffer-top">ACCOUNT</div>
 							</div>
 							<div class="flex-column-100">
-								<div class="card flex-column-33">
+								<div class="card flex-column-100">
 									<div class="settings-grp">
 										<div class="input-grp">
 											<div class="input-name">Change Display Name</div>
@@ -714,7 +725,7 @@
 										</div>
 									</div>
 								</div>
-								<div class="card flex-column-33">
+								<div class="card flex-column-100">
 									<div class="settings-grp">
 										<div class="input-grp">
 											<div class="input-name">Change Password</div>
@@ -733,7 +744,10 @@
 										</div>
 									</div>
 								</div>
-								<div class="card flex-column-33">
+								<div class="flex-column-33">
+									<div class="item-category buffer-top">DISPLAY</div>
+								</div>
+								<div class="card flex-column-100">
 									<div class="settings-grp">
 										<div class="input-grp">
 											Toggle stock changes as percentages instead of price change in dollars.
@@ -741,7 +755,7 @@
 										</div>
 									</div>
 								</div>
-								<div class="card flex-column-33">
+								<div class="card flex-column-100">
 									<div class="settings-grp">
 										<div class="input-grp">
 											Toggle Sell All button within the Dashboard tab.
@@ -750,7 +764,7 @@
 									</div>
 								</div>
 								</div>
-								<div class="card flex-column-33">
+								<div class="card flex-column-100">
 									<div class="settings-grp">
 										<div class="input-grp">
 											Toggle investments and net worth to be calculate with bonuses, fees, and taxes.
@@ -771,7 +785,10 @@
 							<div class="flex-column-100">
 								<ul id="item-list">
 									<li v-for="level in experience" :key="level.label">
-										<div class="card item" v-bind:class="{ 'item-disable': !isNextLevel(level.level)}">
+										<div class="card item">
+											<div class="item-locked-layer" v-bind:class="{ 'item-disabled': !isNextLevel(level.level)}">
+												<i class="material-icons white">lock</i>
+											</div>
 											<div class="item-name">{{ level.label }}</div>
 											<div class="item-effects title">{{ level.title }}</div>
 											<div class="item-divider"></div>
