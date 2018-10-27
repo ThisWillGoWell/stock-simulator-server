@@ -4,6 +4,12 @@ var graphType, graphUsers, graphStocks;
 function load_research_tab() {
     vm_research = new Vue({
         el: "#research--view",
+        data: {
+            receipt: {
+                ticker: "",
+                time: new Date(),
+            }
+        },
         methods: {
             drawGraph: function() {
                 // Get user set variables for graphing
@@ -26,8 +32,6 @@ function load_research_tab() {
                     })
                 }
 
-                console.log(uuids)
-                console.log(fields)
                 // Create the graph
                 queryDrawGraph("#research-graph-svg-main", uuids, fields, false, false);
 
@@ -43,13 +47,26 @@ function load_research_tab() {
             //         $('#research-graph-user-select').show();
             //     }
             // }
-            
+            openTradeHistory: function(uuid) {
+                var trade = this.tradeHistory.filter(d => d.uuid === uuid)[0];
+
+                
+                console.log(trade);
+                
+                this.receipt.ticker = vm_stocks.stocks[trade.stock_uuid].ticker_id;
+                this.receipt.time = trade.time;
+
+            }
         },
         computed: {
             tradeHistory: function() {
                 var entries = Object.values(vm_recordEntry.entries)
                     .map(function(d) {
-                        d.portfolio_uuid = vm_recordBook.records[d.book_uuid];
+                        let record = vm_recordBook.records[d.book_uuid];
+                        d.time = Date(d.time);
+                        d.portfolio_uuid = record.portfolio_uuid;
+                        d.ledger_uuid = record.ledger_uuid;
+                        d.stock_uuid = record.stock_uuid;
                         return d; 
                     });
                     // entries = entries.filter(d => d.portfolio_uuid === )
