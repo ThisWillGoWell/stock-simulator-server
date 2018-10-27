@@ -123,6 +123,7 @@ function load_dashboard_tab() {
               }
               return 0;
             });
+
             return ownedStocks;
           }
         }
@@ -207,3 +208,4 @@ function createPortfolioGraph(portfolioUUID, location) {
   var fields = ['net_worth', 'wallet'];
   queryDrawGraph(location, uuids, fields);
 }
+
