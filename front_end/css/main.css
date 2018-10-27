@@ -2103,12 +2103,24 @@ tbody tr:hover .money-transfer-btn{
 }
 
 .buy-item-btn:hover {
-    background-color: transparent;
+    
     background-color: #1abc9c;
     color: #fff;
     transform: translateY(-2px);
     box-shadow: 0 3px 5px rgba(0,0,0,0.10), 0 3px 5px rgba(0,0,0,0.15);
     max-width: 160px; 
+    
+}
+
+.buy-item-btn.item-disabled {
+    pointer-events: none;
+    background-color: #777;
+    border: solid 2px #4d4d4d;
+    color: #4d4d4d;
+}
+
+.buy-item-btn.item-disabled:hover {
+   
     
 }
 
@@ -2692,7 +2704,12 @@ table thead.table-top-bar tr th:hover{
     
 } */
 
+.item-locked-layer {
+    display: none;
+}
+
 .item-locked-layer.item-disabled {
+    display: block;
     position: absolute;
     top: 0;
     bottom: 0;
@@ -2707,6 +2724,13 @@ table thead.table-top-bar tr th:hover{
     -webkit-transition: all ease-in-out 0.17s;
     transition: all ease-in-out 0.17s;
     pointer-events: none;
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                supported by Chrome and Opera */
 }
 
 .item-locked-layer i{

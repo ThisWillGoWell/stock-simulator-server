@@ -273,6 +273,12 @@ $(document).ready(function() {
       .toggleClass("hover");
   });
 
+  // $(".buy-item-btn.item-disabled").hover(function(event) {
+  //   $(this)
+  //     .parent(".card.item")
+  //     .removeClass("hover");
+  // });
+
   
 
   $(document).keyup(function(e) {
