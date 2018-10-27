@@ -1592,6 +1592,7 @@ input[type=password]:focus ~ .input-focus-border{
     padding-top: 35px;
     padding-bottom: 50px;
     text-align: center;
+    height: 250px;
 }
 
 .card.stock-list{
@@ -2248,6 +2249,7 @@ tbody tr:hover .money-transfer-btn{
 
 .stat-value .card-category {
     font-size: 20px;
+    font-weight: 500;
     line-height: 16px;
     color: rgba(0,0,0,0.15);
 }
