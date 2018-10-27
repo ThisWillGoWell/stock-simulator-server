@@ -728,42 +728,43 @@
 							</div>
 						</div>
 						<!-- TODO: this tab collides with the sidebar -->
-						<div id="store--view" class="view">
-							<div class="flex-grid--container">
-								<div class="flex-column-100">
-									<div class="item-category buffer-top">EXPERIENCE</div>
-								</div>
-								<div class="flex-column-100">
-									<ul id="item-list">
-										<li v-for="level in experience" :key="level.label">
-											<div class="card item" v-bind:class="{ 'item-disable': !isNextLevel(level.level)}">
-												<div class="item-name">{{ level.label }}</div>
-												<div class="item-effects title">{{ level.title }}</div>
-												<div class="item-divider"></div>
-												<div class="item-effects">{{ level.note }}</div>
-												<div class="item-cost">{{ level.price }}</div>
-												<div class="buy-item-btn" v-on:click="level_up(level.level)">BUY</div>
-											</div>
-										</li>
-									</ul>
-								</div>
-								<div class="flex-column-100">
-									<div class="item-category buffer-top">ABILITIES</div>
-								</div>
+					</div>
+					
+					<div id="store--view" class="view">
+						<div class="flex-grid--container">
+							<div class="flex-column-100">
+								<div class="item-category buffer-top">EXPERIENCE</div>
+							</div>
+							<div class="flex-column-100">
 								<ul id="item-list">
-									<li v-for="item in items" :key="item.type">
-										<div class="card item">
-											
-											<div class="item-name">{{ item.label }}</div>
-											<div class="item-description">{{ item.note }}</div>
-										
-		
-											<div class="item-cost">{{ item.price }}</div>
-											<div class="buy-item-btn" v-on:click="purchaseItem()">BUY</div>
+									<li v-for="level in experience" :key="level.label">
+										<div class="card item" v-bind:class="{ 'item-disable': !isNextLevel(level.level)}">
+											<div class="item-name">{{ level.label }}</div>
+											<div class="item-effects title">{{ level.title }}</div>
+											<div class="item-divider"></div>
+											<div class="item-effects">{{ level.note }}</div>
+											<div class="item-cost">{{ level.price }}</div>
+											<div class="buy-item-btn" v-on:click="level_up(level.level)">BUY</div>
 										</div>
 									</li>
 								</ul>
 							</div>
+							<div class="flex-column-100">
+								<div class="item-category buffer-top">ABILITIES</div>
+							</div>
+							<ul id="item-list">
+								<li v-for="item in items" :key="item.type">
+									<div class="card item">
+										
+										<div class="item-name">{{ item.label }}</div>
+										<div class="item-description">{{ item.note }}</div>
+									
+	
+										<div class="item-cost">{{ item.price }}</div>
+										<div class="buy-item-btn" v-on:click="purchaseItem()">BUY</div>
+									</div>
+								</li>
+							</ul>
 						</div>
 					</div>
 					
