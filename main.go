@@ -2,9 +2,13 @@ package main
 
 import (
 	"flag"
+	"io"
+	"io/ioutil"
 	"os"
 	"runtime"
 	"runtime/pprof"
+
+	"github.com/stock-simulator-server/src/metics"
 
 	"github.com/stock-simulator-server/src/alert"
 	"github.com/stock-simulator-server/src/log"
@@ -54,8 +58,19 @@ func main() {
 	}
 	//valuable.ValuablesLock.EnableDebug()
 	//ledger.EntriesLock.EnableDebug()
-	log.Init(alert.Init(os.Getenv("DISCORD_TOKEN"), "504397270075179029"))
+	discordAlertToken := os.Getenv("DISCORD_TOKEN")
+	var alertWriter io.Writer
+	if discordAlertToken != "" {
+		alertWriter = alert.Init(discordAlertToken, "504397270075179029")
+	} else {
+		// if there is discord token, discard all alerts
+		alertWriter = ioutil.Discard
+	}
+	log.Init(alertWriter)
 	log.Alerts.Info("Starting App")
+	log.Log.Info("Starting App")
+
+	metics.RunMetrics()
 	//Wiring of system
 	wires.ConnectWires()
 	//this takes the subscribe output and converts it to a message

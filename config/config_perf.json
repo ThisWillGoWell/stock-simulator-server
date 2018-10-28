@@ -1,4 +1,5 @@
 {
+  "auto_buy": true,
   "accounts": {
     "Will": {
       "display_name": "Will",

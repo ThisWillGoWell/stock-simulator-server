@@ -115,5 +115,6 @@
       "display_name": "jake1228",
       "password": "pass"
     }
-  }
+  },
+  "auto_buy": false
 }

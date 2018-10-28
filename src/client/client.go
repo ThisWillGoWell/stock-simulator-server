@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/stock-simulator-server/src/log"
+
 	"github.com/stock-simulator-server/src/record"
 
 	"github.com/stock-simulator-server/src/items"
@@ -58,12 +60,14 @@ Because for some reason, the js web socket class does not have headers,
 We accept all connections and pull the initial payload as a login/account create command
 */
 func InitialReceive(initialPayload string, tx, rx chan string) error {
+	log.Log.Info("initial recieve of new client", initialPayload)
 	clientsLock.Acquire("initial received of new client")
 	defer clientsLock.Release()
 	initialMessage := new(messages.BaseMessage)
 	unmarshalErr := initialMessage.UnmarshalJSON([]byte(initialPayload))
 
 	if unmarshalErr != nil {
+		log.Log.Error("Unmarshal error: ", initialPayload)
 		return unmarshalErr
 	}
 	user := new(account.User)
@@ -71,12 +75,14 @@ func InitialReceive(initialPayload string, tx, rx chan string) error {
 	if initialMessage.IsConnect() {
 		userTemp, err := account.ConnectUser(initialMessage.Msg.(*messages.ConnectMessage).SessionToken)
 		if err != nil {
+			log.Log.Error("error in connecting user: ", err, user.Uuid)
 			return err
 		}
 		user = userTemp
 		sessionToken = initialMessage.Msg.(*messages.ConnectMessage).SessionToken
 	} else {
-		return errors.New("unknown message, need sessio")
+		log.Log.Error("unknown message action for connect message", initialPayload)
+		return errors.New("unknown message, need session")
 	}
 
 	client := &Client{
@@ -93,7 +99,7 @@ func InitialReceive(initialPayload string, tx, rx chan string) error {
 		connections[user.Uuid] = make(map[int]*Client)
 	}
 	connections[user.Uuid][client.clientNum] = client
-
+	log.Log.Info("client connected", user.Uuid, user.ActiveClients)
 	go client.tx(sessionToken)
 	go client.rx()
 	return nil
