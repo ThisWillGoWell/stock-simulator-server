@@ -107,7 +107,7 @@ func MakeUser(uuid, username, displayName, password, portfolioUUID, config strin
 		Config:         configMap,
 		ConfigStr:      config,
 		UserUpdateChan: duplicator.MakeDuplicator("user-" + uuid),
-		Sender:         sender.NewSender(uuid),
+		Sender:         sender.NewSender(uuid, portfolioUUID),
 	}
 	change.RegisterPublicChangeDetect(UserList[uuid])
 	wires.UsersNewObject.Offer(UserList[uuid])
@@ -158,6 +158,7 @@ func (user *User) SetConfig(config map[string]interface{}) {
 	user.Config = config
 	configBytes, _ := json.Marshal(config)
 	user.ConfigStr = string(configBytes)
+	wires.UsersUpdate.Offer(user)
 }
 
 func (user *User) SetPassword(pass string) error {
@@ -166,6 +167,7 @@ func (user *User) SetPassword(pass string) error {
 	}
 	hashedPassword := hashAndSalt(pass)
 	user.Password = hashedPassword
+	wires.UsersUpdate.Offer(user)
 	return nil
 }
 
@@ -187,7 +189,7 @@ func (user *User) SetDisplayName(displayName string) error {
 
 func isAllowedCharacterDisplayName(s string) bool {
 	for _, r := range s {
-		if !(unicode.IsLetter(r) || unicode.IsNumber(r) || r != '_') {
+		if !(unicode.IsLetter(r) || unicode.IsNumber(r) || r == '_' || r == '-') {
 			return false
 		}
 	}

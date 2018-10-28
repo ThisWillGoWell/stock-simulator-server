@@ -42,7 +42,7 @@ func TestMail(t *testing.T) {
 	u2 := MakeUser("user2")
 
 	//itemId := BuyItem(u1, mailItemType)
-	//_, err := Use(itemId, u1, MailItemParameters{To:u2, Amount:1000})
+	//_, err := Use(itemId, u1, MailItemParameters{To:u2, ShareCount:1000})
 	//t.Log(err)
 	t.Log(portfolio.Portfolios[account.UserList[u1].PortfolioId].Wallet)
 	t.Log(portfolio.Portfolios[account.UserList[u2].PortfolioId].Wallet)

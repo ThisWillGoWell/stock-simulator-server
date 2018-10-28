@@ -7,6 +7,8 @@ import (
 	"runtime"
 	"runtime/pprof"
 
+	"github.com/stock-simulator-server/src/histroy"
+
 	"github.com/stock-simulator-server/src/sender"
 
 	"github.com/stock-simulator-server/src/app"
@@ -57,6 +59,7 @@ func main() {
 	change.StartDetectChanges()
 	session.StartSessionCleaner()
 	sender.RunGlobalSender()
+	histroy.RunCacheUpdater()
 
 	order.Run()
 	valuable.StartStockStimulation()

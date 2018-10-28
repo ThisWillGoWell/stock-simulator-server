@@ -2,11 +2,19 @@
 var token = sessionStorage.getItem('token');
 var auth_uuid = sessionStorage.getItem('uuid');
 
-if(token) {
+var REQUESTS = {};
+var REQUEST_ID = 1;
+
+if (token) {
 	/*  WEBSOCKETS */
 	var externalServer = "mockstarket.com";
 	var localServer = window.location.host;
 	var wsUri = "wss://"+ externalServer + "/ws";
+	var port = location.port;
+	if (port == "8000") {
+		wsUri = "ws://localhost:8000/ws"
+	}
+
 	var output;
 	var webSocket;
 
@@ -47,7 +55,7 @@ if(token) {
 				router[msg.action](msg);
 			} catch (err) {
 				console.log(msg);
-				console.error(err);
+				//console.error(err);
 			}
 		} else {
 			if (msg.type == "error") {
@@ -64,27 +72,43 @@ if(token) {
 	    // writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
 	};
 
-	function doSend(action, msg, request_id) {
-		if (request_id === undefined) {
-			var message = {
-				'action': action,
-				'msg': msg,
-			};	
-		} else {
-			var message = {
-				'action': action,
-				'msg': msg,
-				'request_id': request_id
-			};
+	function doSend(action, msg, callback) {
+		if (callback === undefined) {
+			var callback = function(msg) {
+				console.log("no callback supplied")
+				console.log(msg)
+			}
 		}
+
+		REQUESTS[REQUEST_ID] = callback;
+
+		var message = {
+			'action': action,
+			'msg': msg,
+			'request_id': REQUEST_ID.toString()
+		};
+		
+		REQUEST_ID++;
 	    webSocket.send(JSON.stringify(message));
 	};
 
 	function registerRoute(route, callback) {
 		router[route] = callback;
-	};+
+	};
 
-	init();
+		
+	registerRoute("response", function(msg) {
+		try {
+			REQUESTS[msg.request_id](msg);
+		} catch (err) {
+			console.error(err);
+			console.log("no request_id key for " + JSON.stringify(msg));
+			console.log(REQUESTS);
+			console.log(REQUEST_ID);
+		}
+		console.log(msg);
+		delete REQUESTS[msg.request_id];
+	});
 
 } else {
 

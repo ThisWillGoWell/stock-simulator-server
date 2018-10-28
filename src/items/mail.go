@@ -111,8 +111,8 @@ func (it *MailItem) Activate(parameters interface{}) (interface{}, error) {
 
 	to := order.MakeTransferOrder(senderId, receiver.PortfolioId, mailParams.Amount)
 	result := <-to.ResponseChannel
-	if !result.Success {
-		return nil, errors.New(result.Err)
+	if !result.IsSuccess() {
+		return nil, errors.New(result.GetError())
 	}
 	it.Used = true
 	TransferItem(it.UserUuid, mailParams.To, it.Uuid)

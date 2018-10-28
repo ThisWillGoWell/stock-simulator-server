@@ -4,8 +4,27 @@ function load_investors_tab() {
   // Vue for all investors tab data
   vm_investors_tab = new Vue({
     el: "#investors--view",
+    data: {
+      sortBy: "name",
+      sortDesc: 1,
+    },
     methods: {
       toPrice: formatPrice,
+      // on column name clicks
+      sortCol: function(col) {
+        // If sorting by selected column
+        if (this.sortBy == col) {
+          // Change sort direction
+          // console.log(col);
+          this.sortDesc = -this.sortDesc;
+        } else {
+          // Change sorted column
+          this.sortBy = col;
+        }
+      },
+      toggleFavorite: function(uuid) {
+        favoriteInvestor(uuid);
+      },
       createGraph: function(portfolioUUID) {
         let location = "#investorGraph" + portfolioUUID;
         createPortfolioGraph(portfolioUUID, location);
@@ -15,7 +34,15 @@ function load_investors_tab() {
         transferModal.recipient_uuid = user.uuid;
         transferModal.recipient_name = user.name;
         toggleTransferModal();
-      }
+      },
+      isFavoriteInvestor: function(uuid) {
+        try {
+          return (vm_config.config.fav.users.indexOf(uuid) > -1);
+        } catch (err) {
+          console.error(err);
+          return false;
+        }
+      },
     },
     computed: {
       investors: function() {
@@ -41,9 +68,39 @@ function load_investors_tab() {
             
             return d;
           });
+
+          // Sort investors
+          let byCol = this.sortBy;
+          let direction = this.sortDesc;
+
+          if (byCol === "favorites") {
+            favs = vm_config.config.fav.users;
+            investors = investors.sort(function(a, b) {
+              if (favs.indexOf(a.uuid) === favs.indexOf(b.uuid)) {
+                return 0;
+              }
+              if (favs.indexOf(a.uuid) > -1) {
+                return direction;
+              } else {
+                return -direction;
+              }
+            })
+            return investors;
+          }
+
+          investors = investors.sort(function(a, b) {
+            if (a[byCol] > b[byCol]) {
+              return -direction;
+            }
+            if (a[byCol] < b[byCol]) {
+              return direction;
+            }
+            return 0;
+          });
+          
           return investors;
         }
-      }
+      },
     });
     
     // Set investor row clicking

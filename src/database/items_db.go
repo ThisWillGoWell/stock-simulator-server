@@ -20,7 +20,8 @@ var (
 	itemsTableUpdateInsert = `INSERT into ` + itemsTableName + `(uuid, type, item) values($1, $2, $3) ` +
 		`ON CONFLICT (uuid) DO UPDATE SET item=EXCLUDED.item`
 
-	itemsTableQueryStatement = "SELECT type, item FROM " + itemsTableName + `;`
+	itemsTableQueryStatement  = "SELECT type, item FROM " + itemsTableName + `;`
+	itemsTableDeleteStatement = "DELETE FROM " + itemsTableName + " where uuid=$1"
 	//getCurrentPrice()
 )
 
@@ -39,19 +40,19 @@ func initItems() {
 }
 
 func writeItem(entry items.Item) {
-	dbLock.Acquire("update-notification")
+	dbLock.Acquire("update-item")
 	defer dbLock.Release()
 	tx, err := db.Begin()
 
 	if err != nil {
 		db.Close()
-		panic("could not begin notification init" + err.Error())
+		panic("could not begin item init" + err.Error())
 	}
 	item, err := json.Marshal(entry)
 	if err != nil {
 	}
 
-	_, err = tx.Exec(itemsTableUpdateInsert, entry.GetUuid(), entry.GetType(), item)
+	_, err = tx.Exec(itemsTableUpdateInsert, entry.GetUuid(), entry.GetItemType().GetType(), item)
 	if err != nil {
 		tx.Rollback()
 		panic("error occurred while insert item in table " + err.Error())
@@ -80,4 +81,19 @@ func populateItems() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func deleteItem(item items.Item) {
+	tx, err := db.Begin()
+	if err != nil {
+		db.Close()
+		panic("error opening db for deleteing item: " + err.Error())
+	}
+	_, err = tx.Exec(itemsTableDeleteStatement, item.GetUuid())
+	if err != nil {
+		tx.Rollback()
+		panic("error delete item: " + err.Error())
+	}
+	tx.Commit()
+
 }

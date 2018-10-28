@@ -6,9 +6,11 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"os"
-	"time"
 
-	"github.com/stock-simulator-server/src/order"
+	"github.com/stock-simulator-server/src/session"
+
+	"github.com/stock-simulator-server/src/money"
+
 	"github.com/stock-simulator-server/src/portfolio"
 
 	"github.com/stock-simulator-server/src/utils"
@@ -32,6 +34,7 @@ type ConfigJson struct {
 }
 
 func LoadConfig() {
+	fmt.Println("loading")
 	configFilePath := os.Getenv("CONFIG_FILE")
 	dat, err := ioutil.ReadFile(configFilePath)
 	if err != nil {
@@ -52,18 +55,16 @@ func LoadConfig() {
 	}
 
 	for username, userConfig := range config.Accounts {
-		_, err = account.NewUser(username, userConfig.Name, userConfig.Password)
+		token, err := account.NewUser(username, userConfig.Name, userConfig.Password)
 		if err != nil {
 			fmt.Println("error adding user: ", err)
+		} else {
+			user, _ := session.GetUserId(token)
+			portfolio.Portfolios[account.UserList[user].PortfolioId].Wallet = 100 * money.Thousand
 		}
+
 	}
-	for _, portfolio := range portfolio.Portfolios {
-		portfolio.Wallet = 10000000
-		for stockId := range valuable.Stocks {
-			r := order.MakePurchaseOrder(stockId, portfolio.Uuid, 1)
-			<-r.ResponseChannel
-			<-time.After(100 * time.Millisecond)
-		}
-	}
+
+	fmt.Println("loaded")
 
 }

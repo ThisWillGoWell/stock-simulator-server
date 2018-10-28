@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/stock-simulator-server/src/record"
+
 	"github.com/stock-simulator-server/src/items"
 	"github.com/stock-simulator-server/src/messages"
 	"github.com/stock-simulator-server/src/sender"
@@ -103,7 +105,6 @@ Also send the success login to make sure that happens first on the login
 */
 func (client *Client) tx(sessionToken string) {
 	client.sendMessage(messages.SuccessConnect(client.user.Uuid, sessionToken, client.user.Config))
-
 	for _, v := range account.GetAllUsers() {
 		client.sendMessage(messages.NewObjectMessage(v))
 	}
@@ -117,9 +118,16 @@ func (client *Client) tx(sessionToken string) {
 		client.sendMessage(messages.NewObjectMessage(v))
 	}
 	for _, v := range notification.GetAllNotifications(client.user.Uuid) {
-		client.sendMessage(messages.BuildNotificationMessage(v))
+		client.sendMessage(messages.NewObjectMessage(v))
 	}
 	for _, v := range items.GetItemsForUser(client.user.PortfolioId) {
+		client.sendMessage(messages.NewObjectMessage(v))
+	}
+	books, records := record.GetRecordsForPortfolio(client.user.PortfolioId)
+	for _, v := range books {
+		client.sendMessage(messages.NewObjectMessage(v))
+	}
+	for _, v := range records {
 		client.sendMessage(messages.NewObjectMessage(v))
 	}
 
@@ -166,6 +174,10 @@ func (client *Client) rx() {
 			client.processItemMessage(message)
 		case messages.LevelUpAction:
 			client.processLevelUpAction(message)
+		case messages.DeleteAction:
+			client.processDeleteAction(message)
+		case messages.ProspectTradeAction:
+			client.processProspectMessage(message)
 		default:
 			client.sendMessage(messages.NewErrorMessage("action is not known"))
 		}
@@ -205,7 +217,7 @@ func (client *Client) processTradeMessage(baseMessage *messages.BaseMessage) {
 	po := order.MakePurchaseOrder(tradeMessage.StockId, client.user.PortfolioId, tradeMessage.Amount)
 	go func() {
 		response := <-po.ResponseChannel
-		client.user.Sender.Output.Offer(messages.BuildResponseMsg(response, baseMessage.RequestID))
+		client.sendMessage(messages.BuildResponseMsg(response, baseMessage.RequestID))
 	}()
 }
 
@@ -275,6 +287,7 @@ func (client *Client) processSetMessage(baseMessage *messages.BaseMessage) {
 			break
 		}
 		client.user.SetConfig(newConfig)
+
 		response = messages.BuildSuccessSet()
 	case "password":
 		newPassword, ok := setMessage.Value.(string)
@@ -308,4 +321,23 @@ func (client *Client) processSetMessage(baseMessage *messages.BaseMessage) {
 func (client *Client) processLevelUpAction(baseMessage *messages.BaseMessage) {
 	err := portfolio.Portfolios[client.user.PortfolioId].LevelUp()
 	client.sendMessage(messages.BuildLevelUpResponse(baseMessage.RequestID, err))
+}
+
+func (client *Client) processDeleteAction(baseMessage *messages.BaseMessage) {
+	deleteMsg := baseMessage.Msg.(*messages.DeleteMessage)
+	var err error
+	switch deleteMsg.Type {
+	case items.ItemIdentifiableType:
+		err = items.DeleteItem(deleteMsg.Uuid, client.user.PortfolioId)
+	case notification.IdentifiableType:
+		err = notification.DeleteNotification(deleteMsg.Uuid, client.user.Uuid)
+	}
+	client.sendMessage(messages.BuildDeleteResponseMsg(baseMessage.RequestID, err))
+}
+
+func (client *Client) processProspectMessage(baseMessage *messages.BaseMessage) {
+	prospectMessage := baseMessage.Msg.(*messages.TradeMessage)
+	response := order.CalculateDetails(client.user.PortfolioId, prospectMessage.StockId, prospectMessage.Amount)
+	client.sendMessage(messages.BuildResponseMsg(response, baseMessage.RequestID))
+
 }

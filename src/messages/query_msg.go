@@ -13,7 +13,7 @@ type QueryMessage struct {
 	QueryField    string         `json:"field"`
 	NumberPoints  int            `json:"num_points"`
 	Length        utils.Duration `json:"length"`
-	UseCache      bool           `json:"use_cache"`
+	ForceUpdate   bool           `json:"force_update"`
 	CacheDuration utils.Duration `json:"cache_duration"`
 }
 

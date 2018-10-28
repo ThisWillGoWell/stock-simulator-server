@@ -39,13 +39,17 @@ func (InsiderTraderItemType) RequiredLevel() int64 {
 	return 1
 }
 
+func (InsiderTraderItemType) UnmarshalJSON(data []byte) error {
+	return nil
+}
+
 type InsiderTradingItem struct {
-	Type          InsiderTraderItemType
-	PortfolioUuid string           `json:"portfolio_uuid"`
-	Uuid          string           `json:"uuid"`
-	Used          bool             `json:"used" change:"-"`
-	Result        map[string]int64 `json:"target_prices,omitempty" change:"-"`
-	UpdateChan    chan interface{} `json:"-"`
+	Type          InsiderTraderItemType `json:"type"`
+	PortfolioUuid string                `json:"portfolio_uuid"`
+	Uuid          string                `json:"uuid"`
+	Used          bool                  `json:"used" change:"-"`
+	Result        map[string]int64      `json:"target_prices,omitempty" change:"-"`
+	UpdateChan    chan interface{}      `json:"-"`
 }
 
 func (it *InsiderTradingItem) GetItemType() ItemType {
@@ -78,7 +82,7 @@ func (it *InsiderTradingItem) GetUpdateChan() chan interface{} {
 }
 
 func (it *InsiderTradingItem) Load() {
-
+	it.UpdateChan = make(chan interface{})
 }
 
 func (it *InsiderTradingItem) GetItem() interface{} {

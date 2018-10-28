@@ -33,7 +33,7 @@ func (*NotificationAckMessage) message() { return }
 
 func BuildNotificationMessage(n interface{}) *BaseMessage {
 	return &BaseMessage{
-		Action: NotificationAction,
+		Action: ObjectAction,
 		Msg:    n,
 	}
 }

@@ -7,7 +7,7 @@
 		<meta charset="utf-8">
 		<meta name="description" content="A mock stock market">
 		<meta name="keywords" content="mockstarket">
-		<link rel="author" href="Brennan Sieck, Will Gowell, Jake Elias" />
+		<link rel="author" href="Brennan Sieck, Will Gowell, Jakob Elias" />
 		
 		<meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
         <link href="https://fonts.googleapis.com/css?family=Mukta+Vaani:300,400,500,700" rel="stylesheet">
@@ -15,23 +15,26 @@
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet">
         <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
-      rel="stylesheet">
-
-        <link rel="stylesheet" href="css/main.css">
-
-        <link rel="icon" type="image/png" href="assets/favicon_green.png">
-
-        <script src="scripts/utils.js"></script>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+	  rel="stylesheet">
+	  	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+
+		<link rel="stylesheet" href="css/main.css">
+		<link rel="stylesheet" type="text/css" href="css/selectize.css" />
+        <link rel="icon" type="image/png" href="assets/favicon_green.png">
+		<!-- <link rel="icon" type="image/png" href="assets/favicon_darkblue.png"> -->
+        <script src="scripts/utils.js"></script>
 		<script src="https://d3js.org/d3.v5.min.js"></script>
 		<script src="https://d3js.org/d3-path.v1.min.js"></script>
 		<script src="https://d3js.org/d3-shape.v1.min.js"></script>
 		<script src="https://d3js.org/d3-time.v1.min.js"></script>
 		<script src="https://d3js.org/d3-time-format.v2.min.js"></script>
-
+		<script src="scripts/d3/d3-annotation.js"></script>
+		<script src="scripts/d3/d3-brush.js"></script>
+		<script src="scripts/selectize.min.js"></script>
 		<script src="scripts/websocket.js"></script>
+		<script src="scripts/config.js"></script>
 		<script src="scripts/index.js"></script>
 		<script src="scripts/topbar.js"></script>
 		<script src="scripts/sidebar.js"></script>
@@ -41,21 +44,31 @@
 		<script src="scripts/stocks.js"></script>
 		<script src="scripts/investors.js"></script>
 		<script src="scripts/store.js"></script>
+		<script src="scripts/research.js"></script>
+		<script src="scripts/items.js"></script>
 		<script src="scripts/modal.js"></script>
         <script src="scripts/graphing.js"></script>
+		<script src="scripts/prospect.js"></script>
+		<script src="scripts/records.js"></script>
+        <script src="scripts/settings.js"></script>
 
     </head>
 
 	<body>
 
 		<div class="app--container" id="app--container">
-			
+			<section id="loader--container">
+				<div class="loader-content">
+					<div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+					<div class="loader-message">loading stocks...</div>
+				</div>
+			</section>
 			<section id="modal--container">
 				<div class="modal-card" v-if="showModal">
 					<button v-on:click="closeModal()"><i class="material-icons">close</i></button>
 					<div id="trade--view">
 						<div class="modal-stock-id">{{ stock.ticker_id }} </div>
-						<div>Current cash: ${{ toPrice(user.wallet) }}</div>						
+						<div>Prospective cash: ${{ prospectiveCash }}</div>						
 						<div class="flex-grid--container no-padding">
 							<div class="flex-column-50">
 								<div id="calc-btn-buy" class="card calc-btn fill green no-buffer-top" v-on:click="setIsBuying(true)">BUY</div>
@@ -212,15 +225,22 @@
 							<i class="material-icons right-arrow">keyboard_arrow_right</i>
 						</button>
 					</li>
-					<!-- <li>
-						<button v-on:click="nav" data-route="futures">
-							<i class="material-icons menu-icon">swap_horiz</i>
-							<div class="menu-item-title">Futures</div>
+					<li>
+						<button v-on:click="nav" data-route="research">
+							<i class="material-icons menu-icon">school</i>
+							<div class="menu-item-title">Research</div>
+							<i class="material-icons right-arrow">keyboard_arrow_right</i>
+						</button>
+					</li>
+					<li>
+						<button v-on:click="nav" data-route="settings">
+							<i class="material-icons menu-icon">settings</i>
+							<div class="menu-item-title">Settings</div>
 							<i class="material-icons right-arrow">keyboard_arrow_right</i>
 						</button>
 					</li>
 					
-					<li>
+					<!-- <li>
 						<button v-on:click="nav" data-route="business">
 							<i class="material-icons menu-icon">store_mall_directory</i>
 							<div class="menu-item-title">Business</div>
@@ -239,6 +259,7 @@
 
 			<section id="top-bar--container">
 				<div class="current-view" id="current-view">Dashboard</div>
+				<span></span>
 				<div class="account-settings-btn">
 						<span></span>
 						<span></span>
@@ -246,7 +267,7 @@
 					</div>
 
 				<div id="user-info-container" class="nav-list">
-					<div class="username-text">{{ userDisplayName + " " + userLevel }}</div>
+					<div class="username-text">{{ userDisplayName }}</div>
 					
 					
 				
@@ -256,12 +277,6 @@
 				<div class="account-settings-menu--container">
 					<i id="account-settings-menu-close-btn" class="material-icons">close</i>
 					<ul>
-						<li>
-							<textarea id="newDisplayName"></textarea>
-						</li>
-						<li>
-							<button id="changeDisplayName" v-on:click="changeDisplayName">Change Display Name</button>
-						</li>
 						<li>
 							<button id="btn-logout" v-on:click="logout">Logout</button>
 						</li>
@@ -273,13 +288,16 @@
 				<div class="view-container">
 					<div id="dashboard--view" class="active view">
 						<div class="flex-grid--container">
+							<div class="flex-column-100">
+								<div class="item-category buffer-top">OVERVIEW</div>
+							</div>
 							<div class="flex-column-33">
 								<div class="card small">
 									<div class="stat-value blue">
 										<i class="material-icons menu-icon">business</i>
 										<div class="card-details">
-											<div class="card-category">NETWORTH</div>
 											<p><span class="small-money">$</span>{{ toPrice(currUserPortfolio.net_worth) }}</p>
+											<div class="card-category">NETWORTH</div>
 										</div>
 									</div>
 								</div>
@@ -289,8 +307,8 @@
 									<div class="stat-value green">
 										<i class="material-icons menu-icon">local_atm</i>
 										<div class="card-details">
-											<div class="card-category">CASH</div>
 											<p><span class="small-money">$</span>{{ toPrice(currUserPortfolio.wallet) }}</p>
+											<div class="card-category">CASH</div>
 										</div>
 									</div>
 								</div>
@@ -300,8 +318,8 @@
 									<div class="stat-value orange">
 										<i class="material-icons menu-icon">trending_up</i>
 										<div class="card-details">
-											<div class="card-category">INVESTMENTS</div>
 											<p><span class="small-money">$</span>{{ toPrice(currUserPortfolio.investments) }}</p>
+											<div class="card-category">INVESTMENTS</div>
 										</div>
 									</div>
 								</div>
@@ -312,28 +330,80 @@
 							<div class="flex-column-100">
 								<div class="card stock-list">
 									<table class="table" id="owned-stocks">
-										<thead>
+										<thead class="table-top-bar">
 									    	<tr>
 										    	<th scope="col" style="text-align: left; padding-left: 25px;" v-on:click="sortCol('stock_ticker')">Stock <i class="material-icons stock">arrow_drop_down</i></th>
-										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('amount')">Amount Owned <i class="material-icons stock">arrow_drop_down</i></th>
-										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('stock_price')">Current Price <i class="material-icons stock">arrow_drop_down</i></th>
-										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('stock_value')">Value <i class="material-icons stock">arrow_drop_down</i></th>
-										    	<th scope="col" style="padding-right: 25px;" v-on:click="sortCol('stock_roi')" >R.O.I. <i class="material-icons stock">arrow_drop_down</i></th>
+										    	<th scope="col" v-on:click="sortCol('amount')">Shares Owned <i class="material-icons stock">arrow_drop_down</i></th>
+										    	<th scope="col" v-on:click="sortCol('stock_price')">Current Price <i class="material-icons stock">arrow_drop_down</i></th>
+										    	<th scope="col" v-on:click="sortCol('stock_value')">Value <i class="material-icons stock">arrow_drop_down</i></th>
+										    	<th scope="col" v-on:click="sortCol('stock_roi')" >R.O.I. <i class="material-icons stock">arrow_drop_down</i></th>
 										    </tr>
 										</thead>
 										<tbody>
 											<tr class="clickable" v-for="stock in currUserStocks" :key='stock.uuid' v-bind:uuid="stock.uuid">
 												<th class="stock-ticker-id" scope="row" v-bind:tid="stock.stock_ticker" style="line-height: 40px;">{{ stock.stock_ticker }}</th>
-												<td class="stock-price" style="text-align: right; padding-right: 25px;">{{ stock.amount }}</td>
+												<td class="stock-price" style="text-align: right; padding-right: 25px;">
+													<div class="sell-all-btn" v-on:click='sellAll(stock.uuid)'>SELL ALL ({{ stock.amount }})</div>
+												</td>
 												<td class="price-alter stock-price" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_price) }}</td>
 												<td class="price-alter stock-price" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_value) }}</td>
 												<td class="stock-change" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_roi) }}</td>
 												
 											</tr>
+											<tr v-if="currUserStocks != []">
+												<!-- TODO add click text to move to stocks tab  -->
+												<td colspan="5">Move to the <span class="clickable-text">Stocks tab</span> to start investing.</td>
+											</tr>
 										</tbody>
 									</table>
 								</div>
 							</div>
+							<div class="flex-column-100">
+								<div class="item-category buffer-top">MY ITEMS</div>
+							</div>
+							<div class="flex-column-100">
+								<!-- Brennan, might want to make these cards -->
+								<div class="card item-list">
+									<table class="table" id="owned-items">
+										<thead>
+									    	<tr>
+										    	<th scope="col" style="text-align: left; padding-left: 25px;">Item </th>
+										    	<th scope="col" style="text-align: left; padding-left: 25px;">Status</th>
+										    	<th scope="col" style="text-align: left; padding-left: 25px;">Use</th>
+										    </tr>
+										</thead>
+										<tbody>
+											<tr class="clickable" v-for="item in userItems" :key='item.uuid'>
+												<td>{{ item.Type }}</td>
+												<td>{{ item.used_status }}</td>
+												<td v-on:click="useItem(item.uuid)">Use</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+							<div class="flex-column-100" id="insider-area">
+								<!-- Brennan, might want to make these cards -->
+								<div class="card insider-list">
+									<table class="table">
+										<thead>
+									    	<tr>
+										    	<th scope="col" style="text-align: left;">Item </th>
+										    	<th style="text-align: left;">Current Price</th>
+										    	<th style="text-align: left;">Target Price</th>
+										    </tr>
+										</thead>
+										<tbody>
+											<tr class="clickable" v-for="stock in insiderStocks" :key='stock.name'>
+												<td>{{ stock.name }}</td>
+												<td>{{ toPrice(stock.current_price) }}</td>
+												<td>{{ toPrice(stock.target_price) }}</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+
 							<div class="flex-column-100">
 								<div class="portfolio-history">
 									<button id="portfolio-history-btn" v-on:click="createPortfolioGraph()">Log cash/networth history</button>
@@ -355,32 +425,35 @@
 						<div class="flex-grid--container" id="stockSuperlatives">
 							<div class="flex-column-33">
 								<div class="card small">
-									<div class="stat-value blue">
-										<i class="material-icons menu-icon">business</i>
+									<div class="stat-value">
+											<svg class="svg-icon-small" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" viewBox="0 0 100 125" enable-background="new 0 0 100 100" xml:space="preserve"><path fill="#1abc9c" d="M64.3,41.8c-1.9-1.1-1.9-2.8,0-3.9c1.8-1.1,4.8-1.1,6.7,0c1.9,1.1,1.9,2.8,0,3.9C69.2,42.8,66.2,42.8,64.3,41.8z M35.7,17.5  c-1.9-1.1-4.9-1.1-6.7,0c-1.8,1.1-1.8,2.8,0,3.9c1.9,1.1,4.9,1.1,6.7,0C37.6,20.3,37.6,18.6,35.7,17.5z M62.1,36.7  c-6.6,3.9-17.5,3.9-24.2,0c-6.7-3.9-6.7-10.2-0.1-14c6.7-3.9,17.5-3.9,24.2,0C68.8,26.5,68.8,32.8,62.1,36.7z M58.9,31.7l0-2.7  l-10.8,0l0-2.6l-4.7,0l0,2.6l0,2.7l4.7,0L58.9,31.7z M98.3,36.6L98.3,36.6l0,19.8v2.1v19.8l-0.2,0l0.2,0.2l-33,19.2  c-1.6,0.9-4.1,0.9-5.6,0L58.6,97l-0.8-0.5L1.7,64.1v0v-0.4V44.2v-0.5V43V23c-0.2-1.3,0.6-2.6,2.2-3.5L32.2,3c3-1.8,8-1.8,11,0  l52.8,30.5C97.6,34.3,98.3,35.5,98.3,36.6z M59.5,87.6l-1-0.6l-0.8-0.5L6.6,57v4.5l53,30.6V87.6z M59.5,77.6l-0.9-0.5l-0.8-0.5  L6.6,47v4.6l53,30.6V77.6z M59.5,67.7l-1-0.6l-0.8-0.5L6.6,37.1v4.5l53,30.6V67.7z M59.5,57.3c-1-0.2-2-0.6-2.8-1l-50.2-29v4.3  l53,30.6V57.3z M67.1,49.6c0.5,0.3,0.9,0.6,1.2,0.9l17.1-9.9c-0.6-0.2-1.1-0.4-1.6-0.7c-3.1-1.8-3.1-4.7,0-6.5  c0.5-0.3,1-0.5,1.5-0.7L44.2,9c-0.3,0.2-0.6,0.4-0.9,0.7c-3.1,1.8-8.1,1.8-11.2,0c-0.3-0.2-0.6-0.4-0.9-0.6l-16.9,9.8  c0.4,0.2,0.7,0.3,1.1,0.5c3.1,1.8,3.1,4.7,0,6.5c-0.4,0.2-0.7,0.4-1.1,0.5l41,23.7c0.2-0.1,0.4-0.3,0.6-0.4  C59,47.8,64,47.8,67.1,49.6z M93.5,71.3L65.3,87.7c-0.3,0.2-0.6,0.3-0.9,0.4v4.7l29-16.9V71.3z M93.5,61.4L65.4,77.7  c-0.3,0.2-0.6,0.3-0.9,0.4v4.6l29-16.9V61.4z M93.5,51.4L65.3,67.8c-0.3,0.2-0.6,0.3-0.9,0.4v4.7l29-16.9V51.4z M93.5,41.4  L67.8,56.3c-1,0.6-2.1,0.9-3.4,1.1v5.4l29-16.9V41.4z"/></svg>
 										<div class="card-details">
-											<div class="card-category">MOST EXPENSIVE</div>
 											<p>{{ highestStock }}</p>
+											<div class="card-category">MOST EXPENSIVE</div>
 										</div>
 									</div>
 								</div>
 							</div>
 							<div class="flex-column-33">
 								<div class="card small" v-on:click="createStocksGraph()">
-									<div class="stat-value green">
-										<i class="material-icons menu-icon">local_atm</i><div class="card-details">
-											<div class="card-category">HIGHEST GROWTH</div>
+									<div class="stat-value orange">
+										<i class="material-icons menu-icon">trending_up</i><div class="card-details">
 											<p>{{ mostChange }}</p>
+											<div class="card-category">HIGHEST GROWTH</div>
+											
 										</div>
 									</div>
 								</div>
 							</div>
 							<div class="flex-column-33">
 								<div class="card small">
-									<div class="stat-value orange">
-										<i class="material-icons menu-icon">trending_up</i><div class="card-details">
-											<div class="card-category">LEAST EXPENSIVE</div>
-											<p>{{ lowestStock }}</p>
-										</div>
+									<div class="stat-value">
+											<svg class="svg-icon-small" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns" viewBox="0 0 100 125" version="1.1" x="0px" y="0px"><g stroke="none" stroke-width="1" fill="#f44336" sketch:type="MSPage"><path d="M40.9853969,33.9901538 C40.9853969,37.8015385 44.6500534,39.2170769 48.9801221,40.4152308 L48.9801221,27.3481538 C44.3720611,27.5655385 40.9853969,30.2881538 40.9853969,33.9901538 L40.9853969,33.9901538 Z M51.5342061,44.6073846 L51.5342061,59.1444615 C57.9187176,58.6543077 59.8618702,54.8973846 59.8618702,51.9573846 C59.8618702,47.5473846 56.0309771,45.9135385 51.5342061,44.6073846 L51.5342061,44.6073846 Z M72.4939924,5 L27.729771,5 C23.4607023,5 20,8.43015385 20,12.6615385 L20,68.0087692 C20,70.3806154 21.1082443,72.6186154 23.0015725,74.0696923 L50.1121145,94.8463077 L77.2221908,74.0696923 C79.1155191,72.6186154 80.2237634,70.3806154 80.2237634,68.0087692 L80.2237634,12.6615385 C80.2237634,8.43015385 76.7630611,5 72.4939924,5 L72.4939924,5 Z M51.5342061,61.9755385 L51.5342061,65.5552308 C51.5342061,66.254 50.9623893,66.8207692 50.2573969,66.8207692 C49.5519389,66.8207692 48.9801221,66.254 48.9801221,65.5552308 L48.9801221,61.9755385 C44.0428473,61.7355385 40.181687,59.9341538 37.5102595,57.3513846 C36.9095725,56.7703077 36.8681298,55.8264615 37.4185267,55.1987692 C38.0094351,54.5258462 39.0380534,54.4866154 39.6969466,55.0944615 C41.9050534,57.1303077 45.0104656,58.8693846 48.9801221,59.1444615 L48.9801221,43.8993846 C43.3173664,42.3204615 37.6546107,40.5781538 37.6546107,34.1535385 C37.6546107,28.4909231 42.6514885,24.7889231 48.9801221,24.5166154 L48.9801221,20.828 C48.9801221,20.1287692 49.5519389,19.562 50.2573969,19.562 C50.9623893,19.562 51.5342061,20.1287692 51.5342061,20.828 L51.5342061,24.5166154 C55.5643969,24.8461538 58.8071756,26.2732308 61.2620763,28.4826154 C61.897687,29.0549231 61.9437863,30.0315385 61.3640534,30.6596923 C60.7861832,31.286 59.8041298,31.3284615 59.1759695,30.7510769 C57.0516794,28.7978462 54.4128473,27.7266154 51.5342061,27.4021538 L51.5342061,41.1227692 C57.252374,42.7012308 63.1926565,44.7707692 63.1926565,51.7395385 C63.1926565,56.204 60.3060992,61.4309231 51.5342061,61.9755385 L51.5342061,61.9755385 Z" fill="#f44336" sketch:type="MSShapeGroup"/></g></svg>
+											<!-- <i class="material-icons menu-icon">trending_up</i> -->
+											<div class="card-details">
+												<p>{{ lowestStock }}</p>
+												<div class="card-category">LEAST EXPENSIVE</div>
+											</div>
 									</div>
 								</div>
 							</div>
@@ -388,19 +461,19 @@
 								<div class="card stock-list">
 									<div id="stock-list">
 										<table class="table">
-										  <thead>
+										  <thead class="table-top-bar">
 											<tr>
 												<!-- <th scope="col" v-on:click="sortCol('favorite')" style="text-align: left; padding-left: 25px;"><i class="material-icons star">star</i> <i class="material-icons stock">arrow_drop_down</i></th>	 -->
 											  <th scope="col" v-on:click="sortCol('ticker_id')" style="text-align: left; padding-left: 25px;">Stock <i class="material-icons stock">arrow_drop_down</i></th>
-											  <th scope="col" v-on:click="sortCol('open_shares')">Actions <i class="material-icons open-shares">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('favorites')" style="padding-right: 25px;">Actions</th>
 											  <th scope="col" v-on:click="sortCol('open_shares')">Open Shares <i class="material-icons open-shares">arrow_drop_down</i></th>
-											  <th scope="col" v-on:click="sortCol('change')">Change <i class="material-icons change">arrow_drop_down</i></th>
-											  <th scope="col" v-on:click="sortCol('current_price')" style="padding-right: 25px;">Cost <i class="material-icons cost">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('change')">Last Change <i class="material-icons change">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('current_price')">Cost <i class="material-icons cost">arrow_drop_down</i></th>
 											</tr>
 										  </thead>
 										  <tbody>
 											  <!-- https://vuejs.org/v2/guide/list.html :key is recommended in v.fors -->
-											<tr class="clickable" v-for="stock in sortedStocks" :key='stock.uuid' v-bind:uuid="stock.uuid">
+  												<tr class="clickable" v-for="stock in sortedStocks" :key='stock.uuid' v-bind:uuid="stock.uuid">
 												<!-- <td class="stock-open-shares favorite"><i class="material-icons star unfilled" >star</i></td> -->
 												<th class="stock-ticker-id" scope="row" v-bind:tid="stock.ticker_id">
 													<div class="stock-ticker-id">{{ stock.ticker_id }}</div>
@@ -408,13 +481,13 @@
 											  </th>
 											  <td class="stock-open-shares">
 													<ul class="action-list">
-													<li class="action-btn star">
+													<li class="action-btn star" v-on:click="toggleFavorite(stock.uuid)" v-bind:class="{ favorite: isFavoriteStock(stock.uuid) }">
 														  <i class="material-icons">
 																  star_rate
 																  </i>
 													</li>
 													
-													<li class="action-btn chart">
+													<li class="action-btn chart" v-on:click="showChart(stock.uuid)">
 														  <i class="material-icons">
 																  show_chart
 																  </i>
@@ -422,7 +495,11 @@
 											  </ul>
 											  </td>
 											  <td class="stock-open-shares">{{ stock.open_shares }}</td>
-											  <td class="stock-change">
+											  <td v-if="changePercentSetting" class="stock-change" style="padding-right: 15px;">
+												  {{ formatPercent(stock.changePercent) }}%
+												  <i class="material-icons">arrow_drop_down</i>
+											  </td>
+											  <td v-else class="stock-change" style="padding-right: 15px;">
 												  {{ toPrice(stock.change) }}
 												  <i class="material-icons">arrow_drop_down</i>
 											  </td>
@@ -449,12 +526,11 @@
 										<table class="table">
 										  <thead>
 											<tr>
-											  <th scope="col" v-on:click="sortCol('ticker_id')" style="text-align: left; padding-left: 25px;">Name <i class="material-icons stock">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('name')" style="text-align: left; padding-left: 25px;">Name <i class="material-icons stock">arrow_drop_down</i></th>
 											  <th scope="col" v-on:click="sortCol('level')">Level <i class="material-icons open-shares">arrow_drop_down</i></th>
-											  <th scope="col" v-on:click="sortCol('open_shares')">Actions <i class="material-icons open-shares">arrow_drop_down</i></th>
-											  <th scope="col" v-on:click="sortCol('current_price')">Cash <i class="material-icons cost">arrow_drop_down</i></th>
-											  <th scope="col" v-on:click="sortCol('open_shares')">Networth <i class="material-icons open-shares">arrow_drop_down</i></th>
-											  
+											  <th scope="col" v-on:click="sortCol('favorites')">Actions</th>
+											  <th scope="col" v-on:click="sortCol('wallet')">Cash <i class="material-icons open-shares">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('net_worth')">Networth <i class="material-icons cost">arrow_drop_down</i></th>
 											  
 											</tr>
 										  </thead>
@@ -467,7 +543,7 @@
 											  <td>{{ investor.level }}</td>
 											  <td class="stock-open-shares">
 												  <ul class="action-list">
-													  <li class="action-btn star">
+													  <li class="action-btn star" v-on:click="toggleFavorite(investor.uuid)" v-bind:class="{ favorite: isFavoriteInvestor(investor.uuid) }">
 															<i class="material-icons">
 																	star_rate
 																	</i>
@@ -484,14 +560,12 @@
 													  </li>
 												</ul>
 												
-												<!-- <div class="money-transfer-btn">SEND CASH</div> -->
+												
 												</td>
 											  
-											  <td class="stock-price" style="padding-right: 25px;">
-											  ${{ toPrice(investor.net_worth) }}</td>
 											  <td class="stock-open-shares" style="padding-right: 25px;">${{ toPrice(investor.wallet) }}</td>
-											  
-											  
+											  <td class="stock-price" style="padding-right: 25px;">
+													${{ toPrice(investor.net_worth) }}</td>
 											</tr>
 										  </tbody>
 										</table>
@@ -500,162 +574,137 @@
 							</div>
 						</div>
 					</div>
-
-					<!-- TODO: this tab collides with the sidebar -->
-					<div id="futures--view" class="view">
+					<div id="research--view" class="view">
 						<div class="flex-grid--container">
+							
 							<div class="flex-column-100">
-								<div class="card">
-									<h1>FUTURES</h1>
+								<div class="item-category buffer-top">GRAPHING</div>
+							</div>
+							<div class="flex-column-100">
+								<div id="chart-sandbox" class="card">
+									<div class="query-term-container">
+										<div class="query-term right">
+											<select id="research-graph-type-select" type="text" placeholder="Choose a graph type" v-on:change="updateSelections()">
+												<option value="stock">Stock</option>
+												<option value="portfolio">Portfolio</option>
+											</select>
+										</div>
+										<div class="query-term right">
+											<select id="research-graph-stock-select" type="text" placeholder="Choose a graph type">
+											</select>
+										</div>
+										<div class="query-term right">
+											<select id="research-graph-user-select" type="text" placeholder="Choose a graph type">
+											</select>
+										</div>
+										<div class="query-term">
+											<input type="text" placeholder="Choose a stock"/>
+											<i class="material-icons add-btn">
+											clear
+											</i>
+										</div>
+										<div>
+											<button v-on:click="drawGraph()">Create</button>
+										</div>
+									</div>
+									<div id="research-graph-svg-main"></div>
+								</div>
+							</div>
+							<div class="flex-column-100">
+								<div class="item-category buffer-top">TRADE HISTORY</div>
+							</div>
+						</div>
+					</div>
+						<!-- TODO: this tab collides with the sidebar -->
+					<div id="settings--view" class="view">
+							<div class="flex-grid--container">
+								<div class="flex-column-100">
+									<div class="item-category buffer-top">ACCOUNT</div>
+								</div>
+								<div class="flex-column-100">
+									<div class="card">
+										<div class="settings-grp">
+											<div class="input-grp">
+												<div class="input-name">Change Display Name</div>
+												<input type="text" id="change-display-name" class="input-full-width">
+												<span class="input-focus-border"></span>
+												
+											</div>
+											<div class="input-grp">
+												<div class="change-setting-btn" v-on:click="changeDisplayName()">SAVE</div>
+											</div>
+										</div>
+									</div>
+									<div class="card">
+										<div class="settings-grp">
+											<div class="input-grp">
+												<div class="input-name">Change Password</div>
+												<input type="text" id="change-password" class="input-full-width">
+												<span class="input-focus-border"></span>
+												
+											</div>
+											<div class="input-grp">
+													<div class="input-name">Confirm Password</div>
+													<input type="text" id="change-password-confirm" class="input-full-width">
+													<span class="input-focus-border"></span>
+													
+												</div>
+											<div class="input-grp">
+												<div class="change-setting-btn">SAVE</div>
+											</div>
+										</div>
+									</div>
+									<div class="card">
+										<div class="settings-grp">
+											<div class="input-grp">
+												Toggle display of stock changes as percentages instead of price change in dollars.
+												<div class="change-setting-btn" v-on:click="toggleChangePercentSetting()">Toggle</div>
+											</div>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
-					</div>
-					<!-- TODO: this tab collides with the sidebar -->
-					<div id="store--view" class="view">
-						
-						<div class="flex-grid--container">
-							<div class="flex-column-100">
-								<div class="item-category buffer-top">EXPERIENCE</div>
-							</div>
-							<div class="flex-column-100">
+						<!-- TODO: this tab collides with the sidebar -->
+						<div id="store--view" class="view">
+							<div class="flex-grid--container">
+								<div class="flex-column-100">
+									<div class="item-category buffer-top">EXPERIENCE</div>
+								</div>
+								<div class="flex-column-100">
+									<ul id="item-list">
+										<li v-for="level in experience" :key="level.label">
+											<div class="card item" v-bind:class="{ 'item-disable': !isNextLevel(level.level)}">
+												<div class="item-name">{{ level.label }}</div>
+												<div class="item-effects title">{{ level.title }}</div>
+												<div class="item-divider"></div>
+												<div class="item-effects">{{ level.note }}</div>
+												<div class="item-cost">{{ level.price }}</div>
+												<div class="buy-item-btn" v-on:click="level_up(level.level)">BUY</div>
+											</div>
+										</li>
+									</ul>
+								</div>
+								<div class="flex-column-100">
+									<div class="item-category buffer-top">ABILITIES</div>
+								</div>
 								<ul id="item-list">
-									<li>
+									<li v-for="item in items" :key="item.type">
 										<div class="card item">
-											<div class="item-name">LEVEL 1</div>
-											<div class="item-effects title">"Intern"</div>
-											<div class="item-divider"></div>
-											<div class="item-effects">+2% bonus stock value</div>
-											<div class="item-divider"></div>
-											<div class="item-effects">unlock cash transfer</div>
-											<div class="item-cost">$10,000</div>
-											<div class="buy-item-btn" v-on:click="level_up()">BUY</div>
+											
+											<div class="item-name">{{ item.label }}</div>
+											<div class="item-description">{{ item.note }}</div>
+										
+		
+											<div class="item-cost">{{ item.price }}</div>
+											<div class="buy-item-btn" v-on:click="purchaseItem()">BUY</div>
 										</div>
 									</li>
-									<li>
-											<div class="card item">
-													<div class="item-name">LEVEL 2</div>
-													<div class="item-effects title">"Weekend Trader"</div>
-													<div class="item-divider"></div>
-													<div class="item-effects">+4% bonus stock value</div>
-													
-													<div class="item-cost">$250,000</div>
-													<div class="buy-item-btn">BUY</div>
-												</div>
-									</li>
-									<li>
-											<div class="card item">
-													<div class="item-name">LEVEL 3</div>
-													<div class="item-effects title">"Day Trader"</div>
-													<div class="item-divider"></div>
-													<div class="item-effects">+7% bonus stock value</div>
-													
-													<div class="item-cost">$500,000</div>
-													<div class="buy-item-btn">BUY</div>
-												</div>
-									</li>
-									<li>
-											<div class="card item">
-													<div class="item-name">LEVEL 4</div>
-													<div class="item-effects title">"Regional Manager"</div>
-													<div class="item-divider"></div>
-													<div class="item-effects">+10% bonus stock value</div>
-													<div class="item-cost">$1,000,000</div>
-													<div class="buy-item-btn">BUY</div>
-												</div>
-									</li>
-									<li>
-											<div class="card item">
-													<div class="item-name">LEVEL 5</div>
-													<div class="item-effects title">"Vice President"</div>
-													<div class="item-divider"></div>
-													<div class="item-effects">+12% bonus stock value</div>
-													<div class="item-cost">$1,500,000</div>
-													<div class="buy-item-btn">BUY</div>
-												</div>
-										</li>
-										<li>
-												<div class="card item">
-														<div class="item-name">LEVEL 6</div>
-														<div class="item-effects title">"CFO"</div>
-														<div class="item-divider"></div>
-														<div class="item-effects">+14% bonus stock value</div>
-														<div class="item-cost">$2,500,000</div>
-														<div class="buy-item-btn">BUY</div>
-													</div>
-										</li>
-										<li>
-												<div class="card item">
-														<div class="item-name">LEVEL 7</div>
-														<div class="item-effects title">"Chairman"</div>
-														<div class="item-divider"></div>
-														<div class="item-effects">+17% bonus stock value</div>
-														
-														<div class="item-cost">$5,000,000</div>
-														<div class="buy-item-btn">BUY</div>
-													</div>
-										</li>
-										<li>
-												<div class="card item">
-														<div class="item-name">LEVEL 8</div>
-														<div class="item-effects title">"American Sniper"</div>
-														<div class="item-divider"></div>
-														<div class="item-effects">+20% bonus stock value</div>
-														<div class="item-cost">$10,000,000</div>
-														<div class="buy-item-btn">BUY</div>
-													</div>
-										</li>
 								</ul>
-								
 							</div>
-							
-							
-							<div class="flex-column-100">
-								<div class="item-category buffer-top">ABILITIES</div>
-							</div>
-							<ul id="item-list">
-								<li>
-									<div class="card item">
-										<div class="item-name">INSIDER TRADING</div>
-										<div class="item-description">Allows player to see the target price of all stocks.</div>
-									
-	
-										<div class="item-cost">$175,000</div>
-										<div class="buy-item-btn">BUY</div>
-									</div>
-								</li>
-								<li>
-									<div class="card item">
-										<div class="item-name">BLOCK TRADING</div>
-										<div class="item-description">Stops another player from buying or selling stocks for 5 minutes.</div>
-									
-	
-										<div class="item-cost">$25,000</div>
-										<div class="buy-item-btn">BUY</div>
-									</div>
-								</li>
-								<li>
-									<div class="card item">
-										<div class="item-name">BOOST GAINS</div>
-										<div class="item-description">25% higher returns on stock sales for 1 hour.</div>
-									
-	
-										<div class="item-cost">$75,000</div>
-										<div class="buy-item-btn">BUY</div>
-									</div>
-								</li>
-								<li>
-									<div class="card item">
-										<div class="item-name">CRASH THE MARKET</div>
-										<div class="item-description">Resets the target prices of all stocks.</div>
-										<div class="item-cost">$900,000</div>
-										<div class="buy-item-btn">BUY</div>
-									</div>
-								</li>
-							</ul>
-							
 						</div>
 					</div>
+					
 				</div>
 			</section>
 			<section id="chat-module--container" class="closed">
@@ -675,13 +724,11 @@
 			</section>
 
 			<section id="notification-module--container">
-				<div class="notification-title-bar">
-					<span></span>
-					<i class="material-icons">
-done
-</i>
-				</div>
+				<ul id="notification-list"></ul>
+				
 			</section>
+
+			<section id="scroll-module--container"></section>
 
 			<section id="debug-module--container" class="closed">
 				<div class="debug-title-bar">

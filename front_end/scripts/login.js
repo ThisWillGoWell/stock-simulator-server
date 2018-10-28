@@ -1,6 +1,11 @@
 $( document ).ready(function() {
 
     let url = "https://mockstarket.com";
+    var port = location.port
+    if(port == "8000"){
+        url = "http://localhost:8000"
+    }
+
     let input_login_uid = $('#login-uid');
     let input_login_pw = $('#login-pw');
     let input_login_submit = $('#input-login-submit');
@@ -181,11 +186,11 @@ $( document ).ready(function() {
           }
         },
         "size": {
-          "value": 5,
+          "value": 3,
           "random": true,
           "anim": {
             "enable": false,
-            "speed": 40,
+            "speed": 200,
             "size_min": 0.3,
             "sync": false
           }
@@ -199,7 +204,7 @@ $( document ).ready(function() {
         },
         "move": {
           "enable": true,
-          "speed": 2,
+          "speed": 0.5,
           "direction": "none",
           "random": false,
           "straight": false,
@@ -272,7 +277,8 @@ $( document ).ready(function() {
         Http.send();
 
         if (Http.status !== 200) {
-            console.error(Http.responseText);
+            console.log(Http.responseText);
+            loginFailed(Http.responseText);
             return null;
         } else {
             sessionStorage.setItem('token', Http.responseText);
@@ -299,10 +305,17 @@ $( document ).ready(function() {
     };
 
     function getLogin() {
+        // Remove failed login message
+        $('#login-failed-message').text("");
+
         let input_uid = $('#login-uid').val();
         let input_pw = $('#login-pw').val();
 
         getToken(input_uid, input_pw);
+    }
+
+    function loginFailed(msg) {
+        $('#login-failed-message').text(msg);
     }
 
     $('#input-login-submit').click(function() {

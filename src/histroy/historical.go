@@ -27,7 +27,7 @@ var queryCache = make(map[string]*queryCacheItem)
 var queryCacheLock = lock.NewLock("query-cache-lock")
 var expirationTime = time.Hour * 48
 
-func runCacheCleaner() {
+func RunCacheUpdater() {
 	go func() {
 		for {
 			queryCacheLock.Acquire("clean")
@@ -36,6 +36,7 @@ func runCacheCleaner() {
 					delete(queryCache, queryKey)
 				} else {
 					if time.Since(queryItem.lastUpdateTime) > queryItem.validTime {
+						fmt.Println("updating query:", queryKey, time.Now())
 						go makeQuery(queryItem.query)
 						go func() {
 							<-queryItem.query.ResponseChannel
@@ -44,7 +45,7 @@ func runCacheCleaner() {
 				}
 			}
 			queryCacheLock.Release()
-			<-time.After(time.Minute * 5)
+			<-time.After(time.Minute * 1)
 		}
 	}()
 }
@@ -90,7 +91,7 @@ func BuildQuery(qm *messages.QueryMessage) *Query {
 		QueryField:      qm.QueryField,
 		Limit:           limit,
 		TimeInterval:    interval,
-		Interval:        duration,
+		Interval:        time.Duration(int(duration.Seconds()) / qm.NumberPoints * int(time.Second)),
 		TimeLength:      length,
 		ResponseChannel: make(chan *messages.QueryResponse, 1),
 	}
@@ -102,21 +103,21 @@ prob should make sure they don't query like 1000 years or something
 */
 func MakeQuery(qm *messages.QueryMessage) *Query {
 	q := BuildQuery(qm)
-	if qm.UseCache {
+	if !qm.ForceUpdate {
 		queryCacheLock.Acquire("make-query")
-		defer queryCacheLock.Release()
 		hash := makeQueryHash(q)
 		cacheItem, ok := queryCache[hash]
 		if ok {
 			if time.Since(cacheItem.lastUpdateTime) > qm.CacheDuration.Duration {
 				q.ResponseChannel <- cacheItem.response
+				queryCacheLock.Release()
 				cacheItem.lastUseTime = time.Now()
 				return q
 			}
 		}
 
 	}
-
+	queryCacheLock.Release()
 	go makeQuery(q)
 	return q
 }
@@ -174,8 +175,6 @@ func failedQuery(query *Query, err error) {
 
 func successQuery(query *Query, values [][]interface{}) {
 	queryCacheLock.Acquire("success-query")
-	defer queryCacheLock.Release()
-
 	response := &messages.QueryResponse{
 		Success: true,
 		Error:   "",
@@ -192,6 +191,7 @@ func successQuery(query *Query, values [][]interface{}) {
 				lastUseTime:    time.Now(),
 				validTime:      query.Interval,
 				response:       response,
+				query:          query,
 			}
 
 		} else {
@@ -200,6 +200,7 @@ func successQuery(query *Query, values [][]interface{}) {
 
 		}
 	}
+	queryCacheLock.Release()
 	query.ResponseChannel <- response
 
 }

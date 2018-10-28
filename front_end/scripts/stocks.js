@@ -1,6 +1,6 @@
 var vm_stocks_tab;
-
 function load_stocks_tab() {
+
   // Vue for all stocks tab data
   vm_stocks_tab = new Vue({
     el: "#stocks--view",
@@ -13,8 +13,17 @@ function load_stocks_tab() {
     },
     methods: {
       toPrice: formatPrice,
+      formatPercent: formatPercent,
       toggleFavorite: function(uuid) {
-        console.log(uuid);
+        favoriteStock(uuid);
+      },
+      isFavoriteStock: function(uuid) {
+        try {
+          return (vm_config.config.fav.stocks.indexOf(uuid) > -1);
+        } catch (err) {
+          //console.error(err);
+          return false;
+        }
       },
       // on column name clicks
       sortCol: function(col) {
@@ -65,11 +74,11 @@ function load_stocks_tab() {
           field: "current_price",
           num_points: 1000,
           use_cache: true,
-          length: "100h"
+          length: "6h"
         };
 
         // Store request on front end
-        REQUESTS[REQUEST_ID] = function(msg) {
+        var callback = function(msg) {
           // Pull out the data and format it
           var points = msg.msg.points;
           points = points.map(function(d) {
@@ -84,9 +93,8 @@ function load_stocks_tab() {
         };
 
         // Send message
-        doSend("query", msg, REQUEST_ID.toString());
+        doSend("query", msg, callback);
 
-        REQUEST_ID++;
       },
       createStocksGraph: function() {
         console.log("Creating stock graphs");
@@ -110,12 +118,12 @@ function load_stocks_tab() {
             field: "current_price",
             use_cache: true,
             num_points: 1000,
-            length: "100h"
+            length: "6h"
           };
 
           // Store request on front end
           requests.push(REQUEST_ID.toString());
-          REQUESTS[REQUEST_ID] = function(msg) {
+          var callback = function(msg) {
             // Pull out the data and format it
             var points = msg.msg.points;
             points = points.map(function(d) {
@@ -131,9 +139,8 @@ function load_stocks_tab() {
           };
 
           // Send message
-          doSend("query", msg, REQUEST_ID.toString());
+          doSend("query", msg, callback);
 
-          REQUEST_ID++;
         });
 
         var drawGraphOnceDone = null;
@@ -146,6 +153,7 @@ function load_stocks_tab() {
           }
 
           if (!stillWaiting) {
+            console.log(data);
             DrawLineGraph("#stock-graph", data);
           } else {
             setTimeout(drawGraphOnceDone, 100);
@@ -156,13 +164,43 @@ function load_stocks_tab() {
       }
     },
     computed: {
+      changePercentSetting: function() {
+        if (vm_config === undefined) {
+          return false;
+        } else {
+          return vm_config.config.settings.changePercent;
+        }
+      },
       sortedStocks: function() {
         if (Object.keys(vm_stocks.stocks).length !== 0) {
+            
+            let direction = this.sortDesc;
+            
             // Turn to array and sort
             var stock_array = Object.values(vm_stocks.stocks);
 
-            let byCol = this.sortBy;
-            let direction = this.sortDesc;
+            var byCol = this.sortBy;
+            // Find which change are we sorting by
+            if (byCol === "change" || byCol === "changePercent") {
+              if (vm_config.config.settings.changePercent) {
+                byCol = "changePercent";
+              } else {
+                byCol = "change";
+              }
+            } else if (byCol === "favorites") {
+              favs = vm_config.config.fav.stocks;
+              stock_array = stock_array.sort(function(a, b) {
+                if (favs.indexOf(a.uuid) === favs.indexOf(b.uuid)) {
+                  return 0;
+                }
+                if (favs.indexOf(a.uuid) > -1) {
+                  return direction;
+                } else {
+                  return -direction;
+                }
+              })
+              return stock_array;
+            }
 
             // Sorting array
             stock_array = stock_array.sort(function(a, b) {
@@ -225,7 +263,11 @@ function load_stocks_tab() {
           return "";
         } else {
           stocks = Object.values(vm_stocks.stocks).map(d => d);
-          var mover = stocks.reduce((a, b) => (a.change > b.change ? a : b));
+          if (vm_config.config.settings.changePercent) {
+            var mover = stocks.reduce((a, b) => (a.changePercent > b.changePercent ? a : b));
+          } else {
+            var mover = stocks.reduce((a, b) => (a.change > b.change ? a : b));
+          }
           return mover.ticker_id;
         }
       },

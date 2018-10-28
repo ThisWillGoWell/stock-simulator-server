@@ -37,21 +37,37 @@
         // use all items in inventory
         setTimeout(function(){
             for( var key in objects['item']){
-                SendWs(newUseItem(objects['item'][key]['uuid']))
+                SendWs(newUseItem(key))
             }
+            for (var key in objects['notification']){
+                SendWs(ackNotification(key))
+            }
+            setTimeout(function () {
+                for( var key in objects['item']) {
+                    SendWs(newDeleteMsg("item", key))
+                }
+                for (var key in objects['notification']){
+                    SendWs(newDeleteMsg('notification', key))
+                }
+                for (var key in objects['stock']){
+                    SendWs(newProspectOrder(objects['stock'][key].uuid, 1))
+                }
+
+
+            }, 1000)
 
         }, 100)
 
     } ;
 
-    let useProd = true;
+    let forceUseProd = false;
     let httpUrl = location.protocol + "://"+ window.location.host;
 
     let  websocketUrl =  "ws://" + window.location.host + '/ws';
-    if(location.protocol === "https") {
+    if(location.protocol === "https:") {
         websocketUrl =  "wss://" + window.location.host + '/ws';
     }
-    if(useProd){
+    if(forceUseProd){
         websocketUrl = "wss://mockstarket.com/ws";
         httpUrl = "https://mockstarket.com";
     }
@@ -165,8 +181,28 @@
         return {
             'action': action,
             'msg': msg,
-            'requestId': requestId
+            'request_id': requestId
         }
+    }
+
+    function orderMessage(stock, amount ){
+        return {"stock_id": stock, "amount": amount }
+    }
+    function newProspectOrder(stock, amount){
+        return newBaseMsg("prospect", orderMessage(stock, amount), "prospect-response")
+    }
+
+    function newTradeOrder(stock, amount){
+        return newBaseMsg("trade", orderMessage(stock, amount), "trade-response")
+    }
+
+
+    function    newDeleteMsg(type,uuid){
+        return newBaseMsg("delete", {"type": type, "uuid": uuid}, "delete-response")
+    }
+
+    function ackNotification(uuid){
+        return newBaseMsg("ack", {"uuid":uuid})
     }
 
     function newItemBuy(itemType) {

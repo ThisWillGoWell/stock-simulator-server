@@ -118,11 +118,15 @@ remove a channel
 func (ch *ChannelDuplicator) UnregisterOutput(remove chan interface{}) {
 	ch.lock.Acquire("remove-output")
 	defer ch.lock.Release()
-	var removeIndex int
+	removeIndex := -1
 	for i, channel := range ch.outputs {
 		if channel == remove {
 			removeIndex = i
 		}
+	}
+	if removeIndex == -1 {
+		fmt.Println("can't find chan in unregister output")
+		return
 	}
 	//Remove channel by swapping the removed channel to the end and then just trimming the slice
 	ch.outputs[len(ch.outputs)-1], ch.outputs[removeIndex] = ch.outputs[removeIndex], ch.outputs[len(ch.outputs)-1]
@@ -163,12 +167,12 @@ func (ch *ChannelDuplicator) Offer(value interface{}) {
 	if ch.debug {
 		fmt.Println("offering to transfer", ch.debugName)
 	}
-	if ch.copy && reflect.TypeOf(value).Kind() == reflect.Ptr {
+	if ch.copy && (reflect.TypeOf(value).Kind() == reflect.Ptr || reflect.TypeOf(value).Kind() == reflect.Slice) {
 		newVal := deepcopy.Copy(value)
 		//pass that pointer down the transfer line
 		if ch.debug {
 			str, _ := json.Marshal(newVal)
-			fmt.Println("offering copy to trasfer=", ch.debugName, "value=", string(str))
+			fmt.Println("offering copy to transfer=", ch.debugName, "value=", string(str))
 		}
 		ch.transfer <- newVal
 	} else {
@@ -269,5 +273,4 @@ func main() {
 	input1 <- "hello"
 	input2 <- "world"
 	time.Sleep(time.Second * 1)
-
 }

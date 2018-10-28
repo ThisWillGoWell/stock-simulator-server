@@ -2,13 +2,17 @@ package utils
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/stock-simulator-server/src/lock"
 )
 
+var reclaimedUuid = make([]string, 0)
 var uuidMap = make(map[string]interface{})
 var uuidLock = lock.NewLock("uuid-lock")
 var counterNum = 0
+
+var deleteDelta = time.Minute * 2
 
 /**
 this is one of the more controversial desgin choices I made
@@ -22,13 +26,17 @@ func SerialUuid() string {
 	defer uuidLock.Release()
 
 	uuid := fmt.Sprintf("%d", counterNum)
-
-	for {
-		counterNum += 1
-		if _, exists := uuidMap[uuid]; !exists {
-			break
+	if len(reclaimedUuid) != 0 {
+		uuid = reclaimedUuid[0]
+		reclaimedUuid = reclaimedUuid[1:]
+	} else {
+		for {
+			counterNum += 1
+			if _, exists := uuidMap[uuid]; !exists {
+				break
+			}
+			uuid = fmt.Sprintf("%d", counterNum)
 		}
-		uuid = fmt.Sprintf("%d", counterNum)
 	}
 	uuidMap[uuid] = nil
 	return uuid
@@ -48,9 +56,14 @@ func RegisterUuid(uuid string, val interface{}) {
 }
 
 func RemoveUuid(uuid string) {
-	uuidLock.Acquire("free-uuid")
-	defer uuidLock.Release()
-	if _, exists := uuidMap[uuid]; exists {
+	go func() {
+		fmt.Println("got delete uuid for: " + uuid)
+		<-time.After(deleteDelta)
+		fmt.Println("ready to delete uuid: " + uuid)
+		uuidLock.Acquire("reclaim-uuid")
+		defer uuidLock.Release()
 		delete(uuidMap, uuid)
-	}
+		reclaimedUuid = append(reclaimedUuid, uuid)
+		fmt.Println("uuid deleted")
+	}()
 }

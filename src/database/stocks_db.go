@@ -15,8 +15,8 @@ var (
 		`uuid text NOT NULL,` +
 		`ticker_id text NOT NULL,` +
 		`name text NOT NULL,` +
-		`current_price int,` +
-		`open_shares int,` +
+		`current_price bigint,` +
+		`open_shares bigint,` +
 		`change_interval numeric(16, 4), ` +
 		`PRIMARY KEY(uuid)` +
 		`);`
@@ -66,7 +66,7 @@ func populateStocks() {
 
 	rows, err := db.Query(stocksTableQueryStatement)
 	if err != nil {
-		log.Fatal("error quiering databse", err)
+		log.Fatal("error query data", err)
 		panic("could not populate portfolios: " + err.Error())
 	}
 	defer rows.Close()

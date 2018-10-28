@@ -1,6 +1,7 @@
 package change
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/stock-simulator-server/src/wires"
@@ -69,14 +70,26 @@ func RegisterPublicChangeDetect(o Identifiable) error {
 	return registerChangeDetect(o, output)
 }
 
-func RegiserPrivateChangeDetect(o Identifiable, update chan interface{}) error {
+func RegisterPrivateChangeDetect(o Identifiable, update chan interface{}) error {
 	return registerChangeDetect(o, update)
+}
+
+func UnregisterChangeDetect(o Identifiable) {
+	subscribeablesLock.Acquire("unregister-change")
+	defer subscribeablesLock.Release()
+	if _, ok := subscribeables[o.GetType()+o.GetId()]; !ok {
+		panic("cant unregister change detect that does not exists" + o.GetType() + o.GetId())
+	}
+	delete(subscribeables, o.GetType()+o.GetId())
 }
 
 func registerChangeDetect(o Identifiable, outputChan chan interface{}) error {
 	//get the include tags
 	subscribeablesLock.Acquire("register-change")
 	defer subscribeablesLock.Release()
+	if o.GetId() == "291" {
+		fmt.Println("")
+	}
 
 	if _, ok := subscribeables[o.GetType()+o.GetId()]; ok {
 		panic("change detect already registered, check the code")
@@ -137,7 +150,16 @@ func StartDetectChanges() {
 	//SubscribeUpdateInputs.EnableCopyMode()
 	//SubscribeUpdateInputs.EnableDebug()
 	//SubscribeUpdateOutput.EnableDebug()
-	subscribeUpdateChannel := wires.GlobalUpdates.GetBufferedOutput(10000)
+	allUpdates := duplicator.MakeDuplicator("all-updates")
+	allUpdates.RegisterInput(wires.ItemsUpdate.GetBufferedOutput(10000))
+	allUpdates.RegisterInput(wires.StocksUpdate.GetBufferedOutput(10000))
+	allUpdates.RegisterInput(wires.PortfolioUpdate.GetBufferedOutput(10000))
+	allUpdates.RegisterInput(wires.LedgerUpdate.GetBufferedOutput(10000))
+	allUpdates.RegisterInput(wires.UsersUpdate.GetBufferedOutput(10000))
+	allUpdates.RegisterInput(wires.BookUpdate.GetBufferedOutput(10000))
+	PublicSubscribeChange.EnableCopyMode()
+	//allUpdates.RegisterInput(wires.NotificationUpdate.GetBufferedOutput(10000))
+	subscribeUpdateChannel := allUpdates.GetBufferedOutput(10000)
 	go func() {
 		for updateObj := range subscribeUpdateChannel {
 			update, ok := updateObj.(Identifiable)
@@ -159,7 +181,7 @@ func StartDetectChanges() {
 				if !reflect.DeepEqual(currentValue, fieldChange.Value) {
 					changed = true
 					fieldChange.Value = currentValue
-					changedFields = append(changedFields, fieldChange)
+					changedFields = append(changedFields, &ChangeField{fieldChange.Field, fieldChange.Value})
 				}
 			}
 			if changed {

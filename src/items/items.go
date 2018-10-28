@@ -1,6 +1,9 @@
 package items
 
 import (
+	"encoding/json"
+	"log"
+
 	"github.com/pkg/errors"
 	"github.com/stock-simulator-server/src/change"
 	"github.com/stock-simulator-server/src/lock"
@@ -8,10 +11,12 @@ import (
 	"github.com/stock-simulator-server/src/portfolio"
 	"github.com/stock-simulator-server/src/sender"
 	"github.com/stock-simulator-server/src/utils"
+	"github.com/stock-simulator-server/src/wires"
 )
 
 var ItemTypes = ItemMap()
 var ItemsPortInventory = make(map[string]map[string]Item)
+var Items = make(map[string]Item)
 var ItemLock = lock.NewLock("item")
 
 const ItemIdentifiableType = "item"
@@ -56,11 +61,15 @@ func makeItem(itemType ItemType, userUuid string) Item {
 func LoadItem(item Item) {
 	ItemLock.Acquire("load-item")
 	defer ItemLock.Release()
+	item.Load()
 	utils.RegisterUuid(item.GetUuid(), item)
-	if _, ok := ItemsPortInventory[item.GetPortfolioUuid()]; ok {
+	if _, ok := ItemsPortInventory[item.GetPortfolioUuid()]; !ok {
 		ItemsPortInventory[item.GetPortfolioUuid()] = make(map[string]Item)
 	}
 	ItemsPortInventory[item.GetPortfolioUuid()][item.GetUuid()] = item
+	Items[item.GetUuid()] = item
+	change.RegisterPrivateChangeDetect(item, item.GetUpdateChan())
+	sender.RegisterChangeUpdate(item.GetPortfolioUuid(), item.GetUpdateChan())
 }
 
 func BuyItem(portUuid, userUuid, itemName string) (string, error) {
@@ -88,12 +97,37 @@ func BuyItem(portUuid, userUuid, itemName string) (string, error) {
 	}
 	newItem := makeItem(itemType, portUuid)
 	ItemsPortInventory[port.Uuid][newItem.GetUuid()] = newItem
-	change.RegiserPrivateChangeDetect(newItem, newItem.GetUpdateChan())
-	sender.GetSender(port.UserUUID).NewObjects.Offer(newItem)
-	sender.GetSender(port.UserUUID).Updates.RegisterInput(newItem.GetUpdateChan())
-
-	notification.NewItemNotification(userUuid, itemType.GetName(), newItem.GetId())
+	Items[newItem.GetUuid()] = newItem
+	change.RegisterPrivateChangeDetect(newItem, newItem.GetUpdateChan())
+	sender.SendNewObject(port.Uuid, newItem)
+	sender.RegisterChangeUpdate(port.Uuid, newItem.GetUpdateChan())
+	wires.ItemsNewObjects.Offer(newItem)
+	notification.NewItemNotification(userUuid, itemType.GetType(), newItem.GetId())
 	return newItem.GetId(), nil
+}
+
+func DeleteItem(uuid, portfolioUuid string) error {
+	ItemLock.Acquire("delete-item")
+	defer ItemLock.Release()
+	if _, exists := ItemsPortInventory[portfolioUuid]; !exists {
+		return errors.New("user does not have any item")
+	}
+	item, exists := ItemsPortInventory[portfolioUuid][uuid]
+	if !exists {
+		return errors.New("item does not exist")
+	}
+
+	change.UnregisterChangeDetect(item)
+	close(item.GetUpdateChan())
+	delete(Items, uuid)
+	delete(ItemsPortInventory[item.GetPortfolioUuid()], uuid)
+	if len(ItemsPortInventory[item.GetPortfolioUuid()]) == 0 {
+		delete(ItemsPortInventory, item.GetPortfolioUuid())
+	}
+	utils.RemoveUuid(uuid)
+	sender.SendDeleteObject(portfolioUuid, item)
+	wires.ItemsDelete.Offer(item)
+	return nil
 }
 
 func GetItemsForUser(portfolioUuid string) []Item {
@@ -181,6 +215,10 @@ func UnmarshalJsonItem(itemType, jsonStr string) Item {
 	switch itemType {
 	case insiderTradingItemType:
 		item = &InsiderTradingItem{}
+	}
+	err := json.Unmarshal([]byte(jsonStr), &item)
+	if err != nil {
+		log.Fatal("error unmarshal json item", err.Error())
 	}
 	return item
 }

@@ -1,6 +1,7 @@
 package messages
 
 const TradeAction = "trade"
+const ProspectTradeAction = "prospect"
 
 type TradeMessage struct {
 	StockId    string `json:"stock_id"`

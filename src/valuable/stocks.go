@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/stock-simulator-server/src/money"
+
 	"github.com/stock-simulator-server/src/change"
 	"github.com/stock-simulator-server/src/duplicator"
 	"github.com/stock-simulator-server/src/lock"
@@ -176,7 +178,7 @@ func (randPrice *RandomPrice) change(stock *Stock) {
 		utils.MapNumFloat(randPrice.Volatility, volatilityMin, volatilityMax, volatilityMinTurns, volatilityMaxTurns)
 
 	if rand.Float64() <= randPrice.RandomNoise {
-		change = change * -1
+		change = change * -1 * .5
 	}
 	stock.CurrentPrice = int64(float64(stock.CurrentPrice) + (change * .5))
 
@@ -197,8 +199,12 @@ func (randPrice *RandomPrice) changeValues() {
 			newTarget = 1000 + newTarget
 		}
 	}
-	if rand.Float64() < .01 {
+
+	if newTarget < 100*money.Thousand && rand.Float64() < .01 {
 		newTarget = newTarget * 2
+	}
+	if newTarget > 1*money.Million {
+		newTarget = 1*money.Million + (newTarget-1*money.Million)/2
 	}
 	//need to deiced if the floor should happen before or after
 	if newTarget < 0 {

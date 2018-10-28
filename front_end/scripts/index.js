@@ -1,17 +1,15 @@
 // TODO break these out another file
-var REQUESTS = {};
-var REQUEST_ID = 1;
+
 
 /* Highest level Vue data object */
-var config = new Vue({
-  data: {
-    config: {}
-  }
-});
-
 var vm_stocks = new Vue({
   data: {
     stocks: {}
+  },
+  watch: {
+    stocks: function() {
+      updateResearchStocks();
+    },
   }
 });
 
@@ -25,6 +23,13 @@ var vm_portfolios = new Vue({
   data: {
     portfolios: {}
   }
+});
+
+var vm_items = new Vue({
+  data: {
+    items: {}
+  }
+
 });
 
 var vm_users = new Vue({
@@ -45,6 +50,23 @@ var vm_users = new Vue({
         }
       }
     }
+  },
+  watch: {
+    users: function() {
+      updateResearchUsers();
+    },
+  }
+});
+
+var vm_recordBook = new Vue({
+  data: {
+    records: {},
+  },
+});
+
+var vm_recordEntry = new Vue({
+  data: {
+    entries: {},
   }
 });
 
@@ -52,17 +74,23 @@ var vm_users = new Vue({
 registerRoute("connect", function(msg) {
   console.log("login recieved");
 
-  if (!msg.msg.success) {
+  if (msg.msg.success) {
+    console.log(msg);
+    sessionStorage.setItem("uuid", msg.msg.uuid);
+    createConfig(msg.msg.config);
+    
+    setTimeout(function() {
+      $('#loader--container').addClass("exit");
+    }, 2000);
+    
+  } else {
     let err_msg = msg.msg.err;
     console.log(err_msg);
     console.log(msg);
     window.location.href = "/login.html";
-  } else {
-    console.log(msg);
-    sessionStorage.setItem("uuid", msg.msg.uuid);
-    Vue.set(config.config, msg.msg.uuid, msg.msg.config);
   }
 });
+
 
 registerRoute("object", function(msg) {
   switch (msg.msg.type) {
@@ -74,6 +102,7 @@ registerRoute("object", function(msg) {
     case "stock":
       // Add variables for stocks for vue module initialization
       msg.msg.object.change = 0;
+      msg.msg.object.changePercent = 0;
       Vue.set(vm_stocks.stocks, msg.msg.uuid, msg.msg.object);
       break;
 
@@ -84,21 +113,26 @@ registerRoute("object", function(msg) {
     case "user":
       Vue.set(vm_users.users, msg.msg.uuid, msg.msg.object);
       break;
-  }
-});
 
-
-registerRoute("response", function(msg) {
-  try {
-    REQUESTS[msg.request_id](msg);
-  } catch (err) {
-    console.error(err);
-    console.log("no request_id key for " + JSON.stringify(msg));
-    console.log(REQUESTS);
-    console.log(REQUEST_ID);
+    case "item":
+      Vue.set(vm_items.items, msg.msg.uuid, msg.msg.object);
+      break;
+    case "notification":
+      Vue.set(vm_notify.notes, msg.msg.uuid, msg.msg.object);
+      // If notification is not seen, notify user based on note type
+      if (!msg.msg.object.seen) {
+        // Execute notification type
+        routeNote[msg.msg.object.type](msg.msg.object);
+      }  
+      break;
+    case "record_book":
+      Vue.set(vm_recordBook.records, msg.msg.uuid, msg.msg.object);
+      break;
+    case "record_entry":
+      msg.msg.object.time = Date(msg.msg.object.time);
+      Vue.set(vm_recordEntry.entries, msg.msg.uuid, msg.msg.object);
+      break;
   }
-  console.log(msg);
-  delete REQUESTS[msg.request_id];
 });
 
 
@@ -107,21 +141,28 @@ registerRoute("alert", function(msg) {
 });
 
 
+
 $(document).ready(function() {
+  
   load_dashboard_tab(); // dashboard.js
-  load_investors_tab(); // investors.js
   load_stocks_tab(); // stocks.js
+  load_investors_tab(); // investors.js
   load_store_tab(); // store.js
+  load_research_tab(); //research.js
   load_topbar_vue(); // topbar.js
-  load_notifications(); // notifications.js
   load_sidebar_vue(); // sidebar.js
   load_chat_vue(); // chat.js
   load_modal_vues(); // modal.js
+  load_settings_tab(); // settings.js
 
 
+  setTimeout(function() {
+    checkUsedItems(); // Display item perks that are in use 
+  }, 500);
 
-  console.log("----- CONFIG -----");
-  console.log(config.config);
+
+  console.log("----- USER ITEMS -----")
+  console.log(vm_items.items);
   console.log("----- USERS -----");
   console.log(vm_users.users);
   console.log("------ STOCKS ------");
@@ -132,14 +173,15 @@ $(document).ready(function() {
   console.log(vm_portfolios.portfolios);
   console.log("------ NOTIFICATIONS ------");
   console.log(vm_notify.notes);
-
-  console.log(vm_topBar.userLevel)
-  
+  console.log("------ RECORD BOOK ------");
+  console.log(vm_recordBook.records);
+  console.log("------ RECORD ENTRY ------");
+  console.log(vm_recordEntry.entries);
 
   /* Vues that are used to display data */
 
   // Vue for sidebar navigation
-  let vm_nav = new Vue({
+  var vm_nav = new Vue({
     el: "#nav",
     methods: {
       nav: function(event) {
@@ -149,10 +191,6 @@ $(document).ready(function() {
       }
     }
   });
-
-
-  var notification_sound = new Audio();
-  notification_sound.src = "assets/sfx_pling.wav";
 
 
   $(document).scroll(function() {
@@ -172,23 +210,37 @@ $(document).ready(function() {
 
 
 
-  // $("table").on("click", "tr td i.material-icons.star.unfilled", function(
-  //   event
-  // ) {
-  //   var ticker_id = $(this)
-  //     .find(".stock-ticker-id")
-  //     .attr("tid");
+  $("table").on("click", "tr td i.material-icons.star", function(event) {
+    var ticker_id = $(this)
+      .find(".stock-ticker-id")
+      .attr("tid");
 
-  //   console.log("TID: " + ticker_id + " has been favorited");
+    console.log("TID: " + ticker_id + " has been favorited");
 
-  //   //var stock = Object.values(vm_users.stocks).filter(d => d.ticker_id === ticker_id)[0];
+    //var stock = Object.values(vm_users.stocks).filter(d => d.ticker_id === ticker_id)[0];
 
-  //   // Set show modal to true
+    // Set show modal to true
 
-  //   //transferModal.investor_uuid = stock.uuid;
+    //transferModal.investor_uuid = stock.uuid;
 
-  //   vm_stocks_tab.toggleFavorite();
-  // });
+    //vm_stocks_tab.toggleFavorite();
+  });
+
+  $("table").on("click", "tr td i.material-icons.chart", function(event) {
+    var ticker_id = $(this)
+      .find(".stock-ticker-id")
+      .attr("tid");
+
+    console.log("SHOW CHART FOR: " + ticker_id);
+
+    //var stock = Object.values(vm_users.stocks).filter(d => d.ticker_id === ticker_id)[0];
+
+    // Set show modal to true
+
+    //transferModal.investor_uuid = stock.uuid;
+
+    //vm_stocks_tab.toggleFavorite();
+  });
 
   $("thead tr th").click(function(event) {
     if (
@@ -246,6 +298,10 @@ $(document).ready(function() {
         var currPrice = vm_stocks.stocks[targetUUID][targetField];
         // Adding change amount
         vm_stocks.stocks[targetUUID].change = targetChange - currPrice;
+
+        // Adding percent change amount
+        vm_stocks.stocks[targetUUID].changePercent = Number(findPercentChange(targetChange, currPrice));
+
         // vm_stocks.stocks[targetUUID].change = Math.round((targetChange - currPrice) * 1000)/100000;
 
         // helper to color rows in the stock table
@@ -304,72 +360,113 @@ $(document).ready(function() {
     });
   };
 
-  
+  var itemUpdate = function(msg) {
+    var targetUUID = msg.msg.uuid;
+    msg.msg.changes.forEach(function(changeObject) {
+      // Variables needed to update the ledger item
+      var targetField = changeObject.field;
+      var targetChange = changeObject.value;
+
+      // Update ledger item
+      vm_items.items[targetUUID][targetField] = targetChange;
+    });
+  };
+
+  var notificationUpdate = function(msg) {
+    var targetUUID = msg.msg.uuid;
+    msg.msg.changes.forEach(function(changeObject) {
+      // Variables needed to update the ledger item
+      var targetField = changeObject.field;
+      var targetChange = changeObject.value;
+
+      // Update ledger item
+      vm_notify.notes[targetUUID][targetField] = targetChange;
+    });
+  }
+
+  var recordBookUpdate = function(msg) {
+    var targetUUID = msg.msg.uuid;
+    msg.msg.changes.forEach(function(changeObject) {
+      var targetField = changeObject.field;
+      var targetChange = changeObject.value;
+
+      vm_recordBook.records[targetUUID][targetField] = targetChange;
+      console.log(vm_recordBook.records);
+    })
+  };
+
+
   registerRoute("update", function(msg) {
     var updateRouter = {
       stock: stockUpdate,
       ledger: ledgerUpdate,
       portfolio: portfolioUpdate,
-      user: userUpdate
+      user: userUpdate,
+      item: itemUpdate,
+      notification: notificationUpdate,
+      record_book: recordBookUpdate,
     };
     updateRouter[msg.msg.type](msg);
   });
 
 
+  var allViews = $(".view");
+  var dashboardView = $("#dashboard--view");
+  var businessView = $("#business--view");
+  var stocksView = $("#stocks--view");
+  var investorsView = $("#investors--view");
+  var settingsView = $("#settings--view");
+  var researchView = $("#research--view");
+  var storeView = $("#store--view");
+  var currentViewName = $("#current-view");
 
-var allViews = $(".view");
-var dashboardView = $("#dashboard--view");
-var businessView = $("#business--view");
-var stocksView = $("#stocks--view");
-var investorsView = $("#investors--view");
-var futuresView = $("#futures--view");
-var storeView = $("#store--view");
-var currentViewName = $("#current-view");
+  function renderContent(route) {
+      switch (route) {
+          case "dashboard":
+          allViews.removeClass("active");
+          dashboardView.addClass("active");
+          currentViewName[0].innerHTML = "Dashboard";
+          break;
 
-function renderContent(route) {
-    switch (route) {
-        case "dashboard":
-        allViews.removeClass("active");
-        dashboardView.addClass("active");
-        currentViewName[0].innerHTML = "Dashboard";
-        break;
+          case "business":
+          allViews.removeClass("active");
+          businessView.addClass("active");
+          console.log(currentViewName);
+          currentViewName[0].innerHTML = "Business";
+          break;
 
-        case "business":
-        allViews.removeClass("active");
-        businessView.addClass("active");
-        console.log(currentViewName);
-        currentViewName[0].innerHTML = "Business";
-        break;
+          case "stocks":
+          allViews.removeClass("active");
+          stocksView.addClass("active");
+          currentViewName[0].innerHTML = "Stocks";
+          break;
 
-        case "stocks":
-        allViews.removeClass("active");
-        stocksView.addClass("active");
-        currentViewName[0].innerHTML = "Stocks";
-        break;
+          case "investors":
+          allViews.removeClass("active");
+          investorsView.addClass("active");
+          currentViewName[0].innerHTML = "Investors";
+          break;
 
-        case "investors":
-        allViews.removeClass("active");
-        investorsView.addClass("active");
-        currentViewName[0].innerHTML = "Investors";
-        break;
+          case "research":
+          allViews.removeClass("active");
+          researchView.addClass("active");
+          currentViewName[0].innerHTML = "Research";
+          break;
 
-        case "futures":
-        allViews.removeClass("active");
-        futuresView.addClass("active");
-        currentViewName[0].innerHTML = "Futures";
-        break;
+          case "settings":
+          allViews.removeClass("active");
+          settingsView.addClass("active");
+          currentViewName[0].innerHTML = "Settings";
+          break;
 
-        case "perks":
-        allViews.removeClass("active");
-        storeView.addClass("active");
-        currentViewName[0].innerHTML = "Store";
-        break;
-    }
-}
+          case "perks":
+          allViews.removeClass("active");
+          storeView.addClass("active");
+          currentViewName[0].innerHTML = "Store";
+          break;
+      }
+  }
 
-  // SOUND EFFECTS
-
-  var notification_sound = new Audio();
-  notification_sound.src = "assets/sfx_pling.wav";
-  notification_sound.volume = 0.2;
+  init();
+  
 });
