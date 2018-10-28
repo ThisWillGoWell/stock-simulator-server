@@ -1,1 +1,1 @@
-package metics
+package metrics

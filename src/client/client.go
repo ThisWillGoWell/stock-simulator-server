@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/stock-simulator-server/src/metics"
+
 	"github.com/stock-simulator-server/src/log"
 
 	"github.com/stock-simulator-server/src/record"
@@ -100,6 +102,7 @@ func InitialReceive(initialPayload string, tx, rx chan string) error {
 	}
 	connections[user.Uuid][client.clientNum] = client
 	log.Log.Info("client connected", user.Uuid, user.ActiveClients)
+	metrics.ClientConnect()
 	go client.tx(sessionToken)
 	go client.rx()
 	return nil
@@ -154,7 +157,8 @@ go routine for handling the rx portion of the socket
 */
 func (client *Client) rx() {
 	for messageString := range client.socketRx {
-		fmt.Println("MSG: " + messageString)
+		metrics.RecieveMessage(len(messageString))
+		log.Log.Info(messageString)
 		message := new(messages.BaseMessage)
 		//attempt to
 		err := message.UnmarshalJSON([]byte(messageString))
@@ -197,6 +201,7 @@ func (client *Client) rx() {
 	}
 	client.close <- nil
 	client.user.LogoutUser()
+	metrics.ClientDisconnect()
 }
 
 /**
@@ -207,7 +212,9 @@ func (client *Client) sendMessage(msg interface{}) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	client.socketTx <- string(str)
+	s := string(str)
+	metrics.SendMessage(len(s))
+	client.socketTx <- s
 }
 
 func (client *Client) processChatMessage(message messages.Message) {

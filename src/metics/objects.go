@@ -1,4 +1,4 @@
-package metics
+package metrics
 
 import (
 	"sync/atomic"
@@ -19,7 +19,7 @@ type InnerObjectMetric struct {
 type ObjectMetric struct {
 	Total        InnerObjectMetric `json:"total"`
 	Interval     InnerObjectMetric `json:"interval"`
-	LastInterval InnerObjectMetric `json:"last_interval"`
+	LastInterval InnerObjectMetric `json:"-"`
 }
 
 var ObjectCounter = &ObjectMetric{}

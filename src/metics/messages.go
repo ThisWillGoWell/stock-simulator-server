@@ -1,4 +1,4 @@
-package metics
+package metrics
 
 import "sync/atomic"
 

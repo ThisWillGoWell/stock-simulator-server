@@ -47,6 +47,8 @@ func main() {
 	autoLoad := os.Getenv("AUTO_LOAD") == "True"
 	disableDbWrite := os.Getenv("DISABLE_DB_WRITE") == "True"
 
+	metrics.RunMetrics()
+
 	//start DB
 	if !disableDb {
 		database.InitDatabase(disableDbWrite)
@@ -70,7 +72,6 @@ func main() {
 	log.Alerts.Info("Starting App")
 	log.Log.Info("Starting App")
 
-	metics.RunMetrics()
 	//Wiring of system
 	wires.ConnectWires()
 	//this takes the subscribe output and converts it to a message

@@ -1,24 +1,21 @@
-package metics
+package metrics
 
 import (
-	"encoding/json"
-	"fmt"
 	"time"
 )
 
 const interval = time.Second * 10
 
 type MeticCounters struct {
-	Object       *ObjectMetric      `json:"object"`
-	Update       *ObjectMetric      `json:"update"`
-	Duplicator   *DuplicatorMetrics `json"duplocator"`
-	Connectivity *ConnectiveMetrics `json"connective"`
+	Object       *ObjectMetric     `json:"object"`
+	Update       *ObjectMetric     `json:"update"`
+	Connectivity *ConnectiveMetric `json:"connectivity"`
 }
 
 var Counter = MeticCounters{
-	Object:     ObjectCounter,
-	Update:     UpdateCounter,
-	Duplicator: DuplicatorCounter,
+	Object:       ObjectCounter,
+	Update:       UpdateCounter,
+	Connectivity: ConnectiveCounter,
 }
 
 func RunMetrics() {
@@ -30,11 +27,7 @@ func RunMetrics() {
 			case <-time.After(interval):
 				Counter.Update.markInterval()
 				Counter.Object.markInterval()
-				Counter.Duplicator.markInterval()
-				b, _ := json.Marshal(Counter)
-				str := string(b)
-				fmt.Println(str)
-
+				Counter.Connectivity.markInterval()
 			}
 		}
 	}()
