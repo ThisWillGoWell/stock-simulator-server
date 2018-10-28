@@ -786,7 +786,7 @@
 								<ul id="item-list">
 									<li v-for="level in experience" :key="level.label">
 										<div class="card item">
-											<div class="item-locked-layer" v-bind:class="{ 'item-disabled': !isNextLevel(level.level)}">
+											<div class="item-locked-layer" v-bind:class="{ 'item-disabled': (level.level + 1) != currUserLevel}">
 												<i class="material-icons white">lock</i>
 											</div>
 											<div class="item-name">{{ level.label }}</div>
@@ -794,7 +794,7 @@
 											<div class="item-divider"></div>
 											<div class="item-effects">{{ level.note }}</div>
 											<div class="item-cost">{{ level.price }}</div>
-											<div class="buy-item-btn" v-on:click="level_up(level.level)" v-bind:class="{ 'item-disabled': !isNextLevel(level.level)}">BUY</div>
+											<div class="buy-item-btn" v-on:click="level_up(level.level)" v-bind:class="{ 'item-disabled': (level.level + 1) != currUserLevel }">BUY</div>
 										</div>
 									</li>
 								</ul>

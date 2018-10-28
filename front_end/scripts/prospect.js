@@ -1,13 +1,15 @@
 // Send a prospective trade to see the result 
 function prospectiveTrade(stock_id, amount, callback) {
-    var message = {
-        stock_id: stock_id,
-        amount: amount
-    };
+    if (amount != 0) {
+        var message = {
+            stock_id: stock_id,
+            amount: amount
+        };
+        
+        var callback = callback;
     
-    var callback = callback;
-
-    doSend("prospect", message, callback);
+        doSend("prospect", message, callback);
+    }
 };
 
 function updateModalFromProspect(msg) {
