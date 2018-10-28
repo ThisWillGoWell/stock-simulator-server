@@ -60,22 +60,28 @@ function load_dashboard_tab() {
           // Current users portfolio uuid
           var portfolio_uuid = vm_users.users[currUserUUID].portfolio_uuid;
 
+          
           // If objects are in ledger
           if (Object.keys(vm_ledger.ledger).length !== 0) {
             var ownedStocks = Object.values(vm_ledger.ledger).filter(
               d => d.portfolio_id === portfolio_uuid
             );
-
+            
             // Remove stocks that user owns 0 of
             ownedStocks = ownedStocks.filter(d => d.amount !== 0);
             // Augmenting owned stocks
             ownedStocks = ownedStocks.map(function(d) {
+              
               d.stock_ticker = vm_stocks.stocks[d.stock_id].ticker_id;
               d.stock_price = vm_stocks.stocks[d.stock_id].current_price;
               d.stock_value = Number(d.stock_price) * Number(d.amount);
-              d.stock_roi =
-                Number(d.stock_price) * Number(d.amount) -
-                Number(d.investment_value);
+              try {
+                d.stock_roi = getROI(portfolio_uuid, d.stock_id, d.stock_price);
+              }
+              catch(err) {
+                console.error(err);
+                d.stock_roi = 0;
+              }
 
               // TODO: css changes done here talk to brennan about his \ux22 magic
               // helper to color rows in the stock table
@@ -112,7 +118,7 @@ function load_dashboard_tab() {
               }
               return 0;
             });
-
+            console.log(ownedStocks);
             return ownedStocks;
           }
         }
@@ -124,7 +130,6 @@ function load_dashboard_tab() {
           var currUserFolioUUID = vm_users.users[currUserUUID].portfolio_uuid;
           var items = Object.values(vm_items.items).filter(d => d.portfolio_uuid === currUserFolioUUID);
           // Add used status
-          console.log(items);
           items.map(function(d) {
             if (d.used) {
               d.used_status = 'Used';
@@ -138,7 +143,6 @@ function load_dashboard_tab() {
         }
         return {};
       },
-
     }
   });
 
@@ -162,69 +166,33 @@ function load_dashboard_tab() {
   });
 }
 
+function getROI(portfolio_uuid, stock_id, stock_price) {
+  var userRecordsBooks = Object.values(vm_recordBook.records).filter(d => d.portfolio_uuid === portfolio_uuid);
+  // Add stock id to record books 
+  userRecordsBooks.forEach(function(d){
+    d.stock_uuid = vm_ledger.ledger[d.ledger_uuid].stock_id;
+    return d;
+  });
+  var book = userRecordsBooks.filter(d => d.stock_uuid === stock_id)[0];
+  if (book !== undefined) {
+    var pricePaid = 0;
+    var amountOwned = 0;
+  
+    book.buy_records.forEach(function(d) {
+      // Wait until entry has arrived
+      if (vm_recordEntry.entries[d.RecordUuid] !== undefined) {
+        pricePaid += vm_recordEntry.entries[d.RecordUuid].result;
+      }
+      amountOwned += d.AmountLeft;
+    });
+  
+    return amountOwned*stock_price + pricePaid;
+  } else return 0;
+}
+
 function createPortfolioGraph(portfolioUUID, location) {
   // what it will be
   var uuids = [portfolioUUID, portfolioUUID];
   var fields = ['net_worth', 'wallet'];
   queryDrawGraph(location, uuids, fields);
 }
-
-///// WHAT IT WAS
-// function createPortfolioGraph(portfolioUUID, location) {
-//   // Store graphing data
-//   var data = {
-//     data: {},
-//     tags: {},
-//   };
-//   var responses = [];
-//   var requests = [];
-
-//   // Send data requests
-//   ["net_worth", "wallet"].forEach(function(field) {
-//     // Creating websocket message
-//     let msg = {
-//       uuid: portfolioUUID,
-//       field: field,
-//       num_points: 1000,
-//       length: "6h"
-//     };
-
-//     // Store request on front end
-//     requests.push(REQUEST_ID.toString());
-//     var callback = function(msg) {
-//       // Pull out the data and format it
-//       var points = msg.msg.points;
-//       points = points.map(function(d) {
-//         return { time: d[0], value: d[1] };
-//       });
-
-//       // Store the data
-//       data.data[msg.msg.message.field] = points;
-
-//       // Make note the data is available
-//       responses.push(msg.request_id);
-//     };
-
-//     // Send message
-//     doSend("query", msg, callback);
-
-//   });
-
-//   var drawGraphOnceDone = null;
-
-//   var stillWaiting = true;
-
-//   drawGraphOnceDone = function() {
-//     if (requests.every(r => responses.indexOf(r) > -1)) {
-//       stillWaiting = false;
-//     }
-
-//     if (!stillWaiting) {
-//       DrawLineGraph(location, data);
-//     } else {
-//       setTimeout(drawGraphOnceDone, 100);
-//     }
-//   };
-
-//   setTimeout(drawGraphOnceDone, 100);
-// }

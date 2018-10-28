@@ -1,6 +1,7 @@
 package change
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/stock-simulator-server/src/log"
@@ -92,6 +93,9 @@ func registerChangeDetect(o Identifiable, outputChan chan interface{}) error {
 	//get the include tags
 	subscribeablesLock.Acquire("register-change")
 	defer subscribeablesLock.Release()
+	if o.GetId() == "291" {
+		fmt.Println("")
+	}
 
 	if _, ok := subscribeables[o.GetType()+o.GetId()]; ok {
 		log.Alerts.Fatal("Panic in Change Detect, cant register since already exists", o.GetId(), o.GetId())

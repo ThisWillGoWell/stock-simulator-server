@@ -778,22 +778,60 @@ input[type=password]:focus ~ .input-focus-border{
 
 #notification-module--container {
     position: fixed;
-    top: -60px;
-    right: 0px;
-    left: 0px;
+    top: 100px;
+    right: 27px;
+    display: block;
     z-index: 6;
-    margin: 0 auto;
-    height: 60px;
+    
+    height: auto;
     width: 320px;
-    border-radius: 0px 0px 3px 3px;
-    background-color: #49cc6a;
-    opacity: 0;
+    border-radius: 3px;
+    opacity: 1;
     text-align: center;
-
-    box-shadow: 0px -4px 23px 2px rgba(0,0,0,0.1);
+    pointer-events: none;
+    
 
 }
-#notification-module--container span {
+
+
+#notification-list {
+    list-style-type: none;
+    padding: 0;
+    margin-block-end: 0px;
+    height: auto;
+    min-height: 100px;
+    -moz-transition: all ease-in-out 0.12s;
+    -o-transition: all ease-in-out 0.12s;
+    -webkit-transition: all ease-in-out 0.12s;
+    transition: all ease-in-out 0.12s;
+}
+
+#notification-list li{
+    transform: translateX(350px);
+    
+    display: block;
+    height: 60px;
+    margin-bottom: 10px;
+    padding: 0;
+    box-shadow: 0px -4px 23px 2px rgba(0,0,0,0.1);
+    background-color: #49cc6a;
+    border-radius: 3px 0px 0px 3px;
+    -moz-transition: all cubic-bezier(.23,1,.32,1) 0.37s;
+    -o-transition: all cubic-bezier(.23,1,.32,1) 0.37s;
+    -webkit-transition: all cubic-bezier(.23,1,.32,1) 0.37s;
+    transition: all cubic-bezier(.23,1,.32,1) 0.37s;
+    opacity: 0;
+}
+
+#notification-list li.on-screen{
+    transform: translateX(0px);
+    
+    height: 60px;
+    opacity: 1;
+    
+}
+
+#notification-list li span {
     font-size: 16px;
     height: 100%;
     line-height: 60px;
@@ -801,10 +839,8 @@ input[type=password]:focus ~ .input-focus-border{
     vertical-align: middle;
 }
 
-#notification-module--container i {
-    position: absolute;
-    right: 25px;
-    top: 15px;
+#notification-list li i {
+    
     color: #fff;
     
 }
@@ -2502,6 +2538,10 @@ table thead.table-top-bar tr th:hover{
 }
 
 .card.item:before {
+    
+}
+
+.card.item.item-disable:before{
     position: absolute;
     top: 0;
     bottom: 0;
@@ -2514,13 +2554,9 @@ table thead.table-top-bar tr th:hover{
     -o-transition: all ease-in-out 0.17s;
     -webkit-transition: all ease-in-out 0.17s;
     transition: all ease-in-out 0.17s;
-}
-
-.card.item.item-disable:before{
     pointer-events: none;
     background-color: rgba(0,0,0,1);
 }
-
 
 /* Graphing */
 svg {
