@@ -39,7 +39,10 @@ if (token) {
 	};
 
 	function onClose(evt) {
-	    onEvent("Disconnected");
+		notifyTopBar("DISCONNECTED FROM WS", RED, false);
+		onEvent("Disconnected");
+		// Uncomment underneath line for return to login on disconnect
+		// window.location.href = "/login.html";
 	};
 
 	function onEvent(message){
