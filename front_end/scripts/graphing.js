@@ -349,9 +349,10 @@ function DrawLineGraph(location, data, showWallet, append) {
 		.attr('stroke', COLOR_PALETTE[i])
 		.attr('stroke-width', '2px')
 		.attr('fill', 'none')
-		.attr('d', "M " + margin.left + " " + (height - margin.bottom) + " H " + width + " Z")
-		.transition()
-			.attrTween('d', pathTween(line, 4));
+		.attr('d', line);
+		// .attr('d', "M " + margin.left + " " + (height - margin.bottom) + " H " + width + " Z")
+		// .transition()
+		// 	.attrTween('d', pathTween(line, 4));
 
 		// Adding tooltip for each line
 		let ttip = svg.append('g')
