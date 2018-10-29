@@ -58,7 +58,7 @@
 
 		<div class="app--container" id="app--container">
 			<section id="loader--container">
-				<div class="loader-content">
+				<div class="loader-content no-select">
 					<div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
 					<div class="loader-message">loading stocks...</div>
 				</div>
@@ -314,23 +314,32 @@
 			<section id="top-bar--container">
 				<div class="current-view" id="current-view">Dashboard</div>
 				<span></span>
-				<div class="account-settings-btn">
-						<span></span>
-						<span></span>
-						<span></span>	
-					</div>
+			
 
 				<div id="user-info-container" class="nav-list">
-					<div class="username-text">{{ userDisplayName }}</div>
 					
-					
-				
+					<ul class="user-info-list">
+						<li class="username-text buffer-left">{{ userDisplayName }}</li>
+						<li class="buffer-left">
+							<div class="user-level">8</div>
+						</li>
+						<li>
+							<div class="account-settings-btn">
+								<span></span>
+								<span></span>
+								<span></span>	
+							</div>
+						</li>
+					</ul>
 				</div>
 				
 				
 				<div class="account-settings-menu--container">
 					<i id="account-settings-menu-close-btn" class="material-icons">close</i>
 					<ul>
+						<li>
+							<button id="btn-settings" v-on:click="goToSettings">Settings</button>
+						</li>
 						<li>
 							<button id="btn-logout" v-on:click="logout">Logout</button>
 						</li>
@@ -593,8 +602,8 @@
 										  <thead>
 											<tr>
 											  <th scope="col" v-on:click="sortCol('name')" style="text-align: left; padding-left: 25px;">Name <i class="material-icons stock">arrow_drop_down</i></th>
-											  <th scope="col" v-on:click="sortCol('level')">Level <i class="material-icons open-shares">arrow_drop_down</i></th>
-											  <th scope="col" v-on:click="sortCol('favorites')">Actions</th>
+											  <th scope="col" v-on:click="sortCol('level')" class="text-center">Level <i class="material-icons open-shares">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('favorites')" class="text-center" style="padding-right: 0px;">Actions</th>
 											  <th scope="col" v-on:click="sortCol('wallet')">Cash <i class="material-icons open-shares">arrow_drop_down</i></th>
 											  <th scope="col" v-on:click="sortCol('net_worth')">Networth <i class="material-icons cost">arrow_drop_down</i></th>
 											  
@@ -605,9 +614,10 @@
 											<tr class="investors" v-for="investor in investors" :key="investor.uuid" v-bind:tid="investor.uuid">
 											  <th class="stock-ticker-id" scope="row" v-bind:tid="investor.name">
 												  <div class="stock-ticker-id">{{ investor.name }}</div>
+												  <div class="stock-display-name">American Sniper</div>
 											  </th>
-											  <td>{{ investor.level }}</td>
-											  <td class="stock-open-shares">
+											  <td class="text-center"><div class="user-level">{{ investor.level }}</div></td>
+											  <td class="stock-open-shares" style="padding-right: 0px; text-align: center;">
 												  <ul class="action-list">
 													  <li class="action-btn star" v-on:click="toggleFavorite(investor.uuid)" v-bind:class="{ favorite: isFavoriteInvestor(investor.uuid) }">
 															<i class="material-icons">
@@ -659,7 +669,7 @@
 											<select id="research-graph-user-select" type="text" placeholder="Choose a user">
 											</select>
 										</div>
-										<div>
+										<div class="query-term">
 											<button v-on:click="drawGraph()">Create</button>
 										</div>
 									</div>
@@ -715,7 +725,7 @@
 								<div class="card flex-column-100">
 									<div class="settings-grp">
 										<div class="input-grp">
-											<div class="input-name">Change Display Name</div>
+											<div class="input-name">Change Display Name <span class="settings-subtext">Name can only contain letters and numbers.</span></div>
 											<input type="text" id="change-display-name" class="input-full-width">
 											<span class="input-focus-border"></span>
 											
@@ -728,13 +738,13 @@
 								<div class="card flex-column-100">
 									<div class="settings-grp">
 										<div class="input-grp">
-											<div class="input-name">Change Password</div>
+											<div class="input-name">Create New Password <span class="settings-subtext">Password must contain a minimum of 8 characters.</span></div>
 											<input type="text" id="change-password" class="input-full-width">
 											<span class="input-focus-border"></span>
 											
 										</div>
 										<div class="input-grp">
-												<div class="input-name">Confirm Password</div>
+												<div class="input-name">Confirm New Password</div>
 												<input type="text" id="change-password-confirm" class="input-full-width">
 												<span class="input-focus-border"></span>
 												
@@ -747,28 +757,46 @@
 								<div class="flex-column-33">
 									<div class="item-category buffer-top">DISPLAY</div>
 								</div>
-								<div class="card flex-column-100">
+								<div class="card settings-card flex-column-100">
 									<div class="settings-grp">
-										<div class="input-grp">
+										<div class="settings-input-grp">
 											Toggle stock changes as percentages instead of price change in dollars.
-											<div class="change-setting-btn" v-on:click="toggleChangePercentSetting()">Toggle</div>
+											
+											<!-- <div class="change-setting-btn" v-on:click="toggleChangePercentSetting()">Toggle</div> -->
+											<!-- <div class="toggle-switch" v-on:click="toggleChangePercentSetting()">
+												<input type="checkbox" name="changePercentToggleSwitch" class="toggle-checkbox" id="myonoffswitch" checked>
+												<label class="toggle-label" for="changePercentToggleSwitch"></label>
+											</div> -->
+											<div class="toggle-switch" v-on:click="toggleChangePercentSetting()">
+												<input type="checkbox" name="toggle-switch" class="toggle-checkbox" id="percent-toggle-switch" unchecked>
+												<label class="toggle-label" for="percent-toggle-switch"></label>
+											</div>
+												
 										</div>
 									</div>
 								</div>
-								<div class="card flex-column-100">
+								<div class="card settings-card flex-column-100">
 									<div class="settings-grp">
-										<div class="input-grp">
+										<div class="settings-input-grp">
 											Toggle Sell All button within the Dashboard tab.
-											<div class="change-setting-btn" v-on:click="toggleSellAllButton()">Toggle</div>
+											<!-- <div class="change-setting-btn" v-on:click="toggleSellAllButton()">Toggle</div> -->
+											<div class="toggle-switch" v-on:click="toggleSellAllButton()">
+												<input type="checkbox" name="toggle-switch" class="toggle-checkbox" id="sell-all-toggle-switch" unchecked>
+												<label class="toggle-label" for="sell-all-toggle-switch"></label>
+											</div>
 										</div>
 									</div>
 								</div>
 								</div>
-								<div class="card flex-column-100">
+								<div class="card settings-card flex-column-100">
 									<div class="settings-grp">
-										<div class="input-grp">
+										<div class="settings-input-grp">
 											Toggle investments and net worth to be calculate with bonuses, fees, and taxes.
-											<div class="change-setting-btn" v-on:click="toggleRealValuesSetting()">Toggle</div>
+											<!-- <div class="change-setting-btn" v-on:click="toggleRealValuesSetting()">Toggle</div> -->
+											<div class="toggle-switch" v-on:click="toggleRealValuesSetting()">
+												<input type="checkbox" name="toggle-switch" class="toggle-checkbox" id="actual-values-toggle-switch" unchecked>
+												<label class="toggle-label" for="actual-values-toggle-switch"></label>
+											</div>
 										</div>
 									</div>
 								</div>
