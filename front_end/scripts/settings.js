@@ -24,6 +24,11 @@ function load_settings_tab() {
 
                 vm_dash_tab.realValueSetting = config.settings.realValuesSetting;
             },
+            toggleTickerSetting: function() {
+                var config = vm_config.config;
+                config.settings.ticker = ! config.settings.ticker;
+                updateConfig(config, 'settings', config.settings);
+            },
             changeDisplayName: function() {
                 // Get entered display name
                 let new_name = $("#change-display-name").val();

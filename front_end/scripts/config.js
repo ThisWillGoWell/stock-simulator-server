@@ -12,6 +12,7 @@ function createConfig(config) {
                 changePercent: false,
                 sellAll: false,
                 realValuesSetting: false,
+                ticker: false,
             }
         };
     }
@@ -99,5 +100,17 @@ function getRealValuesSetting() {
 function getSellAllSetting() {
     if (vm_config !== undefined) {
         return vm_config.config.settings.sellAll;
+    } else return false;
+}
+
+function getTickerSetting() {
+    if (vm_config !== undefined) {
+        return vm_config.config.settings.ticker;
+    } else return false;
+}
+
+function getConfigSetting(field) {
+    if (vm_config !== undefined) {
+        return vm_config.config.settings[field];
     } else return false;
 }
