@@ -225,7 +225,8 @@ function scrollTopBar(message) {
 
 // Let the page get going and then scroll
 setTimeout(function() {
-	if (vm_config.config.settings.ticker) {
+	if (getConfigSetting('ticker')) {
+		$("#scroll-module--container").addClass('raiseTicker')
 		setInterval(function() {
 			var stock = Object.values(vm_stocks.stocks)[Math.floor(Math.random()*Object.values(vm_stocks.stocks).length)];
 			scrollTopBar(stock.ticker_id + ": " + formatPrice(stock.current_price));

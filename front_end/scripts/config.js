@@ -109,7 +109,7 @@ function getTickerSetting() {
     } else return false;
 }
 
-function getSetting(field) {
+function getConfigSetting(field) {
     if (vm_config !== undefined) {
         return vm_config.config.settings[field];
     } else return false;
