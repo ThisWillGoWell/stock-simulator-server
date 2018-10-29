@@ -982,12 +982,13 @@ input[type=password]:focus ~ .input-focus-border{
 
 #scroll-module--container {
     position: fixed;
-    top: 20px;
+    top: 90px;
     right: 0px;
     left: 0px;
+    z-index: 7;
     margin: 0 auto;
     height: 40px;
-    width: 620px;
+    width: 65%;
     border-radius: 25px;
     background-color: #373e49;
     background-image: radial-gradient(rgb(149, 143, 143), rgb(149, 143, 143),rgb(51, 45, 45));
@@ -1002,7 +1003,7 @@ input[type=password]:focus ~ .input-focus-border{
     opacity: 1;
     top: 20px;
     width: auto;
-    z-index: 7;
+    z-index: 10;
     font-size: 16px;
     height: 100%;
     line-height: 40px;

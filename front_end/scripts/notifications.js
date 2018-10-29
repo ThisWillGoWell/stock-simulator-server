@@ -182,50 +182,54 @@ function startStockScroll() {
 }
 
 
-// function scrollTopBar(message) {
+function scrollTopBar(message) {
 	
-// 	var mover = d3.select('#scroll-module--container').append('span');
+	var mover = d3.select('#scroll-module--container').append('span');
 	
-// 	// Set text as the message
-// 	mover.html(message.trim());
+	// Set text as the message
+	mover.html(message.trim());
 
-// 	// Getting start and end values
-// 	var parent_bounds = d3.select('#scroll-module--container').node().getBoundingClientRect();
-// 	var parent_left = parent_bounds.left;
-// 	var parent_right = parent_bounds.right;
-// 	var parent_width = parent_bounds.width;
+	// Getting start and end values
+	var parent_bounds = d3.select('#scroll-module--container').node().getBoundingClientRect();
+	var parent_left = parent_bounds.left;
+	var parent_right = parent_bounds.right;
+	var parent_width = parent_bounds.width;
 
-// 	// Getting element width
-// 	var bounds = mover.node().getBoundingClientRect();
-// 	var el_width = bounds.width;
+	// Getting element width
+	var bounds = mover.node().getBoundingClientRect();
+	var el_width = bounds.width;
 
-// 	//Set up the element and fade in
-// 	mover
-// 		.style('opacity', 0)
-// 		.style('left', ((parent_right - el_width - 5) + 'px'))
-// 		.transition().duration(2000)
-// 		.style('opacity', 1);
+	//Set up the element and fade in
+	mover
+		.style('opacity', 0)
+		.style('left', ((parent_right - el_width - 5) + 'px'))
+		.transition().duration(2000)
+		.style('opacity', 1);
 	
-// 	// set motion
-// 	mover
-// 		.transition().delay(1800).ease(d3.easeLinear).duration(15000)
-// 		.style('left', (parent_left + 5) + 'px');
+	// set motion
+	mover
+		.transition().delay(1800).ease(d3.easeLinear).duration(15000)
+		.style('left', (parent_left + 5) + 'px');
 
-// 	// Fade out
-// 	mover
-// 		.transition().delay(17000).duration(1000)
-// 		.style('opacity', 0);
+	// Fade out
+	mover
+		.transition().delay(17000).duration(1000)
+		.style('opacity', 0);
 
-// 	// Remove once stopped and faded
-// 	mover
-// 		.transition().delay(18000).duration(0)
-// 		.remove();
+	// Remove once stopped and faded
+	mover
+		.transition().delay(18000).duration(0)
+		.remove();
 
-// };
+};
 
 // Let the page get going and then scroll
-//setInterval(function() {
-	// var stock = Object.values(vm_stocks.stocks)[Math.floor(Math.random()*Object.values(vm_stocks.stocks).length)];
-	// scrollTopBar(stock.ticker_id + ": " + formatPrice(stock.current_price));
-
-//}, 3000);
+setTimeout(function() {
+	if (vm_config.config.settings.ticker) {
+		setInterval(function() {
+			var stock = Object.values(vm_stocks.stocks)[Math.floor(Math.random()*Object.values(vm_stocks.stocks).length)];
+			scrollTopBar(stock.ticker_id + ": " + formatPrice(stock.current_price));
+		
+		}, 3000);
+	}
+}, 5000)
