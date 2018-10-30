@@ -154,7 +154,7 @@ func databaseWriter() {
 	}()
 
 	go func() {
-		stockDBWrite := duplicator.MakeDuplicator("stock-db-write")
+		stockDBWrite := duplicator.MakeDuplicator("stock-9-write")
 		stockDBWrite.RegisterInput(wires.StocksNewObject.GetBufferedOutput(100))
 		stockDBWrite.RegisterInput(wires.StocksUpdate.GetBufferedOutput(100))
 		write := stockDBWrite.GetBufferedOutput(1000)
