@@ -56,3 +56,11 @@ function load_settings_tab() {
         }
     })
 };
+
+// Set checkboxes according to config settings
+function checkSettingsBoxes() {
+    var settings = vm_config.config.settings;
+    $('#percent-toggle-switch').prop('checked', settings.changePercent);
+    $('#sell-all-toggle-switch').prop('checked', settings.sellAll);
+    $('#actual-values-toggle-switch').prop('checked', settings.realValuesSetting);
+}

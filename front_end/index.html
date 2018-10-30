@@ -315,7 +315,7 @@
 					<ul class="user-info-list">
 						<li class="username-text buffer-left">{{ userDisplayName }}</li>
 						<li class="buffer-left">
-							<div class="user-level">8</div>
+							<div class="user-level">{{ userLevel }}</div>
 						</li>
 						<li>
 							<div class="account-settings-btn">
@@ -758,7 +758,7 @@
 												<input type="checkbox" name="changePercentToggleSwitch" class="toggle-checkbox" id="myonoffswitch" checked>
 												<label class="toggle-label" for="changePercentToggleSwitch"></label>
 											</div> -->
-											<div class="toggle-switch" v-on:click="toggleChangePercentSetting()">
+											<div class="toggle-switch" v-on:change="toggleChangePercentSetting()">
 												<input type="checkbox" name="toggle-switch" class="toggle-checkbox" id="percent-toggle-switch" unchecked>
 												<label class="toggle-label" for="percent-toggle-switch"></label>
 											</div>
@@ -771,7 +771,7 @@
 										<div class="settings-input-grp">
 											Toggle Sell All button within the Dashboard tab.
 											<!-- <div class="change-setting-btn" v-on:click="toggleSellAllButton()">Toggle</div> -->
-											<div class="toggle-switch" v-on:click="toggleSellAllButton()">
+											<div class="toggle-switch" v-on:change="toggleSellAllButton()">
 												<input type="checkbox" name="toggle-switch" class="toggle-checkbox" id="sell-all-toggle-switch" unchecked>
 												<label class="toggle-label" for="sell-all-toggle-switch"></label>
 											</div>
@@ -784,7 +784,7 @@
 										<div class="settings-input-grp">
 											Toggle investments and net worth to be calculate with bonuses, fees, and taxes.
 											<!-- <div class="change-setting-btn" v-on:click="toggleRealValuesSetting()">Toggle</div> -->
-											<div class="toggle-switch" v-on:click="toggleRealValuesSetting()">
+											<div class="toggle-switch" v-on:change="toggleRealValuesSetting()">
 												<input type="checkbox" name="toggle-switch" class="toggle-checkbox" id="actual-values-toggle-switch" unchecked>
 												<label class="toggle-label" for="actual-values-toggle-switch"></label>
 											</div>
