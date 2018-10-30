@@ -7,6 +7,10 @@ import (
 	"math/rand"
 	"os"
 
+	"github.com/stock-simulator-server/src/order"
+
+	"github.com/stock-simulator-server/src/log"
+
 	"github.com/stock-simulator-server/src/session"
 
 	"github.com/stock-simulator-server/src/money"
@@ -31,40 +35,51 @@ type JsonAccount struct {
 type ConfigJson struct {
 	Stocks   map[string]JsonStock   `json:"stocks"`
 	Accounts map[string]JsonAccount `json:"accounts"`
+	AutoBuy  bool                   `json:"auto_buy"`
 }
 
 func LoadConfig() {
+	stocks := make([]string, 0)
+	portfolios := make([]string, 0)
 	fmt.Println("loading")
 	configFilePath := os.Getenv("CONFIG_FILE")
 	dat, err := ioutil.ReadFile(configFilePath)
 	if err != nil {
-		fmt.Println("error reading config: ", err)
+		log.Log.Error("error reading config: ", err)
 		return
 	}
 	var config ConfigJson
 	err = json.Unmarshal(dat, &config)
 	if err != nil {
-		fmt.Println("error reading config: ", err)
+		log.Log.Error("error reading config: ", err)
 		return
 	}
 	for stockId, stockConfig := range config.Stocks {
-		_, err = valuable.NewStock(stockId, stockConfig.Name, int64(rand.Intn(10000)), stockConfig.Change.Duration)
+		stock, err := valuable.NewStock(stockId, stockConfig.Name, int64(rand.Intn(10000)), stockConfig.Change.Duration)
 		if err != nil {
-			fmt.Println("error adding stock: ", err)
+			log.Log.Error("error adding stock from config: ", err)
+		} else {
+			stocks = append(stocks, stock.Uuid)
 		}
 	}
 
 	for username, userConfig := range config.Accounts {
 		token, err := account.NewUser(username, userConfig.Name, userConfig.Password)
 		if err != nil {
-			fmt.Println("error adding user: ", err)
+			log.Log.Error("error making user from config config: ", err)
 		} else {
 			user, _ := session.GetUserId(token)
 			portfolio.Portfolios[account.UserList[user].PortfolioId].Wallet = 100 * money.Thousand
+			portfolios = append(portfolios, account.UserList[user].PortfolioId)
 		}
 
 	}
+	for _, stock := range stocks {
+		for _, port := range portfolios {
+			order.MakePurchaseOrder(stock, port, 1)
+		}
+	}
 
-	fmt.Println("loaded")
+	log.Log.Info("Config done loaded", err)
 
 }

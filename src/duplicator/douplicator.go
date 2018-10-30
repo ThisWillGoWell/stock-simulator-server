@@ -51,7 +51,6 @@ func MakeDuplicator(name string) *ChannelDuplicator {
 		closed:    make(chan interface{}),
 	}
 	chDoup.startDuplicator()
-
 	return chDoup
 }
 

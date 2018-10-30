@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/stock-simulator-server/src/log"
+
 	"github.com/stock-simulator-server/src/wires"
 
 	"github.com/stock-simulator-server/src/duplicator"
@@ -65,12 +67,14 @@ var (
 )
 
 func RegisterPublicChangeDetect(o Identifiable) error {
+	log.Log.Trace("registering public change detect: ", o.GetType(), o.GetId())
 	output := make(chan interface{})
 	PublicSubscribeChange.RegisterInput(output)
 	return registerChangeDetect(o, output)
 }
 
 func RegisterPrivateChangeDetect(o Identifiable, update chan interface{}) error {
+	log.Log.Trace("registering private change detect", o.GetType(), o.GetId())
 	return registerChangeDetect(o, update)
 }
 
@@ -78,6 +82,8 @@ func UnregisterChangeDetect(o Identifiable) {
 	subscribeablesLock.Acquire("unregister-change")
 	defer subscribeablesLock.Release()
 	if _, ok := subscribeables[o.GetType()+o.GetId()]; !ok {
+		log.Alerts.Fatal("Panic in Change Detect, cant unregister since does not exists change", o.GetId(), o.GetId())
+		log.Log.Fatal("Panic in Change Detect, cant unregister since does not exists change", o.GetId(), o.GetId())
 		panic("cant unregister change detect that does not exists" + o.GetType() + o.GetId())
 	}
 	delete(subscribeables, o.GetType()+o.GetId())
@@ -92,7 +98,9 @@ func registerChangeDetect(o Identifiable, outputChan chan interface{}) error {
 	}
 
 	if _, ok := subscribeables[o.GetType()+o.GetId()]; ok {
-		panic("change detect already registered, check the code")
+		log.Alerts.Fatal("Panic in Change Detect, cant register since already exists", o.GetId(), o.GetId())
+		log.Log.Fatal("Panic in Change Detect, cant register since already existse", o.GetId(), o.GetId())
+		panic("change detect already registered, check the code" + o.GetType() + o.GetId())
 	}
 
 	t := reflect.TypeOf(o)

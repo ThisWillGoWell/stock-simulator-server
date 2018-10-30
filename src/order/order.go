@@ -220,7 +220,7 @@ func executeTrade(o *TradeOrder) {
 	}
 	if !ledgerExists {
 		wires.LedgerUpdate.Offer(ledgerEntry)
-		port.UpdateInput.RegisterInput(value.UpdateChannel.GetBufferedOutput(10))
+		port.UpdateInput.RegisterInput(value.UpdateChannel.GetBufferedOutput(1000))
 	} else {
 		ledgerEntry.UpdateChannel.Offer(ledgerEntry)
 	}

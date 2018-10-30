@@ -2,10 +2,16 @@ package main
 
 import (
 	"flag"
-	"log"
+	"io"
+	"io/ioutil"
 	"os"
 	"runtime"
 	"runtime/pprof"
+
+	"github.com/stock-simulator-server/src/metics"
+
+	"github.com/stock-simulator-server/src/alert"
+	"github.com/stock-simulator-server/src/log"
 
 	"github.com/stock-simulator-server/src/histroy"
 
@@ -29,10 +35,10 @@ func main() {
 	if *cpuprofile != "" {
 		f, err := os.Create(*cpuprofile)
 		if err != nil {
-			log.Fatal("could not create CPU profile: ", err)
+			log.Log.Fatal("could not create CPU profile: ", err)
 		}
 		if err := pprof.StartCPUProfile(f); err != nil {
-			log.Fatal("could not start CPU profile: ", err)
+			log.Log.Fatal("could not start CPU profile: ", err)
 		}
 		defer pprof.StopCPUProfile()
 	}
@@ -40,6 +46,8 @@ func main() {
 	serveLog := os.Getenv("SERVE_LOG") == "True"
 	autoLoad := os.Getenv("AUTO_LOAD") == "True"
 	disableDbWrite := os.Getenv("DISABLE_DB_WRITE") == "True"
+
+	metrics.RunMetrics()
 
 	//start DB
 	if !disableDb {
@@ -52,6 +60,17 @@ func main() {
 	}
 	//valuable.ValuablesLock.EnableDebug()
 	//ledger.EntriesLock.EnableDebug()
+	discordAlertToken := os.Getenv("DISCORD_TOKEN")
+	var alertWriter io.Writer
+	if discordAlertToken != "" {
+		alertWriter = alert.Init(discordAlertToken, "504397270075179029")
+	} else {
+		// if there is discord token, discard all alerts
+		alertWriter = ioutil.Discard
+	}
+	log.Init(alertWriter)
+	log.Alerts.Info("Starting App")
+	log.Log.Info("Starting App")
 
 	//Wiring of system
 	wires.ConnectWires()
@@ -73,11 +92,11 @@ func main() {
 	if *memprofile != "" {
 		f, err := os.Create(*memprofile)
 		if err != nil {
-			log.Fatal("could not create memory profile: ", err)
+			log.Log.Fatal("could not create memory profile: ", err)
 		}
 		runtime.GC() // get up-to-date statistics
 		if err := pprof.WriteHeapProfile(f); err != nil {
-			log.Fatal("could not write memory profile: ", err)
+			log.Log.Fatal("could not write memory profile: ", err)
 		}
 		f.Close()
 	}

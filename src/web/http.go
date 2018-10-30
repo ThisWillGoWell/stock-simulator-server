@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/stock-simulator-server/src/metics"
+
 	"github.com/gorilla/websocket"
 	"github.com/stock-simulator-server/src/account"
 	"github.com/stock-simulator-server/src/app"
@@ -96,6 +98,12 @@ func StartHandlers() {
 	})
 
 	http.HandleFunc("/ws", handleConnections)
+	http.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
+		setupResponse(&w, r)
+		b, _ := json.Marshal(metrics.Counter)
+		io.WriteString(w, string(b))
+	})
+
 	err := http.ListenAndServe(":8000", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe:", err)
@@ -104,7 +112,6 @@ func StartHandlers() {
 }
 
 func ServePath(p string) {
-
 	var fs = http.FileServer(http.Dir(p))
 	http.Handle("/", fs)
 }

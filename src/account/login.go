@@ -94,6 +94,5 @@ func NewUser(username, displayName, password string) (string, error) {
 	}
 	portfolio.NewPortfolio(portUuid, uuid)
 	sessionToken := session.NewSessionToken(user.Uuid)
-	wires.UsersNewObject.Offer(user)
 	return sessionToken, nil
 }
