@@ -4,15 +4,15 @@ import (
 	"time"
 )
 
-const interval = time.Second * 10
+const interval = time.Minute * 15
 
-type MeticCounters struct {
+type MetricCounters struct {
 	Object       *ObjectMetric     `json:"object"`
 	Update       *ObjectMetric     `json:"update"`
 	Connectivity *ConnectiveMetric `json:"connectivity"`
 }
 
-var Counter = MeticCounters{
+var Counter = MetricCounters{
 	Object:       ObjectCounter,
 	Update:       UpdateCounter,
 	Connectivity: ConnectiveCounter,
