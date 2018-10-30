@@ -23,7 +23,9 @@ function createConfig(config) {
     });
     console.log("------ CONFIG ------");
     console.log(vm_config.config);
-
+    
+    // Set checkboxes according to config settings
+    checkSettingsBoxes();
 }
 
 // Method coming from stocks table favorite star
