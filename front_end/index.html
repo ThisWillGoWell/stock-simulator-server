@@ -24,7 +24,8 @@
 		<link rel="stylesheet" type="text/css" href="css/selectize.css" />
         <link rel="icon" type="image/png" href="assets/favicon_green.png">
 		<!-- <link rel="icon" type="image/png" href="assets/favicon_darkblue.png"> -->
-        <script src="scripts/utils.js"></script>
+		<script src="scripts/utils.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.0.2/TweenMax.min.js"></script>
 		<script src="https://d3js.org/d3.v5.min.js"></script>
 		<script src="https://d3js.org/d3-path.v1.min.js"></script>
 		<script src="https://d3js.org/d3-shape.v1.min.js"></script>
@@ -506,7 +507,7 @@
 							<div class="flex-column-33">
 								<div class="card small" v-on:click="createStocksGraph()">
 									<div class="stat-value orange">
-										<i class="material-icons menu-icon">trending_up</i><div class="card-details">
+										<i class="material-icons menu-icon most-change">trending_up</i><div class="card-details">
 											<p>{{ mostChange }}</p>
 											<div class="card-category">HIGHEST GROWTH</div>
 											
@@ -610,7 +611,7 @@
 												  <div class="stock-ticker-id">{{ investor.name }}</div>
 												  <div class="stock-display-name">American Sniper</div>
 											  </th>
-											  <td class="text-center"><div class="user-level">{{ investor.level }}</div></td>
+											  <td class="text-center" style="padding-top: 22px;"><div class="user-level">{{ investor.level }}</div></td>
 											  <td class="stock-open-shares" style="padding-right: 0px; text-align: center;">
 												  <ul class="action-list">
 													  <li class="action-btn star" v-on:click="toggleFavorite(investor.uuid)" v-bind:class="{ favorite: isFavoriteInvestor(investor.uuid) }">

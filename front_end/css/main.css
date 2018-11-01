@@ -808,7 +808,7 @@ input[type=password]:focus ~ .input-focus-border{
     background-color: #617D8A;
     height: 3px;
     width: 28px;
-    margin-bottom: 6px;
+    margin-bottom: 7px;
     -moz-transition: all cubic-bezier(.23,1,.32,1) 0.7s;
     -o-transition: all cubic-bezier(.23,1,.32,1) 0.7s;
     -webkit-transition: all cubic-bezier(.23,1,.32,1) 0.7s;
@@ -1019,7 +1019,7 @@ input[type=password]:focus ~ .input-focus-border{
 #chat-module--container {
     position: fixed;
     bottom: 0;
-    right: 75px;
+    right: 27px;
     z-index: 6;
     height: 400px;
     width: 320px;
@@ -2229,16 +2229,17 @@ tbody tr:hover .money-transfer-btn{
 }
 
 .user-level {
-    height: 34px;
-    width: 34px;
-    border-radius: 75px;
-    background-color: #CFD8DC;
-    color: #4d4d4d;
+    height: 25px;
+    width: 25px;
+    border-radius: 5px;
+    background-color: #212121;
+    color: #fafbfc;
     text-align: center;
-    line-height: 32px;
+    line-height: 22.5px;
+    /* padding-left: 1.0px; */
     font-weight: 500;
-    font-size: 14px;
-    border: solid 2px #546E7A;
+    font-size: 13px;
+    border: solid 2px #4d4d4d;
     margin: 0 auto;
 }
 
