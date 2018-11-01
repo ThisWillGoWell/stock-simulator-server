@@ -272,6 +272,7 @@ function load_stocks_tab() {
           var highestStock = stocks.reduce(
             (a, b) => (a.current_price > b.current_price ? a : b)
           );
+          
           return highestStock.ticker_id;
         }
       },
@@ -285,6 +286,9 @@ function load_stocks_tab() {
           } else {
             var mover = stocks.reduce((a, b) => (a.change > b.change ? a : b));
           }
+          // MAKE THIS HAPPEN ONLY IF A NEW STOCK TAKES OVER
+          // TweenMax.to($(".stat-value i.most-change"), 0.2, {y: 15, ease:Bounce.easeOut});
+          // TweenMax.to($(".stat-value i.most-change"), 0.2, {y: 0, delay:0.2});
           return mover.ticker_id;
         }
       },
@@ -320,4 +324,16 @@ function load_stocks_tab() {
 
         toggleModal();
     });
+
+    // $(".stat-value svg").on("mouseenter", function() {
+    //   console.log("hovered");
+    //   TweenMax.to(this, 0.3, {y: -12, ease:Bounce.easeOut})
+    //   TweenMax.to(this, 0.2, {y: 0, delay:0.3})
+    // })
+
+    // $(".stat-value i").on("mouseenter", function() {
+    //   console.log("hovered");
+    //   TweenMax.to(this, 0.3, {y: -12, ease:Bounce.easeOut})
+    //   TweenMax.to(this, 0.2, {y: 0, delay:0.3})
+    // })
 }
