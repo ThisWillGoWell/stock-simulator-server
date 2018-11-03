@@ -33,6 +33,8 @@ func Run() {
 				executeTrade(o.(*TradeOrder))
 			case *TransferOrder:
 				executeTransfer(o.(*TransferOrder))
+			case *ProspectOrder:
+				CalculateDetails(o.(*ProspectOrder))
 			}
 		}
 	}()
@@ -59,6 +61,16 @@ type TradeOrder struct {
 }
 
 func (po *TradeOrder) rc() chan Response { return po.ResponseChannel }
+
+type ProspectOrder struct {
+	ValuableID      string        `json:"stock_id"`
+	PortfolioID     string        `json:"portfolio"`
+	ExchangeID      string        `json:"-"`
+	Amount          int64         `json:"amount"`
+	ResponseChannel chan Response `json:"-"`
+}
+
+func (po *ProspectOrder) rc() chan Response { return po.ResponseChannel }
 
 type BasicResponse struct {
 	Order        Order   `json:"order"`
@@ -103,6 +115,18 @@ func MakeTransferOrder(giver, receiver string, amount int64) *TransferOrder {
 	}
 	orderChannel <- to
 	return to
+}
+
+func MakeProspect(valuableID, portfolioUUID string, amount int64) *ProspectOrder {
+	po := &ProspectOrder{
+		//ExchangeID:      exchangeID,
+		ValuableID:      valuableID,
+		PortfolioID:     portfolioUUID,
+		Amount:          amount,
+		ResponseChannel: make(chan Response, 1),
+	}
+	orderChannel <- po
+	return po
 }
 
 func successOrder(o Order, details Details) {
@@ -189,7 +213,7 @@ func executeTrade(o *TradeOrder) {
 		}
 		value.OpenShares -= o.Amount
 		// Update the portfolio with the new ledgerEntry
-		details = calculateBuyDetails(o, value, port)
+		details = calculateBuyDetails(o.Amount, value, port)
 		port.Wallet += details.Result
 		//add the holder amount
 		ledgerEntry.Amount += o.Amount
@@ -214,7 +238,7 @@ func executeTrade(o *TradeOrder) {
 		value.OpenShares += amount
 		// remove from ledger
 		ledgerEntry.Amount -= amount
-		details = calculateSellDetails(o, value, port, ledgerEntry.RecordBookId)
+		details = calculateSellDetails(o.Amount, value, port, ledgerEntry.RecordBookId)
 		port.Wallet += details.Result
 		successOrder(o, details)
 	}
@@ -230,20 +254,16 @@ func executeTrade(o *TradeOrder) {
 	go port.Update()
 }
 
-func CalculateDetails(portfolioUuid, valuableUuid string, amount int64) *BasicResponse {
-	order := &TradeOrder{
-		ValuableID:  valuableUuid,
-		PortfolioID: portfolioUuid,
-		Amount:      amount,
-	}
+func CalculateDetails(order *ProspectOrder) *BasicResponse {
+
 	response := &BasicResponse{Order: order}
 
-	v, ok := valuable.Stocks[valuableUuid]
+	v, ok := valuable.Stocks[order.ValuableID]
 	if !ok {
 		response.Err = "valuable id not found"
 		return response
 	}
-	port, ok := portfolio.Portfolios[portfolioUuid]
+	port, ok := portfolio.Portfolios[order.PortfolioID]
 	if !ok {
 		response.Err = "portfolio id not found"
 		return response
@@ -257,9 +277,9 @@ func CalculateDetails(portfolioUuid, valuableUuid string, amount int64) *BasicRe
 
 	if order.Amount > 0 {
 		response.Success = true
-		response.OrderDetails = calculateBuyDetails(order, v, port)
+		response.OrderDetails = calculateBuyDetails(order.Amount, v, port)
 	} else {
-		ledgerPortfolio, ledgerExists := ledger.EntriesPortfolioStock[portfolioUuid]
+		ledgerPortfolio, ledgerExists := ledger.EntriesPortfolioStock[order.PortfolioID]
 		if ledgerExists {
 			ledgerEntry, ledgerExists = ledgerPortfolio[v.Uuid]
 		}
@@ -272,7 +292,7 @@ func CalculateDetails(portfolioUuid, valuableUuid string, amount int64) *BasicRe
 			} else {
 				recordUuid = ledgerEntry.RecordBookId
 				response.Success = true
-				response.OrderDetails = calculateSellDetails(order, v, port, recordUuid)
+				response.OrderDetails = calculateSellDetails(order.Amount, v, port, recordUuid)
 
 			}
 		}
@@ -280,25 +300,25 @@ func CalculateDetails(portfolioUuid, valuableUuid string, amount int64) *BasicRe
 	return response
 }
 
-func calculateBuyDetails(order *TradeOrder, v *valuable.Stock, port *portfolio.Portfolio) Details {
+func calculateBuyDetails(amount int64, v *valuable.Stock, port *portfolio.Portfolio) Details {
 	return Details{
 		SharePrice: v.CurrentPrice,
-		ShareCount: order.Amount,
-		ShareValue: v.CurrentPrice * order.Amount,
+		ShareCount: amount,
+		ShareValue: v.CurrentPrice * amount,
 		Tax:        0,
 		Fees:       0,
 		Bonus:      0,
-		Result:     v.CurrentPrice * order.Amount * -1,
+		Result:     v.CurrentPrice * amount * -1,
 	}
 }
 
-func calculateSellDetails(order *TradeOrder, v *valuable.Stock, port *portfolio.Portfolio, recordUuid string) Details {
+func calculateSellDetails(amount int64, v *valuable.Stock, port *portfolio.Portfolio, recordUuid string) Details {
 	d := Details{
 		SharePrice: v.CurrentPrice,
-		ShareCount: order.Amount,
-		ShareValue: v.CurrentPrice * order.Amount * -1,
+		ShareCount: amount,
+		ShareValue: v.CurrentPrice * amount,
 	}
-	principle := record.GetPrinciple(recordUuid, order.Amount*-1)
+	principle := record.GetPrinciple(recordUuid, amount*-1)
 	pbt := d.ShareValue - principle
 	taxes := 0.0
 	if pbt > 0 {

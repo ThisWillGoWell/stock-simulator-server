@@ -162,7 +162,7 @@ func (user *User) SetConfig(config map[string]interface{}) {
 }
 
 func (user *User) SetPassword(pass string) error {
-	if len(pass) > minPasswordLength {
+	if len(pass) < minPasswordLength {
 		return errors.New("password too short")
 	}
 	hashedPassword := hashAndSalt(pass)
