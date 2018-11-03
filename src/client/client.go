@@ -350,7 +350,7 @@ func (client *Client) processDeleteAction(baseMessage *messages.BaseMessage) {
 
 func (client *Client) processProspectMessage(baseMessage *messages.BaseMessage) {
 	prospectMessage := baseMessage.Msg.(*messages.TradeMessage)
-	prospect := order.MakeProspect(client.user.PortfolioId, prospectMessage.StockId, prospectMessage.Amount)
+	prospect := order.MakeProspect(prospectMessage.StockId, client.user.PortfolioId, prospectMessage.Amount)
 	go func() {
 		response := <-prospect.ResponseChannel
 		client.sendMessage(messages.BuildResponseMsg(response, baseMessage.RequestID))
