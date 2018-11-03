@@ -28,6 +28,9 @@ var RecordsNewObject = duplicator.MakeDuplicator("records-new")
 var BookNewObject = duplicator.MakeDuplicator("book-new")
 var BookUpdate = duplicator.MakeDuplicator("book-update")
 
+var EffectsNewObject = duplicator.MakeDuplicator("new-effects")
+var EffectsDelete = duplicator.MakeDuplicator("delete-effects")
+
 func ConnectWires() {
 	// Enable Copy Mode on all the global new input channels
 	UsersNewObject.EnableCopyMode()
