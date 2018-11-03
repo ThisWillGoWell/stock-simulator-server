@@ -40,6 +40,8 @@ function load_dashboard_tab() {
         var id = this.currUserStocks.filter(d => d.uuid === stock_id)[0].stock_id;
         sendTrade(id, (-1)*amt);
       },
+      sellAllSetting: getSellAllSetting,
+      realValuesSetting: getRealValuesSetting,
     },
     computed: {
       currUserPortfolio: function() {
@@ -49,6 +51,12 @@ function load_dashboard_tab() {
           if (vm_portfolios.portfolios[currUserFolioUUID] !== undefined) {
             var folio = vm_portfolios.portfolios[currUserFolioUUID];
             folio.investments = folio.net_worth - folio.wallet;
+
+            // Adding real networth
+            if (folio.stocksValue === undefined) folio.stocksValue = 0;
+            if (folio.stocks === undefined) folio.stocks = [];
+            prospectStockValues(folio.stocks, folio.stocksValue);
+
             return folio;
           }
         }
@@ -79,28 +87,25 @@ function load_dashboard_tab() {
                 d.stock_roi = getROI(portfolio_uuid, d.stock_id, d.stock_price);
               }
               catch(err) {
-                console.error(err);
                 d.stock_roi = 0;
               }
 
               // TODO: css changes done here talk to brennan about his \ux22 magic
               // helper to color rows in the stock table
               var targetChangeElem = $(
-                "tr[uuid=\x22" +
-                  d.stock_uuid +
-                  "\x22].clickable > td.stock-change"
+                'tr[uuid="dash' + d.stock_uuid + '"].clickable > td.stock-change'
               );
               // targetChangeElem.addClass("rising");
-              // if (d.stock_roi > 0) {
-              // 	targetChangeElem.removeClass("falling");
-              // 	targetChangeElem.addClass("rising");
+              if (d.stock_roi > 0) {
+              	targetChangeElem.removeClass("falling");
+              	targetChangeElem.addClass("rising");
               // } else if (d.stock_roi === 0) {
               // 	targetChangeElem.removeClass("falling");
               // 	targetChangeElem.removeClass("rising");
-              // } else {
-              // 	targetChangeElem.removeClass("rising");
-              // 	targetChangeElem.addClass("falling");
-              // }
+              } else {
+              	targetChangeElem.removeClass("rising");
+              	targetChangeElem.addClass("falling");
+              }
               return d;
             });
 
@@ -118,7 +123,7 @@ function load_dashboard_tab() {
               }
               return 0;
             });
-            console.log(ownedStocks);
+
             return ownedStocks;
           }
         }
@@ -143,6 +148,13 @@ function load_dashboard_tab() {
         }
         return {};
       },
+      // sellAllSetting: function() {
+      //   if (vm_config === undefined) {
+      //     return false;
+      //   } else {
+      //     return vm_config.config.settings.sellAll;
+      //   }
+      // },
     }
   });
 
@@ -169,7 +181,7 @@ function load_dashboard_tab() {
 function getROI(portfolio_uuid, stock_id, stock_price) {
   var userRecordsBooks = Object.values(vm_recordBook.records).filter(d => d.portfolio_uuid === portfolio_uuid);
   // Add stock id to record books 
-  userRecordsBooks.forEach(function(d){
+  userRecordsBooks.forEach(function(d) {
     d.stock_uuid = vm_ledger.ledger[d.ledger_uuid].stock_id;
     return d;
   });
@@ -196,3 +208,6 @@ function createPortfolioGraph(portfolioUUID, location) {
   var fields = ['net_worth', 'wallet'];
   queryDrawGraph(location, uuids, fields);
 }
+
+
+

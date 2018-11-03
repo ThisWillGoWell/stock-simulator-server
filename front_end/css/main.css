@@ -9,7 +9,9 @@ body {
     overflow: hidden;
 }
 
-
+.text-center {
+    text-align: center !important;
+}
 
 *:focus {
     outline: none;
@@ -128,7 +130,7 @@ h1 {
     border-radius: 3px;
 }
 
-.input-grp {
+.input-grp, .settings-input-grp {
     margin-bottom: 10px;
     position: relative;
 }
@@ -177,8 +179,142 @@ h1 {
     /*transform: translateY(15px);*/
 }
 
+.no-select {
+-webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                supported by Chrome and Opera */
+}
+
+.multi-input-container {
+    position: relative;
+    width: 100%;
+    height: 50px;
+    margin-bottom: 25px;
+    margin-top: 25px;
+}
+
+.multi-input-container input[type=text]{
+    position: absolute;
+    z-index: 5;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    border-radius: 3px;
+    background-color: #EEEEEE;
+    color: #17181a;
+    font-size: 22px;
+    border-bottom: 0;
+    padding-left: 15px;
+    padding-right: 55%;
+}
+.multi-input-container input[type=text]::placeholder { 
+    color: rgba(0, 0, 0, 0.15);
+}
+.multi-input-container input[type=text]:focus{
+    border-bottom: none;
+    padding-left: 15px;
+}
+
+.multi-input-container ul {
+    position: absolute;
+    z-index: 10;
+    right: 5px;
+    top: 5px;
+    list-style-type: none;
+    pointer-events: all;
+    padding: 0px;
+    margin: 0px;
+    outline: none;
+}
+
+.multi-input-container ul li {
+    display: inline-block;
+    margin-left: 0.5px;
+    height: 40px;
+    width: 40px;
+    line-height: 40px;
+    color: #fff;
+    background-color: #BDBDBD;
+    border-radius: 2px;
+    text-align: center;
+    cursor: pointer;
+    outline: none;
+    -moz-transition: all ease-in-out 0.25s;
+    -o-transition: all ease-in-out 0.25s;
+    -webkit-transition: all ease-in-out 0.25s;
+    transition: all ease-in-out 0.25s;
+}
+
+.multi-input-container ul li:hover {
+    
+    color: #fff;
+    background-color: #4d4d4d;
+    
+}
+
+.multi-input-container ul li.clear:hover {
+    
+    color: #fff;
+    background-color: #e53935;
+    
+}
+
+.multi-input-container ul li.max:hover {
+    
+    color: #fff;
+    background-color: #4CAF50;
+    
+}
+
+.receipt-info {
+    margin-bottom: 50px;
+}
+
+.receipt-info .receipt-line {
+    display: block;
+    height: 25px;
+    font-size: 16px;
+    color: #757575;
+    font-weight: 100;
+}
+
+.receipt-info .receipt-line.divider {
+    height: 2px;
+    background-color: rgba(0,0,0,0.3);
+    margin-top: 15px;
+    margin-bottom: 20px;
+}
+
+.receipt-line span.left{
+    float: left;
+}
+
+.receipt-line span.right{
+    float: right;
+}
+
+.receipt-line span.positive{
+    color: #00E676;
+}
+
+.receipt-line span.negative{
+    color: #f44336;
+}
+
+.receipt-line span.total{
+    color: #4d4d4d;
+    font-weight: 300;
+    font-size: 22px;
+    letter-spacing: 1px;
+}
+
 .input-full-width {
     width: 100%;
+    pointer-events: visible;
 }
 
 .input-focus-border {
@@ -511,7 +647,7 @@ input[type=password]:focus ~ .input-focus-border{
 #side-menu--container ul li button .menu-item-title {
     color: #fff;
     display: inline-block;
-    padding-left: 15px;
+    padding-left: 20px;
 }
 
 #side-menu--container ul li button:after {
@@ -561,10 +697,10 @@ input[type=password]:focus ~ .input-focus-border{
     list-style-type: none;
 }
 .nav-list li{
-    display: inline-block;
+    /* display: inline-block;
     padding: 0 15px;
     min-width: 120px;
-    height: 100%;
+    height: 100%; */
 }
 
 .nav-list li div {
@@ -634,7 +770,7 @@ input[type=password]:focus ~ .input-focus-border{
     top: 0;
     bottom: 0;
     right: 0;
-    z-index: 5;
+    z-index: 10;
     height: 80px;
     background-color: #fff;
     box-shadow: 0 13px 15px rgba(0,0,0,0.001), 0 3px 5px rgba(0,0,0,0.05);
@@ -646,7 +782,7 @@ input[type=password]:focus ~ .input-focus-border{
     left: 0;
     height: 80px;
     background-color: transparent;
-    padding-left: 50px;
+    padding-left: 30px;
     font-size: 20px;
     line-height: 80px;
     color: #4d4d4d;
@@ -659,9 +795,8 @@ input[type=password]:focus ~ .input-focus-border{
     padding-top: 28px;
     height: 80px;
     background-color: transparent;
-    padding-right: 50px;
-    padding-left: 50px;
-    font-size: 20px;
+    padding-right: 30px;
+    padding-left: 25px;
     line-height: 80px;
     color: #617D8A;
     cursor: pointer;
@@ -673,7 +808,7 @@ input[type=password]:focus ~ .input-focus-border{
     background-color: #617D8A;
     height: 3px;
     width: 28px;
-    margin-bottom: 6px;
+    margin-bottom: 7px;
     -moz-transition: all cubic-bezier(.23,1,.32,1) 0.7s;
     -o-transition: all cubic-bezier(.23,1,.32,1) 0.7s;
     -webkit-transition: all cubic-bezier(.23,1,.32,1) 0.7s;
@@ -736,7 +871,7 @@ input[type=password]:focus ~ .input-focus-border{
 #top-bar--container .account-settings-menu--container.open {
     z-index: 10;
     opacity: 1;
-    right: 35px;
+    right: 20px;
     top: 18px;
 }
 
@@ -848,12 +983,13 @@ input[type=password]:focus ~ .input-focus-border{
 
 #scroll-module--container {
     position: fixed;
-    top: 20px;
+    top: 90px;
     right: 0px;
     left: 0px;
+    /* z-index: 7; */
     margin: 0 auto;
     height: 40px;
-    width: 620px;
+    width: 65%;
     border-radius: 25px;
     background-color: #373e49;
     background-image: radial-gradient(rgb(149, 143, 143), rgb(149, 143, 143),rgb(51, 45, 45));
@@ -868,7 +1004,7 @@ input[type=password]:focus ~ .input-focus-border{
     opacity: 1;
     top: 20px;
     width: auto;
-    z-index: 7;
+    /* z-index: 15; */
     font-size: 16px;
     height: 100%;
     line-height: 40px;
@@ -876,11 +1012,14 @@ input[type=password]:focus ~ .input-focus-border{
     vertical-align: middle;
     text-anchor: start;
 }
+.raiseTicker {
+    z-index: 10;
+}
 
 #chat-module--container {
     position: fixed;
     bottom: 0;
-    right: 75px;
+    right: 27px;
     z-index: 6;
     height: 400px;
     width: 320px;
@@ -1458,6 +1597,7 @@ input[type=password]:focus ~ .input-focus-border{
     padding-top: 35px;
     padding-bottom: 50px;
     text-align: center;
+    height: 250px;
 }
 
 .card.stock-list{
@@ -1832,6 +1972,8 @@ tbody tr:hover .money-transfer-btn{
     list-style-type: none;
     text-align: right;
     padding: 0;
+    display: inline-block;
+    margin: 0 auto;
 }
 
 .action-btn {
@@ -1969,12 +2111,24 @@ tbody tr:hover .money-transfer-btn{
 }
 
 .buy-item-btn:hover {
-    background-color: transparent;
+    
     background-color: #1abc9c;
     color: #fff;
     transform: translateY(-2px);
     box-shadow: 0 3px 5px rgba(0,0,0,0.10), 0 3px 5px rgba(0,0,0,0.15);
     max-width: 160px; 
+    
+}
+
+.buy-item-btn.item-disabled {
+    pointer-events: none;
+    background-color: #777;
+    border: solid 2px #4d4d4d;
+    color: #4d4d4d;
+}
+
+.buy-item-btn.item-disabled:hover {
+   
     
 }
 
@@ -2042,41 +2196,132 @@ tbody tr:hover .money-transfer-btn{
     z-index: 110;
     transform: translateY(0px);
     display: block;
+    padding-bottom: 50px;
+}
+
+.user-info-list {
+    list-style-type: none;
+    display: block;
+    height: 80px;
+    width: 400px;
+    pointer-events: all;
+    padding: 0px;
+    margin: 0px;
+    outline: none;
+    text-align: right;
+}
+
+.user-info-list li{
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.user-info-list li.buffer-left{
+    margin-left: 25px;
 }
 
 .username-text {
-    position: absolute;
-    right: 135px;
-    top: 26px;
+    
     font-size: 20px;
     font-weight: 100;
     color: #78909C;
     white-space: nowrap;
 }
 
-.level-circle {
-    height: 38px;
-    width: 38px;
-    border-radius: 75px;
-    background-color: #4d4d4d;
-    color: #fff;
+.user-level {
+    height: 25px;
+    width: 25px;
+    border-radius: 5px;
+    background-color: #212121;
+    color: #fafbfc;
     text-align: center;
-    line-height: 38px;
-    font-weight: 600;
-    position: absolute;
-    right: 220px;
-    top: 20px; 
+    line-height: 22.5px;
+    /* padding-left: 1.0px; */
+    font-weight: 500;
+    font-size: 13px;
+    border: solid 2px #4d4d4d;
+    margin: 0 auto;
 }
+
+.card.settings-card {
+    padding: 25px;
+}
+
+.settings-input-grp {
+    margin-bottom: 0px;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    font-size: 14px;
+}
+
+.settings-subtext {
+    text-align: left;
+    font-size: 12px;
+    display: block;
+    color: rgb(224, 224, 224);
+}
+
+.toggle-switch {
+    position: absolute; width: 55px;
+    right: 0;
+    top: -1px;
+    bottom: 0;
+    -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+}
+
+.toggle-checkbox {
+    display: none;
+}
+
+.toggle-label {
+    display: block; overflow: hidden; cursor: pointer;
+    height: 20px; padding: 0; line-height: 20px;
+    border: 0px solid #FFFFFF; border-radius: 30px;
+    background-color: #9E9E9E;
+    -moz-transition: all ease-in-out 0.23s;
+    -o-transition: all ease-in-out 0.23s;
+    -webkit-transition: all ease-in-out 0.23s;
+    transition: all ease-in-out 0.23s;
+}
+
+.toggle-label:before {
+    content: "";
+    display: block; width: 30px; height: 30px; margin: -5px;
+    background: #FFFFFF;
+    position: absolute; top: 0; bottom: 0;
+    right: 31px;
+    border-radius: 30px;
+    box-shadow: 0 6px 12px 0px #757575;
+    -moz-transition: all ease-in-out 0.23s;
+    -o-transition: all ease-in-out 0.23s;
+    -webkit-transition: all ease-in-out 0.23s;
+    transition: all ease-in-out 0.23s;
+}
+
+.toggle-checkbox:checked + .toggle-label {
+    background-color: #1abc9c;
+}
+.toggle-checkbox:checked + .toggle-label, .toggle-checkbox:checked + .toggle-label:before {
+   border-color: #1abc9c;
+}
+.toggle-checkbox:checked + .toggle-label .toggle-inner {
+    margin-left: 0;
+}
+.toggle-checkbox:checked + .toggle-label:before {
+    right: 0px; 
+    background-color: #1abc9c; 
+    box-shadow: 3px 6px 18px 0px rgba(0, 0, 0, 0.2);
+}
+
 
 #stats--view {
     width: 100%;
-    
     background-color: #34495e;
     color: #fff;
     font-weight: 500;
     font-size: 14px;
     line-height: 60px;
-    
     -moz-transition: all ease-in-out 0.17s;
     -o-transition: all ease-in-out 0.17s;
     -webkit-transition: all ease-in-out 0.17s;
@@ -2102,6 +2347,7 @@ tbody tr:hover .money-transfer-btn{
 
 .stat-value .card-category {
     font-size: 20px;
+    font-weight: 500;
     line-height: 16px;
     color: rgba(0,0,0,0.15);
 }
@@ -2541,7 +2787,7 @@ table thead.table-top-bar tr th:hover{
     
 }
 
-.card.item.item-disable:before{
+/* .card.item.item-disable:before{
     position: absolute;
     top: 0;
     bottom: 0;
@@ -2549,13 +2795,47 @@ table thead.table-top-bar tr th:hover{
     left: 0;
     content: "";
     z-index: 10;
-    background-color: rgba(0,0,0,0);
+    background-color: rgba(0,0,0,0.5);
     -moz-transition: all ease-in-out 0.17s;
     -o-transition: all ease-in-out 0.17s;
     -webkit-transition: all ease-in-out 0.17s;
     transition: all ease-in-out 0.17s;
     pointer-events: none;
-    background-color: rgba(0,0,0,1);
+    
+} */
+
+.item-locked-layer {
+    display: none;
+}
+
+.item-locked-layer.item-disabled {
+    display: block;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    z-index: 10;
+    line-height: 290px;
+    text-align: center;
+    background-color: rgba(0,0,0,0.5);
+    -moz-transition: all ease-in-out 0.17s;
+    -o-transition: all ease-in-out 0.17s;
+    -webkit-transition: all ease-in-out 0.17s;
+    transition: all ease-in-out 0.17s;
+    pointer-events: none;
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                supported by Chrome and Opera */
+}
+
+.item-locked-layer i{
+    color: #fff;
+    font-size: 48px;
 }
 
 /* Graphing */

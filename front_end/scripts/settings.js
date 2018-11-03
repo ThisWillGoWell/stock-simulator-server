@@ -10,7 +10,24 @@ function load_settings_tab() {
                 // Change value
                 config.settings.changePercent = !config.settings.changePercent;
                 //Send update
-                updateConfig(config, 'settings', config.settings)
+                updateConfig(config, 'settings', config.settings);
+            },
+            toggleSellAllButton: function() {
+                var config = vm_config.config;
+                config.settings.sellAll = !config.settings.sellAll;
+                updateConfig(config, 'settings', config.settings);
+            },
+            toggleRealValuesSetting: function() {
+                var config = vm_config.config;
+                config.settings.realValuesSetting = !config.settings.realValuesSetting;
+                updateConfig(config, 'settings', config.settings);
+
+                vm_dash_tab.realValueSetting = config.settings.realValuesSetting;
+            },
+            toggleTickerSetting: function() {
+                var config = vm_config.config;
+                config.settings.ticker = ! config.settings.ticker;
+                updateConfig(config, 'settings', config.settings);
             },
             changeDisplayName: function() {
                 // Get entered display name
@@ -39,3 +56,11 @@ function load_settings_tab() {
         }
     })
 };
+
+// Set checkboxes according to config settings
+function checkSettingsBoxes() {
+    var settings = vm_config.config.settings;
+    $('#percent-toggle-switch').prop('checked', settings.changePercent);
+    $('#sell-all-toggle-switch').prop('checked', settings.sellAll);
+    $('#actual-values-toggle-switch').prop('checked', settings.realValuesSetting);
+}

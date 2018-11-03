@@ -24,7 +24,8 @@
 		<link rel="stylesheet" type="text/css" href="css/selectize.css" />
         <link rel="icon" type="image/png" href="assets/favicon_green.png">
 		<!-- <link rel="icon" type="image/png" href="assets/favicon_darkblue.png"> -->
-        <script src="scripts/utils.js"></script>
+		<script src="scripts/utils.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.0.2/TweenMax.min.js"></script>
 		<script src="https://d3js.org/d3.v5.min.js"></script>
 		<script src="https://d3js.org/d3-path.v1.min.js"></script>
 		<script src="https://d3js.org/d3-shape.v1.min.js"></script>
@@ -58,7 +59,7 @@
 
 		<div class="app--container" id="app--container">
 			<section id="loader--container">
-				<div class="loader-content">
+				<div class="loader-content no-select">
 					<div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
 					<div class="loader-message">loading stocks...</div>
 				</div>
@@ -67,8 +68,9 @@
 				<div class="modal-card" v-if="showModal">
 					<button v-on:click="closeModal()"><i class="material-icons">close</i></button>
 					<div id="trade--view">
+
 						<div class="modal-stock-id">{{ stock.ticker_id }} </div>
-						<div>Prospective cash: ${{ prospectiveCash }}</div>						
+
 						<div class="flex-grid--container no-padding">
 							<div class="flex-column-50">
 								<div id="calc-btn-buy" class="card calc-btn fill green no-buffer-top" v-on:click="setIsBuying(true)">BUY</div>
@@ -76,7 +78,52 @@
 							<div class="flex-column-50">
 								<div id="calc-btn-sell" class="card calc-btn red no-buffer-top" v-on:click="setIsBuying(false)">SELL</div>
 							</div>
-							<div class="flex-column-50">
+							<div class="flex-column-100" style="padding: 0 15px;">
+								<div class="multi-input-container no-select">
+									<ul>
+										<li v-on:click="addAmount(1)" class="mini-calc-btn">+1</li>
+										<li v-on:click="addAmount(5)" class="mini-calc-btn">+5</li>
+										<li v-on:click="addAmount(25)" class="mini-calc-btn">+25</li>
+										<li v-on:click="setMax()" class="mini-calc-btn max">MAX</li>
+										<li v-on:click="clearAmount()" class="mini-calc-btn clear">CLEAR</li>
+										
+									</ul>
+									<input id="buy-sell-amount-input" type="text" class="input-full-width" placeholder="Enter quantity">
+								</div>
+								<div class="receipt-info">
+									<div class="receipt-line">
+										<span class="left">Available Cash</span>
+										<span class="right">${{ prospectiveCash }}</span>
+									</div>
+									<div class="receipt-line">
+										<span class="left">Cost per Share</span>
+										<span class="right">${{ toPrice(stock.current_price) }}</span>
+									</div>
+									<div class="receipt-line">
+										<span class="left">Quantity</span>
+										<span class="right">{{ buySellAmount }}</span>
+									</div>
+									<div class="receipt-line">
+										<span class="left negative">Taxes</span>
+										<span class="right negative">-${{ prospectiveTax }}</span>
+									</div>
+									<div class="receipt-line">
+										<span class="left negative">Fees</span>
+										<span class="right negative">-${{ prospectiveFees }}</span>
+									</div>
+									<div class="receipt-line">
+										<span class="left positive">Bonus</span>
+										<span class="right positive">+${{ prospectiveBonus }}</span>
+									</div>
+									
+									<div class="receipt-line divider"></div>
+									<div class="receipt-line">
+										<span class="left total">Total</span>
+										<span class="right total">${{ prospectiveResult }}</span>
+									</div>
+								</div>
+							</div>
+							<!-- <div class="flex-column-50">
 								<div class="card calc-btn" v-on:click="addAmount(1)">1</div>
 							</div>
 							<div class="flex-column-50">
@@ -93,11 +140,11 @@
 							</div>
 							<div class="flex-column-50">
 							  <div class="card calc-btn" v-on:click="determineMax()">MAX</div>
-							</div>
-							<div class="flex-column-100">
+							</div> -->
+							<!-- <div class="flex-column-100">
 								<div class="card calc-btn clear" v-on:click="clearAmount()" data-val="0">CLEAR</div>
-							</div>
-							<div class="flex-column-100" style="padding: 0 15px;">
+							</div> -->
+							<!-- <div class="flex-column-100" style="padding: 0 15px;">
 								<table class="table">
 									<thead>
 
@@ -115,7 +162,7 @@
 										</tr>
 									</tbody>
 								</table>
-							</div>
+							</div> -->
 							
 							<div class="flex-column-100">
 								<div id="trade-request-submit" class="card calc-btn green no-buffer-top" v-on:click="submitTrade()">CONFIRM</div>
@@ -191,9 +238,11 @@
 					<p v-if="getCurrentUser(users)">{{ getCurrentUser(users) }}</p>
 				</div> -->
 				<div id="stats--view">
-					<div class="stat-value blue"><i class="material-icons menu-icon">business</i>${{ toPrice(currUserPortfolio.net_worth) }}</div>
+					<div v-if="realValuesSetting()" class="stat-value blue"><i class="material-icons menu-icon">business</i>${{ toPrice(currUserPortfolio.realNetworth) }}</div>
+					<div v-else class="stat-value blue"><i class="material-icons menu-icon">business</i>${{ toPrice(currUserPortfolio.net_worth) }}</div>
 					<div class="stat-value green"><i class="material-icons menu-icon">local_atm</i>${{ toPrice(currUserPortfolio.wallet) }}</div>
-					<div class="stat-value orange"><i class="material-icons menu-icon">trending_up</i>${{ toPrice(currUserPortfolio.investments) }}</div>
+					<div v-if="realValuesSetting()" class="stat-value orange"><i class="material-icons menu-icon">trending_up</i>${{ toPrice(currUserPortfolio.stocksValue) }}</div>
+					<div v-else class="stat-value orange"><i class="material-icons menu-icon">trending_up</i>${{ toPrice(currUserPortfolio.investments) }}</div>
 				</div>
 				<ul id="nav">
 					<li>
@@ -260,23 +309,32 @@
 			<section id="top-bar--container">
 				<div class="current-view" id="current-view">Dashboard</div>
 				<span></span>
-				<div class="account-settings-btn">
-						<span></span>
-						<span></span>
-						<span></span>	
-					</div>
+			
 
 				<div id="user-info-container" class="nav-list">
-					<div class="username-text">{{ userDisplayName }}</div>
 					
-					
-				
+					<ul class="user-info-list">
+						<li class="username-text buffer-left">{{ userDisplayName }}</li>
+						<li class="buffer-left">
+							<div class="user-level">{{ userLevel }}</div>
+						</li>
+						<li>
+							<div class="account-settings-btn">
+								<span></span>
+								<span></span>
+								<span></span>	
+							</div>
+						</li>
+					</ul>
 				</div>
 				
 				
 				<div class="account-settings-menu--container">
 					<i id="account-settings-menu-close-btn" class="material-icons">close</i>
 					<ul>
+						<li>
+							<button id="btn-settings" v-on:click="goToSettings">Settings</button>
+						</li>
 						<li>
 							<button id="btn-logout" v-on:click="logout">Logout</button>
 						</li>
@@ -295,7 +353,11 @@
 								<div class="card small">
 									<div class="stat-value blue">
 										<i class="material-icons menu-icon">business</i>
-										<div class="card-details">
+										<div v-if="realValuesSetting()" class="card-details">
+											<p><span class="small-money">$</span>{{ toPrice(currUserPortfolio.realNetworth) }}</p>
+											<div class="card-category">REAL NETWORTH</div>
+										</div>
+										<div v-else class="card-details">
 											<p><span class="small-money">$</span>{{ toPrice(currUserPortfolio.net_worth) }}</p>
 											<div class="card-category">NETWORTH</div>
 										</div>
@@ -317,7 +379,11 @@
 								<div class="card small">
 									<div class="stat-value orange">
 										<i class="material-icons menu-icon">trending_up</i>
-										<div class="card-details">
+										<div v-if="realValuesSetting()" class="card-details">
+											<p><span class="small-money">$</span>{{ toPrice(currUserPortfolio.stocksValue) }}</p>
+											<div class="card-category">INVESTMENTS</div>
+										</div>
+										<div v-else class="card-details">
 											<p><span class="small-money">$</span>{{ toPrice(currUserPortfolio.investments) }}</p>
 											<div class="card-category">INVESTMENTS</div>
 										</div>
@@ -340,20 +406,24 @@
 										    </tr>
 										</thead>
 										<tbody>
-											<tr class="clickable" v-for="stock in currUserStocks" :key='stock.uuid' v-bind:uuid="stock.uuid">
+											<tr class="clickable" v-for="stock in currUserStocks" :key='stock.uuid' v-bind:uuid="'dash' + stock.uuid">
 												<th class="stock-ticker-id" scope="row" v-bind:tid="stock.stock_ticker" style="line-height: 40px;">{{ stock.stock_ticker }}</th>
-												<td class="stock-price" style="text-align: right; padding-right: 25px;">
+												<td v-if="sellAllSetting()" class="stock-price" style="text-align: right; padding-right: 25px;">
+													<div class="">{{ stock.amount }}</div>
+												</td>
+												<td v-else class="stock-change" style="text-align: right; padding-right: 25px;">
 													<div class="sell-all-btn" v-on:click='sellAll(stock.uuid)'>SELL ALL ({{ stock.amount }})</div>
 												</td>
+												
 												<td class="price-alter stock-price" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_price) }}</td>
 												<td class="price-alter stock-price" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_value) }}</td>
 												<td class="stock-change" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_roi) }}</td>
 												
 											</tr>
-											<tr v-if="currUserStocks != []">
-												<!-- TODO add click text to move to stocks tab  -->
+											<!-- <tr v-if="currUserStocks != []">
+												
 												<td colspan="5">Move to the <span class="clickable-text">Stocks tab</span> to start investing.</td>
-											</tr>
+											</tr> -->
 										</tbody>
 									</table>
 								</div>
@@ -437,7 +507,7 @@
 							<div class="flex-column-33">
 								<div class="card small" v-on:click="createStocksGraph()">
 									<div class="stat-value orange">
-										<i class="material-icons menu-icon">trending_up</i><div class="card-details">
+										<i class="material-icons menu-icon most-change">trending_up</i><div class="card-details">
 											<p>{{ mostChange }}</p>
 											<div class="card-category">HIGHEST GROWTH</div>
 											
@@ -486,7 +556,7 @@
 																  star_rate
 																  </i>
 													</li>
-													
+
 													<li class="action-btn chart" v-on:click="showChart(stock.uuid)">
 														  <i class="material-icons">
 																  show_chart
@@ -527,8 +597,8 @@
 										  <thead>
 											<tr>
 											  <th scope="col" v-on:click="sortCol('name')" style="text-align: left; padding-left: 25px;">Name <i class="material-icons stock">arrow_drop_down</i></th>
-											  <th scope="col" v-on:click="sortCol('level')">Level <i class="material-icons open-shares">arrow_drop_down</i></th>
-											  <th scope="col" v-on:click="sortCol('favorites')">Actions</th>
+											  <th scope="col" v-on:click="sortCol('level')" class="text-center">Level <i class="material-icons open-shares">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('favorites')" class="text-center" style="padding-right: 0px;">Actions</th>
 											  <th scope="col" v-on:click="sortCol('wallet')">Cash <i class="material-icons open-shares">arrow_drop_down</i></th>
 											  <th scope="col" v-on:click="sortCol('net_worth')">Networth <i class="material-icons cost">arrow_drop_down</i></th>
 											  
@@ -539,9 +609,10 @@
 											<tr class="investors" v-for="investor in investors" :key="investor.uuid" v-bind:tid="investor.uuid">
 											  <th class="stock-ticker-id" scope="row" v-bind:tid="investor.name">
 												  <div class="stock-ticker-id">{{ investor.name }}</div>
+												  <div class="stock-display-name">American Sniper</div>
 											  </th>
-											  <td>{{ investor.level }}</td>
-											  <td class="stock-open-shares">
+											  <td class="text-center" style="padding-top: 22px;"><div class="user-level">{{ investor.level }}</div></td>
+											  <td class="stock-open-shares" style="padding-right: 0px; text-align: center;">
 												  <ul class="action-list">
 													  <li class="action-btn star" v-on:click="toggleFavorite(investor.uuid)" v-bind:class="{ favorite: isFavoriteInvestor(investor.uuid) }">
 															<i class="material-icons">
@@ -576,10 +647,6 @@
 					</div>
 					<div id="research--view" class="view">
 						<div class="flex-grid--container">
-							
-							<div class="flex-column-100">
-								<div class="item-category buffer-top">GRAPHING</div>
-							</div>
 							<div class="flex-column-100">
 								<div id="chart-sandbox" class="card">
 									<div class="query-term-container">
@@ -590,118 +657,192 @@
 											</select>
 										</div>
 										<div class="query-term right">
-											<select id="research-graph-stock-select" type="text" placeholder="Choose a graph type">
+											<select id="research-graph-stock-select" type="text" placeholder="Choose a stock">
 											</select>
 										</div>
 										<div class="query-term right">
-											<select id="research-graph-user-select" type="text" placeholder="Choose a graph type">
+											<select id="research-graph-user-select" type="text" placeholder="Choose a user">
 											</select>
 										</div>
 										<div class="query-term">
-											<input type="text" placeholder="Choose a stock"/>
-											<i class="material-icons add-btn">
-											clear
-											</i>
-										</div>
-										<div>
 											<button v-on:click="drawGraph()">Create</button>
 										</div>
 									</div>
 									<div id="research-graph-svg-main"></div>
 								</div>
 							</div>
-							<div class="flex-column-100">
-								<div class="item-category buffer-top">TRADE HISTORY</div>
-							</div>
+									<div class="flex-column-100">
+										<div class="item-category buffer-top">TRADE HISTORY</div>
+									</div>
+								<!-- <div class="flex-column-100"> -->
+									<div class="flex-column-50">
+										<div class="card">
+											<table class="table">
+												<thead class="table-top-bar">
+													<tr>
+														<th scope="col" v-on:click="sortCol('time')">Time</th>
+														<th scope="col" v-on:click="sortCol('results')">Result</th>
+														<th scope="col" v-on:click="sortCol('bonus')">Bonus</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr v-for="trade in tradeHistory" :key='trade.uuid' v-bind:uuid="'trade' + trade.uuid" v-on:click='openTradeHistory(trade.uuid)'>
+														<th scope="row" v-bind:tid="trade.time">{{ trade.time }}</th>
+														<td>${{ trade.result }}</td>
+														<td>{{ trade.bonus }}</td>
+														
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</div>
+									<div class="flex-column-50">
+										<div class="card">
+											<div class="receipt">
+												<div>{{ receipt.time }}</div>
+												<div>{{ receipt.ticker }}</div>
+											</div>
+										</div>
+									</div>
+								</div>
 						</div>
-					</div>
+					
 						<!-- TODO: this tab collides with the sidebar -->
 					<div id="settings--view" class="view">
-							<div class="flex-grid--container">
-								<div class="flex-column-100">
-									<div class="item-category buffer-top">ACCOUNT</div>
+						<div class="flex-grid--container">
+							<div class="flex-column-33">
+								<div class="item-category buffer-top">ACCOUNT</div>
+							</div>
+							<div class="flex-column-100">
+								<div class="card flex-column-100">
+									<div class="settings-grp">
+										<div class="input-grp">
+											<div class="input-name">Change Display Name <span class="settings-subtext">Name can only contain letters and numbers.</span></div>
+											<input type="text" id="change-display-name" class="input-full-width">
+											<span class="input-focus-border"></span>
+											
+										</div>
+										<div class="input-grp">
+											<div class="change-setting-btn" v-on:click="changeDisplayName()">SAVE</div>
+										</div>
+									</div>
 								</div>
-								<div class="flex-column-100">
-									<div class="card">
-										<div class="settings-grp">
-											<div class="input-grp">
-												<div class="input-name">Change Display Name</div>
-												<input type="text" id="change-display-name" class="input-full-width">
+								<div class="card flex-column-100">
+									<div class="settings-grp">
+										<div class="input-grp">
+											<div class="input-name">Create New Password <span class="settings-subtext">Password must contain a minimum of 8 characters.</span></div>
+											<input type="text" id="change-password" class="input-full-width">
+											<span class="input-focus-border"></span>
+											
+										</div>
+										<div class="input-grp">
+												<div class="input-name">Confirm New Password</div>
+												<input type="text" id="change-password-confirm" class="input-full-width">
 												<span class="input-focus-border"></span>
 												
 											</div>
-											<div class="input-grp">
-												<div class="change-setting-btn" v-on:click="changeDisplayName()">SAVE</div>
-											</div>
+										<div class="input-grp">
+											<div class="change-setting-btn">SAVE</div>
 										</div>
 									</div>
-									<div class="card">
-										<div class="settings-grp">
-											<div class="input-grp">
-												<div class="input-name">Change Password</div>
-												<input type="text" id="change-password" class="input-full-width">
-												<span class="input-focus-border"></span>
+								</div>
+								<div class="flex-column-33">
+									<div class="item-category buffer-top">DISPLAY</div>
+								</div>
+								<div class="card settings-card flex-column-100">
+									<div class="settings-grp">
+										<div class="settings-input-grp">
+											Toggle stock changes as percentages instead of price change in dollars.
+											
+											<!-- <div class="change-setting-btn" v-on:click="toggleChangePercentSetting()">Toggle</div> -->
+											<!-- <div class="toggle-switch" v-on:click="toggleChangePercentSetting()">
+												<input type="checkbox" name="changePercentToggleSwitch" class="toggle-checkbox" id="myonoffswitch" checked>
+												<label class="toggle-label" for="changePercentToggleSwitch"></label>
+											</div> -->
+											<div class="toggle-switch" v-on:change="toggleChangePercentSetting()">
+												<input type="checkbox" name="toggle-switch" class="toggle-checkbox" id="percent-toggle-switch" unchecked>
+												<label class="toggle-label" for="percent-toggle-switch"></label>
+											</div>
 												
-											</div>
-											<div class="input-grp">
-													<div class="input-name">Confirm Password</div>
-													<input type="text" id="change-password-confirm" class="input-full-width">
-													<span class="input-focus-border"></span>
-													
-												</div>
-											<div class="input-grp">
-												<div class="change-setting-btn">SAVE</div>
+										</div>
+									</div>
+								</div>
+								<div class="card settings-card flex-column-100">
+									<div class="settings-grp">
+										<div class="settings-input-grp">
+											Toggle Sell All button within the Dashboard tab.
+											<!-- <div class="change-setting-btn" v-on:click="toggleSellAllButton()">Toggle</div> -->
+											<div class="toggle-switch" v-on:change="toggleSellAllButton()">
+												<input type="checkbox" name="toggle-switch" class="toggle-checkbox" id="sell-all-toggle-switch" unchecked>
+												<label class="toggle-label" for="sell-all-toggle-switch"></label>
 											</div>
 										</div>
 									</div>
-									<div class="card">
-										<div class="settings-grp">
-											<div class="input-grp">
-												Toggle display of stock changes as percentages instead of price change in dollars.
-												<div class="change-setting-btn" v-on:click="toggleChangePercentSetting()">Toggle</div>
+								</div>
+								</div>
+								<div class="card settings-card flex-column-100">
+									<div class="settings-grp">
+										<div class="settings-input-grp">
+											Toggle investments and net worth to be calculate with bonuses, fees, and taxes.
+											<!-- <div class="change-setting-btn" v-on:click="toggleRealValuesSetting()">Toggle</div> -->
+											<div class="toggle-switch" v-on:change="toggleRealValuesSetting()">
+												<input type="checkbox" name="toggle-switch" class="toggle-checkbox" id="actual-values-toggle-switch" unchecked>
+												<label class="toggle-label" for="actual-values-toggle-switch"></label>
 											</div>
+										</div>
+									</div>
+								</div>
+								<div class="card flex-column-100">
+									<div class="settings-grp">
+										<div class="input-grp">
+											Toggle stock ticker.
+											<div class="change-setting-btn" v-on:click="toggleTickerSetting()">Toggle</div>
 										</div>
 									</div>
 								</div>
 							</div>
 						</div>
+					
 						<!-- TODO: this tab collides with the sidebar -->
-						<div id="store--view" class="view">
-							<div class="flex-grid--container">
-								<div class="flex-column-100">
-									<div class="item-category buffer-top">EXPERIENCE</div>
-								</div>
-								<div class="flex-column-100">
-									<ul id="item-list">
-										<li v-for="level in experience" :key="level.label">
-											<div class="card item" v-bind:class="{ 'item-disable': !isNextLevel(level.level)}">
-												<div class="item-name">{{ level.label }}</div>
-												<div class="item-effects title">{{ level.title }}</div>
-												<div class="item-divider"></div>
-												<div class="item-effects">{{ level.note }}</div>
-												<div class="item-cost">{{ level.price }}</div>
-												<div class="buy-item-btn" v-on:click="level_up(level.level)">BUY</div>
-											</div>
-										</li>
-									</ul>
-								</div>
-								<div class="flex-column-100">
-									<div class="item-category buffer-top">ABILITIES</div>
-								</div>
+
+					<div id="store--view" class="view">
+						<div class="flex-grid--container">
+							<div class="flex-column-100">
+								<div class="item-category buffer-top">EXPERIENCE</div>
+							</div>
+							<div class="flex-column-100">
 								<ul id="item-list">
-									<li v-for="item in items" :key="item.type">
+									<li v-for="level in experience" :key="level.label">
 										<div class="card item">
-											
-											<div class="item-name">{{ item.label }}</div>
-											<div class="item-description">{{ item.note }}</div>
-										
-		
-											<div class="item-cost">{{ item.price }}</div>
-											<div class="buy-item-btn" v-on:click="purchaseItem()">BUY</div>
+											<div class="item-locked-layer" v-bind:class="{ 'item-disabled': (level.level - 1) != currUserLevel}">
+												<i class="material-icons white">lock</i>
+											</div>
+											<div class="item-name">{{ level.label }}</div>
+											<div class="item-effects title">{{ level.title }}</div>
+											<div class="item-divider"></div>
+											<div class="item-effects">{{ level.note }}</div>
+											<div class="item-cost">{{ level.price }}</div>
+											<div class="buy-item-btn" v-on:click="level_up(level.level)" v-bind:class="{ 'item-disabled': (level.level - 1) != currUserLevel }">BUY</div>
 										</div>
 									</li>
 								</ul>
 							</div>
+							<div class="flex-column-100">
+								<div class="item-category buffer-top">ABILITIES</div>
+							</div>
+							<ul id="item-list">
+								<li v-for="item in items" :key="item.type">
+									<div class="card item">
+										
+										<div class="item-name">{{ item.label }}</div>
+										<div class="item-description">{{ item.note }}</div>
+									
+	
+										<div class="item-cost">{{ item.price }}</div>
+										<div class="buy-item-btn" v-on:click="purchaseItem()">BUY</div>
+									</div>
+								</li>
+							</ul>
 						</div>
 					</div>
 					

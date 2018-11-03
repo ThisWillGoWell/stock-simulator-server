@@ -346,10 +346,13 @@ function DrawLineGraph(location, data, showWallet, append) {
 
 		// Adding line 
 		path.data([dat[line_key]])
-			.attr('d', line)
-			.attr('stroke', COLOR_PALETTE[i])
-			.attr('stroke-width', '2px')
-			.attr('fill', 'none');
+		.attr('stroke', COLOR_PALETTE[i])
+		.attr('stroke-width', '2px')
+		.attr('fill', 'none')
+		.attr('d', line);
+		// .attr('d', "M " + margin.left + " " + (height - margin.bottom) + " H " + width + " Z")
+		// .transition()
+		// 	.attrTween('d', pathTween(line, 4));
 
 		// Adding tooltip for each line
 		let ttip = svg.append('g')
@@ -407,10 +410,6 @@ function DrawLineGraph(location, data, showWallet, append) {
 		.call(yGrid()
 			.tickSize(-width)
 			.tickFormat(""));
-
-       
-
-
 
 	// Add graph title
 	if (tags) {

@@ -132,9 +132,6 @@ func walkRecords(book *Book, shares int64, mark bool) int64 {
 	lastAmountCleared := int64(0)
 	sharesLeft := shares
 	totalCost := int64(0)
-	if book.Uuid == "63" {
-		fmt.Println("hello")
-	}
 	for sharesLeft != 0 {
 		if amountCleared >= len(book.ActiveBuyRecords) {
 			fmt.Println("WRONG")

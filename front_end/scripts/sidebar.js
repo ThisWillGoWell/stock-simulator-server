@@ -9,7 +9,8 @@ function load_sidebar_vue() {
   sidebarCurrUser = new Vue({
     el: "#stats--view",
     methods: {
-      toPrice: formatPrice
+      toPrice: formatPrice,
+      realValuesSetting: getRealValuesSetting, 
     },
     computed: {
       currUserPortfolio: function() {

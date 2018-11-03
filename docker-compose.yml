@@ -12,6 +12,7 @@ services:
     environment:
       CONFIG_FILE: opt/server/config/config_prod.json
       DB_URI: host=db port=5432 user=starket password=wordpass dbname=starket_db sslmode=disable
+      DISCORD_TOKEN: ${DISCORD_TOKEN}
   db:
     restart: always
     image: timescale/timescaledb:latest

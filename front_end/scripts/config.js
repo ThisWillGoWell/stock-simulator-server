@@ -9,7 +9,10 @@ function createConfig(config) {
                 users: [],
             },
             settings: {
-                changePercent: true,
+                changePercent: false,
+                sellAll: false,
+                realValuesSetting: false,
+                ticker: false,
             }
         };
     }
@@ -20,7 +23,9 @@ function createConfig(config) {
     });
     console.log("------ CONFIG ------");
     console.log(vm_config.config);
-
+    
+    // Set checkboxes according to config settings
+    checkSettingsBoxes();
 }
 
 // Method coming from stocks table favorite star
@@ -85,3 +90,29 @@ function updateConfig(new_config, new_key, new_value) {
 
     doSend('set', msg, callback);
 };
+
+
+// Getters
+function getRealValuesSetting() {
+    if (vm_config !== undefined) {
+        return vm_config.config.settings.realValuesSetting;
+    } else return false;
+}
+
+function getSellAllSetting() {
+    if (vm_config !== undefined) {
+        return vm_config.config.settings.sellAll;
+    } else return false;
+}
+
+function getTickerSetting() {
+    if (vm_config !== undefined) {
+        return vm_config.config.settings.ticker;
+    } else return false;
+}
+
+function getConfigSetting(field) {
+    if (vm_config !== undefined) {
+        return vm_config.config.settings[field];
+    } else return false;
+}
