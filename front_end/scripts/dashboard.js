@@ -209,3 +209,5 @@ function createPortfolioGraph(portfolioUUID, location) {
   queryDrawGraph(location, uuids, fields);
 }
 
+
+
