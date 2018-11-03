@@ -254,19 +254,19 @@ func executeTrade(o *TradeOrder) {
 	go port.Update()
 }
 
-func CalculateDetails(order *ProspectOrder) *BasicResponse {
+func CalculateDetails(order *ProspectOrder) {
 
 	response := &BasicResponse{Order: order}
 
 	v, ok := valuable.Stocks[order.ValuableID]
 	if !ok {
 		response.Err = "valuable id not found"
-		return response
+		return
 	}
 	port, ok := portfolio.Portfolios[order.PortfolioID]
 	if !ok {
 		response.Err = "portfolio id not found"
-		return response
+		return
 	}
 	v.GetLock().Acquire("calculate-order-details")
 	defer v.GetLock().Release()
@@ -297,7 +297,7 @@ func CalculateDetails(order *ProspectOrder) *BasicResponse {
 			}
 		}
 	}
-	return response
+	order.ResponseChannel <- response
 }
 
 func calculateBuyDetails(amount int64, v *valuable.Stock, port *portfolio.Portfolio) Details {
