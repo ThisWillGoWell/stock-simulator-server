@@ -34,7 +34,7 @@ func Run() {
 			case *TransferOrder:
 				executeTransfer(o.(*TransferOrder))
 			case *ProspectOrder:
-				CalculateDetails(o.(*ProspectOrder))
+				calculateDetails(o.(*ProspectOrder))
 			}
 		}
 	}()
@@ -254,7 +254,10 @@ func executeTrade(o *TradeOrder) {
 	go port.Update()
 }
 
-func CalculateDetails(order *ProspectOrder) {
+func calculateDetails(order *ProspectOrder) {
+	ledger.EntriesLock.EnableDebug()
+	ledger.EntriesLock.Acquire("prospect")
+	defer ledger.EntriesLock.Release()
 
 	response := &BasicResponse{Order: order}
 
@@ -286,7 +289,7 @@ func CalculateDetails(order *ProspectOrder) {
 		if !ledgerExists {
 			response.Err = "can't calculate sell order for ledger that does not exist"
 		} else {
-			if ledgerEntry.Amount < order.Amount {
+			if ledgerEntry.Amount < order.Amount*-1 {
 				response.Err = "don't own that many shares"
 
 			} else {
