@@ -16,69 +16,81 @@ func (TradingType) Name() string {
 type TradeEffect struct {
 	Uuid *string `json:"-"`
 
-	FeeAmount     *int64   `json:"fee_amount,omitempty"`     // fee on all trades
-	FeeMultiplier *float64 `json:"fee_multiplier,omitempty"` // fee % of the total fees
+	BuyFeeAmount     *int64   `json:"buy_fee_amount,omitempty"`     // fee on all trades
+	BuyFeeMultiplier *float64 `json:"buy_fee_multiplier,omitempty"` // fee % of the total fees
 
-	ProfitAmount            *int64   `json:"profit_amount,omitempty"`     // profit amount %
-	ProfitPercent           *float64 `json:"profit_percent,omitempty"`    // profit percent increase
-	CurrentProfitMultiplier *float64 `json:"profit_multiplier,omitempty"` // current profit multiplier
-	TradeBlocked            *bool    `json:"trade_blocked,omitempty"`     // if trade is blocked
-}
+	SellFeeAmount     *int64   `json:"sell_fee_amount,omitempty"`     // fee on all sales trades
+	SellFeeMultiplier *float64 `json:"sell_fee_multiplier,omitempty"` // fee % of the total fees
 
-func newTradingEffect(trade *TradeEffect, portfolioUuid, title string, duration time.Duration) {
+	ProfitPercent    *float64 `json:"profit_percent,omitempty"`    // profit percent change
+	ProfitMultiplier *float64 `json:"profit_multiplier,omitempty"` // current profit multiplier
 
+	TaxPercent    *int64   `json:"tax_percent,omitempty"`
+	TaxMultiplier *float64 `json:"tax_multiplier,omitempty"`
+
+	TradeBlocked *bool `json:"trade_blocked,omitempty"` // if trade is blocked
 }
 
 func NewProfitEffect(portfolioUuid, title string, amount float64, duration time.Duration) {
 	EffectLock.Acquire("new-protfit-effect")
 	defer EffectLock.Release()
-	newEffect := &TradeEffect{
+	newTradeEffect := &TradeEffect{
 		ProfitPercent: &amount,
 	}
-	newTradingEffect(newEffect, portfolioUuid, title, duration)
+	newEffect(portfolioUuid, title, TradeEffectType, newTradeEffect, duration)
 }
 
 func NewBlockTrading(portfolioUuid, title string, duration time.Duration) {
 	EffectLock.Acquire("new-block-effect")
 	defer EffectLock.Release()
-	newEffect := &TradeEffect{
+	newTradeEffect := &TradeEffect{
 		TradeBlocked: createBool(true),
 	}
-	newTradingEffect(newEffect, portfolioUuid, title, duration)
+	newEffect(portfolioUuid, title, TradeEffectType, newTradeEffect, duration)
 }
 
 func FeelessTradeing(portfolioUuid, title string, duration time.Duration) {
 	EffectLock.Acquire("new-block-effect")
 	defer EffectLock.Release()
-	newEffect := &TradeEffect{
-		FeeMultiplier: createFloat(0),
+	newTradeEffect := &TradeEffect{
+		SellFeeMultiplier: createFloat(0),
+		BuyFeeMultiplier:  createFloat(0),
 	}
-	newTradingEffect(newEffect, portfolioUuid, title, duration)
+	newEffect(portfolioUuid, title, TradeEffectType, newTradeEffect, duration)
+}
+
+func TaxReduction(portfolioUuid, title string, duration time.Duration, taxReductionAmount float64) {
+	EffectLock.Acquire("new-block-effect")
+	defer EffectLock.Release()
+	newTradeEffect := &TradeEffect{
+		TaxMultiplier: createFloat(taxReductionAmount),
+	}
+	newEffect(portfolioUuid, title, TradeEffectType, newTradeEffect, duration)
 }
 
 func (t TradeEffect) Add(effect *TradeEffect) {
 
-	if effect.FeeAmount != nil {
-		if t.FeeAmount == nil {
-			t.FeeAmount = createInt(*effect.FeeAmount)
+	if effect.BuyFeeAmount != nil {
+		if t.BuyFeeAmount == nil {
+			t.BuyFeeAmount = createInt(*effect.BuyFeeAmount)
 		} else {
-			*t.FeeAmount += *effect.FeeAmount
+			*t.BuyFeeAmount += *effect.BuyFeeAmount
 		}
 	}
 
-	if effect.FeeMultiplier != nil {
-		if t.FeeMultiplier == nil {
-			t.FeeMultiplier = createFloat(*effect.FeeMultiplier)
+	if effect.BuyFeeMultiplier != nil {
+		if t.BuyFeeMultiplier == nil {
+			t.BuyFeeMultiplier = createFloat(*effect.BuyFeeMultiplier)
 		} else {
-			*t.FeeMultiplier += *effect.FeeMultiplier
+			*t.BuyFeeMultiplier += *effect.BuyFeeMultiplier
 		}
 	}
 
-	if effect.ProfitAmount != nil {
-		if t.ProfitAmount == nil {
-			t.ProfitAmount = createInt(*effect.ProfitAmount)
+	if effect.SellFeeAmount != nil {
+		if t.SellFeeAmount == nil {
+			t.SellFeeAmount = createInt(*effect.SellFeeAmount)
 		} else {
-			*t.ProfitAmount += *effect.ProfitAmount
+			*t.SellFeeAmount += *effect.SellFeeAmount
 		}
 	}
 
@@ -89,11 +101,11 @@ func (t TradeEffect) Add(effect *TradeEffect) {
 			*t.ProfitPercent += *effect.ProfitPercent
 		}
 	}
-	if effect.CurrentProfitMultiplier != nil {
-		if t.CurrentProfitMultiplier == nil {
-			t.CurrentProfitMultiplier = createFloat(*effect.CurrentProfitMultiplier)
+	if effect.SellFeeMultiplier != nil {
+		if t.SellFeeMultiplier == nil {
+			t.SellFeeMultiplier = createFloat(*effect.SellFeeMultiplier)
 		} else {
-			*t.CurrentProfitMultiplier += *effect.CurrentProfitMultiplier
+			*t.SellFeeMultiplier += *effect.SellFeeMultiplier
 		}
 	}
 

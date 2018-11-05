@@ -1,6 +1,7 @@
 package order
 
 import (
+	"github.com/stock-simulator-server/src/effect"
 	"github.com/stock-simulator-server/src/ledger"
 	"github.com/stock-simulator-server/src/level"
 	"github.com/stock-simulator-server/src/notification"
@@ -303,19 +304,22 @@ func calculateDetails(order *ProspectOrder) {
 	order.ResponseChannel <- response
 }
 
-func calculateBuyDetails(amount int64, v *valuable.Stock, port *portfolio.Portfolio) Details {
-	return Details{
+func calculateBuyDetails(amount int64, v *valuable.Stock, port *portfolio.Portfolio, tradeEffect effect.TradeEffect) Details {
+
+	d := Details{
 		SharePrice: v.CurrentPrice,
 		ShareCount: amount,
 		ShareValue: v.CurrentPrice * amount,
 		Tax:        0,
-		Fees:       0,
+		Fees:       int64(float64(*tradeEffect.BuyFeeAmount) * *tradeEffect.BuyFeeMultiplier),
 		Bonus:      0,
 		Result:     v.CurrentPrice * amount * -1,
 	}
+	d.Result = d.ShareValue*-1 - d.Fees
+	return d
 }
 
-func calculateSellDetails(amount int64, v *valuable.Stock, port *portfolio.Portfolio, recordUuid string) Details {
+func calculateSellDetails(amount int64, v *valuable.Stock, port *portfolio.Portfolio, recordUuid string, tradeEffect effect.TradeEffect) Details {
 	d := Details{
 		SharePrice: v.CurrentPrice,
 		ShareCount: amount,

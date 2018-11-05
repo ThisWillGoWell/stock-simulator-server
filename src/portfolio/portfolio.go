@@ -37,9 +37,8 @@ type Portfolio struct {
 
 	UpdateChannel *duplicator.ChannelDuplicator `json:"-"`
 	UpdateInput   *duplicator.ChannelDuplicator `json:"-"`
-	Level         int64                         `json:"level" change:"-
-"`
-	Lock *lock.Lock `json:"-"`
+	Level         int64                         `json:"level" change:"-"`
+	Lock          *lock.Lock                    `json:"-"`
 }
 
 func (port *Portfolio) GetId() string {
