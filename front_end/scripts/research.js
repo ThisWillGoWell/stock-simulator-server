@@ -36,17 +36,22 @@ function load_research_tab() {
                 queryDrawGraph("#research-graph-svg-main", uuids, fields, false, false);
 
             },
-            // updateSelections: function() {
-            //     console.log("herer")
-            //     var type = getSelectized('#research-graph-type-select')[0];
-            //     if (type === 'stock') {
-            //         $('#research-graph-user-select').hide();
-            //         $('#research-graph-stock-select').show();
-            //     } else if (type === 'portfolio') {
-            //         $('#research-graph-stock-select').hide();
-            //         $('#research-graph-user-select').show();
+            // updateSelections: function(newSelection) {
+            //     console.log("herer");
+            //     //var type = getSelectized('#research-graph-type-select')[0];
+            //     if (newSelection === 'stock') {
+            //         $('#query-term-users').addClass("shrunk");
+            //         $('#query-term-users').removeClass("expanded");
+            //         $('#query-term-stocks').addClass("expanded");
+            //         $('#query-term-stocks').removeClass("shrunk");
+
+            //     } else if (newSelection === 'portfolio') {
+            //         $('#query-term-stocks').addClass("shrunk");
+            //         $('#query-term-stocks').removeClass("expanded");
+            //         $('#query-term-users').addClass("expanded");
+            //         $('#query-term-users').removeClass("shrunk");
             //     }
-            // }
+            // },
             openTradeHistory: function(uuid) {
                 var trade = this.tradeHistory.filter(d => d.uuid === uuid)[0];
 
@@ -74,12 +79,36 @@ function load_research_tab() {
         }
     });
 
+    function updateSelections(newSelection) {
+        console.log("herer");
+        //var type = getSelectized('#research-graph-type-select')[0];
+        if (newSelection === 'stock') {
+            $('#query-term-users').addClass("shrunk");
+            $('#query-term-users').removeClass("expanded");
+            $('#query-term-stocks').addClass("expanded");
+            $('#query-term-stocks').removeClass("shrunk");
+
+        } else if (newSelection === 'portfolio') {
+            $('#query-term-stocks').addClass("shrunk");
+            $('#query-term-stocks').removeClass("expanded");
+            $('#query-term-users').addClass("expanded");
+            $('#query-term-users').removeClass("shrunk");
+        }
+    }
+
     // Create selectize areas
-    graphType = $('#research-graph-type-select').selectize({maxItems: 1});
+    graphType = $('#research-graph-type-select').selectize({
+        maxItems: 1,
+        onChange: function(value) {
+            updateSelections(value);
+        }
+    });
     graphStocks = $('#research-graph-stock-select').selectize({maxItems: 5});
     graphUsers = $('#research-graph-user-select').selectize({maxItems: 5});
     // Start with users selection hidden
     $('#research-graph-user-select').hide();
+
+    
 
 };
 
