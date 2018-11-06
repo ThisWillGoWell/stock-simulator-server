@@ -8,6 +8,8 @@
 		<meta name="description" content="A mock stock market">
 		<meta name="keywords" content="mockstarket">
 		<link rel="author" href="Brennan Sieck, Will Gowell, Jakob Elias" />
+		<link rel="icon" type="image/png" href="assets/favicon_green.png">
+		<!-- <link rel="icon" type="image/png" href="assets/favicon_darkblue.png"> -->
 		
 		<meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
         <link href="https://fonts.googleapis.com/css?family=Mukta+Vaani:300,400,500,700" rel="stylesheet">
@@ -19,11 +21,11 @@
 	  	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
-
-		<link rel="stylesheet" href="css/main.css">
+		
 		<link rel="stylesheet" type="text/css" href="css/selectize.css" />
-        <link rel="icon" type="image/png" href="assets/favicon_green.png">
-		<!-- <link rel="icon" type="image/png" href="assets/favicon_darkblue.png"> -->
+		<link rel="stylesheet" href="css/main.css">
+		
+        
 		<script src="scripts/utils.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.0.2/TweenMax.min.js"></script>
 		<script src="https://d3js.org/d3.v5.min.js"></script>
@@ -656,16 +658,20 @@
 												<option value="portfolio">Portfolio</option>
 											</select>
 										</div>
-										<div class="query-term right">
+										<div id="query-term-stocks" class="query-term stocks expanded right">
 											<select id="research-graph-stock-select" type="text" placeholder="Choose a stock">
 											</select>
 										</div>
-										<div class="query-term right">
+										<div id="query-term-users" class="query-term users shrunk">
 											<select id="research-graph-user-select" type="text" placeholder="Choose a user">
 											</select>
 										</div>
 										<div class="query-term">
-											<button v-on:click="drawGraph()">Create</button>
+											<button id="create-chart-btn" v-on:click="drawGraph()">Create 
+												<i class="material-icons">
+													bar_chart
+													</i>
+											</button>
 										</div>
 									</div>
 									<div id="research-graph-svg-main"></div>
