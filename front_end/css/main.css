@@ -1532,7 +1532,7 @@ input[type=password]:focus ~ .input-focus-border{
     z-index: 1;
     /*background-color: #F0FAFF;*/
     background-color: #DADFE1;
-    overflow-y: scroll;
+    overflow-y: overlay;
 }
 
 .flex-grid--container {
