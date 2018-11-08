@@ -5,6 +5,7 @@ import (
 )
 
 const TradeEffectType = "trade"
+const BaseEffectTag = "tag"
 
 type TradingType struct {
 }
@@ -30,6 +31,7 @@ type TradeEffect struct {
 
 	TradeBlocked *bool `json:"trade_blocked,omitempty"` // if trade is blocked
 }
+
 
 func NewProfitEffect(portfolioUuid, title string, amount float64, duration time.Duration) {
 	EffectLock.Acquire("new-protfit-effect")
@@ -116,6 +118,10 @@ func (t TradeEffect) Add(effect *TradeEffect) {
 	}
 }
 
+type BaseTradeEffect(){
+
+}
+
 func createInt(x int64) *int64 {
 	return &x
 }
@@ -126,3 +132,5 @@ func createFloat(x float64) *float64 {
 func createBool(x bool) *bool {
 	return &x
 }
+
+

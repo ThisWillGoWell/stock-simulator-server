@@ -12,6 +12,7 @@ import (
 var EffectLock = lock.NewLock("EffectLock")
 var effects = make(map[string]*Effect)
 var portfolioEffects = make(map[string]map[string]*Effect)
+var portfolioEffectTags = make(map[string]map[string]*Effect)
 
 // Calculate the total bonus  for a portfolio
 func TotalTradeEffect(portfolioUuid string) (TradeEffect, []string) {
@@ -51,13 +52,13 @@ func DeleteEffect(uuid string, lockAcquired bool) {
 	utils.RemoveUuid(uuid)
 }
 
-func newEffect(portfolioUuid, title, effectType string, innerEffect interface{}, duration time.Duration) {
+func newEffect(portfolioUuid, title, effectType, tag string, innerEffect interface{}, duration time.Duration) {
 	uuid := utils.SerialUuid()
-	e := MakeEffect(uuid, portfolioUuid, title, effectType, innerEffect, duration)
+	e := MakeEffect(uuid, portfolioUuid, title, tag, effectType, innerEffect, duration)
 	wires.EffectsNewObject.Offer(e)
 }
 
-func MakeEffect(uuid, portfolioUuid, title, effectType string, innerEffect interface{}, duration time.Duration) *Effect {
+func MakeEffect(uuid, portfolioUuid, title, effectType, tag string, innerEffect interface{}, duration time.Duration) *Effect {
 	newEffect := &Effect{
 		PortfolioUuid: portfolioUuid,
 		Uuid:          uuid,
@@ -67,6 +68,7 @@ func MakeEffect(uuid, portfolioUuid, title, effectType string, innerEffect inter
 		Duration:      utils.Duration{Duration: duration},
 		Type:          effectType,
 		InnerEffect:   innerEffect,
+		Tag:           tag,
 	}
 
 	pEffects, ok := portfolioEffects[portfolioUuid]
@@ -74,10 +76,37 @@ func MakeEffect(uuid, portfolioUuid, title, effectType string, innerEffect inter
 		pEffects = make(map[string]*Effect)
 		portfolioEffects[portfolioUuid] = effects
 	}
+	if tag != "" {
+		oldEffect, tagExists := portfolioEffectTags[portfolioUuid][tag]
+		if tagExists {
+			DeleteEffect(oldEffect.Uuid, true)
+		}
+		if _, portfolioExists := portfolioEffectTags[portfolioUuid]; !portfolioExists{
+			portfolioEffectTags[portfolioUuid] =
+		}
+		portfolioEffectTags[portfolioUuid][tag] = newEffect
+	}
 	pEffects[newEffect.Uuid] = newEffect
 	effects[newEffect.Uuid] = newEffect
+
 	utils.RegisterUuid(uuid, newEffect)
 	return newEffect
+}
+
+func UpdatePortfolioTag(portfolioUuid, tag string, newEffect *Effect) {
+	EffectLock.Acquire("update portfolio effect tag")
+	defer EffectLock.Release()
+	tags, exists := portfolioEffectTags[portfolioUuid]
+	if !exists {
+		panic("got tag: " + tag + " update for a portfolio: " + portfolioUuid + " portfolio not found")
+	}
+	taggedEffect, foundTag := tags[tag]
+	if !foundTag {
+		panic("got tag: " + tag + " update for a portfolio: " + portfolioUuid + " tag not found")
+	}
+	DeleteEffect(taggedEffect.Uuid, true)
+	portfolioEffects[portfolioUuid][newEffect.Uuid]
+
 }
 
 type EffectType interface {
@@ -94,6 +123,7 @@ type Effect struct {
 	StartTime     time.Time      `json:"time"`
 	Type          string         `json:"type"`
 	InnerEffect   interface{}
+	Tag           string `json:"tag"`
 }
 
 func RunEffectCleaner() {
