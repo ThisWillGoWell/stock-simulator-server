@@ -158,7 +158,6 @@ go routine for handling the rx portion of the socket
 func (client *Client) rx() {
 	for messageString := range client.socketRx {
 		metrics.RecieveMessage(len(messageString))
-		log.Log.Info(messageString)
 		message := new(messages.BaseMessage)
 		//attempt to
 		err := message.UnmarshalJSON([]byte(messageString))

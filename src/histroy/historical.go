@@ -25,7 +25,7 @@ type queryCacheItem struct {
 
 var queryCache = make(map[string]*queryCacheItem)
 var queryCacheLock = lock.NewLock("query-cache-lock")
-var expirationTime = time.Hour * 48
+var expirationTime = time.Hour * 12
 
 func RunCacheUpdater() {
 	go func() {
@@ -37,10 +37,8 @@ func RunCacheUpdater() {
 				} else {
 					if time.Since(queryItem.lastUpdateTime) > queryItem.validTime {
 						fmt.Println("updating query:", queryKey, time.Now())
-						go makeQuery(queryItem.query)
-						go func() {
-							<-queryItem.query.ResponseChannel
-						}()
+						makeQuery(queryItem.query, true)
+						<-queryItem.query.ResponseChannel
 					}
 				}
 			}
@@ -103,26 +101,26 @@ prob should make sure they don't query like 1000 years or something
 */
 func MakeQuery(qm *messages.QueryMessage) *Query {
 	q := BuildQuery(qm)
+	queryCacheLock.Acquire("make-query")
+	defer queryCacheLock.Release()
+	// are we allowed to read from cache
 	if !qm.ForceUpdate {
-		queryCacheLock.Acquire("make-query")
 		hash := makeQueryHash(q)
 		cacheItem, ok := queryCache[hash]
 		if ok {
 			if time.Since(cacheItem.lastUpdateTime) > qm.CacheDuration.Duration {
 				q.ResponseChannel <- cacheItem.response
-				queryCacheLock.Release()
 				cacheItem.lastUseTime = time.Now()
 				return q
 			}
 		}
 
 	}
-	queryCacheLock.Release()
-	go makeQuery(q)
+	go makeQuery(q, false)
 	return q
 }
 
-func makeQuery(query *Query) {
+func makeQuery(query *Query, lockAcquired bool) {
 	val, exists := utils.GetVal(query.QueryUUID)
 	if !exists {
 		failedQuery(query, errors.New("uuid does not exist"))
@@ -162,7 +160,7 @@ func makeQuery(query *Query) {
 		failedQuery(query, err)
 	}
 
-	successQuery(query, vals)
+	successQuery(query, vals, lockAcquired)
 }
 
 func failedQuery(query *Query, err error) {
@@ -173,8 +171,12 @@ func failedQuery(query *Query, err error) {
 	}
 }
 
-func successQuery(query *Query, values [][]interface{}) {
-	queryCacheLock.Acquire("success-query")
+func successQuery(query *Query, values [][]interface{}, lockAcquired bool) {
+	if !lockAcquired {
+		queryCacheLock.Acquire("success-query")
+		defer queryCacheLock.Release()
+	}
+
 	response := &messages.QueryResponse{
 		Success: true,
 		Error:   "",
@@ -200,7 +202,7 @@ func successQuery(query *Query, values [][]interface{}) {
 
 		}
 	}
-	queryCacheLock.Release()
+
 	query.ResponseChannel <- response
 
 }

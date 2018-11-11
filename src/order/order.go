@@ -255,7 +255,6 @@ func executeTrade(o *TradeOrder) {
 }
 
 func calculateDetails(order *ProspectOrder) {
-	ledger.EntriesLock.EnableDebug()
 	ledger.EntriesLock.Acquire("prospect")
 	defer ledger.EntriesLock.Release()
 

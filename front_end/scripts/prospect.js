@@ -25,7 +25,7 @@ function updateModalFromProspect(msg) {
 
 
 function prospectStockValues(stocks, realStockValue) {
-    
+
     var newRealStockValue = 0;
     var stillWaiting = true;
 	var responses = [];
