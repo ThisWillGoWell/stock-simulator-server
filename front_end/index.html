@@ -90,7 +90,7 @@
 										<li v-on:click="clearAmount()" class="mini-calc-btn clear">CLEAR</li>
 										
 									</ul>
-									<input id="buy-sell-amount-input" type="text" class="input-full-width" placeholder="Enter quantity" v-on:change="setAmount()">
+									<input id="buy-sell-amount-input" type="text" class="input-full-width" placeholder="Enter quantity" onchange="setAmount()" v-on:change="setAmount()"/>
 								</div>
 								<div class="receipt-info">
 									<div class="receipt-line">

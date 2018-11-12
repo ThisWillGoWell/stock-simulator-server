@@ -86,8 +86,9 @@ function load_modal_vues() {
             setAmount: function() {
                 var user_input = $('#buy-sell-amount-input').val();
                 if (!isNaN(user_input)) {
-                    buySellModal.buySellAmount = user_input;
+                    buySellModal.buySellAmount = Number(user_input);
                 }
+
             },
             clearAmount: function() {
                 buySellModal.buySellAmount = 0;
@@ -221,6 +222,7 @@ function load_modal_vues() {
                 }
                 var callback = function(msg) {
                     if (msg.msg.success) {
+                        console.log(msg)
                         updateModalFromProspect(msg);
                     }
                 };
