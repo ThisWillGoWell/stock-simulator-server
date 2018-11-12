@@ -90,7 +90,7 @@
 										<li v-on:click="clearAmount()" class="mini-calc-btn clear">CLEAR</li>
 										
 									</ul>
-									<input id="buy-sell-amount-input" type="text" class="input-full-width" placeholder="Enter quantity">
+									<input id="buy-sell-amount-input" type="text" class="input-full-width" placeholder="Enter quantity" onchange="setAmount()" v-on:change="setAmount()"/>
 								</div>
 								<div class="receipt-info">
 									<div class="receipt-line">
@@ -611,7 +611,7 @@
 											<tr class="investors" v-for="investor in investors" :key="investor.uuid" v-bind:tid="investor.uuid">
 											  <th class="stock-ticker-id" scope="row" v-bind:tid="investor.name">
 												  <div class="stock-ticker-id">{{ investor.name }}</div>
-												  <div class="stock-display-name">American Sniper</div>
+												  <div class="stock-display-name">{{ investor.title }}</div>
 											  </th>
 											  <td class="text-center" style="padding-top: 22px;"><div class="user-level">{{ investor.level }}</div></td>
 											  <td class="stock-open-shares" style="padding-right: 0px; text-align: center;">
