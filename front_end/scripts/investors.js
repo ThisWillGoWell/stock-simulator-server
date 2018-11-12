@@ -53,6 +53,13 @@ function load_investors_tab() {
         investors.map(function(d) {
           // Augment investor data
           d.name = vm_users.users[d.user_uuid].display_name;
+          if (vm_store.items !== undefined) {
+            if (d.level === 0) {
+              d.title = "Novice";
+            } else {
+              d.title = vm_store.experience['lvl_' + d.level].title;
+            }
+          }
           // Get all stocks
           d.stocks = ledgerItems.filter(
             l => (l.portfolio_id === d.uuid) & (l.amount !== 0)
@@ -65,14 +72,13 @@ function load_investors_tab() {
               d.value = d.current_price * d.amount;
               return d;
             });
-            
+  
             return d;
           });
 
           // Sort investors
           let byCol = this.sortBy;
           let direction = this.sortDesc;
-
           if (byCol === "favorites") {
             favs = vm_config.config.fav.users;
             investors = investors.sort(function(a, b) {

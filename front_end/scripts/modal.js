@@ -83,6 +83,12 @@ function load_modal_vues() {
                 $('#buy-sell-amount-input').val(buySellModal.buySellAmount);
                 $('#buy-sell-amount-input').focus();
             },
+            setAmount: function() {
+                var user_input = $('#buy-sell-amount-input').val();
+                if (!isNaN(user_input)) {
+                    buySellModal.buySellAmount = user_input;
+                }
+            },
             clearAmount: function() {
                 buySellModal.buySellAmount = 0;
                 $('#buy-sell-amount-input').val(buySellModal.buySellAmount);
