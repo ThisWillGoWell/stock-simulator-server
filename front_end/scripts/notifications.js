@@ -145,7 +145,7 @@ function notifyTopBar(message, color, success) {
 		$('#notification-list li:last').removeClass("on-screen");	
 		setTimeout(function() {
 			$('#notification-list li:last').remove();
-		}, 45000);
+		}, 5000);
 	
 	}, timerWaitTime);
 	console.log("NOTIFICATION ADDED");
