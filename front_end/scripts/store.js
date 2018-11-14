@@ -3,6 +3,7 @@ var storeJSON = $.getJSON( "json/store.json", function(data) {
     storeJSON = data;
     console.log(storeJSON)
 });
+
 var vm_store;
 
 
