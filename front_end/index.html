@@ -28,6 +28,7 @@
         
 		<script src="scripts/utils.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.0.2/TweenMax.min.js"></script>
+		<script src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/16327/SplitText.min.js"></script>
 		<script src="https://d3js.org/d3.v5.min.js"></script>
 		<script src="https://d3js.org/d3-path.v1.min.js"></script>
 		<script src="https://d3js.org/d3-shape.v1.min.js"></script>
@@ -43,13 +44,13 @@
 		<script src="scripts/sidebar.js"></script>
 		<script src="scripts/chat.js"></script>
         <script src="scripts/notifications.js"></script>
-		<script src="scripts/dashboard.js"></script>
 		<script src="scripts/stocks.js"></script>
 		<script src="scripts/investors.js"></script>
 		<script src="scripts/store.js"></script>
 		<script src="scripts/research.js"></script>
 		<script src="scripts/items.js"></script>
 		<script src="scripts/modal.js"></script>
+		<script src="scripts/dashboard.js"></script>
         <script src="scripts/graphing.js"></script>
 		<script src="scripts/prospect.js"></script>
 		<script src="scripts/records.js"></script>
@@ -400,7 +401,8 @@
 									<table class="table" id="owned-stocks">
 										<thead class="table-top-bar">
 									    	<tr>
-										    	<th scope="col" style="text-align: left; padding-left: 25px;" v-on:click="sortCol('stock_ticker')">Stock <i class="material-icons stock">arrow_drop_down</i></th>
+												<th scope="col" style="text-align: left; padding-left: 25px;" v-on:click="sortCol('stock_ticker')">Stock <i class="material-icons stock">arrow_drop_down</i></th>
+												<th scope="col" v-on:click="sortCol('favorites')" style="padding-right: 25px;">Actions</th>
 										    	<th scope="col" v-on:click="sortCol('amount')">Shares Owned <i class="material-icons stock">arrow_drop_down</i></th>
 										    	<th scope="col" v-on:click="sortCol('stock_price')">Current Price <i class="material-icons stock">arrow_drop_down</i></th>
 										    	<th scope="col" v-on:click="sortCol('stock_value')">Value <i class="material-icons stock">arrow_drop_down</i></th>
@@ -408,9 +410,26 @@
 										    </tr>
 										</thead>
 										<tbody>
-											<tr class="clickable" v-for="stock in currUserStocks" :key='stock.uuid' v-bind:uuid="'dash' + stock.uuid">
-												<th class="stock-ticker-id" scope="row" v-bind:tid="stock.stock_ticker" style="line-height: 40px;">{{ stock.stock_ticker }}</th>
-												<td v-if="sellAllSetting()" class="stock-price" style="text-align: right; padding-right: 25px;">
+											<tr v-for="stock in currUserStocks" :key='stock.uuid' v-bind:uuid="'dash' + stock.uuid">
+												<th class="stock-ticker-id" scope="row" v-bind:tid="stock.ticker_id" style="line-height: 40px;">{{ stock.stock_ticker }}</th>
+												<td class="stock-open-shares">
+														<ul class="action-list">
+															
+															<li class="action-btn buy" v-bind:tid="stock.ticker_id" v-on:click="buyOrder(stock.ticker_id, stock.uuid)">
+																BUY
+															</li>
+															<li class="action-btn sell" v-bind:tid="stock.ticker_id" v-on:click="sellOrder(stock.ticker_id, stock.uuid)">
+																SELL
+															</li>	
+		
+															<!-- <li class="action-btn chart" v-on:click="showChart(stock.uuid)">
+																<i class="material-icons">
+																show_chart
+																</i>
+															</li> -->
+														</ul>
+													  </td>
+												<td v-if="sellAllSetting()" class="stock-price layered-clickable" style="text-align: right; padding-right: 25px;">
 													<div class="">{{ stock.amount }}</div>
 												</td>
 												<td v-else class="stock-change" style="text-align: right; padding-right: 25px;">
@@ -552,19 +571,25 @@
 													<div class="stock-display-name">{{ stock.name }}</div>
 											  </th>
 											  <td class="stock-open-shares">
-													<ul class="action-list">
+												<ul class="action-list">
 													<li class="action-btn star" v-on:click="toggleFavorite(stock.uuid)" v-bind:class="{ favorite: isFavoriteStock(stock.uuid) }">
-														  <i class="material-icons">
-																  star_rate
-																  </i>
+														<i class="material-icons">
+																star_rate
+																</i>
 													</li>
+													<li class="action-btn buy" v-bind:tid="stock.ticker_id" v-bind:tid="stock.uuid" v-on:click="buyOrder(stock.ticker_id, stock.uuid)">
+															BUY
+														</li>
+													<li class="action-btn sell" v-bind:tid="stock.ticker_id" v-bind:tid="stock.uuid" v-on:click="sellOrder(stock.ticker_id, stock.uuid)">
+															SELL
+														</li>	
 
-													<li class="action-btn chart" v-on:click="showChart(stock.uuid)">
-														  <i class="material-icons">
-																  show_chart
-																  </i>
-													</li>
-											  </ul>
+													<!-- <li class="action-btn chart" v-on:click="showChart(stock.uuid)">
+														<i class="material-icons">
+																show_chart
+																</i>
+													</li> -->
+												</ul>
 											  </td>
 											  <td class="stock-open-shares">{{ stock.open_shares }}</td>
 											  <td v-if="changePercentSetting" class="stock-change" style="padding-right: 15px;">
@@ -649,39 +674,33 @@
 					</div>
 					<div id="research--view" class="view">
 						<div class="flex-grid--container">
+							
 							<div class="flex-column-100">
-								<div id="chart-sandbox" class="card">
-									<div class="query-term-container">
-										<div class="query-term right">
-											<select id="research-graph-type-select" type="text" placeholder="Choose a graph type" v-on:change="updateSelections()">
-												<option value="stock">Stock</option>
-												<option value="portfolio">Portfolio</option>
+								<div id="research-chart-sandbox" class="card">
+									<div class="query-type-label">TYPE</div>
+									<div id="query-type-container">
+										<button class="option stocks active" v-on:click="queryStocks()">Stocks</button>
+										<button class="option investors" v-on:click="queryInvestors()">Investors</button>
+									</div>
+									<div class="query-items-label">STOCKS</div>
+									<div id="query-items-container">
+										<div class="query-stocks">
+											<select id="research-graph-stock-select" type="text" placeholder="Choose up to 5 stocks">
 											</select>
 										</div>
-										<div id="query-term-stocks" class="query-term stocks expanded right">
-											<select id="research-graph-stock-select" type="text" placeholder="Choose a stock">
+										<div class="query-investors hidden">
+											<select id="research-graph-user-select" type="text" placeholder="Choose up to 5 investors">
 											</select>
-										</div>
-										<div id="query-term-users" class="query-term users shrunk">
-											<select id="research-graph-user-select" type="text" placeholder="Choose a user">
-											</select>
-										</div>
-										<div class="query-term">
-											<button id="create-chart-btn" v-on:click="drawGraph()">Create 
-												<i class="material-icons">
-													bar_chart
-													</i>
-											</button>
 										</div>
 									</div>
 									<div id="research-graph-svg-main"></div>
 								</div>
 							</div>
-									<div class="flex-column-100">
+									<!-- <div class="flex-column-100">
 										<div class="item-category buffer-top">TRADE HISTORY</div>
-									</div>
+									</div> -->
 								<!-- <div class="flex-column-100"> -->
-									<div class="flex-column-50">
+									<!-- <div class="flex-column-50">
 										<div class="card">
 											<table class="table">
 												<thead class="table-top-bar">
@@ -709,7 +728,7 @@
 												<div>{{ receipt.ticker }}</div>
 											</div>
 										</div>
-									</div>
+									</div> -->
 								</div>
 						</div>
 					
@@ -720,6 +739,19 @@
 								<div class="item-category buffer-top">ACCOUNT</div>
 							</div>
 							<div class="flex-column-100">
+								<div class="card flex-column-100">
+									<div class="settings-grp">
+										<div class="input-grp">
+											<div class="input-name">Redeem Code <span class="settings-subtext">Please enter your code here.</span></div>
+											<input type="text" id="change-display-name" class="input-full-width">
+											<span class="input-focus-border"></span>
+											
+										</div>
+										<div class="input-grp">
+											<div class="change-setting-btn" v-on:click="changeDisplayName()">REDEEM</div>
+										</div>
+									</div>
+								</div>
 								<div class="card flex-column-100">
 									<div class="settings-grp">
 										<div class="input-grp">
@@ -839,11 +871,8 @@
 							<ul id="item-list">
 								<li v-for="item in items" :key="item.type">
 									<div class="card item">
-										
 										<div class="item-name">{{ item.label }}</div>
 										<div class="item-description">{{ item.note }}</div>
-									
-	
 										<div class="item-cost">{{ item.price }}</div>
 										<div class="buy-item-btn" v-on:click="purchaseItem()">BUY</div>
 									</div>
@@ -851,7 +880,6 @@
 							</ul>
 						</div>
 					</div>
-					
 				</div>
 			</section>
 			<section id="chat-module--container" class="closed">
