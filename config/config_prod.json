@@ -114,6 +114,11 @@
     "Jake": {
       "display_name": "jake1228",
       "password": "pass"
+    },
+    "Bank": {
+      "display_name": "bank",
+      "password": "pass",
+      "wallet": 100000000000
     }
   },
   "auto_buy": false

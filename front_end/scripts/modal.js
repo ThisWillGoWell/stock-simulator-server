@@ -4,6 +4,15 @@ var genericTextFieldModal;
 
 function toggleModal() {
     $("#modal--container").toggleClass("open");
+    // Set styling
+    if (buySellModal.isBuying) {
+        $("#calc-btn-buy").addClass("fill");
+        $("#calc-btn-sell").removeClass("fill");
+    } 
+    if (!buySellModal.isBuying) {
+        $("#calc-btn-sell").addClass("fill");
+        $("#calc-btn-buy").removeClass("fill");
+    }
 }
 
 function toggleTransferModal() {
@@ -83,6 +92,13 @@ function load_modal_vues() {
                 $('#buy-sell-amount-input').val(buySellModal.buySellAmount);
                 $('#buy-sell-amount-input').focus();
             },
+            setAmount: function() {
+                var user_input = $('#buy-sell-amount-input').val();
+                if (!isNaN(user_input)) {
+                    buySellModal.buySellAmount = Number(user_input);
+                }
+
+            },
             clearAmount: function() {
                 buySellModal.buySellAmount = 0;
                 $('#buy-sell-amount-input').val(buySellModal.buySellAmount);
@@ -127,6 +143,7 @@ function load_modal_vues() {
                 }
             },
             setIsBuying: function(bool) {
+                console.log("IS_BUYING: "+bool);
                 // Change buying or selling
                 buySellModal.isBuying = bool;
 
@@ -134,7 +151,8 @@ function load_modal_vues() {
                 if (buySellModal.isBuying) {
                     $("#calc-btn-buy").addClass("fill");
                     $("#calc-btn-sell").removeClass("fill");
-                } else {
+                } 
+                if (!buySellModal.isBuying) {
                     $("#calc-btn-sell").addClass("fill");
                     $("#calc-btn-buy").removeClass("fill");
                 }
@@ -150,6 +168,7 @@ function load_modal_vues() {
             closeModal: function() {
                 // $('#buy-sell-amount-input').val(0);
                 $('#buy-sell-amount-input').blur();
+                $('#buy-sell-amount-input').text("");
                 toggleModal();
                 buySellModal.buySellAmount = 0;
                 buySellModal.showModal = false;
@@ -215,6 +234,7 @@ function load_modal_vues() {
                 }
                 var callback = function(msg) {
                     if (msg.msg.success) {
+                        console.log(msg)
                         updateModalFromProspect(msg);
                     }
                 };

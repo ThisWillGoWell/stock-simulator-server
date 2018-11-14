@@ -7,15 +7,13 @@ import (
 	"math/rand"
 	"os"
 
+	"github.com/stock-simulator-server/src/portfolio"
+
 	"github.com/stock-simulator-server/src/order"
 
 	"github.com/stock-simulator-server/src/log"
 
 	"github.com/stock-simulator-server/src/session"
-
-	"github.com/stock-simulator-server/src/money"
-
-	"github.com/stock-simulator-server/src/portfolio"
 
 	"github.com/stock-simulator-server/src/utils"
 	"github.com/stock-simulator-server/src/valuable"
@@ -31,6 +29,7 @@ type JsonStock struct {
 type JsonAccount struct {
 	Name     string `json:"display_name"`
 	Password string `json:"password"`
+	Wallet   int64  `json:"wallet"`
 }
 type ConfigJson struct {
 	Stocks   map[string]JsonStock   `json:"stocks"`
@@ -69,14 +68,19 @@ func LoadConfig() {
 			log.Log.Error("error making user from config config: ", err)
 		} else {
 			user, _ := session.GetUserId(token)
-			portfolio.Portfolios[account.UserList[user].PortfolioId].Wallet = 100 * money.Thousand
-			portfolios = append(portfolios, account.UserList[user].PortfolioId)
+			if userConfig.Wallet != 0 {
+				portfolio.Portfolios[account.UserList[user].PortfolioId].Wallet = userConfig.Wallet
+				portfolios = append(portfolios, account.UserList[user].PortfolioId)
+			}
+
 		}
 
 	}
-	for _, stock := range stocks {
-		for _, port := range portfolios {
-			order.MakePurchaseOrder(stock, port, 1)
+	if config.AutoBuy {
+		for _, stock := range stocks {
+			for _, port := range portfolios {
+				order.MakePurchaseOrder(stock, port, 1)
+			}
 		}
 	}
 

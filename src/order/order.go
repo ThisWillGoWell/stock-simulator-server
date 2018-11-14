@@ -256,7 +256,6 @@ func executeTrade(o *TradeOrder) {
 }
 
 func calculateDetails(order *ProspectOrder) {
-	ledger.EntriesLock.EnableDebug()
 	ledger.EntriesLock.Acquire("prospect")
 	defer ledger.EntriesLock.Release()
 
@@ -323,7 +322,7 @@ func calculateSellDetails(amount int64, v *valuable.Stock, port *portfolio.Portf
 	d := Details{
 		SharePrice: v.CurrentPrice,
 		ShareCount: amount,
-		ShareValue: v.CurrentPrice * amount,
+		ShareValue: v.CurrentPrice * amount * -1,
 	}
 	principle := record.GetPrinciple(recordUuid, amount*-1)
 	pbt := d.ShareValue - principle

@@ -19,10 +19,10 @@ import (
 const (
 	volatilityMin      = 1
 	volatilityMax      = 10
-	volatilityMinTurns = 5
-	volatilityMaxTurns = 25
+	volatilityMinTurns = 10
+	volatilityMaxTurns = 100
 
-	timeSimulationPeriod = time.Second
+	timeSimulationPeriod = time.Millisecond * 500
 
 	ObjectType = "stock"
 )
@@ -96,9 +96,9 @@ func MakeStock(uuid, tickerID, name string, startPrice, openShares int64, runInt
 	stock.PriceChanger = &RandomPrice{
 		RunPercent:            timeSimulationPeriod.Seconds() / (runInterval.Seconds() * 1.0),
 		TargetPrice:           int64(rand.Intn(100000)),
-		PercentToChangeTarget: .07,
+		PercentToChangeTarget: .1,
 		Volatility:            5,
-		RandomNoise:           .07,
+		RandomNoise:           .15,
 	}
 	go stock.stockUpdateRoutine()
 	Stocks[uuid] = stock
@@ -178,7 +178,7 @@ func (randPrice *RandomPrice) change(stock *Stock) {
 		utils.MapNumFloat(randPrice.Volatility, volatilityMin, volatilityMax, volatilityMinTurns, volatilityMaxTurns)
 
 	if rand.Float64() <= randPrice.RandomNoise {
-		change = change * -1 * .5
+		change = change * -1 * .25
 	}
 	stock.CurrentPrice = int64(float64(stock.CurrentPrice) + (change * .5))
 
@@ -190,7 +190,7 @@ func (randPrice *RandomPrice) change(stock *Stock) {
 func (randPrice *RandomPrice) changeValues() {
 
 	// get what the upper and lower bounds in % of the current price
-	window := utils.MapNumFloat(randPrice.Volatility, volatilityMin, volatilityMax, 0, 0.3)
+	window := utils.MapNumFloat(randPrice.Volatility, volatilityMin, volatilityMax, 0, 0.4)
 	// select a random number on +- that
 	newTarget := utils.MapNumFloat(rand.Float64(), 0, 1, float64(randPrice.TargetPrice)*(1-window), float64(randPrice.TargetPrice)*(1+window))
 	// this is to prevent all the stocks to becoming 1.231234e-14
@@ -199,9 +199,13 @@ func (randPrice *RandomPrice) changeValues() {
 			newTarget = 1000 + newTarget
 		}
 	}
-
-	if newTarget < 100*money.Thousand && rand.Float64() < .01 {
-		newTarget = newTarget * 2
+	// to add
+	if newTarget < 100*money.Thousand && rand.Float64() < .05 {
+		if rand.Float64() < .5 {
+			newTarget = newTarget * .5
+		} else {
+			newTarget = newTarget * 2
+		}
 	}
 	if newTarget > 1*money.Million {
 		newTarget = 1*money.Million + (newTarget-1*money.Million)/2
