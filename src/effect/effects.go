@@ -3,6 +3,8 @@ package effect
 import (
 	"time"
 
+	"github.com/stock-simulator-server/src/merge"
+
 	"github.com/stock-simulator-server/src/wires"
 
 	"github.com/stock-simulator-server/src/lock"
@@ -13,25 +15,6 @@ var EffectLock = lock.NewLock("EffectLock")
 var effects = make(map[string]*Effect)
 var portfolioEffects = make(map[string]map[string]*Effect)
 var portfolioEffectTags = make(map[string]map[string]*Effect)
-
-// Calculate the total bonus  for a portfolio
-func TotalTradeEffect(portfolioUuid string) (TradeEffect, []string) {
-	EffectLock.Acquire("TotalBonus")
-	effect, ok := portfolioEffects[portfolioUuid]
-	totalEffect := TradeEffect{}
-	uuids := make([]string, 0)
-	if !ok {
-		return totalEffect, uuids
-	}
-	for uuid, e := range effect {
-		switch e.Type.(type) {
-		case TradingType:
-			totalEffect.Add(e.InnerEffect.(*TradeEffect))
-			uuids = append(uuids, uuid)
-		}
-	}
-	return totalEffect, uuids
-}
 
 func DeleteEffect(uuid string, lockAcquired bool) {
 	if lockAcquired {
@@ -44,10 +27,13 @@ func DeleteEffect(uuid string, lockAcquired bool) {
 	}
 	e := effects[uuid]
 	wires.EffectsDelete.Offer(e)
+
+	delete(portfolioEffectTags[e.PortfolioUuid], e.Tag)
 	delete(effects, uuid)
 	delete(portfolioEffects[e.PortfolioUuid], uuid)
 	if len(portfolioEffects[e.PortfolioUuid]) == 0 {
 		delete(portfolioEffects, e.PortfolioUuid)
+		delete(portfolioEffectTags, e.PortfolioUuid)
 	}
 	utils.RemoveUuid(uuid)
 }
@@ -58,7 +44,21 @@ func newEffect(portfolioUuid, title, effectType, tag string, innerEffect interfa
 	wires.EffectsNewObject.Offer(e)
 }
 
+func getTaggedEffect(portfolioUuid, tag string) *Effect {
+	pTagEffects, portfolioExists := portfolioEffectTags[portfolioUuid]
+	if !portfolioExists {
+		panic("portfolio not fond in update base: " + portfolioUuid)
+	}
+	effect, tagExists := pTagEffects[tag]
+	if !tagExists {
+		panic("portfolio: " + portfolioUuid + " does not have a base tag to update")
+	}
+	return effect
+}
+
 func MakeEffect(uuid, portfolioUuid, title, effectType, tag string, innerEffect interface{}, duration time.Duration) *Effect {
+	EffectLock.Acquire("make-effect")
+	defer EffectLock.Release()
 	newEffect := &Effect{
 		PortfolioUuid: portfolioUuid,
 		Uuid:          uuid,
@@ -74,15 +74,18 @@ func MakeEffect(uuid, portfolioUuid, title, effectType, tag string, innerEffect 
 	pEffects, ok := portfolioEffects[portfolioUuid]
 	if !ok {
 		pEffects = make(map[string]*Effect)
-		portfolioEffects[portfolioUuid] = effects
+		portfolioEffects[portfolioUuid] = pEffects
 	}
 	if tag != "" {
 		oldEffect, tagExists := portfolioEffectTags[portfolioUuid][tag]
 		if tagExists {
 			DeleteEffect(oldEffect.Uuid, true)
 		}
-		if _, portfolioExists := portfolioEffectTags[portfolioUuid]; !portfolioExists{
-			portfolioEffectTags[portfolioUuid] =
+		if _, portfolioExists := portfolioEffectTags[portfolioUuid]; !portfolioExists {
+			// the portfolio map was deleted by the Delete Effect
+			pEffects = make(map[string]*Effect)
+			portfolioEffects[portfolioUuid] = pEffects
+			portfolioEffectTags[portfolioUuid] = make(map[string]*Effect)
 		}
 		portfolioEffectTags[portfolioUuid][tag] = newEffect
 	}
@@ -93,25 +96,32 @@ func MakeEffect(uuid, portfolioUuid, title, effectType, tag string, innerEffect 
 	return newEffect
 }
 
-func UpdatePortfolioTag(portfolioUuid, tag string, newEffect *Effect) {
-	EffectLock.Acquire("update portfolio effect tag")
-	defer EffectLock.Release()
-	tags, exists := portfolioEffectTags[portfolioUuid]
-	if !exists {
-		panic("got tag: " + tag + " update for a portfolio: " + portfolioUuid + " portfolio not found")
-	}
-	taggedEffect, foundTag := tags[tag]
-	if !foundTag {
-		panic("got tag: " + tag + " update for a portfolio: " + portfolioUuid + " tag not found")
-	}
-	DeleteEffect(taggedEffect.Uuid, true)
-	portfolioEffects[portfolioUuid][newEffect.Uuid]
-
-}
+//func UpdatePortfolioTag(portfolioUuid, tag string, newEffect *Effect) {
+//	EffectLock.Acquire("update portfolio effect tag")
+//	defer EffectLock.Release()
+//	tags, exists := portfolioEffectTags[portfolioUuid]
+//	if !exists {
+//		panic("got tag: " + tag + " update for a portfolio: " + portfolioUuid + " portfolio not found")
+//	}
+//	taggedEffect, foundTag := tags[tag]
+//	if !foundTag {
+//		panic("got tag: " + tag + " update for a portfolio: " + portfolioUuid + " tag not found")
+//	}
+//	DeleteEffect(taggedEffect.Uuid, true)
+//	portfolioEffects[portfolioUuid][newEffect.Uuid]
+//
+//}
 
 type EffectType interface {
 	Name() string
 }
+
+// ticket charge on a stock bought
+// $5 per trade both sides of sale
+// used to be % of trade
+// fee on money managed
+//
+//
 
 type Effect struct {
 	PortfolioUuid string         `json:"portfolio_uuid"`
@@ -122,8 +132,35 @@ type Effect struct {
 	Duration      utils.Duration `json:"duration"`
 	StartTime     time.Time      `json:"time"`
 	Type          string         `json:"type"`
-	InnerEffect   interface{}
-	Tag           string `json:"tag"`
+	InnerEffect   interface{}    `json:"-"`
+	Tag           string         `json:"tag"`
+}
+
+type e2 struct {
+	PortfolioUuid string         `json:"portfolio_uuid"`
+	Uuid          string         `json:"uuid"`
+	Title         string         `json:"title"`
+	Active        bool           `json:"active"`
+	IsPublic      bool           `json:"public"`
+	Duration      utils.Duration `json:"duration"`
+	StartTime     time.Time      `json:"time"`
+	Type          string         `json:"type"`
+	Tag           string         `json:"tag"`
+}
+
+func (u *Effect) MarshalJSON() ([]byte, error) {
+
+	return merge.Json(e2{
+		PortfolioUuid: u.PortfolioUuid,
+		Uuid:          u.Uuid,
+		Title:         u.Title,
+		Active:        u.Active,
+		IsPublic:      u.IsPublic,
+		Duration:      u.Duration,
+		StartTime:     u.StartTime,
+		Type:          u.Type,
+		Tag:           u.Tag,
+	}, u.InnerEffect)
 }
 
 func RunEffectCleaner() {

@@ -23,9 +23,6 @@ type Response interface {
 
 var orderChannel = make(chan Order, 30)
 
-const BaseTaxRate = 0.12
-const TradeFee = 0.03
-
 func Run() {
 	go func() {
 		for o := range orderChannel {
@@ -85,13 +82,14 @@ func (br *BasicResponse) IsSuccess() bool  { return br.Success }
 func (br *BasicResponse) GetError() string { return br.Err }
 
 type Details struct {
-	SharePrice int64 `json:"share_price"`
-	ShareCount int64 `json:"share_count"`
-	ShareValue int64 `json:"shares_valuere"`
-	Tax        int64 `json:"tax"`
-	Fees       int64 `json:"fees"`
-	Bonus      int64 `json:"bonus"`
-	Result     int64 `json:"result"`
+	SharePrice    int64    `json:"share_price"`
+	ShareCount    int64    `json:"share_count"`
+	ShareValue    int64    `json:"shares_valuere"`
+	Tax           int64    `json:"tax"`
+	Fees          int64    `json:"fees"`
+	Bonus         int64    `json:"bonus"`
+	Result        int64    `json:"result"`
+	ActiveEffects []string `json:"active_effects"`
 }
 
 // note this does not validate if the stock exists or not, that's done in the trade() function
@@ -173,6 +171,7 @@ func executeTrade(o *TradeOrder) {
 		failureOrder("portfolio does not exist, this is very bad", o)
 		return
 	}
+	tradeEffects, activeEffects := effect.TotalTradeEffect(port.Uuid)
 
 	port.Lock.Acquire("trade")
 	defer port.Lock.Release()
@@ -214,7 +213,7 @@ func executeTrade(o *TradeOrder) {
 		}
 		value.OpenShares -= o.Amount
 		// Update the portfolio with the new ledgerEntry
-		details = calculateBuyDetails(o.Amount, value, port)
+		details = calculateBuyDetails(o.Amount, value, tradeEffects, activeEffects)
 		port.Wallet += details.Result
 		//add the holder amount
 		ledgerEntry.Amount += o.Amount
@@ -239,7 +238,7 @@ func executeTrade(o *TradeOrder) {
 		value.OpenShares += amount
 		// remove from ledger
 		ledgerEntry.Amount -= amount
-		details = calculateSellDetails(o.Amount, value, port, ledgerEntry.RecordBookId)
+		details = calculateSellDetails(o.Amount, value, ledgerEntry.RecordBookId, tradeEffects, activeEffects)
 		port.Wallet += details.Result
 		successOrder(o, details)
 	}
@@ -271,6 +270,8 @@ func calculateDetails(order *ProspectOrder) {
 		response.Err = "portfolio id not found"
 		return
 	}
+	tradeEffect, activeEffects := effect.TotalTradeEffect(order.PortfolioID)
+
 	v.GetLock().Acquire("calculate-order-details")
 	defer v.GetLock().Release()
 	port.Lock.Acquire("calculate-order-details")
@@ -280,7 +281,7 @@ func calculateDetails(order *ProspectOrder) {
 
 	if order.Amount > 0 {
 		response.Success = true
-		response.OrderDetails = calculateBuyDetails(order.Amount, v, port)
+		response.OrderDetails = calculateBuyDetails(order.Amount, v, tradeEffect, activeEffects)
 	} else {
 		ledgerPortfolio, ledgerExists := ledger.EntriesPortfolioStock[order.PortfolioID]
 		if ledgerExists {
@@ -295,7 +296,7 @@ func calculateDetails(order *ProspectOrder) {
 			} else {
 				recordUuid = ledgerEntry.RecordBookId
 				response.Success = true
-				response.OrderDetails = calculateSellDetails(order.Amount, v, port, recordUuid)
+				response.OrderDetails = calculateSellDetails(order.Amount, v, recordUuid, tradeEffect, activeEffects)
 
 			}
 		}
@@ -303,37 +304,41 @@ func calculateDetails(order *ProspectOrder) {
 	order.ResponseChannel <- response
 }
 
-func calculateBuyDetails(amount int64, v *valuable.Stock, port *portfolio.Portfolio, tradeEffect effect.TradeEffect) Details {
+func calculateBuyDetails(amount int64, v *valuable.Stock, tradeEffect *effect.TradeEffect, activeTradeEffects []string) Details {
 
 	d := Details{
-		SharePrice: v.CurrentPrice,
-		ShareCount: amount,
-		ShareValue: v.CurrentPrice * amount,
-		Tax:        0,
-		Fees:       int64(float64(*tradeEffect.BuyFeeAmount) * *tradeEffect.BuyFeeMultiplier),
-		Bonus:      0,
-		Result:     v.CurrentPrice * amount * -1,
+		SharePrice:    v.CurrentPrice,
+		ShareCount:    amount,
+		ShareValue:    v.CurrentPrice * amount,
+		Tax:           0,
+		Fees:          int64(float64(*tradeEffect.BuyFeeAmount) * *tradeEffect.BuyFeeMultiplier),
+		Bonus:         0,
+		Result:        v.CurrentPrice * amount * -1,
+		ActiveEffects: activeTradeEffects,
 	}
 	d.Result = d.ShareValue*-1 - d.Fees
 	return d
 }
 
-func calculateSellDetails(amount int64, v *valuable.Stock, port *portfolio.Portfolio, recordUuid string, tradeEffect effect.TradeEffect) Details {
+func calculateSellDetails(amount int64, v *valuable.Stock, recordUuid string, tradeEffect *effect.TradeEffect, activeTradeEffects []string) Details {
 	d := Details{
-		SharePrice: v.CurrentPrice,
-		ShareCount: amount,
-		ShareValue: v.CurrentPrice * amount * -1,
+		SharePrice:    v.CurrentPrice,
+		ShareCount:    amount,
+		ShareValue:    v.CurrentPrice * amount * -1,
+		ActiveEffects: activeTradeEffects,
 	}
 	principle := record.GetPrinciple(recordUuid, amount*-1)
 	pbt := d.ShareValue - principle
 	taxes := 0.0
 	if pbt > 0 {
-		taxes = float64(pbt) * BaseTaxRate
+		taxes = float64(pbt) * *tradeEffect.TaxPercent
+		d.Bonus = int64(float64(pbt) * *tradeEffect.BonusProfitMultiplier)
 	}
-	fees := int64(float64(d.ShareValue) * TradeFee)
+	fees := int64(float64(*tradeEffect.SellFeeAmount) * *tradeEffect.SellFeeMultiplier)
 	d.Tax = int64(taxes)
 	d.Fees = int64(fees)
 	d.Result = d.ShareValue - d.Tax - d.Fees + d.Bonus
+
 	return d
 }
 

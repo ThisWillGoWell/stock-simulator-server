@@ -165,6 +165,7 @@ func StartDetectChanges() {
 	allUpdates.RegisterInput(wires.LedgerUpdate.GetBufferedOutput(10000))
 	allUpdates.RegisterInput(wires.UsersUpdate.GetBufferedOutput(10000))
 	allUpdates.RegisterInput(wires.BookUpdate.GetBufferedOutput(10000))
+	allUpdates.RegisterInput(wires.EffectsUpdate.GetBufferedOutput(10000))
 	PublicSubscribeChange.EnableCopyMode()
 	//allUpdates.RegisterInput(wires.NotificationUpdate.GetBufferedOutput(10000))
 	subscribeUpdateChannel := allUpdates.GetBufferedOutput(10000)

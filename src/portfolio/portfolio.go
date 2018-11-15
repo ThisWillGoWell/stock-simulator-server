@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/stock-simulator-server/src/effect"
+
 	"github.com/stock-simulator-server/src/money"
 
 	"github.com/stock-simulator-server/src/change"
@@ -50,7 +52,13 @@ func (port *Portfolio) GetType() string {
 }
 
 func NewPortfolio(portfolioUuid, userUuid string) (*Portfolio, error) {
-	return MakePortfolio(portfolioUuid, userUuid, 10*money.Thousand, 0)
+	port, err := MakePortfolio(portfolioUuid, userUuid, 10*money.Thousand, 0)
+	if err != nil {
+		return port, err
+	} else {
+		effect.NewBaseTradeEffect(port.Uuid)
+	}
+	return port, err
 }
 
 func MakePortfolio(uuid, userUUID string, wallet, level int64) (*Portfolio, error) {
@@ -153,7 +161,7 @@ func (port *Portfolio) LevelUp() error {
 	}
 	port.Wallet = port.Wallet - l.Cost
 	port.Level = nextLevel
-
+	effect.UpdateBaseProfit(port.Uuid, l.ProfitMultiplier)
 	go port.Update()
 	return nil
 }
