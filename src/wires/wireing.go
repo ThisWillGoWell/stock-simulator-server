@@ -28,8 +28,13 @@ var RecordsNewObject = duplicator.MakeDuplicator("records-new")
 var BookNewObject = duplicator.MakeDuplicator("book-new")
 var BookUpdate = duplicator.MakeDuplicator("book-update")
 
+var EffectsNewObject = duplicator.MakeDuplicator("new-effects")
+var EffectsDelete = duplicator.MakeDuplicator("delete-effects")
+var EffectsUpdate = duplicator.MakeDuplicator("update-effects")
+
 func ConnectWires() {
 	// Enable Copy Mode on all the global new input channels
+	UsersUpdate.EnableCopyMode()
 	UsersNewObject.EnableCopyMode()
 	StocksNewObject.EnableCopyMode()
 	PortfolioNewObject.EnableCopyMode()
@@ -37,8 +42,10 @@ func ConnectWires() {
 	NotificationNewObject.EnableCopyMode()
 	BookNewObject.EnableCopyMode()
 	// enable copy mode only account, the rest have copy mode on a channel before
-	UsersUpdate.EnableCopyMode()
 	ItemsUpdate.EnableCopyMode()
 	BookUpdate.EnableCopyMode()
+
+	EffectsNewObject.EnableCopyMode()
+	EffectsUpdate.EnableCopyMode()
 
 }

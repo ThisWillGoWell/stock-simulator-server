@@ -23,6 +23,7 @@ func RunGlobalSender() {
 		globalObjects.RegisterInput(wires.LedgerNewObject.GetBufferedOutput(10000))
 		globalObjects.RegisterInput(wires.BookNewObject.GetBufferedOutput(10000))
 		globalObjects.RegisterInput(wires.RecordsNewObject.GetBufferedOutput(10000))
+		globalObjects.RegisterInput(wires.EffectsNewObject.GetBufferedOutput(10000))
 		out := globalObjects.GetBufferedOutput(100000)
 		for ele := range out {
 			GlobalMessages.Offer(messages.NewObjectMessage(ele.(change.Identifiable)))

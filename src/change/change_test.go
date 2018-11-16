@@ -123,3 +123,46 @@ func TestArrayStructChange(t *testing.T) {
 	wires.ItemsUpdate.Offer(v)
 	<-done
 }
+
+type nestedObject struct {
+	Name   string     `change:"-"`
+	Nested *nestedTwo `change:"inner"`
+}
+type nestedTwo struct {
+	Number      int          `change:"-"`
+	NestedAgain *nestedThree `change:"inner"`
+}
+type nestedThree struct {
+	Boolean bool `change:"-"`
+}
+
+func (*nestedObject) GetId() string {
+	return "id"
+}
+
+func (*nestedObject) GetType() string {
+	return "test"
+}
+func TestInnerChanges(t *testing.T) {
+	StartDetectChanges()
+	done := waitForChanges(3, t)
+	v := &nestedObject{
+		Name: "name1",
+		Nested: &nestedTwo{
+			Number: 2,
+			NestedAgain: &nestedThree{
+				true,
+			},
+		},
+	}
+	wires.ConnectWires()
+	RegisterPublicChangeDetect(v)
+	wires.EffectsUpdate.Offer(v)
+	v.Name = "hello"
+	wires.EffectsUpdate.Offer(v)
+	v.Nested.Number = 1
+	v.Nested.NestedAgain.Boolean = false
+	wires.EffectsUpdate.Offer(v)
+	<-done
+
+}
