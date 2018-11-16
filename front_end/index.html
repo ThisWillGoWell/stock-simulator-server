@@ -672,7 +672,6 @@
 					</div>
 					<div id="research--view" class="view">
 						<div class="flex-grid--container">
-							
 							<div class="flex-column-100">
 								<div id="research-chart-sandbox" class="card">
 									<div class="query-type-label">TYPE</div>
@@ -694,40 +693,39 @@
 									<div id="research-graph-svg-main"></div>
 								</div>
 							</div>
-									<!-- <div class="flex-column-100">
-										<div class="item-category buffer-top">TRADE HISTORY</div>
-									</div> -->
-								<!-- <div class="flex-column-100"> -->
-									<!-- <div class="flex-column-50">
-										<div class="card">
-											<table class="table">
-												<thead class="table-top-bar">
-													<tr>
-														<th scope="col" v-on:click="sortCol('time')">Time</th>
-														<th scope="col" v-on:click="sortCol('results')">Result</th>
-														<th scope="col" v-on:click="sortCol('bonus')">Bonus</th>
-													</tr>
-												</thead>
-												<tbody>
-													<tr v-for="trade in tradeHistory" :key='trade.uuid' v-bind:uuid="'trade' + trade.uuid" v-on:click='openTradeHistory(trade.uuid)'>
-														<th scope="row" v-bind:tid="trade.time">{{ trade.time }}</th>
-														<td>${{ trade.result }}</td>
-														<td>{{ trade.bonus }}</td>
-														
-													</tr>
-												</tbody>
-											</table>
+							<div class="flex-column-100">
+								<div class="item-category buffer-top">TRADE HISTORY</div>
+							</div>
+							<div class="flex-column-100">
+								<div class="flex-column-50">
+									<div class="card">
+										<table class="table">
+											<thead class="table-top-bar">
+												<tr>
+													<th scope="col" v-on:click="sortCol('time')">Time</th>
+													<th scope="col" v-on:click="sortCol('results')">Result</th>
+													<th scope="col" v-on:click="sortCol('bonus')">Bonus</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr v-for="trade in tradeHistory" :key='trade.uuid' v-bind:uuid="'trade' + trade.uuid" v-on:click='openTradeHistory(trade.uuid)'>
+													<th scope="row" v-bind:tid="trade.time">{{ trade.time }}</th>
+													<td>${{ trade.result }}</td>
+													<td>{{ trade.bonus }}</td>
+													
+												</tr>
+											</tbody>
+										</table>
+									</div>
+								</div>
+								<div class="flex-column-50">
+									<div class="card">
+										<div class="receipt">
+											<div>{{ receipt.time }}</div>
+											<div>{{ receipt.ticker }}</div>
 										</div>
 									</div>
-									<div class="flex-column-50">
-										<div class="card">
-											<div class="receipt">
-												<div>{{ receipt.time }}</div>
-												<div>{{ receipt.ticker }}</div>
-											</div>
-										</div>
-									</div> -->
-								</div>
+								</div> 
 							</div>
 						</div>
 					</div>
@@ -817,7 +815,6 @@
 										</div>
 									</div>
 								</div>
-								</div>
 								<div class="card settings-card flex-column-100">
 									<div class="settings-grp">
 										<div class="settings-input-grp">
@@ -840,6 +837,7 @@
 								</div>
 							</div>
 						</div>
+					</div>
 					
 						<!-- TODO: this tab collides with the sidebar -->
 
