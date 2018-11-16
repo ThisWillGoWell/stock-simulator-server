@@ -141,14 +141,13 @@ registerRoute("alert", function(msg) {
 });
 
 
-
 $(document).ready(function() {
   
+  load_store_tab(); // store.js
   load_settings_tab(); // settings.js
   load_dashboard_tab(); // dashboard.js
   load_stocks_tab(); // stocks.js
   load_investors_tab(); // investors.js
-  load_store_tab(); // store.js
   load_research_tab(); //research.js
   load_topbar_vue(); // topbar.js
   load_sidebar_vue(); // sidebar.js
