@@ -3,6 +3,8 @@ package effect
 import (
 	"time"
 
+	"github.com/stock-simulator-server/src/change"
+
 	"github.com/stock-simulator-server/src/merge"
 
 	"github.com/stock-simulator-server/src/wires"
@@ -15,6 +17,8 @@ var EffectLock = lock.NewLock("EffectLock")
 var effects = make(map[string]*Effect)
 var portfolioEffects = make(map[string]map[string]*Effect)
 var portfolioEffectTags = make(map[string]map[string]*Effect)
+
+const EffectIdType = "effect"
 
 func DeleteEffect(uuid string, lockAcquired bool) {
 	if lockAcquired {
@@ -38,10 +42,11 @@ func DeleteEffect(uuid string, lockAcquired bool) {
 	utils.RemoveUuid(uuid)
 }
 
-func newEffect(portfolioUuid, title, effectType, tag string, innerEffect interface{}, duration time.Duration) {
+func newEffect(portfolioUuid, title, effectType, tag string, innerEffect interface{}, duration time.Duration) *Effect {
 	uuid := utils.SerialUuid()
 	e := MakeEffect(uuid, portfolioUuid, title, tag, effectType, innerEffect, duration)
 	wires.EffectsNewObject.Offer(e)
+	return e
 }
 
 func getTaggedEffect(portfolioUuid, tag string) *Effect {
@@ -63,7 +68,6 @@ func MakeEffect(uuid, portfolioUuid, title, effectType, tag string, innerEffect 
 		PortfolioUuid: portfolioUuid,
 		Uuid:          uuid,
 		Title:         title,
-		Active:        true,
 		StartTime:     time.Now(),
 		Duration:      utils.Duration{Duration: duration},
 		Type:          effectType,
@@ -91,7 +95,7 @@ func MakeEffect(uuid, portfolioUuid, title, effectType, tag string, innerEffect 
 	}
 	pEffects[newEffect.Uuid] = newEffect
 	effects[newEffect.Uuid] = newEffect
-
+	change.RegisterPublicChangeDetect(newEffect)
 	utils.RegisterUuid(uuid, newEffect)
 	return newEffect
 }
@@ -126,13 +130,11 @@ type EffectType interface {
 type Effect struct {
 	PortfolioUuid string         `json:"portfolio_uuid"`
 	Uuid          string         `json:"uuid"`
-	Title         string         `json:"title"`
-	Active        bool           `json:"active"`
-	IsPublic      bool           `json:"public"`
+	Title         string         `json:"title" change:"-"`
 	Duration      utils.Duration `json:"duration"`
 	StartTime     time.Time      `json:"time"`
 	Type          string         `json:"type"`
-	InnerEffect   interface{}    `json:"-"`
+	InnerEffect   interface{}    `json:"-" change:"inner"`
 	Tag           string         `json:"tag"`
 }
 
@@ -140,8 +142,6 @@ type e2 struct {
 	PortfolioUuid string         `json:"portfolio_uuid"`
 	Uuid          string         `json:"uuid"`
 	Title         string         `json:"title"`
-	Active        bool           `json:"active"`
-	IsPublic      bool           `json:"public"`
 	Duration      utils.Duration `json:"duration"`
 	StartTime     time.Time      `json:"time"`
 	Type          string         `json:"type"`
@@ -154,8 +154,6 @@ func (u *Effect) MarshalJSON() ([]byte, error) {
 		PortfolioUuid: u.PortfolioUuid,
 		Uuid:          u.Uuid,
 		Title:         u.Title,
-		Active:        u.Active,
-		IsPublic:      u.IsPublic,
 		Duration:      u.Duration,
 		StartTime:     u.StartTime,
 		Type:          u.Type,
@@ -173,4 +171,23 @@ func RunEffectCleaner() {
 		}
 		EffectLock.Release()
 	}
+}
+
+func GetAllEffects() []*Effect {
+	EffectLock.Acquire("get-all")
+	defer EffectLock.Release()
+	effectsSlice := make([]*Effect, len(effects))
+	i := 0
+	for _, e := range effects {
+		effectsSlice[i] = e
+		i++
+	}
+	return effectsSlice
+}
+func (*Effect) GetType() string {
+	return EffectIdType
+}
+
+func (e *Effect) GetId() string {
+	return e.Uuid
 }

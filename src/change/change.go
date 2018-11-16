@@ -1,8 +1,8 @@
 package change
 
 import (
-	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/stock-simulator-server/src/log"
 
@@ -93,13 +93,10 @@ func registerChangeDetect(o Identifiable, outputChan chan interface{}) error {
 	//get the include tags
 	subscribeablesLock.Acquire("register-change")
 	defer subscribeablesLock.Release()
-	if o.GetId() == "291" {
-		fmt.Println("")
-	}
 
 	if _, ok := subscribeables[o.GetType()+o.GetId()]; ok {
 		log.Alerts.Fatal("Panic in Change Detect, cant register since already exists", o.GetId(), o.GetId())
-		log.Log.Fatal("Panic in Change Detect, cant register since already existse", o.GetId(), o.GetId())
+		log.Log.Fatal("Panic in Change Detect, cant register since already exists", o.GetId(), o.GetId())
 		panic("change detect already registered, check the code" + o.GetType() + o.GetId())
 	}
 
@@ -111,33 +108,64 @@ func registerChangeDetect(o Identifiable, outputChan chan interface{}) error {
 	newChangeDetect := &SubscribeUpdate{
 		Type:          o.GetType(),
 		Id:            o.GetId(),
-		changeDetects: make(map[string]*ChangeField),
+		changeDetects: getAllFields(o),
 		TargetOutput:  outputChan,
-	}
-
-	for i := 0; i < t.NumField(); i++ {
-		field := t.Field(i)
-		_, exists := field.Tag.Lookup(changeTag)
-		if exists {
-			jsonFieldName, exists := field.Tag.Lookup("json")
-			if !exists {
-				jsonFieldName = field.Name
-			}
-
-			changeField := &ChangeField{
-				Value: nil,
-				Field: jsonFieldName,
-			}
-			newChangeDetect.changeDetects[field.Name] = changeField
-		}
 	}
 
 	subscribeables[o.GetType()+o.GetId()] = newChangeDetect
 	return nil
 }
 
+/*
+so want to be able to recursively build objects that are represented as
+n-dimensional (though currently only do 2) in the system but 1-dimensional external
+
+*/
+
+func getAllFields(o interface{}) map[string]interface{} {
+	t := reflect.TypeOf(o)
+	if t.Kind() == reflect.Ptr || t.Kind() == reflect.Interface {
+		t = reflect.ValueOf(o).Elem().Type()
+		o = reflect.ValueOf(o).Elem().Interface()
+	}
+
+	changes := make(map[string]interface{})
+
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		value, exists := field.Tag.Lookup(changeTag)
+		if exists {
+			if value == "inner" {
+
+				changes[field.Name] = getAllFields(reflect.ValueOf(o).FieldByName(field.Name).Interface())
+			} else {
+				jsonFieldName, exists := field.Tag.Lookup("json")
+
+				if !exists {
+					jsonFieldName = field.Name
+				} else {
+					commaIndex := strings.Index(jsonFieldName, ",")
+					if commaIndex != -1 {
+						jsonFieldName = jsonFieldName[:commaIndex]
+					}
+				}
+
+				changeField := &ChangeField{
+					Value: getValue(o, field.Name),
+					Field: jsonFieldName,
+				}
+				changes[field.Name] = changeField
+			}
+		}
+	}
+	return changes
+}
+
 func getValue(o interface{}, name string) interface{} {
 	var r reflect.Value
+	if len(name) == 0 {
+		return o
+	}
 	//get the type of the interface provided
 	t := reflect.TypeOf(o)
 	// if pointer, dereference it and then get the field
@@ -146,12 +174,13 @@ func getValue(o interface{}, name string) interface{} {
 	} else {
 		r = reflect.ValueOf(o).FieldByName(name)
 	}
-
+	var val interface{}
 	//is the value of that field a pointer?
 	if r.Kind() == reflect.Ptr || r.Kind() == reflect.Interface {
-		return reflect.Indirect(r)
+		val = reflect.Indirect(r)
 	}
-	return r.Interface()
+	val = r.Interface()
+	return val
 }
 
 func StartDetectChanges() {
@@ -182,22 +211,12 @@ func StartDetectChanges() {
 				continue
 			}
 
-			changedFields := make([]*ChangeField, 0)
-			changed := false
-			for filedName, fieldChange := range changeDetect.changeDetects {
-				currentValue := getValue(update, filedName)
-
-				if !reflect.DeepEqual(currentValue, fieldChange.Value) {
-					changed = true
-					fieldChange.Value = currentValue
-					changedFields = append(changedFields, &ChangeField{fieldChange.Field, fieldChange.Value})
-				}
-			}
-			if changed {
+			changes := getAllChanged(update, changeDetect.changeDetects)
+			if len(changes) != 0 {
 				changeDetect.TargetOutput <- &ChangeNotify{
 					Type:    changeDetect.Type,
 					Id:      changeDetect.Id,
-					Changes: changedFields,
+					Changes: changes,
 				}
 			}
 			subscribeablesLock.Release()
@@ -205,10 +224,29 @@ func StartDetectChanges() {
 	}()
 }
 
+func getAllChanged(o interface{}, fields map[string]interface{}) []*ChangeField {
+	changedFields := make([]*ChangeField, 0)
+	for key, value := range fields {
+		switch value.(type) {
+		case *ChangeField:
+			fieldChange := value.(*ChangeField)
+			currentValue := getValue(o, key)
+			if !reflect.DeepEqual(currentValue, fieldChange.Value) {
+				fieldChange.Value = currentValue
+				changedFields = append(changedFields, &ChangeField{fieldChange.Field, fieldChange.Value})
+			}
+		case map[string]interface{}:
+			innerObject := getValue(o, key)
+			changedFields = append(changedFields, getAllChanged(innerObject, value.(map[string]interface{}))...)
+		}
+	}
+	return changedFields
+}
+
 type SubscribeUpdate struct {
 	Type          string
 	Id            string
-	changeDetects map[string]*ChangeField
+	changeDetects map[string]interface{}
 	TargetOutput  chan interface{} `json:"-"`
 }
 
@@ -232,25 +270,26 @@ func (cn *ChangeNotify) GetType() string {
 	return "Change-Notify"
 }
 
-func GetCurrentValues() []*ChangeNotify {
-	subscribeablesLock.Acquire("current values")
-	defer subscribeablesLock.Release()
-	values := make([]*ChangeNotify, 0)
-	for _, value := range subscribeables {
-		currentVals := make([]*ChangeField, 0)
-		for _, val := range value.changeDetects {
-			currentVals = append(currentVals, val)
-		}
-
-		newVal := &ChangeNotify{
-			Type:    value.Type,
-			Id:      value.Id,
-			Changes: currentVals,
-		}
-		values = append(values, newVal)
-	}
-	return values
-}
+//
+//func GetCurrentValues() []*ChangeNotify {
+//	subscribeablesLock.Acquire("current values")
+//	defer subscribeablesLock.Release()
+//	values := make([]*ChangeNotify, 0)
+//	for _, value := range subscribeables {
+//		currentVals := make([]*ChangeField, 0)
+//		for _, val := range value.changeDetects {
+//			currentVals = append(currentVals, val)
+//		}
+//
+//		newVal := &ChangeNotify{
+//			Type:    value.Type,
+//			Id:      value.Id,
+//			Changes: currentVals,
+//		}
+//		values = append(values, newVal)
+//	}
+//	return values
+//}
 
 func Test() {
 

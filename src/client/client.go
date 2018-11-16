@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/stock-simulator-server/src/effect"
+
 	"github.com/stock-simulator-server/src/metics"
 
 	"github.com/stock-simulator-server/src/log"
@@ -138,6 +140,9 @@ func (client *Client) tx(sessionToken string) {
 	}
 	for _, v := range records {
 		client.sendMessage(messages.NewObjectMessage(v))
+	}
+	for _, e := range effect.GetAllEffects() {
+		client.sendMessage(messages.NewObjectMessage(e))
 	}
 
 	//finally register the broadcast message as a input to the clients message sender
