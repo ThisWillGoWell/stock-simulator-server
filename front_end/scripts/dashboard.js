@@ -42,6 +42,43 @@ function load_dashboard_tab() {
       },
       sellAllSetting: getSellAllSetting,
       realValuesSetting: getRealValuesSetting,
+      buyOrder: function(tid, uuid) {
+        console.log("BUY ORDER: "+uuid);
+        var ticker_id = tid;
+            
+
+        console.log("TID: " + tid);
+
+        var stock = Object.values(vm_stocks.stocks).filter(
+            d => d.ticker_id === ticker_id
+        )[0];
+
+        // Set show modal to true
+        buySellModal.showModal = true;
+        buySellModal.stock_uuid = stock.uuid;
+
+        toggleModal();
+      },
+      sellOrder: function(tid, uuid) {
+          console.log("SELL ORDER: "+uuid);
+          // var ticker_id = $(this)
+          //     .attr("tid");
+
+          var ticker_id = tid;
+
+          console.log("TID: " + tid);
+
+          var stock = Object.values(vm_stocks.stocks).filter(
+              d => d.ticker_id === ticker_id
+          )[0];
+          
+          // Set show modal to true
+          buySellModal.showModal = true;
+          buySellModal.stock_uuid = stock.uuid;
+
+          toggleModal();
+          
+      },
     },
     computed: {
       currUserPortfolio: function() {
@@ -159,24 +196,52 @@ function load_dashboard_tab() {
   });
 
   // Set stock row clicks
-  $("#owned-stocks").on("click", "tr.clickable", function(event) {
-    var ticker_id = $(this)
-        .find(".stock-ticker-id")
-        .attr("tid");
+  // $("#owned-stocks").on("click", "tr.clickable", function(event) {
+  //   var ticker_id = $(this)
+  //       .find(".stock-ticker-id")
+  //       .attr("tid");
 
-    console.log("TID: " + ticker_id);
+  //   console.log("TID: " + ticker_id);
 
-    var stock = Object.values(vm_stocks.stocks).filter(
-        d => d.ticker_id === ticker_id
-    )[0];
+  //   var stock = Object.values(vm_stocks.stocks).filter(
+  //       d => d.ticker_id === ticker_id
+  //   )[0];
 
-    // Set show modal to true
-    buySellModal.showModal = true;
-    buySellModal.stock_uuid = stock.uuid;
+  //   // Set show modal to true
+  //   buySellModal.showModal = true;
+  //   buySellModal.stock_uuid = stock.uuid;
 
-    toggleModal();
-  });
+  //   toggleModal();
+
+  // });
+
+  // Set stock row clicks
+  // $("#owned-stocks").on("click", "tr.clickable", function(event) {
+  //   var ticker_id = $(this)
+  //       .find(".stock-ticker-id")
+  //       .attr("tid");
+
+  //   console.log("TID: " + ticker_id);
+
+  //   var stock = Object.values(vm_stocks.stocks).filter(
+  //       d => d.ticker_id === ticker_id
+  //   )[0];
+
+  //   // Set show modal to true
+  //   buySellModal.showModal = true;
+  //   buySellModal.stock_uuid = stock.uuid;
+
+  //   toggleModal();
+
+  // });
+
 }
+
+
+
+
+
+
 
 function getROI(portfolio_uuid, stock_id, stock_price) {
   var userRecordsBooks = Object.values(vm_recordBook.records).filter(d => d.portfolio_uuid === portfolio_uuid);

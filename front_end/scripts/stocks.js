@@ -178,7 +178,48 @@ function load_stocks_tab() {
         buySellModal.stock_uuid = stock.uuid;
 
         toggleModal();
-      }
+      },
+      buyOrder: function(tid, uuid) {
+          console.log("BUY ORDER: "+uuid);
+          // var ticker_id = $(this)
+          //     .attr("tid");
+
+          var ticker_id = tid;
+
+          console.log("TID: " + ticker_id);
+
+          var stock = Object.values(vm_stocks.stocks).filter(
+              d => d.ticker_id === ticker_id
+          )[0];
+          buySellModal.setIsBuying(true);
+          // Set show modal to true
+          buySellModal.showModal = true;
+          buySellModal.stock_uuid = uuid;
+
+          toggleModal();
+      },
+      sellOrder: function(tid, uuid) {
+        console.log("SELL ORDER: "+uuid);
+        // var ticker_id = $(this)
+        //     .attr("tid");
+
+        var ticker_id = tid;
+
+        console.log("TID: " + ticker_id);
+
+        var stock = Object.values(vm_stocks.stocks).filter(
+            d => d.ticker_id === ticker_id
+        )[0];
+        
+        // Set show modal to true
+        buySellModal.showModal = true;
+        buySellModal.stock_uuid = uuid;
+
+        toggleModal();
+        $("#calc-btn-sell").addClass("fill");
+        $("#calc-btn-buy").removeClass("fill");
+        buySellModal.setIsBuying(false);
+    },
     },
     computed: {
       changePercentSetting: function() {
@@ -307,23 +348,23 @@ function load_stocks_tab() {
   });
 
     // Set stock row clicks
-    $("#stock-list table").on("click", "tr.clickable", function(event) {
-        var ticker_id = $(this)
-            .find(".stock-ticker-id")
-            .attr("tid");
+    // $("#stock-list table").on("click", "tr.clickable", function(event) {
+        // var ticker_id = $(this)
+        //     .find(".stock-ticker-id")
+        //     .attr("tid");
 
-        console.log("TID: " + ticker_id);
+        // console.log("TID: " + ticker_id);
 
-        var stock = Object.values(vm_stocks.stocks).filter(
-            d => d.ticker_id === ticker_id
-        )[0];
+        // var stock = Object.values(vm_stocks.stocks).filter(
+        //     d => d.ticker_id === ticker_id
+        // )[0];
 
-        // Set show modal to true
-        buySellModal.showModal = true;
-        buySellModal.stock_uuid = stock.uuid;
+        // // Set show modal to true
+        // buySellModal.showModal = true;
+        // buySellModal.stock_uuid = stock.uuid;
 
-        toggleModal();
-    });
+        // toggleModal();
+    // });
 
     // $(".stat-value svg").on("mouseenter", function() {
     //   console.log("hovered");

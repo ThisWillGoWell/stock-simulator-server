@@ -8,21 +8,24 @@ function load_research_tab() {
             receipt: {
                 ticker: "",
                 time: new Date(),
-            }
+            },
+            gType: "stocks",
         },
         methods: {
             drawGraph: function() {
                 // Get user set variables for graphing
                 var fields = [];
                 var uuids = [];
-                var type = getSelectized('#research-graph-type-select')[0];
-                if (type === "stock") {
+                //var type = getSelectized('#research-graph-type-select')[0];
+                var type = this.gType;
+                console.log("ACTIVE CHART TYPE: "+type);
+                if (type === "stocks") {
                     let selected = getSelectized('#research-graph-stock-select');
                     selected.forEach(function(d) {
                         uuids.push(d);
                         fields.push('current_price');
                     })
-                } else if (type === "portfolio") {
+                } else if (type === "investors") {
                     let selected = getSelectized('#research-graph-user-select');
                     selected.forEach(function(d) {
                         uuids.push(d);
@@ -60,7 +63,32 @@ function load_research_tab() {
                 this.receipt.ticker = vm_stocks.stocks[trade.stock_uuid].ticker_id;
                 this.receipt.time = trade.time;
 
-            }
+            },
+            queryStocks: function() {
+                if(this.gType !== "stocks") {
+                    this.gType = "stocks";
+                    $('#query-type-container .option.stocks').addClass("active");
+                    $('#query-type-container .option.investors').removeClass("active");
+                    $('.query-stocks').removeClass('hidden');
+                    $('.query-investors').addClass('hidden');
+                    $('#research-graph-svg-main').empty();
+                    $('.query-items-label').text("STOCKS");
+                    TweenMax.from($('.query-items-label'), 0.2, {ease: Back.easeOut.config(1.7), x:-75, opacity:0});
+                }
+            },
+            queryInvestors: function() {
+                if(this.gType !== "investors") {
+                    this.gType = "investors";
+                    $('#query-type-container .option.investors').addClass("active");
+                    $('#query-type-container .option.stocks').removeClass("active");
+                    $('.query-stocks').addClass('hidden');
+                    $('.query-investors').removeClass('hidden');
+                    $('#research-graph-svg-main').empty();
+                    $('.query-items-label').text("INVESTORS");
+                    TweenMax.from($('.query-items-label'), 0.2, {ease: Back.easeOut.config(1.7), x:-75, opacity:0});
+                }
+            },
+            
         },
         computed: {
             tradeHistory: function() {
@@ -80,19 +108,20 @@ function load_research_tab() {
     });
 
     function updateSelections(newSelection) {
-        console.log("herer");
+        //console.log("herer");
         //var type = getSelectized('#research-graph-type-select')[0];
         if (newSelection === 'stock') {
             $('#query-term-users').addClass("shrunk");
             $('#query-term-users').removeClass("expanded");
             $('#query-term-stocks').addClass("expanded");
             $('#query-term-stocks').removeClass("shrunk");
-
-        } else if (newSelection === 'portfolio') {
+            console.log("query stocks");
+        } else if (newSelection === 'investors') {
             $('#query-term-stocks').addClass("shrunk");
             $('#query-term-stocks').removeClass("expanded");
             $('#query-term-users').addClass("expanded");
             $('#query-term-users').removeClass("shrunk");
+            console.log("query investors");
         }
     }
 
@@ -103,10 +132,42 @@ function load_research_tab() {
             updateSelections(value);
         }
     });
-    graphStocks = $('#research-graph-stock-select').selectize({maxItems: 5});
-    graphUsers = $('#research-graph-user-select').selectize({maxItems: 5});
+    graphStocks = $('#research-graph-stock-select').selectize(
+        {
+            maxItems: 5,
+            onItemAdd(value, $item) {
+                vm_research.drawGraph();
+                console.log($item);
+            },
+            onItemRemove(value) {
+                if($('.has-items').length == 0) {
+                    $('#research-graph-svg-main').empty();
+                } else {
+                    vm_research.drawGraph();
+                }
+            },
+            
+        }
+    );
+    graphUsers = $('#research-graph-user-select').selectize(
+        {
+            maxItems: 5,
+            onItemAdd(value, $item) {
+                vm_research.drawGraph();
+                //console.log($item);
+            },
+            onItemRemove(value) {
+                if($('.has-items').length == 0) {
+                    $('#research-graph-svg-main').empty();
+                } else {
+                    vm_research.drawGraph();
+                }
+            },
+            
+        }
+    );
     // Start with users selection hidden
-    $('#research-graph-user-select').hide();
+    //$('#research-graph-user-select').hide();
 
     
 
@@ -139,3 +200,13 @@ function updateResearchUsers() {
             });
         });
 }
+
+
+
+// $("button.option.stocks").click(function(event) {
+//     console.log("clicked stocks");    
+// });
+
+// $("button.option.investors").click(function(event) {
+//     console.log("clicked investors");    
+// });

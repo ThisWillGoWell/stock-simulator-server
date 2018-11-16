@@ -81,7 +81,7 @@ registerRoute("connect", function(msg) {
     
     setTimeout(function() {
       $('#loader--container').addClass("exit");
-    }, 2000);
+    }, 1500);
     
   } else {
     let err_msg = msg.msg.err;
@@ -424,50 +424,78 @@ $(document).ready(function() {
   var researchView = $("#research--view");
   var storeView = $("#store--view");
   var currentViewName = $("#current-view");
+  var currentRoute = "dashboard";
 
   function renderContent(route) {
       switch (route) {
           case "dashboard":
-          allViews.removeClass("active");
-          dashboardView.addClass("active");
-          currentViewName[0].innerHTML = "Dashboard";
+          if(route !== currentRoute) {
+            currentRoute = route;
+            allViews.removeClass("active");
+            dashboardView.addClass("active");
+            currentViewName[0].innerHTML = "Dashboard";
+            TweenMax.from(currentViewName, 0.2, {ease: Back.easeOut.config(1.7), x:-10, opacity:0});
+          } 
           break;
 
           case "business":
-          allViews.removeClass("active");
-          businessView.addClass("active");
-          console.log(currentViewName);
-          currentViewName[0].innerHTML = "Business";
+          if(route !== currentRoute) {
+            currentRoute = route;
+            allViews.removeClass("active");
+            businessView.addClass("active");
+            currentViewName[0].innerHTML = "Business";
+            TweenMax.from(currentViewName, 0.2, {ease: Back.easeOut.config(1.7), x:-10, opacity:0});
+          }
           break;
 
           case "stocks":
-          allViews.removeClass("active");
-          stocksView.addClass("active");
-          currentViewName[0].innerHTML = "Stocks";
+          if(route !== currentRoute) {
+            currentRoute = route;
+            allViews.removeClass("active");
+            stocksView.addClass("active");
+            currentViewName[0].innerHTML = "Stocks";
+            TweenMax.from(currentViewName, 0.2, {ease: Back.easeOut.config(1.7), x:-10, opacity:0});
+          }
           break;
 
           case "investors":
-          allViews.removeClass("active");
-          investorsView.addClass("active");
-          currentViewName[0].innerHTML = "Investors";
+          if(route !== currentRoute) {
+            currentRoute = route;
+            allViews.removeClass("active");
+            investorsView.addClass("active");
+            currentViewName[0].innerHTML = "Investors";
+            TweenMax.from(currentViewName, 0.2, {ease: Back.easeOut.config(1.7), x:-10, opacity:0});
+          }
           break;
 
           case "research":
-          allViews.removeClass("active");
-          researchView.addClass("active");
-          currentViewName[0].innerHTML = "Research";
+          if(route !== currentRoute) {
+            currentRoute = route;
+            allViews.removeClass("active");
+            researchView.addClass("active");
+            currentViewName[0].innerHTML = "Research";
+            TweenMax.from(currentViewName, 0.2, {ease: Back.easeOut.config(1.7), x:-10, opacity:0});
+          }
           break;
 
           case "settings":
-          allViews.removeClass("active");
-          settingsView.addClass("active");
-          currentViewName[0].innerHTML = "Settings";
+          if(route !== currentRoute) {
+            currentRoute = route;
+            allViews.removeClass("active");
+            settingsView.addClass("active");
+            currentViewName[0].innerHTML = "Settings";
+            TweenMax.from(currentViewName, 0.2, {ease: Back.easeOut.config(1.7), x:-10, opacity:0});
+          }
           break;
 
           case "perks":
-          allViews.removeClass("active");
-          storeView.addClass("active");
-          currentViewName[0].innerHTML = "Store";
+          if(route !== currentRoute) {
+            currentRoute = route;
+            allViews.removeClass("active");
+            storeView.addClass("active");
+            currentViewName[0].innerHTML = "Store";
+            TweenMax.from(currentViewName, 0.2, {ease: Back.easeOut.config(1.7), x:-10, opacity:0});
+          }
           break;
       }
   }

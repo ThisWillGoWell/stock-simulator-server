@@ -162,7 +162,7 @@ function DrawLineGraph(location, data, showWallet, append) {
 	// logging remove later
 
 	// var width = 700;
-	var height = 500;
+	var height = 475;
 	var margin = {
 		'top': 60,
 		'bottom': 60,
@@ -347,6 +347,7 @@ function DrawLineGraph(location, data, showWallet, append) {
 		// Adding line 
 		path.data([dat[line_key]])
 		.attr('stroke', COLOR_PALETTE[i])
+		.attr('class', 'graph-path')
 		.attr('stroke-width', '2px')
 		.attr('fill', 'none')
 		.attr('d', line);
@@ -395,13 +396,15 @@ function DrawLineGraph(location, data, showWallet, append) {
 		.attr('transform', 'translate(0, '+ (height - (margin.top-5)) +')')
 		.style('font-size', 12)
 		.call(xAxisCall)
-	    .selectAll("text")	
+		.selectAll("text")	
+			.style('color', "#4d4d4d")
 	        .attr('font-size', '10px');
 
 	svg.append('g')
 		.attr('id', 'y-axis')
 		.attr('transform', 'translate(' + (margin.left-5) +', ' + '0' + ')')
 		.style('font-size', 12)
+		.style('color', "#4d4d4d")
 		.call(yAxisCall);
 
 	// adding horizontal gridlines
@@ -421,7 +424,7 @@ function DrawLineGraph(location, data, showWallet, append) {
 				.attr('transform', 'translate(' + (width/2) + ', 40)');
 		}
 	}
-	console.log(labels)
+	//console.log(labels)
 };
 	
 
