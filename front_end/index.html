@@ -335,9 +335,7 @@
 				<div class="account-settings-menu--container">
 					<i id="account-settings-menu-close-btn" class="material-icons">close</i>
 					<ul>
-						<li>
-							<button id="btn-settings" v-on:click="goToSettings">Settings</button>
-						</li>
+						
 						<li>
 							<button id="btn-logout" v-on:click="logout">Logout</button>
 						</li>
@@ -867,6 +865,8 @@
 											<div class="item-effects title">{{ level.title }}</div>
 											<div class="item-divider"></div>
 											<div class="item-effects">{{ level.note }}</div>
+											<div class="item-divider"></div>
+											<div class="item-effects shares">own up to {{ level.max_shares }} shares of a stock</div>
 											<div class="item-cost">{{ level.price }}</div>
 											<div class="buy-item-btn" v-on:click="level_up(level.level)" v-bind:class="{ 'item-disabled': (level.level - 1) != currUserLevel }">BUY</div>
 										</div>
