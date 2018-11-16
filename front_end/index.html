@@ -38,6 +38,7 @@
 		<script src="scripts/d3/d3-brush.js"></script>
 		<script src="scripts/selectize.min.js"></script>
 		<script src="scripts/websocket.js"></script>
+		<script src="scripts/store.js"></script>
 		<script src="scripts/config.js"></script>
 		<script src="scripts/index.js"></script>
 		<script src="scripts/topbar.js"></script>
@@ -46,7 +47,6 @@
         <script src="scripts/notifications.js"></script>
 		<script src="scripts/stocks.js"></script>
 		<script src="scripts/investors.js"></script>
-		<script src="scripts/store.js"></script>
 		<script src="scripts/research.js"></script>
 		<script src="scripts/items.js"></script>
 		<script src="scripts/modal.js"></script>
@@ -433,7 +433,7 @@
 													<div class="">{{ stock.amount }}</div>
 												</td>
 												<td v-else class="stock-change" style="text-align: right; padding-right: 25px;">
-													<div class="sell-all-btn" v-on:click='sellAll(stock.uuid)'>SELL ALL ({{ stock.amount }})</div>
+													<div class="">{{ stock.amount }}</div>
 												</td>
 												
 												<td class="price-alter stock-price" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_price) }}</td>
@@ -730,7 +730,9 @@
 										</div>
 									</div> -->
 								</div>
+							</div>
 						</div>
+					</div>
 					
 						<!-- TODO: this tab collides with the sidebar -->
 					<div id="settings--view" class="view">
@@ -852,9 +854,15 @@
 								<ul id="item-list">
 									<li v-for="level in experience" :key="level.label">
 										<div class="card item">
-											<div class="item-locked-layer" v-bind:class="{ 'item-disabled': (level.level - 1) != currUserLevel}">
+											<div class="item-locked-layer" v-bind:class="[currUserLevel == (level.level - 1)  ? '' : [(currUserLevel > level.level - 1) ? 'item.disabled' : 'item.unlocked']]">
 												<i class="material-icons white">lock</i>
 											</div>
+											<!-- <div class="item-locked-layer" v-bind:class="{ 'item-disabled': (level.level - 1) > currUserLevel}">
+												<i class="material-icons white">lock</i>
+											</div> -->
+											<!-- <div class="item-unlocked-layer" v-bind:class="{ 'item-unlocked': ((level.level - 1) !> currUserLevel)}">
+												<i class="material-icons white">check</i>
+											</div> -->
 											<div class="item-name">{{ level.label }}</div>
 											<div class="item-effects title">{{ level.title }}</div>
 											<div class="item-divider"></div>
