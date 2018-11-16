@@ -2099,10 +2099,10 @@ tbody tr:hover .money-transfer-btn{
 .item-cost {
     color: rgba(0,0,0,0.4);
     text-align: center;
-    height: 75px;
-    line-height: 75px;
+    line-height: 18px;
     font-size: 18px;
-    font-weight:500; 
+    margin-top: 10px;
+    font-weight: 500;
 
 }
 .item-description {
@@ -2131,6 +2131,13 @@ tbody tr:hover .money-transfer-btn{
     color: #7E57C2;
     font-weight: 500;
     font-size: 18px;
+    
+}
+
+.item-effects.shares {
+    color: #ffb74d;
+    font-weight: 500;
+    font-size: 14px;
     
 }
 
@@ -2676,7 +2683,7 @@ table thead.table-top-bar tr th:hover{
     color: rgba(0,0,0,0.3);
     height: 100%;
     font-size: 14px;
-    background-color: #f7f7f7;
+    background-color: #dedede;
     cursor: pointer;
     border: none;
     -moz-transition: all ease-in-out 0.27s;
@@ -2706,9 +2713,9 @@ table thead.table-top-bar tr th:hover{
 #query-type-container .option.active {
     
     opacity: 1;
-    color: rgba(0,0,0,0.5);
+    color: #fff;
 
-    /* background-color: #4d4d4d; */
+    background-color: #4d4d4d;
     line-height: 46px;
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
@@ -2810,7 +2817,7 @@ table thead.table-top-bar tr th:hover{
 
 .selectize-input, .selectize-input input {
     color: #4d4d4d;
-    background-color: #f7f7f7;
+    background-color: #e6e6e6;
     font-family: inherit;
     font-size: 13px;
     line-height: 35px;
@@ -2838,8 +2845,8 @@ table thead.table-top-bar tr th:hover{
 }
 
 .selectize-dropdown-content {
-    max-height: 100px;
-    overflow-y: scroll;
+    max-height: 200px;
+    overflow-y: overlay;
 }
 
 /* .selectize-input, .selectize-control.single .selectize-input.input-active, .selectize-input.full {
