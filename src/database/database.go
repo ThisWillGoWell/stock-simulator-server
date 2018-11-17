@@ -6,6 +6,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/stock-simulator-server/src/effect"
+
 	"github.com/stock-simulator-server/src/log"
 
 	"github.com/stock-simulator-server/src/record"
@@ -61,6 +63,7 @@ func InitDatabase(disableDbWrite bool) {
 	initLedgerHistory()
 	initAccount()
 	initRecordHistory()
+	initEffect()
 
 	populateUsers()
 	populateStocks()
@@ -69,6 +72,7 @@ func InitDatabase(disableDbWrite bool) {
 	populateItems()
 	populateNotification()
 	populateRecords()
+	populateEffects()
 
 	for _, l := range ledger.Entries {
 		port := portfolio.Portfolios[l.PortfolioId]
@@ -168,6 +172,22 @@ func databaseWriter() {
 		recordsWrite := wires.RecordsNewObject.GetBufferedOutput(1000)
 		for val := range recordsWrite {
 			writeRecordHistory(val.(*record.Record))
+		}
+	}()
+
+	go func() {
+		effectDBWrite := duplicator.MakeDuplicator("-db-write")
+		effectDBWrite.RegisterInput(wires.EffectsNewObject.GetBufferedOutput(100))
+		effectDBWrite.RegisterInput(wires.EffectsUpdate.GetBufferedOutput(100))
+		write := effectDBWrite.GetBufferedOutput(1000)
+		for val := range write {
+			writeEffect(val.(*effect.Effect))
+		}
+	}()
+	go func() {
+		effectDelete := wires.EffectsDelete.GetBufferedOutput(100)
+		for val := range effectDelete {
+			deleteEffect(val.(*effect.Effect))
 		}
 	}()
 

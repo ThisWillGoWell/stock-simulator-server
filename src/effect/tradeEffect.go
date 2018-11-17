@@ -72,7 +72,7 @@ func NewBlockTrading(portfolioUuid, title string, duration time.Duration) {
 	newTradeEffect.parentEffect = newEffect(portfolioUuid, title, TradeEffectType, "", newTradeEffect, duration)
 }
 
-func FeelessTradeing(portfolioUuid, title string, duration time.Duration) {
+func NewFeelessTradeing(portfolioUuid, title string, duration time.Duration) {
 	newTradeEffect := &TradeEffect{
 		SellFeeMultiplier: createFloat(0),
 		BuyFeeMultiplier:  createFloat(0),
@@ -80,9 +80,9 @@ func FeelessTradeing(portfolioUuid, title string, duration time.Duration) {
 	newTradeEffect.parentEffect = newEffect(portfolioUuid, title, "", TradeEffectType, newTradeEffect, duration)
 }
 
-func TaxReduction(portfolioUuid, title string, duration time.Duration, taxReductionAmount float64) {
+func NewTaxModifier(portfolioUuid, title string, duration time.Duration, taxMultiplier float64) {
 	newTradeEffect := &TradeEffect{
-		TaxMultiplier: createFloat(taxReductionAmount),
+		TaxMultiplier: &taxMultiplier,
 	}
 	newTradeEffect.parentEffect = newEffect(portfolioUuid, title, "", TradeEffectType, newTradeEffect, duration)
 
