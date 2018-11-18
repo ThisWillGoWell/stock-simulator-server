@@ -163,6 +163,8 @@ function load_stocks_tab() {
         setTimeout(drawGraphOnceDone, 100);
       },
       openModal: function() {
+        console.log($(this));
+        
         var ticker_id = $(this)
             .find(".stock-ticker-id")
             .attr("tid");

@@ -241,6 +241,15 @@ function load_modal_vues() {
                 prospectiveTrade(buySellModal.stock_uuid, amount, callback);
             },
             isBuying: function() {
+                if (this.isBuying) {
+                    console.log("is buying");
+                    $("#calc-btn-buy").addClass("fill");
+                    $("#calc-btn-sell").removeClass("fill");
+                } else {
+                    console.log("is selling");
+                    $("#calc-btn-sell").addClass("fill");
+                    $("#calc-btn-buy").removeClass("fill");
+                }
                 this.buySellAmount = 0;
                 $('#buy-sell-amount-input').val(buySellModal.buySellAmount);
                 // do a prospectiveTrade

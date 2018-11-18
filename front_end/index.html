@@ -575,7 +575,7 @@
 																star_rate
 																</i>
 													</li>
-													<li class="action-btn buy" v-bind:tid="stock.ticker_id" v-bind:tid="stock.uuid" v-on:click="buyOrder(stock.ticker_id, stock.uuid)">
+													<li class="action-btn buy" v-bind:tid="stock.ticker_id" v-bind:tid="stock.uuid" v-on:click="openModal()">
 															BUY
 														</li>
 													<li class="action-btn sell" v-bind:tid="stock.ticker_id" v-bind:tid="stock.uuid" v-on:click="sellOrder(stock.ticker_id, stock.uuid)">
