@@ -91,7 +91,7 @@
 										<li v-on:click="clearAmount()" class="mini-calc-btn clear">CLEAR</li>
 										
 									</ul>
-									<input id="buy-sell-amount-input" type="text" class="input-full-width" placeholder="Enter quantity" onchange="setAmount()" v-on:change="setAmount()"/>
+									<input id="buy-sell-amount-input" type="text" class="input-full-width" placeholder="Enter quantity" v-on:keyup="setAmount"/>
 								</div>
 								<div class="receipt-info">
 									<div class="receipt-line">
@@ -575,10 +575,10 @@
 																star_rate
 																</i>
 													</li>
-													<li class="action-btn buy" v-bind:tid="stock.ticker_id" v-bind:tid="stock.uuid" v-on:click="openModal()">
+													<li class="action-btn buy" v-bind:tid="stock.ticker_id" v-bind:tid="stock.uuid" v-on:click="openModal(stock.ticker_id, true)">
 															BUY
 														</li>
-													<li class="action-btn sell" v-bind:tid="stock.ticker_id" v-bind:tid="stock.uuid" v-on:click="sellOrder(stock.ticker_id, stock.uuid)">
+													<li class="action-btn sell" v-bind:tid="stock.ticker_id" v-bind:tid="stock.uuid" v-on:click="openModal(stock.ticker_id, false)">
 															SELL
 														</li>	
 

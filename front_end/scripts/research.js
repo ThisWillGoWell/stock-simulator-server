@@ -87,7 +87,7 @@ function load_research_tab() {
                     $('#research-graph-svg-main').empty();
                     $('.query-items-label').text("INVESTORS");
                     TweenMax.from($('.query-items-label'), 0.2, {ease: Back.easeOut.config(1.7), x:-75, opacity:0});
-                    this    .drawGraph();
+                    this.drawGraph();
                 }
             },
             

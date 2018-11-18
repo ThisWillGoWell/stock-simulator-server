@@ -26,45 +26,48 @@ function toggleGenericTextFieldModal() {
 }
 
 function sendTrade(stock_id, amt) {
-    // Creating message for the trade request
-    var msg = {
-        stock_id: stock_id,
-        amount: amt
-    };
-
-    var callback = function(msg) {
-        var success = msg.msg.success;
-
-        // If trade was a success
-	    if (success) {
-            // Vars needed to form note
-            var amount = Number(msg.msg.order.amount);
-            console.log(msg.msg.order.stock_id)
-            var stock_item = vm_stocks.stocks[msg.msg.order.stock_id];
-            
-            if (amount < 0) {
-                amount *= -1;
-                message = "Successful sale of " + amount + " " + stock_item.ticker_id + " stocks.";
+    if (amt != 0) {
+        // Creating message for the trade request
+        var msg = {
+            stock_id: stock_id,
+            amount: amt
+        };
+    
+        var callback = function(msg) {
+            var success = msg.msg.success;
+    
+            // If trade was a success
+            if (success) {
+                // Vars needed to form note
+                var amount = Number(msg.msg.order.amount);
+                console.log(msg.msg.order.stock_id)
+                var stock_item = vm_stocks.stocks[msg.msg.order.stock_id];
+                
+                if (amount < 0) {
+                    amount *= -1;
+                    message = "Successful sale of " + amount + " " + stock_item.ticker_id + " stocks.";
+                } else {
+                    message = "Successful purchase of " + amount + " " + stock_item.ticker_id + " stocks."; 
+                }
+                notifyTopBar(message, GREEN, success);
+    
             } else {
-                message = "Successful purchase of " + amount + " " + stock_item.ticker_id + " stocks."; 
+                message = msg.msg.err;
+                notifyTopBar(message, RED, success);
             }
-            notifyTopBar(message, GREEN, success);
+        };
+    
+        // Sending through websocket
+        console.log("SEND TRADE");
+        console.log(JSON.stringify(msg));
+    
+        // Send through WebSocket
+        doSend("trade", msg, callback);
+    
+        // Reset buy sell amount
+        buySellModal.buySellAmount = 0;
 
-        } else {
-            message = msg.msg.err;
-            notifyTopBar(message, RED, success);
-        }
-    };
-
-    // Sending through websocket
-    console.log("SEND TRADE");
-    console.log(JSON.stringify(msg));
-
-    // Send through WebSocket
-    doSend("trade", msg, callback);
-
-    // Reset buy sell amount
-    buySellModal.buySellAmount = 0;
+    }
 }
 
 
@@ -92,9 +95,12 @@ function load_modal_vues() {
                 $('#buy-sell-amount-input').val(buySellModal.buySellAmount);
                 $('#buy-sell-amount-input').focus();
             },
-            setAmount: function() {
+            setAmount: function(evt) {
+                console.log(evt)
                 var user_input = $('#buy-sell-amount-input').val();
+                console.log(user_input)
                 if (!isNaN(user_input)) {
+                    console.log(user_input)
                     buySellModal.buySellAmount = Number(user_input);
                 }
 
