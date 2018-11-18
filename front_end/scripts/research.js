@@ -36,7 +36,9 @@ function load_research_tab() {
                 }
 
                 // Create the graph
-                queryDrawGraph("#research-graph-svg-main", uuids, fields, false, false);
+                if (uuids.length > 0) {
+                    queryDrawGraph("#research-graph-svg-main", uuids, fields, false, false);
+                }
 
             },
             // updateSelections: function(newSelection) {
