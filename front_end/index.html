@@ -447,6 +447,32 @@
 									</table>
 								</div>
 							</div>
+							
+							<div class="flex-column-100">
+								<div class="item-category buffer-top">MY EFFECTS</div>
+							</div>
+							<div class="card" v-for="effect in userEffects">
+								<h5 style="text-align: center; ">{{ effect.title }}</h5>
+								<div style="text-align: center; ">Type: {{ effect.type }}</div>
+								<table>
+									<tr>
+										<th>Purchase Fee</th>
+										<td>${{ toPrice(effect.buy_fee_amount) }}</td>
+									</tr>
+									<tr>
+										<th>Sale Fee</th>
+										<td>${{ toPrice(effect.sell_fee_amount) }}</td>
+									</tr>
+									<tr>
+										<th>Profit Multiplier</th>
+										<td>{{ effect.profit_multiplier }}</td>
+									</tr>
+									<tr>
+										<th>Tax Rate on Profits</th>
+										<td>{{ effect.tax_percent * 100 }}%</td>
+									</tr>
+								</table>
+							</div>
 							<div class="flex-column-100">
 								<div class="item-category buffer-top">MY ITEMS</div>
 							</div>
