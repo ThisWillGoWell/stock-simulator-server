@@ -58,6 +58,12 @@ var vm_users = new Vue({
   }
 });
 
+var vm_effects = new Vue({
+  data: {
+    effects: {}
+  }
+})
+
 var vm_recordBook = new Vue({
   data: {
     records: {},
@@ -117,6 +123,11 @@ registerRoute("object", function(msg) {
     case "item":
       Vue.set(vm_items.items, msg.msg.uuid, msg.msg.object);
       break;
+
+    case "effect":
+      Vue.set(vm_effects.effects, msg.msg.uuid, msg.msg.object);
+      break;
+
     case "notification":
       Vue.set(vm_notify.notes, msg.msg.uuid, msg.msg.object);
       // If notification is not seen, notify user based on note type
@@ -125,9 +136,11 @@ registerRoute("object", function(msg) {
         routeNote[msg.msg.object.type](msg.msg.object);
       }  
       break;
+
     case "record_book":
       Vue.set(vm_recordBook.records, msg.msg.uuid, msg.msg.object);
       break;
+
     case "record_entry":
       msg.msg.object.time = Date(msg.msg.object.time);
       Vue.set(vm_recordEntry.entries, msg.msg.uuid, msg.msg.object);
@@ -170,6 +183,8 @@ $(document).ready(function() {
   console.log(vm_ledger.ledger);
   console.log("------ PORTFOLIOS ------");
   console.log(vm_portfolios.portfolios);
+  console.log("------ EFFECTS ------");
+  console.log(vm_effects.effects);
   console.log("------ NOTIFICATIONS ------");
   console.log(vm_notify.notes);
   console.log("------ RECORD BOOK ------");
@@ -377,6 +392,16 @@ $(document).ready(function() {
     });
   };
 
+  var effectUpdate = function(msg) {
+    var targetUUID = msg.msg.uuid;
+    msg.msg.changes.forEach(function(changeObject) {
+      var targetField = changeObject.field;
+      var targetChange = changeObject.value;
+
+      vm_effects.effects[targetUUID][targetField] = targetChange;
+    });
+  }
+
   var notificationUpdate = function(msg) {
     var targetUUID = msg.msg.uuid;
     msg.msg.changes.forEach(function(changeObject) {
@@ -408,6 +433,7 @@ $(document).ready(function() {
       portfolio: portfolioUpdate,
       user: userUpdate,
       item: itemUpdate,
+      effect: effectUpdate,
       notification: notificationUpdate,
       record_book: recordBookUpdate,
     };
