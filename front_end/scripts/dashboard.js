@@ -166,6 +166,17 @@ function load_dashboard_tab() {
         }
         return [];
       },
+      userEffects: function() {
+        var currUserUUID = vm_users.currentUser;
+        if (vm_users.users[currUserUUID] !== undefined) {
+          var currUserFolioUUID = vm_users.users[currUserUUID].portfolio_uuid;
+          var effects = Object.values(vm_effects.effects).filter(d => d.portfolio_uuid === currUserFolioUUID);
+          console.log(effects);
+
+          return effects;
+        }
+        return {}; 
+      },
       userItems: function() {
         var currUserUUID = sessionStorage.getItem("uuid");
         if (vm_users.users[currUserUUID] !== undefined) {
