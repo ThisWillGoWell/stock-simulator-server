@@ -2901,6 +2901,7 @@ table thead.table-top-bar tr th:hover{
     color: rgba(255, 255, 255, 1);
     transform: translateX(3.125px);
     background-color: #1abc9c;
+    cursor: pointer;
 }
 
 /* LOADERS */
