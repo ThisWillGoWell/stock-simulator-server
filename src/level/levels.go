@@ -1,10 +1,13 @@
 package level
 
 import (
+	"encoding/json"
+
+	"github.com/stock-simulator-server/src/log"
 	"github.com/stock-simulator-server/src/money"
 )
 
-var Levels = populateLevels()
+var Levels = make(map[int64]*Level)
 
 type Level struct {
 	Num              int64   `json:"num"`
@@ -19,6 +22,13 @@ func makeLevel(targetMap map[int64]*Level, level, cost, maxSharesStock int64, pr
 		Cost:             cost,
 		MaxSharesStock:   maxSharesStock,
 		ProfitMultiplier: profitMultiplier,
+	}
+}
+
+func LoadLevels(data []byte) {
+	err := json.Unmarshal(data, &Levels)
+	if err != nil {
+		log.Log.Error("err loading levels", err)
 	}
 }
 

@@ -5,6 +5,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/stock-simulator-server/src/notification"
+
 	"github.com/stock-simulator-server/src/change"
 
 	"github.com/stock-simulator-server/src/merge"
@@ -37,6 +39,7 @@ func deleteEffect(uuid string) {
 		delete(portfolioEffects, e.PortfolioUuid)
 		delete(portfolioEffectTags, e.PortfolioUuid)
 	}
+	notification.EndEffectNotification(e.PortfolioUuid, e.Title)
 	utils.RemoveUuid(uuid)
 }
 
@@ -44,6 +47,7 @@ func newEffect(portfolioUuid, title, effectType, tag string, innerEffect interfa
 	uuid := utils.SerialUuid()
 	e := MakeEffect(uuid, portfolioUuid, title, tag, effectType, innerEffect, duration, time.Now())
 	wires.EffectsNewObject.Offer(e)
+	notification.NewEffectNotification(portfolioUuid, title)
 	return e
 }
 

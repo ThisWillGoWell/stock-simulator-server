@@ -128,10 +128,10 @@ func (client *Client) tx(sessionToken string) {
 	for _, v := range ledger.GetAllLedgers() {
 		client.sendMessage(messages.NewObjectMessage(v))
 	}
-	for _, v := range notification.GetAllNotifications(client.user.Uuid) {
+	for _, v := range notification.GetAllNotifications(client.user.PortfolioId) {
 		client.sendMessage(messages.NewObjectMessage(v))
 	}
-	for _, v := range items.GetItemsForUser(client.user.PortfolioId) {
+	for _, v := range items.GetItemsForPortfolio(client.user.PortfolioId) {
 		client.sendMessage(messages.NewObjectMessage(v))
 	}
 	books, records := record.GetRecordsForPortfolio(client.user.PortfolioId)

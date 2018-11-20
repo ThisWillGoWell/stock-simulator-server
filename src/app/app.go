@@ -3,9 +3,7 @@ package app
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
-	"os"
 
 	"github.com/stock-simulator-server/src/portfolio"
 
@@ -37,18 +35,13 @@ type ConfigJson struct {
 	AutoBuy  bool                   `json:"auto_buy"`
 }
 
-func LoadConfig() {
+func LoadConfig(dat []byte) {
 	stocks := make([]string, 0)
 	portfolios := make([]string, 0)
 	fmt.Println("loading")
-	configFilePath := os.Getenv("CONFIG_FILE")
-	dat, err := ioutil.ReadFile(configFilePath)
-	if err != nil {
-		log.Log.Error("error reading config: ", err)
-		return
-	}
+
 	var config ConfigJson
-	err = json.Unmarshal(dat, &config)
+	err := json.Unmarshal(dat, &config)
 	if err != nil {
 		log.Log.Error("error reading config: ", err)
 		return
