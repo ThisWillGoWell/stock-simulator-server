@@ -8,8 +8,8 @@ type ItemNotification struct {
 	ItemUuid string `json:"item_uuid"`
 }
 
-func NewItemNotification(userUuid, itemType, itemUuid string) {
-	NewNotification(userUuid, NewItemNotificationType,
+func NewItemNotification(portfolioUuid, itemType, itemUuid string) {
+	NewNotification(portfolioUuid, NewItemNotificationType,
 		&ItemNotification{
 			ItemType: itemType,
 			ItemUuid: itemUuid,
@@ -17,8 +17,8 @@ func NewItemNotification(userUuid, itemType, itemUuid string) {
 
 }
 
-func UsedItemNotification(userUuid, itemUuid, itemType string) {
-	NewNotification(userUuid, UsedItemNotificationType,
+func UsedItemNotification(portfolioUuid, itemUuid, itemType string) {
+	NewNotification(portfolioUuid, UsedItemNotificationType,
 		&ItemNotification{
 			ItemType: itemType,
 			ItemUuid: itemUuid,

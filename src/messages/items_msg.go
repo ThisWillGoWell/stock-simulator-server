@@ -25,10 +25,10 @@ type ItemMessage struct {
 func (*ItemMessage) message() { return }
 
 type ItemBuyMessage struct {
-	ItemUid  string `json:"uuid"`
-	ItemName string `json:"item_name"`
-	Success  bool   `json:"success"`
-	Err      string `json:"err,omitempty"`
+	ItemUid    string `json:"uuid"`
+	ItemConfig string `json:"item_config"`
+	Success    bool   `json:"success"`
+	Err        string `json:"err,omitempty"`
 }
 
 type ItemUseMessage struct {
@@ -46,30 +46,30 @@ type ItemViewMessage struct {
 	Err      string      `json:"err"`
 }
 
-func BuildItemBuySuccessMessage(itemName, requestId, itemUuid string) *BaseMessage {
+func BuildItemBuySuccessMessage(itemConfig, requestId, itemUuid string) *BaseMessage {
 	return &BaseMessage{
 		Action: ResponseAction,
 		Msg: &ItemMessage{
 			Action: BuyItemAction,
 			O: &ItemBuyMessage{
-				ItemName: itemName,
-				Success:  true,
-				ItemUid:  itemUuid,
+				ItemConfig: itemConfig,
+				Success:    true,
+				ItemUid:    itemUuid,
 			},
 		},
 		RequestID: requestId,
 	}
 }
 
-func BuildItemBuyFailedMessage(itemName, requestId string, err error) *BaseMessage {
+func BuildItemBuyFailedMessage(itemConfig, requestId string, err error) *BaseMessage {
 	return &BaseMessage{
 		Action: ResponseAction,
 		Msg: &ItemMessage{
 			Action: BuyItemAction,
 			O: &ItemBuyMessage{
-				ItemName: itemName,
-				Success:  false,
-				Err:      err.Error(),
+				ItemConfig: itemConfig,
+				Success:    false,
+				Err:        err.Error(),
 			},
 		},
 		RequestID: requestId,

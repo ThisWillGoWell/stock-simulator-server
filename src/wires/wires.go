@@ -2,6 +2,7 @@ package wires
 
 import (
 	"github.com/stock-simulator-server/src/duplicator"
+	"github.com/stock-simulator-server/src/utils"
 )
 
 var ItemsNewObjects = duplicator.MakeDuplicator("items-new")
@@ -47,5 +48,58 @@ func ConnectWires() {
 
 	EffectsNewObject.EnableCopyMode()
 	EffectsUpdate.EnableCopyMode()
+
+}
+
+func PrintAll() {
+	ConnectWires()
+	allWires := duplicator.MakeDuplicator("all")
+	var out chan interface{}
+	out = ItemsNewObjects.GetBufferedOutput(100)
+	allWires.RegisterInput(out)
+	out = ItemsUpdate.GetBufferedOutput(100)
+	allWires.RegisterInput(out)
+	out = ItemsDelete.GetBufferedOutput(100)
+	allWires.RegisterInput(out)
+	out = PortfolioUpdate.GetBufferedOutput(100)
+	allWires.RegisterInput(out)
+	out = PortfolioNewObject.GetBufferedOutput(100)
+	allWires.RegisterInput(out)
+	out = UsersNewObject.GetBufferedOutput(100)
+	allWires.RegisterInput(out)
+	out = UsersUpdate.GetBufferedOutput(100)
+	allWires.RegisterInput(out)
+	out = StocksUpdate.GetBufferedOutput(100)
+	allWires.RegisterInput(out)
+	out = StocksNewObject.GetBufferedOutput(100)
+	allWires.RegisterInput(out)
+	out = LedgerUpdate.GetBufferedOutput(100)
+	allWires.RegisterInput(out)
+	out = LedgerNewObject.GetBufferedOutput(100)
+	allWires.RegisterInput(out)
+	out = NotificationUpdate.GetBufferedOutput(100)
+	allWires.RegisterInput(out)
+	out = NotificationNewObject.GetBufferedOutput(100)
+	allWires.RegisterInput(out)
+	out = NotificationsDelete.GetBufferedOutput(100)
+	allWires.RegisterInput(out)
+	out = RecordsNewObject.GetBufferedOutput(100)
+	allWires.RegisterInput(out)
+	out = BookNewObject.GetBufferedOutput(100)
+	allWires.RegisterInput(out)
+	out = BookUpdate.GetBufferedOutput(100)
+	allWires.RegisterInput(out)
+	out = EffectsNewObject.GetBufferedOutput(100)
+	allWires.RegisterInput(out)
+	out = EffectsDelete.GetBufferedOutput(100)
+	allWires.RegisterInput(out)
+	out = EffectsUpdate.GetBufferedOutput(100)
+	allWires.RegisterInput(out)
+	go func() {
+		all := allWires.GetBufferedOutput(10000)
+		for ele := range all {
+			utils.PrintJson(ele)
+		}
+	}()
 
 }

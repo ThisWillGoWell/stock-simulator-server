@@ -56,7 +56,7 @@ func writeNotification(entry *notification.Notification) {
 	if err != nil {
 	}
 
-	_, err = tx.Exec(notificationTableUpdateInsert, entry.Uuid, entry.UserUuid, entry.Seen, entry.Type, entry.Timestamp, jsonString)
+	_, err = tx.Exec(notificationTableUpdateInsert, entry.Uuid, entry.PortfolioUuid, entry.Seen, entry.Type, entry.Timestamp, jsonString)
 	if err != nil {
 		tx.Rollback()
 		panic("error occurred while insert notification in table " + err.Error())

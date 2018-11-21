@@ -37,6 +37,14 @@ func RunGlobalSender() {
 		}
 	}()
 
+	go func() {
+		globalDeletes := duplicator.MakeDuplicator("global-deletes")
+		globalDeletes.RegisterInput(wires.EffectsDelete.GetBufferedOutput(10000))
+		for ele := range globalDeletes.GetBufferedOutput(10000) {
+			GlobalMessages.Offer(messages.BuildDeleteMessage(ele.(change.Identifiable)))
+		}
+	}()
+
 }
 
 type Sender struct {

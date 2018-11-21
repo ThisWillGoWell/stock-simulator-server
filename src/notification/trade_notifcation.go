@@ -17,22 +17,22 @@ type MoneyTransferNotification struct {
 	Amount   int64  `json:"amount"`
 }
 
-func DoneTradeNotification(userUuid, stockUuid string, amount int64) {
-	NewNotification(userUuid, TradeNotificationType, &TradeNotification{
+func DoneTradeNotification(portfilioUuid, stockUuid string, amount int64) {
+	NewNotification(portfilioUuid, TradeNotificationType, &TradeNotification{
 		Amount:    amount,
 		StockUuid: stockUuid,
 		Success:   true,
 	})
 }
 
-func SendMoneyTradeNotification(senderUuid, receiverUuid string, amount int64) {
-	NewNotification(senderUuid, SendMoneyNotificationType, MoneyTransferNotification{
-		Sender:   senderUuid,
+func SendMoneyTradeNotification(portfolioUuid, receiverUuid string, amount int64) {
+	NewNotification(portfolioUuid, SendMoneyNotificationType, MoneyTransferNotification{
+		Sender:   portfolioUuid,
 		Receiver: receiverUuid,
 		Amount:   amount,
 	})
 	NewNotification(receiverUuid, RecieveNotificationType, MoneyTransferNotification{
-		Sender:   senderUuid,
+		Sender:   portfolioUuid,
 		Receiver: receiverUuid,
 		Amount:   amount,
 	})
