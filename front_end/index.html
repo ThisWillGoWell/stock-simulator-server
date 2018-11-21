@@ -876,12 +876,12 @@
 								<ul id="item-list">
 									<li v-for="level in experience" :key="level.label">
 										<div class="card item">
-											<div class="item-locked-layer" v-bind:class="[currUserLevel == (level.level - 1)  ? '' : [(currUserLevel > level.level - 1) ? 'item.disabled' : 'item.unlocked']]">
-												<i class="material-icons white">lock</i>
-											</div>
-											<!-- <div class="item-locked-layer" v-bind:class="{ 'item-disabled': (level.level - 1) > currUserLevel}">
+											<!-- <div class="item-locked-layer" v-bind:class="[currUserLevel == (level.level - 1)  ? '' : [(currUserLevel > level.level - 1) ? 'item.disabled' : 'item.unlocked']]">
 												<i class="material-icons white">lock</i>
 											</div> -->
+											<div class="item-locked-layer" v-bind:class="{ 'item-disabled': (level.level - 1) > currUserLevel}">
+												<i class="material-icons white">lock</i>
+											</div>
 											<!-- <div class="item-unlocked-layer" v-bind:class="{ 'item-unlocked': ((level.level - 1) !> currUserLevel)}">
 												<i class="material-icons white">check</i>
 											</div> -->
