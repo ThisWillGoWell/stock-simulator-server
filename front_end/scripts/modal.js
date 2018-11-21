@@ -283,28 +283,38 @@ function load_modal_vues() {
             recipient_name: '',
         },
         methods: {
-        submitTransfer: function() {
-            // Get current amount
-            let amt = Number($('#cash-transfer-amount').val());
-            amt *= 100;
+            submitTransfer: function() {
+                // Get current amount
+                let amt = Number($('#cash-transfer-amount').val());
+                amt *= 100;
 
-            // Creating message for the transfer
-            var msg = {
-                amount: amt,
-                recipient: transferModal.recipient_uuid
-            };
+                // Creating message for the transfer
+                var msg = {
+                    amount: amt,
+                    recipient: transferModal.recipient_uuid
+                };
 
-            // Send through WebSocket
-            doSend("transfer", msg);
+                var callback = function(msg) {
+                    var giver = vm_portfolios.portfolios[msg.msg.order.giver].name;
+                    var receiver = vm_portfolios.portfolios[msg.msg.order.receiver].name;
 
+                    if (msg.msg.success) {
+                        notifyTopBar("Successful transfer: " + giver + " to " + receiver + ".", GREEN, msg.msg.success);
+                    } else {
+                        notifyTopBar(msg.msg.err, RED, msg.msg.success);
+                    }
+                };
 
-            // Close the modal
-            toggleTransferModal();
-        },
-        closeModal: function() {
-            transferModal.showModal = false;
-            toggleTransferModal();
-        }
+                // Send through WebSocket
+                doSend("transfer", msg, callback);
+
+                // Close the modal
+                toggleTransferModal();
+            },
+            closeModal: function() {
+                transferModal.showModal = false;
+                toggleTransferModal();
+            }
         },
         watch: {
             recipient_name: function() {
