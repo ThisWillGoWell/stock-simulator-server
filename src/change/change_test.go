@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/stock-simulator-server/src/deepcopy"
-
 	"github.com/stock-simulator-server/src/wires"
 )
 
@@ -27,7 +25,7 @@ func waitForChanges(amount int, t *testing.T) chan interface{} {
 	done := make(chan interface{})
 	go func() {
 		PublicSubscribeChange.EnableDebug()
-		changes := PublicSubscribeChange.GetBufferedOutput(2)
+		changes := PublicSubscribeChange.GetBufferedOutput(int64(amount))
 		for c := range changes {
 			change, _ := json.Marshal(c)
 			t.Log(string(change))
@@ -75,7 +73,7 @@ func (*ArrayChange) GetType() string {
 
 func TestArrayChange(t *testing.T) {
 	StartDetectChanges()
-	done := waitForChanges(2, t)
+	done := waitForChanges(1, t)
 	v := &ArrayChange{
 		"1",
 		[]string{"hello", "world"},
@@ -106,16 +104,12 @@ func (*ArrayStruct) GetType() string {
 
 func TestArrayStructChange(t *testing.T) {
 	StartDetectChanges()
-	done := waitForChanges(2, t)
+	done := waitForChanges(1, t)
 	v := &ArrayStruct{
 		"1",
 		[]Inner{{"name1", 1}, {"name2", 2}},
 	}
-	newV := deepcopy.Copy(v)
-	_, ok := newV.(interface{})
-	for ok {
-		break
-	}
+
 	wires.ConnectWires()
 	RegisterPublicChangeDetect(v)
 	wires.ItemsUpdate.Offer(v)
@@ -145,7 +139,7 @@ func (*nestedObject) GetType() string {
 }
 func TestInnerChanges(t *testing.T) {
 	StartDetectChanges()
-	done := waitForChanges(3, t)
+	done := waitForChanges(2, t)
 	v := &nestedObject{
 		Name: "name1",
 		Nested: &nestedTwo{

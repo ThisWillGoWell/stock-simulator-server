@@ -72,7 +72,7 @@ func NewStock(tickerID, name string, startPrice int64, runInterval time.Duration
 
 	uuidString := utils.SerialUuid()
 
-	return MakeStock(uuidString, tickerID, name, startPrice, 100, runInterval)
+	return MakeStock(uuidString, tickerID, name, startPrice, 1000, runInterval)
 }
 
 func MakeStock(uuid, tickerID, name string, startPrice, openShares int64, runInterval time.Duration) (*Stock, error) {

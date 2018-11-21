@@ -5,10 +5,12 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/stock-simulator-server/src/config"
+	"github.com/stock-simulator-server/src/effect"
+
 	"github.com/stock-simulator-server/src/metics"
 
 	"github.com/stock-simulator-server/src/alert"
-	"github.com/stock-simulator-server/src/app"
 	"github.com/stock-simulator-server/src/change"
 	"github.com/stock-simulator-server/src/database"
 	"github.com/stock-simulator-server/src/histroy"
@@ -23,11 +25,13 @@ import (
 
 func App() {
 	disableDb := os.Getenv("DISABLE_DB") == "True"
-	serveLog := os.Getenv("SERVE_LOG") == "True"
-	autoLoad := os.Getenv("AUTO_LOAD") == "True"
 	disableDbWrite := os.Getenv("DISABLE_DB_WRITE") == "True"
+	serveLog := os.Getenv("SERVE_FRONTEND") == "True"
+	seedDb := os.Getenv("SEED_ON_START") == "True"
 
 	metrics.RunMetrics()
+
+	config.LoadConfigs()
 
 	//start DB
 	if !disableDb {
@@ -58,12 +62,13 @@ func App() {
 	session.StartSessionCleaner()
 	sender.RunGlobalSender()
 	histroy.RunCacheUpdater()
+	effect.RunEffectCleaner()
 
 	order.Run()
 	valuable.StartStockStimulation()
 
-	if autoLoad {
-		go app.LoadConfig()
+	if seedDb {
+		go config.Seed()
 	}
 	//go app.LoadVars()
 	go web.StartHandlers()

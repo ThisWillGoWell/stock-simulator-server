@@ -2,6 +2,9 @@ package effect
 
 import (
 	"testing"
+	"time"
+
+	"github.com/stock-simulator-server/src/wires"
 
 	"github.com/stock-simulator-server/src/utils"
 
@@ -22,4 +25,20 @@ func printAllEffects() {
 	for _, e := range effects {
 		utils.PrintJson(e)
 	}
+}
+
+func TestTempEffect(t *testing.T) {
+	RunEffectCleaner()
+	wires.ConnectWires()
+	deletes := wires.EffectsDelete.GetBufferedOutput(1)
+	NewTaxModifier("0", "test", time.Second*5, 0)
+	for {
+		select {
+		case <-deletes:
+			return
+		default:
+
+		}
+	}
+
 }

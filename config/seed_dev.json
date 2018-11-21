@@ -1,0 +1,21 @@
+{
+  "stocks": {
+    "CHUNT": {
+      "name": "Slut Hut",
+      "change": "1s"
+    }
+  },
+  "accounts": {
+    "Will": {
+      "display_name": "Lil_Guzman",
+      "password": "pass",
+      "wallet": 100000000
+    },
+    "Billy": {
+      "display_name": "Big_Guzman",
+      "password": "pass",
+      "wallet": 100000000
+    }
+
+  }
+}

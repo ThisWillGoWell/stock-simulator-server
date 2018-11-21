@@ -4,6 +4,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stock-simulator-server/src/effect"
+
+	"github.com/stock-simulator-server/src/wires"
+
+	"github.com/stock-simulator-server/src/utils"
+
+	"github.com/stock-simulator-server/src/session"
+
 	"github.com/stock-simulator-server/src/account"
 	"github.com/stock-simulator-server/src/order"
 	"github.com/stock-simulator-server/src/portfolio"
@@ -11,13 +19,27 @@ import (
 )
 
 func MakeUser(name string) string {
-	//user, _ := account.NewUser(name, "test", "pass")
-	//port := portfolio.Portfolios[user]
-	//port.Wallet = 1000000
-	//user.Level = 2
-	//return user.Uuid
-	return ""
+	sessionToken, _ := account.NewUser(name, "test", "password")
+	userId, _ := session.GetUserId(sessionToken)
+	port := portfolio.Portfolios[account.UserList[userId].PortfolioId]
+	port.Wallet = 1000000000
+	port.Level = 2
+	return port.Uuid
+}
 
+func populateItemConfig() {
+	validItems["1"] = validItemConfiguration{
+		Name:          "Test Item - Double Protifts",
+		Type:          TradeItemType,
+		Cost:          10,
+		RequiredLevel: 0,
+		Prams: &TradeEffectItem{
+			BuyFeeMultiplier: utils.CreateFloat(2),
+			Duration: utils.Duration{
+				Duration: time.Second * 1,
+			},
+		},
+	}
 }
 
 func MakeStocks() {
@@ -25,14 +47,14 @@ func MakeStocks() {
 	valuable.NewStock("TEST2", "Test 2 Account", 1000, time.Second*10)
 }
 
-func TestInsiderTrading(t *testing.T) {
-	//u  := MakeUser("user1")
-	MakeStocks()
-	//itemId, _ := BuyItem(u, insiderTradingItemType)
-
-	//vals, _ := Use(itemId, u, nil)
-	//enc := json.NewEncoder(os.Stdout)
-	//enc.Encode(vals)
+func TestTrade(t *testing.T) {
+	effect.RunEffectCleaner()
+	wires.PrintAll()
+	populateItemConfig()
+	portUuid := MakeUser("testuser")
+	itemUuid, _ := BuyItem(portUuid, "1")
+	Use(itemUuid, portUuid, nil)
+	utils.Spin(time.Second * 4)
 }
 
 func TestMail(t *testing.T) {

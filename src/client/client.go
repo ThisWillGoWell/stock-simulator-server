@@ -128,10 +128,10 @@ func (client *Client) tx(sessionToken string) {
 	for _, v := range ledger.GetAllLedgers() {
 		client.sendMessage(messages.NewObjectMessage(v))
 	}
-	for _, v := range notification.GetAllNotifications(client.user.Uuid) {
+	for _, v := range notification.GetAllNotifications(client.user.PortfolioId) {
 		client.sendMessage(messages.NewObjectMessage(v))
 	}
-	for _, v := range items.GetItemsForUser(client.user.PortfolioId) {
+	for _, v := range items.GetItemsForPortfolio(client.user.PortfolioId) {
 		client.sendMessage(messages.NewObjectMessage(v))
 	}
 	books, records := record.GetRecordsForPortfolio(client.user.PortfolioId)
@@ -251,7 +251,7 @@ func (client *Client) processTransferMessage(baseMessage *messages.BaseMessage) 
 
 func (client *Client) processAckMessage(baseMessage *messages.BaseMessage) {
 	ackMessage := baseMessage.Msg.(*messages.NotificationAckMessage)
-	err := notification.AcknowledgeNotification(ackMessage.Uuid, client.user.Uuid)
+	err := notification.AcknowledgeNotification(ackMessage.Uuid, client.user.PortfolioId)
 	if err != nil {
 		client.sendMessage(messages.NewErrorMessage(err.Error()))
 	}
@@ -270,11 +270,11 @@ func (client *Client) processItemMessage(m *messages.BaseMessage) {
 	itemMessage := m.Msg.(*messages.ItemMessage)
 	switch itemMessage.O.(type) {
 	case *messages.ItemBuyMessage:
-		uuid, err := items.BuyItem(client.user.PortfolioId, client.user.Uuid, itemMessage.O.(*messages.ItemBuyMessage).ItemName)
+		uuid, err := items.BuyItem(client.user.PortfolioId, itemMessage.O.(*messages.ItemBuyMessage).ItemConfig)
 		if err != nil {
-			client.sendMessage(messages.BuildItemBuyFailedMessage(itemMessage.O.(*messages.ItemBuyMessage).ItemName, m.RequestID, err))
+			client.sendMessage(messages.BuildItemBuyFailedMessage(itemMessage.O.(*messages.ItemBuyMessage).ItemConfig, m.RequestID, err))
 		} else {
-			client.sendMessage(messages.BuildItemBuySuccessMessage(itemMessage.O.(*messages.ItemBuyMessage).ItemName, m.RequestID, uuid))
+			client.sendMessage(messages.BuildItemBuySuccessMessage(itemMessage.O.(*messages.ItemBuyMessage).ItemConfig, m.RequestID, uuid))
 		}
 	//case *messages.ItemViewMessage:
 	//	result, err := items.ViewItem(itemMessage.O.(*messages.ItemViewMessage).ItemUuid, client.user.Uuid)
@@ -284,7 +284,7 @@ func (client *Client) processItemMessage(m *messages.BaseMessage) {
 	//		client.sendMessage(messages.BuildItemViewMessage(itemMessage.O.(*messages.ItemViewMessage).ItemUuid, m.RequestID, result))
 	//	}
 	case *messages.ItemUseMessage:
-		result, err := items.Use(itemMessage.O.(*messages.ItemUseMessage).ItemUuid, client.user.PortfolioId, client.user.Uuid, itemMessage.O.(*messages.ItemUseMessage).UseParameters)
+		result, err := items.Use(itemMessage.O.(*messages.ItemUseMessage).ItemUuid, client.user.PortfolioId, itemMessage.O.(*messages.ItemUseMessage).UseParameters)
 		if err != nil {
 			client.sendMessage(messages.BuildItemUseFailedMessage(itemMessage.O.(*messages.ItemUseMessage).ItemUuid, m.RequestID, err))
 		} else {
@@ -345,9 +345,9 @@ func (client *Client) processDeleteAction(baseMessage *messages.BaseMessage) {
 	var err error
 	switch deleteMsg.Type {
 	case items.ItemIdentifiableType:
-		err = items.DeleteItem(deleteMsg.Uuid, client.user.PortfolioId)
+		err = items.DeleteItem(deleteMsg.Uuid, client.user.PortfolioId, false)
 	case notification.IdentifiableType:
-		err = notification.DeleteNotification(deleteMsg.Uuid, client.user.Uuid)
+		err = notification.DeleteNotification(deleteMsg.Uuid, client.user.PortfolioId)
 	}
 	client.sendMessage(messages.BuildDeleteResponseMsg(baseMessage.RequestID, err))
 }

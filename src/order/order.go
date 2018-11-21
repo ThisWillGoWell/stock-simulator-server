@@ -249,7 +249,7 @@ func executeTrade(o *TradeOrder) {
 		ledgerEntry.UpdateChannel.Offer(ledgerEntry)
 	}
 	record.NewRecord(ledgerEntry.RecordBookId, details.ShareCount, details.SharePrice, details.Tax, details.Fees, details.Bonus, details.Result)
-	notification.DoneTradeNotification(port.UserUUID, value.Uuid, o.Amount)
+	notification.DoneTradeNotification(port.Uuid, value.Uuid, o.Amount)
 	go value.Update()
 	go port.Update()
 }
@@ -380,7 +380,7 @@ func executeTransfer(o *TransferOrder) {
 	receiver.Wallet += o.Amount
 	port.Wallet -= o.Amount
 	successOrder(o, Details{})
-	notification.SendMoneyTradeNotification(port.UserUUID, receiver.UserUUID, o.Amount)
+	notification.SendMoneyTradeNotification(port.Uuid, receiver.Uuid, o.Amount)
 	go port.Update()
 	go receiver.Update()
 }

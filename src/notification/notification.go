@@ -19,56 +19,56 @@ import (
 
 var notificationLock = lock.NewLock("notifications")
 var notifications = make(map[string]*Notification)
-var notificationsUserUuid = make(map[string]map[string]*Notification)
+var notificationsPortfolioUuid = make(map[string]map[string]*Notification)
 
 const IdentifiableType = "notification"
 
 type Notification struct {
-	Uuid         string      `json:"uuid"`
-	UserUuid     string      `json:"user_uuid"`
-	Timestamp    time.Time   `json:"time"`
-	Type         string      `json:"type"`
-	Notification interface{} `json:"notification"`
-	Seen         bool        `json:"seen"`
+	Uuid          string      `json:"uuid"`
+	PortfolioUuid string      `json:"portfolio_uuid"`
+	Timestamp     time.Time   `json:"time"`
+	Type          string      `json:"type"`
+	Notification  interface{} `json:"notification"`
+	Seen          bool        `json:"seen"`
 }
 
-func NewNotification(userUuid, t string, notification interface{}) *Notification {
+func NewNotification(portfolioUuid, t string, notification interface{}) *Notification {
 	uuid := utils.SerialUuid()
-	return MakeNotification(uuid, userUuid, t, time.Now(), false, notification)
+	return MakeNotification(uuid, portfolioUuid, t, time.Now(), false, notification)
 }
 
-func MakeNotification(uuid, userUuid, t string, timestamp time.Time, seen bool, notification interface{}) *Notification {
+func MakeNotification(uuid, portfolioUuid, t string, timestamp time.Time, seen bool, notification interface{}) *Notification {
 	notificationLock.Acquire("get-all-notifications")
 	defer notificationLock.Release()
 	note := &Notification{
-		Uuid:         uuid,
-		UserUuid:     userUuid,
-		Type:         t,
-		Notification: notification,
-		Timestamp:    timestamp,
-		Seen:         seen,
+		Uuid:          uuid,
+		PortfolioUuid: portfolioUuid,
+		Type:          t,
+		Notification:  notification,
+		Timestamp:     timestamp,
+		Seen:          seen,
 	}
 	notifications[uuid] = note
-	if _, ok := notificationsUserUuid[userUuid]; !ok {
-		notificationsUserUuid[userUuid] = make(map[string]*Notification)
+	if _, ok := notificationsPortfolioUuid[portfolioUuid]; !ok {
+		notificationsPortfolioUuid[portfolioUuid] = make(map[string]*Notification)
 	}
-	notificationsUserUuid[userUuid][uuid] = note
+	notificationsPortfolioUuid[portfolioUuid][uuid] = note
 	utils.RegisterUuid(uuid, note)
 	wires.NotificationNewObject.Offer(note)
-	sender.SendNewObject(userUuid, note)
+	sender.SendNewObject(portfolioUuid, note)
 	return note
 }
 
-func AcknowledgeNotification(uuid, userUuid string) error {
+func AcknowledgeNotification(uuid, portfolioUuid string) error {
 	notification, ok := notifications[uuid]
 	if !ok {
 		return errors.New("notification uuid does not exist")
 	}
-	if notification.UserUuid != userUuid {
+	if notification.PortfolioUuid != portfolioUuid {
 		return errors.New("user does not own notification, what are you doing?")
 	}
 	notification.Seen = true
-	sender.SendChangeUpdate(notification.UserUuid, &change.ChangeNotify{
+	sender.SendChangeUpdate(notification.PortfolioUuid, &change.ChangeNotify{
 		Type:    notification.GetType(),
 		Id:      notification.GetId(),
 		Object:  notification,
@@ -95,11 +95,11 @@ func NewMailNotifcation(uuid, from string, text string, money int64) *Notificati
 	}
 }
 
-func GetAllNotifications(userUuid string) []*Notification {
+func GetAllNotifications(portfolioUuid string) []*Notification {
 	notificationLock.Acquire("get-all-notifications")
 	defer notificationLock.Release()
 	notifications := make([]*Notification, 0)
-	for _, notification := range notificationsUserUuid[userUuid] {
+	for _, notification := range notificationsPortfolioUuid[portfolioUuid] {
 		notifications = append(notifications, notification)
 	}
 	return notifications
@@ -118,28 +118,33 @@ func JsonToNotification(jsonString, notificationType string) interface{} {
 		i = MoneyTransferNotification{}
 	case RecieveNotificationType:
 		i = MoneyTransferNotification{}
+	case NewEffectNotificationType:
+		i = EffectNotification{}
+	case EndEffectNotificationType:
+		i = EffectNotification{}
 	}
+
 	json.Unmarshal([]byte(jsonString), &i)
-	return i
+	return &i
 }
 
-func DeleteNotification(uuid, userUuid string) error {
+func DeleteNotification(uuid, portfolioUuid string) error {
 	notificationLock.Acquire("delete note")
 	defer notificationLock.Release()
-	if _, exists := notificationsUserUuid[userUuid]; !exists {
+	if _, exists := notificationsPortfolioUuid[portfolioUuid]; !exists {
 		return errors.New("user does not have any notification")
 	}
-	note, exists := notificationsUserUuid[userUuid][uuid]
+	note, exists := notificationsPortfolioUuid[portfolioUuid][uuid]
 	if !exists {
 		return errors.New("notification does not exist")
 	}
 	delete(notifications, uuid)
-	delete(notificationsUserUuid[note.UserUuid], uuid)
-	if len(notificationsUserUuid[note.UserUuid]) == 0 {
-		delete(notificationsUserUuid, note.UserUuid)
+	delete(notificationsPortfolioUuid[note.PortfolioUuid], uuid)
+	if len(notificationsPortfolioUuid[note.PortfolioUuid]) == 0 {
+		delete(notificationsPortfolioUuid, note.PortfolioUuid)
 	}
 	utils.RemoveUuid(uuid)
-	sender.SendDeleteObject(userUuid, note)
+	sender.SendDeleteObject(portfolioUuid, note)
 	wires.NotificationsDelete.Offer(note)
 	return nil
 }

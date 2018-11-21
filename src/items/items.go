@@ -3,6 +3,7 @@ package items
 import (
 	"encoding/json"
 	"log"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/stock-simulator-server/src/change"
@@ -14,101 +15,123 @@ import (
 	"github.com/stock-simulator-server/src/wires"
 )
 
-var ItemTypes = ItemMap()
-var ItemsPortInventory = make(map[string]map[string]Item)
-var Items = make(map[string]Item)
+var ItemsPortInventory = make(map[string]map[string]*Item)
+var Items = make(map[string]*Item)
 var ItemLock = lock.NewLock("item")
 
 const ItemIdentifiableType = "item"
 
-func ItemMap() map[string]ItemType {
-	mapp := make(map[string]ItemType)
-	mapp[insiderTradingItemType] = InsiderTraderItemType{}
-	mapp[mailItemType] = MailItemType{}
-	return mapp
-}
-
-type ItemType interface {
-	GetName() string
-	GetType() string
-	GetCost() int64
-	GetDescription() string
-	GetActivateParameters() interface{}
-	RequiredLevel() int64
-}
-
-type Item interface {
-	GetType() string
-	GetId() string
-	GetItemType() ItemType
-	GetPortfolioUuid() string
-	GetUuid() string
+type InnerItem interface {
 	SetPortfolioUuid(string)
 	Activate(interface{}) (interface{}, error)
-	HasBeenUsed() bool
-	GetUpdateChan() chan interface{}
-	Load()
+	Copy() InnerItem
+	SetParentItemUuid(string)
 }
 
-func makeItem(itemType ItemType, userUuid string) Item {
-	switch itemType.(type) {
-	case InsiderTraderItemType:
-		return newInsiderTradingItem(userUuid)
+type Item struct {
+	Uuid          string           `json:"uuid"`
+	Name          string           `json:"name"`
+	ConfigId      string           `json:"config"`
+	Type          string           `json:"type"`
+	PortfolioUuid string           `json:"portfolio_uuid"`
+	UpdateChannel chan interface{} `json:"-"`
+	InnerItem     InnerItem        `json:"-" change:"inner"`
+	CreateTime    time.Time        `json:"create_time"`
+}
+
+func (i *Item) GetId() string {
+	return i.Uuid
+}
+
+func (*Item) GetType() string {
+	return ItemIdentifiableType
+}
+
+func newItem(portfolioUuid, configId, itemType, name string, innerItem interface{}) *Item {
+
+	item := MakeItem(utils.SerialUuid(), portfolioUuid, configId, itemType, name, innerItem, time.Now())
+	sender.SendNewObject(portfolioUuid, item)
+	wires.ItemsNewObjects.Offer(item)
+	return item
+
+}
+
+func MakeItem(uuid, portfolioUuid, itemConfigId, itemType, name string, innerItem interface{}, createTime time.Time) *Item {
+	switch innerItem.(type) {
+	case string:
+		innerItem = UnmarshalJsonItem(itemType, innerItem.(string))
 	}
-	return nil
-}
-
-func LoadItem(item Item) {
-	ItemLock.Acquire("load-item")
-	defer ItemLock.Release()
-	item.Load()
-	utils.RegisterUuid(item.GetUuid(), item)
-	if _, ok := ItemsPortInventory[item.GetPortfolioUuid()]; !ok {
-		ItemsPortInventory[item.GetPortfolioUuid()] = make(map[string]Item)
+	i := &Item{
+		Name:          name,
+		ConfigId:      itemConfigId,
+		Uuid:          uuid,
+		PortfolioUuid: portfolioUuid,
+		Type:          itemType,
+		InnerItem:     innerItem.(InnerItem),
+		UpdateChannel: make(chan interface{}),
+		CreateTime:    createTime,
 	}
-	ItemsPortInventory[item.GetPortfolioUuid()][item.GetUuid()] = item
-	Items[item.GetUuid()] = item
-	change.RegisterPrivateChangeDetect(item, item.GetUpdateChan())
-	sender.RegisterChangeUpdate(item.GetPortfolioUuid(), item.GetUpdateChan())
+	utils.RegisterUuid(uuid, i)
+
+	if _, ok := ItemsPortInventory[i.PortfolioUuid]; !ok {
+		ItemsPortInventory[i.PortfolioUuid] = make(map[string]*Item)
+	}
+	i.InnerItem.SetParentItemUuid(i.Uuid)
+	ItemsPortInventory[i.PortfolioUuid][i.Uuid] = i
+	Items[i.Uuid] = i
+	change.RegisterPrivateChangeDetect(i, i.UpdateChannel)
+	sender.RegisterChangeUpdate(i.PortfolioUuid, i.UpdateChannel)
+	return i
 }
 
-func BuyItem(portUuid, userUuid, itemName string) (string, error) {
+func BuyItem(portUuid, configId string) (string, error) {
 
 	port, _ := portfolio.GetPortfolio(portUuid)
-	itemType, exists := ItemTypes[itemName]
-	if !exists {
-		return "", errors.New("item type does not exists")
+
+	config, found := validItems[configId]
+	if !found {
+		return "", errors.New("config not found")
 	}
+
 	port.Lock.Acquire("buy item")
 	defer port.Lock.Release()
 	ItemLock.Acquire("buy-item")
 	defer ItemLock.Release()
 
-	if itemType.RequiredLevel() > port.Level {
+	if config.RequiredLevel > port.Level {
 		return "", errors.New("not high enough level")
 	}
-	if itemType.GetCost() > port.Wallet {
+	if config.Cost > port.Wallet {
 		return "", errors.New("not enough $$ in wallet")
 	}
 
-	port.Wallet -= itemType.GetCost()
+	port.Wallet -= config.Cost
 	if _, ok := ItemsPortInventory[port.Uuid]; !ok {
-		ItemsPortInventory[port.Uuid] = make(map[string]Item)
+		ItemsPortInventory[port.Uuid] = make(map[string]*Item)
 	}
-	newItem := makeItem(itemType, portUuid)
-	ItemsPortInventory[port.Uuid][newItem.GetUuid()] = newItem
-	Items[newItem.GetUuid()] = newItem
-	change.RegisterPrivateChangeDetect(newItem, newItem.GetUpdateChan())
-	sender.SendNewObject(port.Uuid, newItem)
-	sender.RegisterChangeUpdate(port.Uuid, newItem.GetUpdateChan())
-	wires.ItemsNewObjects.Offer(newItem)
-	notification.NewItemNotification(userUuid, itemType.GetType(), newItem.GetId())
-	return newItem.GetId(), nil
+
+	//todo
+
+	newItem := newItem(portUuid, configId, config.Type, config.Name, config.Prams.Copy())
+	newItem.InnerItem.SetPortfolioUuid(portUuid)
+	ItemsPortInventory[port.Uuid][newItem.PortfolioUuid] = newItem
+	Items[newItem.Uuid] = newItem
+
+	notification.NewItemNotification(portUuid, newItem.Type, newItem.Uuid)
+	go port.Update()
+	return newItem.Uuid, nil
 }
 
-func DeleteItem(uuid, portfolioUuid string) error {
-	ItemLock.Acquire("delete-item")
-	defer ItemLock.Release()
+func (i *Item) DeleteItem() error {
+	return DeleteItem(i.Uuid, i.PortfolioUuid, true)
+}
+
+func DeleteItem(uuid, portfolioUuid string, lockAcquired bool) error {
+	if !lockAcquired {
+		ItemLock.Acquire("delete-item")
+		defer ItemLock.Release()
+	}
+
 	if _, exists := ItemsPortInventory[portfolioUuid]; !exists {
 		return errors.New("user does not have any item")
 	}
@@ -118,11 +141,11 @@ func DeleteItem(uuid, portfolioUuid string) error {
 	}
 
 	change.UnregisterChangeDetect(item)
-	close(item.GetUpdateChan())
+	close(item.UpdateChannel)
 	delete(Items, uuid)
-	delete(ItemsPortInventory[item.GetPortfolioUuid()], uuid)
-	if len(ItemsPortInventory[item.GetPortfolioUuid()]) == 0 {
-		delete(ItemsPortInventory, item.GetPortfolioUuid())
+	delete(ItemsPortInventory[item.PortfolioUuid], uuid)
+	if len(ItemsPortInventory[item.PortfolioUuid]) == 0 {
+		delete(ItemsPortInventory, item.PortfolioUuid)
 	}
 	utils.RemoveUuid(uuid)
 	sender.SendDeleteObject(portfolioUuid, item)
@@ -130,10 +153,10 @@ func DeleteItem(uuid, portfolioUuid string) error {
 	return nil
 }
 
-func GetItemsForUser(portfolioUuid string) []Item {
+func GetItemsForPortfolio(portfolioUuid string) []*Item {
 	ItemLock.Acquire("get-Items")
 	defer ItemLock.Release()
-	items := make([]Item, 0)
+	items := make([]*Item, 0)
 	userItems, ok := ItemsPortInventory[portfolioUuid]
 	if !ok {
 		return items
@@ -144,7 +167,7 @@ func GetItemsForUser(portfolioUuid string) []Item {
 	return items
 }
 
-func getItem(itemId, portfolioUuid string) (Item, error) {
+func getItem(itemId, portfolioUuid string) (*Item, error) {
 	userItems, ok := ItemsPortInventory[portfolioUuid]
 	if !ok {
 		return nil, errors.New("user has no items")
@@ -169,19 +192,17 @@ func getItem(itemId, portfolioUuid string) (Item, error) {
 //	return item.View(), nil
 //}
 
-func Use(itemId, portfolioUuid, userUuid string, itemParameters interface{}) (interface{}, error) {
+func Use(itemId, portfolioUuid string, itemParameters interface{}) (interface{}, error) {
 	ItemLock.Acquire("Use Item")
 	defer ItemLock.Release()
 	item, err := getItem(itemId, portfolioUuid)
 	if err != nil {
 		return nil, err
 	}
-	if item.HasBeenUsed() {
-		return nil, errors.New("Item has been used")
-	}
-	val, err := item.Activate(itemParameters)
+
+	val, err := item.InnerItem.Activate(itemParameters)
 	if err != nil {
-		notification.UsedItemNotification(userUuid, itemId, item.GetItemType().GetName())
+		notification.UsedItemNotification(portfolioUuid, itemId, item.Type)
 	}
 	return val, err
 }
@@ -199,7 +220,7 @@ func TransferItem(currentOwner, newOwner, itemId string) error {
 	}
 
 	if _, ok := ItemsPortInventory[newOwner]; !ok {
-		ItemsPortInventory[newOwner] = make(map[string]Item)
+		ItemsPortInventory[newOwner] = make(map[string]*Item)
 	}
 	ItemsPortInventory[currentOwner][itemId] = item
 
@@ -210,11 +231,11 @@ func TransferItem(currentOwner, newOwner, itemId string) error {
 	return nil
 }
 
-func UnmarshalJsonItem(itemType, jsonStr string) Item {
-	var item Item
+func UnmarshalJsonItem(itemType, jsonStr string) InnerItem {
+	var item InnerItem
 	switch itemType {
-	case insiderTradingItemType:
-		item = &InsiderTradingItem{}
+	case TradeItemType:
+		item = &TradeEffectItem{}
 	}
 	err := json.Unmarshal([]byte(jsonStr), &item)
 	if err != nil {
