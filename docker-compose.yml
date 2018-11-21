@@ -11,7 +11,7 @@ services:
       - ${CONFIG_FILE}:/opt/server/config
     environment:
       CONFIG_FOLDER: opt/server/config/
-      SEED_JSON: config_prod.json
+      SEED_JSON: seed_prod.json
       ITEMS_JSON: items.json
       LEVELS_JSON: levels.json
       DB_URI: host=db port=5432 user=starket password=wordpass dbname=starket_db sslmode=disable
