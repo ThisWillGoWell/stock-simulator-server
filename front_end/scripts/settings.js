@@ -53,6 +53,30 @@ function load_settings_tab() {
                 // Reset display name
                 $("#change-display-name").val("");
             },
+            changePassword: function() {
+                let new_pass = $("#change-password").val();
+                let new_pass_2 = $("#change-password-confirm").val();
+
+                if (new_pass === new_pass_2) {
+                    let msg = {
+                        set: 'password',
+                        value: new_pass
+                    }
+
+                    let callback = function(msg) {
+                        if (msg.msg.success) {
+                            notifyTopBar("Password changed.", GREEN, msg.msg.success);
+                        } else {
+                            notifyTopBar(msg.msg.error, RED, msg.msg.success);
+                        }
+                    };
+
+                    doSend("set", msg, callback);
+
+                } else {
+                    notifyTopBar("Passwords do not match.", RED)
+                }
+            },
         }
     })
 };
