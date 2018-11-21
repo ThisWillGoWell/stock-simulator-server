@@ -49,14 +49,14 @@ func (*Item) GetType() string {
 
 func newItem(portfolioUuid, configId, itemType, name string, innerItem interface{}) *Item {
 
-	item := MakeItem(utils.SerialUuid(), portfolioUuid, configId, itemType, name, innerItem)
+	item := MakeItem(utils.SerialUuid(), portfolioUuid, configId, itemType, name, innerItem, time.Now())
 	sender.SendNewObject(portfolioUuid, item)
-
+	wires.ItemsNewObjects.Offer(item)
 	return item
 
 }
 
-func MakeItem(uuid, portfolioUuid, itemConfigId, itemType, name string, innerItem interface{}) *Item {
+func MakeItem(uuid, portfolioUuid, itemConfigId, itemType, name string, innerItem interface{}, createTime time.Time) *Item {
 	switch innerItem.(type) {
 	case string:
 		innerItem = UnmarshalJsonItem(itemType, innerItem.(string))
@@ -69,6 +69,7 @@ func MakeItem(uuid, portfolioUuid, itemConfigId, itemType, name string, innerIte
 		Type:          itemType,
 		InnerItem:     innerItem.(InnerItem),
 		UpdateChannel: make(chan interface{}),
+		CreateTime:    createTime,
 	}
 	utils.RegisterUuid(uuid, i)
 
@@ -117,6 +118,7 @@ func BuyItem(portUuid, configId string) (string, error) {
 	Items[newItem.Uuid] = newItem
 
 	notification.NewItemNotification(portUuid, newItem.Type, newItem.Uuid)
+	go port.Update()
 	return newItem.Uuid, nil
 }
 

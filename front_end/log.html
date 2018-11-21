@@ -33,7 +33,7 @@
     let simulate = function(){
         SendWs(levelUp());
 
-        SendWs(newItemBuy('insider'));
+        SendWs(newItemBuy('bonus_profits_400'));
         // use all items in inventory
         setTimeout(function(){
             for( var key in objects['item']){
@@ -43,23 +43,23 @@
                 SendWs(ackNotification(key))
             }
             setTimeout(function () {
-                for( var key in objects['item']) {
-                    SendWs(newDeleteMsg("item", key))
-                }
+                // for( var key in objects['item']) {
+                //     SendWs(newDeleteMsg("item", key))
+                // }
                 for (var key in objects['notification']){
                     SendWs(newDeleteMsg('notification', key))
                 }
-                for (var key in objects['stock']){
-                    SendWs(newProspectOrder(objects['stock'][key].uuid, 1))
-                }
+                // for (var key in objects['stock']){
+                //     SendWs(newProspectOrder(objects['stock'][key].uuid, 1))
+                // }
 
 
-            }, 1000)
+            }, 3000)
 
-        }, 100)
+        }, 1000)
 
     } ;
-
+    let requestCount = 0;
     let forceUseProd = false;
     let httpUrl = location.protocol + "://"+ window.location.host;
 
@@ -198,19 +198,19 @@
 
 
     function    newDeleteMsg(type,uuid){
-        return newBaseMsg("delete", {"type": type, "uuid": uuid}, "delete-response")
+        return newBaseMsg("delete", {"type": type, "uuid": uuid}, "delete-response",requestCount++ + '')
     }
 
     function ackNotification(uuid){
-        return newBaseMsg("ack", {"uuid":uuid})
+        return newBaseMsg("ack", {"uuid":uuid},requestCount++ + '')
     }
 
     function newItemBuy(itemType) {
-        return newBaseMsg('item', {'action':'buy', o: {'item_name': itemType}})
+        return newBaseMsg('item', {'action':'buy', o: {'item_config': itemType}},requestCount++ + '')
     }
 
     function newUseItem(itemUuid, itemParameters={}) {
-        return newBaseMsg('item', {'action': 'use', o: {'uuid': itemUuid, 'params': itemParameters }})
+        return newBaseMsg('item', {'action': 'use', o: {'uuid': itemUuid, 'params': itemParameters }}, requestCount++ + '')
     }
 
     function mewViewItem(itemUuid) {
@@ -218,7 +218,7 @@
     }
 
     function levelUp() {
-        return newBaseMsg('level_up', {})
+        return newBaseMsg('level_up', {}, requestCount++ + '')
     }
 
     function newConnectMsg(token){

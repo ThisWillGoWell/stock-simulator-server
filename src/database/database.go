@@ -131,13 +131,13 @@ func databaseWriter() {
 		itemsDBWrite.RegisterInput(wires.ItemsUpdate.GetBufferedOutput(100))
 		write := itemsDBWrite.GetBufferedOutput(1000)
 		for val := range write {
-			writeItem(val.(items.Item))
+			writeItem(val.(*items.Item))
 		}
 	}()
 	go func() {
 		itemDelete := wires.ItemsDelete.GetBufferedOutput(100)
 		for item := range itemDelete {
-			deleteItem(item.(items.Item))
+			deleteItem(item.(*items.Item))
 		}
 	}()
 

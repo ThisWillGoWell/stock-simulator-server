@@ -45,7 +45,7 @@ func deleteEffect(uuid string) {
 
 func newEffect(portfolioUuid, title, effectType, tag string, innerEffect interface{}, duration time.Duration) *Effect {
 	uuid := utils.SerialUuid()
-	e := MakeEffect(uuid, portfolioUuid, title, tag, effectType, innerEffect, duration, time.Now())
+	e := MakeEffect(uuid, portfolioUuid, title, effectType, tag, innerEffect, duration, time.Now())
 	wires.EffectsNewObject.Offer(e)
 	notification.NewEffectNotification(portfolioUuid, title)
 	return e
@@ -168,7 +168,7 @@ func RunEffectCleaner() {
 		for range time.Tick(time.Second) {
 			EffectLock.Acquire("clean")
 			for uuid, effect := range effects {
-				if time.Since(effect.StartTime) > effect.Duration.Duration {
+				if effect.Duration.Duration != 0 && time.Since(effect.StartTime) > effect.Duration.Duration {
 					deleteEffect(uuid)
 				}
 			}

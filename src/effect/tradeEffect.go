@@ -27,18 +27,18 @@ func (TradingType) Name() string {
 type TradeEffect struct {
 	parentEffect *Effect `json:"-"`
 
-	BuyFeeAmount     *int64   `json:"buy_fee_amount,omitempty" change:"-"`     // fee on all trades ex: base fee
-	BuyFeeMultiplier *float64 `json:"buy_fee_multiplier,omitempty" change:"-"` // fee % of the total fees, ex: double fees
+	BuyFeeAmount     *int64   `json:"buy_fee_amount" change:"-"`     // fee on all trades ex: base fee
+	BuyFeeMultiplier *float64 `json:"buy_fee_multiplier" change:"-"` // fee % of the total fees, ex: double fees
 
-	SellFeeAmount     *int64   `json:"sell_fee_amount,omitempty" change:"-"`     // fee on all sales trades ex: base fee
-	SellFeeMultiplier *float64 `json:"sell_fee_multiplier,omitempty" change:"-"` // fee % of the total fees, ex: double fees on trades
+	SellFeeAmount     *int64   `json:"sell_fee_amount" change:"-"`     // fee on all sales trades ex: base fee
+	SellFeeMultiplier *float64 `json:"sell_fee_multiplier" change:"-"` // fee % of the total fees, ex: double fees on trades
 
-	BonusProfitMultiplier *float64 `json:"profit_multiplier,omitempty" change:"-"` // current profit multiplier, ex: bonus
+	BonusProfitMultiplier *float64 `json:"profit_multiplier" change:"-"` // current profit multiplier, ex: bonus
 
-	TaxPercent    *float64 `json:"tax_percent,omitempty" change:"-"`    // tax payed on profits, ex:  base tax
-	TaxMultiplier *float64 `json:"tax_multiplier,omitempty" change:"-"` // percent multiplier, ex: taxless sales
+	TaxPercent    *float64 `json:"tax_percent" change:"-"`    // tax payed on profits, ex:  base tax
+	TaxMultiplier *float64 `json:"tax_multiplier" change:"-"` // percent multiplier, ex: taxless sales
 
-	TradeBlocked *bool `json:"trade_blocked,omitempty" change:"-"` // if trade is blocked
+	TradeBlocked *bool `json:"trade_blocked" change:"-"` // if trade is blocked
 }
 
 func NewBaseTradeEffect(portfolioUuid string) {
@@ -47,7 +47,7 @@ func NewBaseTradeEffect(portfolioUuid string) {
 		SellFeeAmount: utils.CreateInt(BaseSellFell),
 		TaxPercent:    utils.CreateFloat(BaseTaxRate),
 	}
-	baseTradeEffect.parentEffect = newEffect(portfolioUuid, "Base Effect", baseTradeEffectTag, TradeEffectType, baseTradeEffect, 0)
+	baseTradeEffect.parentEffect = newEffect(portfolioUuid, "Base Effect", TradeEffectType, baseTradeEffectTag, baseTradeEffect, 0)
 }
 
 func UpdateBaseProfit(portfolioUuid string, profitMultiplier float64) {

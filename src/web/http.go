@@ -10,11 +10,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/stock-simulator-server/src/config"
+
 	"github.com/stock-simulator-server/src/metics"
 
 	"github.com/gorilla/websocket"
 	"github.com/stock-simulator-server/src/account"
-	"github.com/stock-simulator-server/src/app"
 	"github.com/stock-simulator-server/src/client"
 	"github.com/stock-simulator-server/src/messages"
 )
@@ -30,7 +31,7 @@ func StartHandlers() {
 	//var fs = http.FileServer(http.Dir(shareDir))
 
 	http.HandleFunc("/load", func(w http.ResponseWriter, r *http.Request) {
-		app.LoadConfig()
+		config.Seed()
 		http.Redirect(w, r, "/", 301)
 	})
 

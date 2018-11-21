@@ -26,9 +26,13 @@ func makeLevel(targetMap map[int64]*Level, level, cost, maxSharesStock int64, pr
 }
 
 func LoadLevels(data []byte) {
-	err := json.Unmarshal(data, &Levels)
+	levelsList := make([]*Level, 0)
+	err := json.Unmarshal(data, &levelsList)
 	if err != nil {
 		log.Log.Error("err loading levels", err)
+	}
+	for i, ele := range levelsList {
+		Levels[int64(i)] = ele
 	}
 }
 

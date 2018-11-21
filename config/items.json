@@ -1,0 +1,53 @@
+[
+  {
+    "config_id": "caymen_account_50",
+    "name":"Caymen Account",
+    "type":"trade_effect",
+    "desc": "50% Tax Reduction for 15 min",
+    "price": "$1",
+    "cost": 100,
+    "params":{
+      "duration":"15m",
+      "tax_multiplier":0.5
+    },
+    "debuff":false
+  },
+  {
+    "config_id": "personal_broker",
+    "name": "Personal Broker",
+    "type":"trade_effect",
+    "desc":"No buy or sell fees for 1 hour",
+    "price":"$1.50",
+    "cost": 150,
+    "params":{
+      "duration":"1h",
+      "buy_fee_multiplier": 0,
+      "sell_fee_multiplier": 0
+    },
+    "debuff": false
+  },
+  {
+    "config_id": "bonus_profits_5",
+    "name":"5% Bonus Profits",
+    "type": "trade_effect",
+    "desc": "5% Bonus Cash to all profits",
+    "price":"$10",
+    "cost":1000,
+    "params":{
+      "duration": "1m",
+      "profit_multiplier": 0.05
+    }
+  },
+  {
+    "config_id": "bonus_profits_400",
+    "name": "test-1",
+    "type": "trade_effect",
+    "desc": "quad profits",
+    "price": "$1",
+    "cost": 1,
+    "params": {
+      "duration": "2m",
+      "profit_multiplier": 4
+    }
+  }
+]
