@@ -10,7 +10,10 @@ services:
     volumes:
       - ${CONFIG_FILE}:/opt/server/config
     environment:
-      CONFIG_FILE: opt/server/config/config_prod.json
+      CONFIG_FOLDER: opt/server/config/
+      SEED_JSON: config_prod.json
+      ITEMS_JSON: items.json
+      LEVELS_JSON: levels.json
       DB_URI: host=db port=5432 user=starket password=wordpass dbname=starket_db sslmode=disable
       DISCORD_TOKEN: ${DISCORD_TOKEN}
   db:
