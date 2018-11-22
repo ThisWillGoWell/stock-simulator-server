@@ -2095,6 +2095,7 @@ tbody tr:hover .money-transfer-btn{
     font-size: 28px;
     font-weight: 500;
     letter-spacing: 2px;
+    text-transform: uppercase;
 }
 .item-cost {
     color: rgba(0,0,0,0.4);
