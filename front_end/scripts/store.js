@@ -52,13 +52,13 @@ function load_store_tab() {
     });
 
     // Get item and level details
-    var storeJSON = $.getJSON("json/store.json", function(data) {
+    var storeJSON = $.getJSON("../config/levels.json", function(data) {
         storeJSON = data;
         console.log(storeJSON)
     }).then(function(data) {
         console.log(data);
-        Vue.set(vm_store.store, 'exp', data.experience);
-        Vue.set(vm_store.store, 'abilities', data.abilities);
+        Vue.set(vm_store.store, 'exp', data);
+        // Vue.set(vm_store.store, 'abilities', data.abilities);
     });
 
 };

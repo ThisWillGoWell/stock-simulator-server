@@ -36,7 +36,8 @@
     "note": "+7% bonus profit",
     "max_shares": 25,
     "profit_multiplier": 0.07,
-    "price": "$500,000"
+    "price": "$500,000",
+    "cost": 50000000
   },
   {
     "label": "LEVEL 4",
