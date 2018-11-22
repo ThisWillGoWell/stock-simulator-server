@@ -152,9 +152,8 @@ registerRoute("delete", function(msg) {
   switch (msg.msg.type) {
     case 'effect':
       Vue.delete(vm_effects.effects, msg.msg.uuid);
-      // delete vm_effects.effects[msg.msg.uuid];
       break;
-      
+
     case 'item':
       Vue.delete(vm_items.items, msg.msg.uuid);
       break;
