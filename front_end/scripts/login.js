@@ -114,6 +114,14 @@ $( document ).ready(function() {
 
     });
 
+    $('#mobile-consent--container .warning-content button').click(function() {
+        $('#mobile-consent--container').remove();
+    });
+
+    function dismissWarning() {
+        
+    }
+
     function disableInput(selector) {
 
         let attr = selector.attr('disable');

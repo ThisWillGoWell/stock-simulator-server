@@ -168,6 +168,8 @@ function load_modal_vues() {
                 if (!buySellModal.isBuying) {
                     buySellModal.buySellAmount *= -1;
                 }
+                $('#buy-sell-amount-input').blur();
+                $('#buy-sell-amount-input').text("");
                 sendTrade(buySellModal.stock_uuid, buySellModal.buySellAmount);
                 toggleModal();
             },

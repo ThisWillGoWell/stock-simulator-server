@@ -2904,6 +2904,74 @@ table thead.table-top-bar tr th:hover{
     cursor: pointer;
 }
 
+/* WARNING */
+
+#mobile-consent--container {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 99;
+    height: 100%;
+    width: 100%;
+    background-color: #e57373;
+}
+
+.warning-content {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    margin: auto;
+    display: inline-block;
+    width: 290px;
+    height: 400px;
+    color: #fff;
+}
+
+.warning-content p.big {
+    font-size: 28px;
+    font-weight: 500;
+    margin-bottom: 25px;
+    letter-spacing: 4px;
+    text-shadow: 2px 2px 3px rgba(0,0,0,0.1);
+}
+
+.warning-content p i {
+    font-size: 75px;
+
+}
+
+p.small {
+    font-size: 12px;
+    letter-spacing: 0.2px;
+    text-shadow: none;
+    margin-bottom: 25px;
+}
+
+.warning-content button {
+    border: solid 2px #fff;
+    width: auto;
+    padding: 8px 20px;
+    background-color: transparent;
+    color: #fff; 
+    font-size: 14px;
+    font-weight: 500;
+    -moz-transition: all ease-in-out 0.23s;
+    -o-transition: all ease-in-out 0.23s;
+    -webkit-transition: all ease-in-out 0.23s;
+    transition: all ease-in-out 0.23s; 
+    border-radius: 3px; 
+}
+
+.warning-content button:hover {
+    background-color: #fff;
+    color: #4d4d4d;
+    box-shadow: 0 3px 5px rgba(0,0,0,0.10), 0 3px 5px rgba(0,0,0,0.15);
+}
+
 /* LOADERS */
 
 #loader--container {
