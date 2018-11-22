@@ -306,7 +306,7 @@ function load_modal_vues() {
                 };
 
                 // Send through WebSocket
-                doSend("transfer", msg, callback);
+                doSend("transfer", msg); // can add callback back in
 
                 // Close the modal
                 toggleTransferModal();

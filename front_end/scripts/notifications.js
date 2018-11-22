@@ -13,8 +13,8 @@ var notificationList = $('#notification-list');
 
 var routeNote = {
 	trade: notifyTrade,
-	send_money: notifyTransfer,
-	receive_money: notifyTransfer,
+	send_money: notifySentMoney,
+	receive_money: notifyReceiveMoney,
 	new_item: notifyNewItem,
 };
 
@@ -22,6 +22,7 @@ function sendAck(note_id, callback) {
 	var msg = {
 		'uuid': note_id
 	};
+	// TODO: make a callback maybe? 
 	doSend('ack', msg);
 };
 
@@ -37,30 +38,31 @@ function notifyNewItem(msg) {
 	sendAck(msg.uuid);
 };
 
-function notifyTransfer(msg) {
-	var color, message;
-	var success = msg.notification.success;
-
+function notifySentMoney(msg) {
 	// Getting usernames
-	var receiver = msg.notification.receiver;
-	receiver = vm_users.users[receiver].display_name;
+	var receiver = vm_portfolios.portfolios[msg.notification.receiver].name;
 
-	// If trade was a success
-	if (success) {
-		// Getting amount 
-		var amount = msg.notification.amount;
-		message = "Sucessful tranfer of " + formatPrice(amount) + " to " + receiver + ".";
-		color = GREEN;
+	var amount = msg.notification.amount;
+	var message = "Successful transfer of $" + formatPrice(amount) + " to " + receiver + ".";
+	var color = GREEN;
 
-	} else {
-		message = "Tranfer to " + receiver + " failed.";
-		color = RED;
-	}
-
-	notifyTopBar(message, color, success);
+	console.log(message)
+	notifyTopBar(message, color, true);
 
 	sendAck(msg.uuid);
+};
 
+function notifyReceiveMoney(msg) {
+	// Getting giver name
+	var sender = vm_portfolios.portfolios[msg.notification.sender].name;
+
+	var amount = msg.notification.amount;
+	var message = "You received $" + formatPrice(amount) + " from " + sender + ".";
+	var color = GREEN;
+	console.log(message)
+	notifyTopBar(message, color, true);
+
+	sendAck(msg.uuid);
 };
 
 function notifyTrade(msg) {
