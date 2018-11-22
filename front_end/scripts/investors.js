@@ -91,7 +91,6 @@ function load_investors_tab() {
                 return -direction;
               }
             })
-            console.log(investors)
             return investors;
           }
 
@@ -114,7 +113,6 @@ function load_investors_tab() {
               return 0;
             }
           });
-          console.log(investors)
           return investors;
         }
       },
