@@ -91,19 +91,30 @@ function load_investors_tab() {
                 return -direction;
               }
             })
+            console.log(investors)
             return investors;
           }
 
           investors = investors.sort(function(a, b) {
-            if (a[byCol] > b[byCol]) {
-              return -direction;
+            if (typeof(a[byCol]) == "string") {
+              if (a[byCol].toLowerCase() > b[byCol].toLowerCase()) {
+                return -direction;
+              }
+              if (a[byCol].toLowerCase() < b[byCol].toLowerCase()) {
+                return direction;
+              }
+              return 0;
+            } else {
+              if (a[byCol] > b[byCol]) {
+                return -direction;
+              }
+              if (a[byCol] < b[byCol]) {
+                return direction;
+              }
+              return 0;
             }
-            if (a[byCol] < b[byCol]) {
-              return direction;
-            }
-            return 0;
           });
-          
+          console.log(investors)
           return investors;
         }
       },

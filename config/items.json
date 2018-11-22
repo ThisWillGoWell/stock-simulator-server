@@ -1,18 +1,5 @@
 [
   {
-    "config_id": "caymen_account_50",
-    "name":"Caymen Account",
-    "type":"trade_effect",
-    "desc": "50% Tax Reduction for 15 min",
-    "price": "$100,000",
-    "cost": 10000000,
-    "params":{
-      "duration":"15m",
-      "tax_multiplier":0.5
-    },
-    "debuff":false
-  },
-  {
     "config_id": "personal_broker",
     "name": "Personal Broker",
     "type":"trade_effect",
@@ -27,6 +14,19 @@
     "debuff": false
   },
   {
+    "config_id": "caymen_account_50",
+    "name":"Caymen Account",
+    "type":"trade_effect",
+    "desc": "50% Tax Reduction for 15 min",
+    "price": "$100,000",
+    "cost": 10000000,
+    "params":{
+      "duration":"15m",
+      "tax_multiplier":0.5
+    },
+    "debuff":false
+  },
+  {
     "config_id": "bonus_profits_5",
     "name":"5% Bonus Profits",
     "type": "trade_effect",
@@ -39,18 +39,6 @@
     }
   },
   {
-    "config_id": "bonus_profits_400",
-    "name": "Quadruple Profits",
-    "type": "trade_effect",
-    "desc": "quadruple profits",
-    "price": "$10,000,000",
-    "cost": 1000000000,
-    "params": {
-      "duration": "2m",
-      "profit_multiplier": 4
-    }
-  },
-  {
     "config_id": "bonus_profits_200",
     "name": "Double Profits",
     "type": "trade_effect",
@@ -60,6 +48,18 @@
     "params": {
       "duration": "2m",
       "profit_multiplier": 2
+    }
+  },
+  {
+    "config_id": "bonus_profits_400",
+    "name": "Quadruple Profits",
+    "type": "trade_effect",
+    "desc": "quadruple profits",
+    "price": "$10,000,000",
+    "cost": 1000000000,
+    "params": {
+      "duration": "2m",
+      "profit_multiplier": 4
     }
   }
 ]
