@@ -5,6 +5,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/stock-simulator-server/src/merge"
+
 	"github.com/pkg/errors"
 	"github.com/stock-simulator-server/src/change"
 	"github.com/stock-simulator-server/src/lock"
@@ -37,6 +39,15 @@ type Item struct {
 	UpdateChannel chan interface{} `json:"-"`
 	InnerItem     InnerItem        `json:"-" change:"inner"`
 	CreateTime    time.Time        `json:"create_time"`
+}
+
+type i2 struct {
+	Uuid          string    `json:"uuid"`
+	Name          string    `json:"name"`
+	ConfigId      string    `json:"config"`
+	Type          string    `json:"type"`
+	PortfolioUuid string    `json:"portfolio_uuid"`
+	CreateTime    time.Time `json:"create_time"`
 }
 
 func (i *Item) GetId() string {
@@ -242,4 +253,16 @@ func UnmarshalJsonItem(itemType, jsonStr string) InnerItem {
 		log.Fatal("error unmarshal json item", err.Error())
 	}
 	return item
+}
+
+func (i *Item) MarshalJSON() ([]byte, error) {
+
+	return merge.Json(i2{
+		PortfolioUuid: i.PortfolioUuid,
+		Uuid:          i.Uuid,
+		Name:          i.Name,
+		ConfigId:      i.ConfigId,
+		CreateTime:    i.CreateTime,
+		Type:          i.Type,
+	}, i.InnerItem)
 }
