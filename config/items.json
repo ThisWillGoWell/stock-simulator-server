@@ -4,8 +4,8 @@
     "name":"Caymen Account",
     "type":"trade_effect",
     "desc": "50% Tax Reduction for 15 min",
-    "price": "$1",
-    "cost": 100,
+    "price": "$100,000",
+    "cost": 10000000,
     "params":{
       "duration":"15m",
       "tax_multiplier":0.5
@@ -17,8 +17,8 @@
     "name": "Personal Broker",
     "type":"trade_effect",
     "desc":"No buy or sell fees for 1 hour",
-    "price":"$1.50",
-    "cost": 150,
+    "price":"$500",
+    "cost": 50000,
     "params":{
       "duration":"1h",
       "buy_fee_multiplier": 0,
@@ -31,8 +31,8 @@
     "name":"5% Bonus Profits",
     "type": "trade_effect",
     "desc": "5% Bonus Cash to all profits",
-    "price":"$10",
-    "cost":1000,
+    "price":"$100,000",
+    "cost":10000000,
     "params":{
       "duration": "1m",
       "profit_multiplier": 0.05
@@ -40,14 +40,26 @@
   },
   {
     "config_id": "bonus_profits_400",
-    "name": "test-1",
+    "name": "Quadruple Profits",
     "type": "trade_effect",
-    "desc": "quad profits",
-    "price": "$1",
-    "cost": 1,
+    "desc": "quadruple profits",
+    "price": "$10,000,000",
+    "cost": 1000000000,
     "params": {
       "duration": "2m",
       "profit_multiplier": 4
+    }
+  },
+  {
+    "config_id": "bonus_profits_200",
+    "name": "Double Profits",
+    "type": "trade_effect",
+    "desc": "double profits",
+    "price": "$500,000",
+    "cost": 50000000,
+    "params": {
+      "duration": "2m",
+      "profit_multiplier": 2
     }
   }
 ]
