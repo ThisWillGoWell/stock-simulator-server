@@ -439,10 +439,10 @@
 												<td class="stock-change" style="text-align: right; padding-right: 25px;">${{ toPrice(stock.stock_roi) }}</td>
 												
 											</tr>
-											<!-- <tr v-if="currUserStocks != []">
+											<tr v-if="currUserStocks.length == 0">
 												
-												<td colspan="5">Move to the <span class="clickable-text">Stocks tab</span> to start investing.</td>
-											</tr> -->
+												<td colspan="6" style="text-align: center;">Move to the <span class="clickable-text">Stocks tab</span> to start investing.</td>
+											</tr>
 										</tbody>
 									</table>
 								</div>
