@@ -57,7 +57,7 @@ function load_investors_tab() {
             if (d.level === 0) {
               d.title = "Novice";
             } else {
-              d.title = vm_store.experience['lvl_' + d.level].title;
+              d.title = vm_store.levels.filter(l => l.level == d.level)[0].title;
             }
           }
           // Get all stocks

@@ -42,31 +42,38 @@ function load_store_tab() {
             currUserLevel: function() {
                 return vm_dash_tab.currUserPortfolio.level;
             },
-            experience: function() {
-                return this.store.exp;
+            levels: function() {
+                return this.store.levels;
             },
             items: function() {
-                return this.store.abilities;
+                return this.store.items;
             }
         }
     });
 
-    // Get item and level details
-    var storeJSON = $.getJSON("json/store.json", function(data) {
-        storeJSON = data;
-        console.log(storeJSON)
+    // Get level details
+    var levelsJSON = $.getJSON("json/levels.json", function(data) {
+        levelsJSON = data;
+        console.log(levelsJSON)
     }).then(function(data) {
         console.log(data);
-        Vue.set(vm_store.store, 'exp', data.experience);
-        Vue.set(vm_store.store, 'abilities', data.abilities);
+        Vue.set(vm_store.store, 'levels', data);
+    });
+
+    // Load items
+    var itemsJSON = $.getJSON("json/items.json", function(data) {
+        console.log(itemsJSON)
+    }).then(function(data){
+        Vue.set(vm_store.store, 'items', data);
     });
 
 };
 
-function purchaseItem() {
+function purchaseItem(item) {
     // Set callback
     var callback = function (msg) {
         if (msg.msg.o.success) {
+            
             console.log("nothing for purchaseItem success callback");
             console.log(msg);
             
@@ -82,7 +89,7 @@ function purchaseItem() {
     var msg = {
         "action": "buy",
         "o": {
-            "item_name": "insider"
+            "item_config": item.config_id
         }
     };
 
