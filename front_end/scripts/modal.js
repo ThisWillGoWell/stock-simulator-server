@@ -294,21 +294,12 @@ function load_modal_vues() {
                     recipient: transferModal.recipient_uuid
                 };
 
-                var callback = function(msg) {
-                    var giver = vm_portfolios.portfolios[msg.msg.order.giver].name;
-                    var receiver = vm_portfolios.portfolios[msg.msg.order.receiver].name;
-
-                    if (msg.msg.success) {
-                        notifyTopBar("Successful transfer: " + giver + " to " + receiver + ".", GREEN, msg.msg.success);
-                    } else {
-                        notifyTopBar(msg.msg.err, RED, msg.msg.success);
-                    }
-                };
-
                 // Send through WebSocket
-                doSend("transfer", msg); // can add callback back in
-
+                doSend("transfer", msg); 
+                
                 // Close the modal
+                $('#cash-transfer-amount').val('');
+                $('#cash-transfer-amount').blur();
                 toggleTransferModal();
             },
             closeModal: function() {

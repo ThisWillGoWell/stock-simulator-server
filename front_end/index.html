@@ -489,7 +489,7 @@
 										</thead>
 										<tbody>
 											<tr class="clickable" v-for="item in userItems" :key='item.uuid'>
-												<td>{{ item.Type }}</td>
+												<td>{{ item.name }}</td>
 												<td>{{ item.used_status }}</td>
 												<td v-on:click="useItem(item.uuid)">Use</td>
 											</tr>
@@ -874,7 +874,7 @@
 							</div>
 							<div class="flex-column-100">
 								<ul id="item-list">
-									<li v-for="level in experience" :key="level.label">
+									<li v-for="level in levels" :key="level.label">
 										<div class="card item">
 											<!-- <div class="item-locked-layer" v-bind:class="[currUserLevel == (level.level - 1)  ? '' : [(currUserLevel > level.level - 1) ? 'item.disabled' : 'item.unlocked']]">
 												<i class="material-icons white">lock</i>
@@ -901,12 +901,12 @@
 								<div class="item-category buffer-top">ABILITIES</div>
 							</div>
 							<ul id="item-list">
-								<li v-for="item in items" :key="item.type">
+								<li v-for="item in items" :key="item.config_id">
 									<div class="card item">
-										<div class="item-name">{{ item.label }}</div>
-										<div class="item-description">{{ item.note }}</div>
+										<div class="item-name">{{ item.name }}</div>
+										<div class="item-description">{{ item.desc }}</div>
 										<div class="item-cost">{{ item.price }}</div>
-										<div class="buy-item-btn" v-on:click="purchaseItem()">BUY</div>
+										<div class="buy-item-btn" v-on:click="purchaseItem(item)">BUY</div>
 									</div>
 								</li>
 							</ul>

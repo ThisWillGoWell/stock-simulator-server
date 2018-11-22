@@ -170,6 +170,7 @@ function load_dashboard_tab() {
         var currUserUUID = vm_users.currentUser;
         if (vm_users.users[currUserUUID] !== undefined) {
           var currUserFolioUUID = vm_users.users[currUserUUID].portfolio_uuid;
+          console.log(vm_effects.effects)
           var effects = Object.values(vm_effects.effects).filter(d => d.portfolio_uuid === currUserFolioUUID);
           console.log(effects);
 

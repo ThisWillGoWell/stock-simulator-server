@@ -148,6 +148,19 @@ registerRoute("object", function(msg) {
   }
 });
 
+registerRoute("delete", function(msg) {
+  switch (msg.msg.type) {
+    case 'effect':
+      Vue.delete(vm_effects.effects, msg.msg.uuid);
+      // delete vm_effects.effects[msg.msg.uuid];
+      break;
+      
+    case 'item':
+      Vue.delete(vm_items.items, msg.msg.uuid);
+      break;
+  }
+})
+
 
 registerRoute("alert", function(msg) {
   console.log(msg);
@@ -168,9 +181,9 @@ $(document).ready(function() {
   load_modal_vues(); // modal.js
 
 
-  setTimeout(function() {
-    checkUsedItems(); // Display item perks that are in use 
-  }, 500);
+  // setTimeout(function() {
+  //   checkUsedItems(); // Display item perks that are in use 
+  // }, 500);
 
 
   console.log("----- USER ITEMS -----")
