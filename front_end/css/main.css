@@ -2928,13 +2928,12 @@ table thead.table-top-bar tr th:hover{
     display: inline-block;
     width: 290px;
     height: 400px;
+    color: #fff;
 }
 
-.warning-content p {
+.warning-content p.big {
     font-size: 28px;
-    text-align: center;
     font-weight: 500;
-    color: #fff;
     margin-bottom: 25px;
     letter-spacing: 4px;
     text-shadow: 2px 2px 3px rgba(0,0,0,0.1);
@@ -2942,12 +2941,14 @@ table thead.table-top-bar tr th:hover{
 
 .warning-content p i {
     font-size: 75px;
+
 }
 
 p.small {
     font-size: 12px;
     letter-spacing: 0.2px;
     text-shadow: none;
+    margin-bottom: 25px;
 }
 
 .warning-content button {
