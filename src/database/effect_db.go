@@ -16,7 +16,7 @@ var (
 		`portfolio_uuid text NOT NULL, ` +
 		`type text NOT NULL, ` +
 		`title text NOT NULL, ` +
-		`duration  numeric(16, 4) NOT NULL, ` +
+		`duration  bigint NOT NULL, ` +
 		`start_time TIMESTAMPTZ NOT NULL, ` +
 		`tag text NOT NULL, ` +
 		`effect json NOT NULL, ` +

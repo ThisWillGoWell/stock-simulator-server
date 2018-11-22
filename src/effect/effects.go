@@ -39,6 +39,7 @@ func deleteEffect(uuid string) {
 		delete(portfolioEffects, e.PortfolioUuid)
 		delete(portfolioEffectTags, e.PortfolioUuid)
 	}
+	change.UnregisterChangeDetect(e)
 	notification.EndEffectNotification(e.PortfolioUuid, e.Title)
 	utils.RemoveUuid(uuid)
 }
