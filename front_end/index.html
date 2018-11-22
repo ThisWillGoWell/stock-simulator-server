@@ -481,38 +481,11 @@
 									<li v-for="item in userItems" :key="item.config_id">
 										<div class="card item">
 											<div class="item-name">{{ item.name }}</div>
+											<div>{{ item.duration }}</div>
 											<div class="buy-item-btn" v-on:click="useItem(item.uuid)">USE</div>
 										</div>
 									</li>
 								</ul>
-							</div>
-							<div class="flex-column-100" id="insider-area">
-								<!-- Brennan, might want to make these cards -->
-								<div class="card insider-list">
-									<table class="table">
-										<thead>
-									    	<tr>
-										    	<th scope="col" style="text-align: left;">Item </th>
-										    	<th style="text-align: left;">Current Price</th>
-										    	<th style="text-align: left;">Target Price</th>
-										    </tr>
-										</thead>
-										<tbody>
-											<tr class="clickable" v-for="stock in insiderStocks" :key='stock.name'>
-												<td>{{ stock.name }}</td>
-												<td>{{ toPrice(stock.current_price) }}</td>
-												<td>{{ toPrice(stock.target_price) }}</td>
-											</tr>
-										</tbody>
-									</table>
-								</div>
-							</div>
-
-							<div class="flex-column-100">
-								<div class="portfolio-history">
-									<button id="portfolio-history-btn" v-on:click="createPortfolioGraph()">Log cash/networth history</button>
-								</div>
-								<div id="portfolio-graph"></div>
 							</div>
 						</div>
 					</div>
@@ -708,7 +681,7 @@
 									<div id="research-graph-svg-main"></div>
 								</div>
 							</div>
-							<div class="flex-column-100">
+							<!-- <div class="flex-column-100">
 								<div class="item-category buffer-top">TRADE HISTORY</div>
 							</div>
 							<div class="flex-column-100">
@@ -741,7 +714,7 @@
 										</div>
 									</div>
 								</div> 
-							</div>
+							</div> -->
 						</div>
 					</div>
 					
@@ -756,7 +729,7 @@
 									<div class="settings-grp">
 										<div class="input-grp">
 											<div class="input-name">Redeem Code <span class="settings-subtext">Please enter your code here.</span></div>
-											<input type="text" id="change-display-name" class="input-full-width">
+											<input type="text" id="redemption-code" class="input-full-width">
 											<span class="input-focus-border"></span>
 											
 										</div>
@@ -863,7 +836,7 @@
 							</div>
 							<div class="flex-column-100">
 								<ul id="item-list">
-									<li v-for="level in levels" :key="level.label">
+									<li v-for="level in levels" :key="level.label" v-if="level.level != 0">
 										<div class="card item">
 											<!-- <div class="item-locked-layer" v-bind:class="[currUserLevel == (level.level - 1)  ? '' : [(currUserLevel > level.level - 1) ? 'item.disabled' : 'item.unlocked']]">
 												<i class="material-icons white">lock</i>

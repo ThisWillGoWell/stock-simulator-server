@@ -31,15 +31,15 @@ function load_settings_tab() {
             },
             changeDisplayName: function() {
                 // Get entered display name
-                let new_name = $("#change-display-name").val();
-        
+                var new_name = $("#change-display-name").val();
+                console.log(new_name)
                 // Creating message that changes the users display name
-                let msg = {
+                var msg = {
                     set: "display_name",
                     value: new_name
                 };
                 
-                let callback = function(msg) {
+                var callback = function(msg) {
                     if (msg.msg.success) {
                         notifyTopBar("Hi, " + new_name + "!", GREEN, msg.msg.success);
                     } else {
