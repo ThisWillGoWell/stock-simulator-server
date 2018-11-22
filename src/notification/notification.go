@@ -143,6 +143,7 @@ func DeleteNotification(uuid, portfolioUuid string) error {
 	if len(notificationsPortfolioUuid[note.PortfolioUuid]) == 0 {
 		delete(notificationsPortfolioUuid, note.PortfolioUuid)
 	}
+
 	utils.RemoveUuid(uuid)
 	sender.SendDeleteObject(portfolioUuid, note)
 	wires.NotificationsDelete.Offer(note)
