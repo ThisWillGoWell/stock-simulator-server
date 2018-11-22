@@ -81,7 +81,6 @@ function queryDrawGraph(location, uuids, fields, append = false, showWallet = tr
 
 }
 
-
 // Store graphing data
 function queryDB(uuid, field, requests, responses, data, num_points = 1000, length = "6h", use_cache = true) {
 	var msg = {
@@ -265,7 +264,7 @@ function DrawLineGraph(location, data, showWallet, append) {
         
         svg.select("#x-axis").transition(transition).call(xAxisCall);
         
-        svg.selectAll(".graph-line").attr('d', line);
+        svg.selectAll(".graph-path").attr('d', line);
     };
 
 
