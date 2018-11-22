@@ -396,7 +396,7 @@
 							</div>
 							<div class="flex-column-100">
 								<div class="card stock-list">
-									<table class="table" id="owned-stocks">
+									<table class="table" id="owned-stocks" v-if="currUserStocks">
 										<thead class="table-top-bar">
 									    	<tr>
 												<th scope="col" style="text-align: left; padding-left: 25px;" v-on:click="sortCol('stock_ticker')">Stock <i class="material-icons stock">arrow_drop_down</i></th>
@@ -878,7 +878,7 @@
 			</section>
 			<section id="chat-module--container" class="closed">
 				<div class="chat-title-bar" v-bind:title="activeUsers()">
-					<span>All Chat <i class="material-icons">group</i> {{ numActiveUsers }}</span>
+					<span>All Chat <i class="material-icons">group</i> {{ numActiveUsers - 1 }}</span>
 					<button v-on:click="toggleChat()"></button>
 				</div>
 
