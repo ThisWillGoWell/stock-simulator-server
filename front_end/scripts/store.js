@@ -52,7 +52,7 @@ function load_store_tab() {
     });
 
     // Get item and level details
-    var storeJSON = $.getJSON("../config/levels.json", function(data) {
+    var storeJSON = $.getJSON("../../config/levels.json", function(data) {
         storeJSON = data;
         console.log(storeJSON)
     }).then(function(data) {
