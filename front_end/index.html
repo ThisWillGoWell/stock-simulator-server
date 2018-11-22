@@ -477,25 +477,14 @@
 								<div class="item-category buffer-top">MY ITEMS</div>
 							</div>
 							<div class="flex-column-100">
-								<!-- Brennan, might want to make these cards -->
-								<div class="card item-list">
-									<table class="table" id="owned-items">
-										<thead>
-									    	<tr>
-										    	<th scope="col" style="text-align: left; padding-left: 25px;">Item </th>
-										    	<th scope="col" style="text-align: left; padding-left: 25px;">Status</th>
-										    	<th scope="col" style="text-align: left; padding-left: 25px;">Use</th>
-										    </tr>
-										</thead>
-										<tbody>
-											<tr class="clickable" v-for="item in userItems" :key='item.uuid'>
-												<td>{{ item.name }}</td>
-												<td>{{ item.used_status }}</td>
-												<td v-on:click="useItem(item.uuid)">Use</td>
-											</tr>
-										</tbody>
-									</table>
-								</div>
+								<ul id="item-list">
+									<li v-for="item in userItems" :key="item.config_id">
+										<div class="card item">
+											<div class="item-name">{{ item.name }}</div>
+											<div class="buy-item-btn" v-on:click="useItem(item.uuid)">USE</div>
+										</div>
+									</li>
+								</ul>
 							</div>
 							<div class="flex-column-100" id="insider-area">
 								<!-- Brennan, might want to make these cards -->

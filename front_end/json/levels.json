@@ -16,8 +16,8 @@
       "note": "+2% bonus profit\r\nunlock cash transfer",
       "max_shares": 25,
       "profit_multiplier": 0.02,
-      "price": "$10,000",
-      "cost": 1000000
+      "price": "$5,000",
+      "cost": 500000
     },
     {
       "label": "LEVEL 2",
