@@ -428,8 +428,8 @@
 														</ul>
 													  </td>
 												<td v-if="sellAllSetting()" class="stock-price layered-clickable" style="text-align: right; padding-right: 25px;">
-													<div class="">{{ stock.amount }}</div>
-												</td>
+														<div class="sell-all-btn" v-on:click='sellAll(stock.uuid)'>SELL ALL ({{ stock.amount }})</div>
+													</td>
 												<td v-else class="stock-change" style="text-align: right; padding-right: 25px;">
 													<div class="">{{ stock.amount }}</div>
 												</td>
