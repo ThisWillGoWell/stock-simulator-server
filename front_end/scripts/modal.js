@@ -169,14 +169,14 @@ function load_modal_vues() {
                     buySellModal.buySellAmount *= -1;
                 }
                 $('#buy-sell-amount-input').blur();
-                $('#buy-sell-amount-input').text("");
+                $('#buy-sell-amount-input').val("");
                 sendTrade(buySellModal.stock_uuid, buySellModal.buySellAmount);
                 toggleModal();
             },
             closeModal: function() {
                 // $('#buy-sell-amount-input').val(0);
                 $('#buy-sell-amount-input').blur();
-                $('#buy-sell-amount-input').text("");
+                $('#buy-sell-amount-input').val("");
                 toggleModal();
                 buySellModal.buySellAmount = 0;
                 buySellModal.showModal = false;
