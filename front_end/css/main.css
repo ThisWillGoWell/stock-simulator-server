@@ -2095,6 +2095,7 @@ tbody tr:hover .money-transfer-btn{
     font-size: 28px;
     font-weight: 500;
     letter-spacing: 2px;
+    text-transform: uppercase;
 }
 .item-cost {
     color: rgba(0,0,0,0.4);
@@ -2103,7 +2104,6 @@ tbody tr:hover .money-transfer-btn{
     font-size: 18px;
     margin-top: 10px;
     font-weight: 500;
-
 }
 .item-description {
     color: rgba(0,0,0,0.5);
@@ -2939,9 +2939,9 @@ table thead.table-top-bar tr th:hover{
     text-shadow: 2px 2px 3px rgba(0,0,0,0.1);
 }
 
-.warning-content p i {
+.warning-content i {
     font-size: 75px;
-
+    margin-bottom: 25px;
 }
 
 p.small {
