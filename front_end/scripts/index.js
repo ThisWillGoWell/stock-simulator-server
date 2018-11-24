@@ -39,12 +39,24 @@ var vm_portfolios = new Vue({
   }
 });
 
-var vm_items = new Vue({
-  data: {
-    items: {}
-  }
+// var vm_items = new Vue({
+//   data: {
+//     items: {}
+//   },
+//   computed: {
+//     userItems: function() {
+//       return this.items.map(function(i) {
+//         switch(i.config) {
+//           case 'personal_broker':
+//             i.include
+//             break;
+//         }
+//         console.log(i)
+//       })
+//     }
+//   }
 
-});
+// });
 
 var vm_users = new Vue({
   data: {

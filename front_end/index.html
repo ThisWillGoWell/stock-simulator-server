@@ -455,7 +455,11 @@
 								<h5 style="text-align: center; ">{{ effect.title }}</h5>
 								<div style="text-align: center; ">Type: {{ effect.type }}</div>
 								<table>
-									<tr>
+									<tr v-for="desc in effect.desc">
+										<th>{{ desc[[0]] }}</th>
+										<td>{{ desc[[1]] }}</td>
+									</tr>
+									<!-- <tr>
 										<th>Purchase Fee</th>
 										<td>${{ toPrice(effect.buy_fee_amount) }}</td>
 									</tr>
@@ -470,7 +474,7 @@
 									<tr>
 										<th>Tax Rate on Profits</th>
 										<td>{{ effect.tax_percent * 100 }}%</td>
-									</tr>
+									</tr> -->
 								</table>
 							</div>
 							<div class="flex-column-100">
@@ -478,10 +482,15 @@
 							</div>
 							<div class="flex-column-100">
 								<ul id="item-list">
-									<li v-for="item in userItems" :key="item.config_id">
+									<li v-for="item in userItems" :key="item.uuid">
 										<div class="card item">
 											<div class="item-name">{{ item.name }}</div>
 											<div>{{ item.duration }}</div>
+											<ul>
+												<li v-for="desc in item.desc">
+													{{ desc[0] }} : {{ desc[1]}}
+												</li>
+											</ul>
 											<div class="buy-item-btn" v-on:click="useItem(item.uuid)">USE</div>
 										</div>
 									</li>
@@ -637,7 +646,7 @@
 																	monetization_on
 																	</i>
 													  </li>
-													  <li class="action-btn chart">
+													  <li class="action-btn chart" v-on:click="makeInvestorGraph(investor)">
 															<i class="material-icons">
 																	show_chart
 																	</i>

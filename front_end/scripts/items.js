@@ -3,6 +3,73 @@
 // };
 
 
+var vm_items = new Vue({
+	data: {
+	  items: {}
+	},
+	computed: {
+		userItems: function() {
+			return Object.values(vm_items.items).forEach(function(i) {
+				console.log(i)
+				var item = {
+					name: i.name,
+					config_id: i.config,
+					uuid: i.uuid,
+					portfolio_uuid: i.portfolio_uuid,
+				};
+				switch(i.config) {
+					case 'personal_broker':
+						item.duration = prettifyItemDuration(i.duration);
+						item.desc = [
+							['Purchase Fee', '$0'],
+							['Sale Fee', '$0']
+						]
+						break;
+				}
+				console.log(i)
+				console.log(item)
+				return item;
+			})
+	  	}
+	}
+  
+});
+
+function prettifyItemDuration(dur) {
+	var split = dur.indexOf('h');
+	var hours = dur.substring(0, split);
+	dur = dur.substring(split+1);
+	split = dur.indexOf('m');
+	var minutes = dur.substring(0, split);
+	dur = dur.substring(split+1);
+	split = dur.indexOf('s');
+	var seconds = dur.substring(0, split);
+	
+	var ret = "";
+	if (hours > 0) {
+		if (hours == 1) {
+			ret += (hours + " Hour ")
+		} else {
+			ret += (hours + " Hours ")
+		}
+	}
+	if (minutes > 0) {
+		if (minutes == 1) {
+			ret += (minutes + " Minute ")
+		} else {
+			ret += (minutes + " Minutes ")
+		}
+	}
+	if (seconds > 0) {
+		if (seconds == 1) {
+			ret += (seconds + " Second")
+		} else {
+			ret += (seconds + " Seconds")
+		}
+	}
+	return ret;
+}
+
 function useItem(item_uuid) {
 
 	var msg = {
@@ -27,6 +94,13 @@ function useItem(item_uuid) {
 
 };
 
+
+// Vue.component('personal-broker', {
+// 	props: {
+
+// 		desc:
+// 	}
+// })
 
 // function checkUsedItems() {
 

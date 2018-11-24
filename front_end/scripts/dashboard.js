@@ -174,6 +174,24 @@ function load_dashboard_tab() {
           var effects = Object.values(vm_effects.effects).filter(d => d.portfolio_uuid === currUserFolioUUID);
           console.log(effects);
 
+          effects.forEach(function(e) {
+            switch(e.title) {
+              case "Personal Broker":
+                e.desc = [
+                  ["Purchase Fee", "$0"],
+                  ["Sale Fee", "$0"]
+                ]
+                break;
+              case "Base Effect":
+                e.desc = [
+                  ["Purchase Fee", "$" + formatPrice(e.buy_fee_amount)],
+                  ["Sale Fee", "$" + formatPrice(e.sell_fee_amount)],
+                  ["Profit Multiplier", (e.profit_multiplier * 100) + "%"],
+                  ["Tax Rate of Profits", (e.tax_percent * 100) + "%"]
+                ];
+            }
+          })
+
           return effects;
         }
         return {}; 
@@ -183,17 +201,28 @@ function load_dashboard_tab() {
         if (vm_users.users[currUserUUID] !== undefined) {
           var currUserFolioUUID = vm_users.users[currUserUUID].portfolio_uuid;
           var items = Object.values(vm_items.items).filter(d => d.portfolio_uuid === currUserFolioUUID);
-          // Add used status
-          items.map(function(d) {
-            if (d.used) {
-              d.used_status = 'Used';
-            } else {
-              d.used_status = 'Not Used';
+          console.log(items)
+          var ret = items.map(function(i) {
+            var item = {
+              name: i.name,
+              config_id: i.config,
+              uuid: i.uuid,
+              portfolio_uuid: i.portfolio_uuid,
+            };
+            switch(i.config) {
+              case 'personal_broker':
+                item.duration = prettifyItemDuration(i.duration);
+                item.desc = [
+                  ['Purchase Fee', '$0'],
+                  ['Sale Fee', '$0']
+                ]
+                break;
             }
-            return d;
-          });
-
-          return items;
+            console.log(item)
+            return item;
+          })
+          console.log(ret)
+          return ret;
         }
         return {};
       },
