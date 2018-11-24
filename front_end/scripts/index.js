@@ -22,6 +22,20 @@ var vm_ledger = new Vue({
 var vm_portfolios = new Vue({
   data: {
     portfolios: {}
+  },
+  computed: {
+    currentUser: function() {
+      // Get userUUID of the person that is logged in
+      var currentUser = sessionStorage.getItem("uuid");
+      if (currentUser !== null) {
+        // Have they been added to the users object yet?
+        if (vm_portfolios.portfolios != undefined) {
+          return Object.values(vm_portfolios.portfolios).filter(d => d.user_uuid === currentUser)[0];
+        } else {
+          return "";
+        }
+      }
+    }
   }
 });
 

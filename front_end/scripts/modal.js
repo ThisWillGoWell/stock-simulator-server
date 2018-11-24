@@ -111,20 +111,39 @@ function load_modal_vues() {
                 $('#buy-sell-amount-input').focus();
             },
             setMax: function() {
+                var user_max;
+                
                 if (buySellModal.isBuying) {
-                    buySellModal.buySellAmount = buySellModal.stock.open_shares;
-                    $('#buy-sell-amount-input').val(buySellModal.buySellAmount);
+                    var user_level = vm_portfolios.currentUser.level;
+                    user_max = vm_store.levels.filter(d => d.level == user_level)[0].max_shares;
+
+                    var stock = vm_dash_tab.currUserStocks.filter(
+                        d => d.stock_id === buySellModal.stock_uuid
+                        )[0];
+                    var user_holdings = stock.amount;
+                    
+                    var purchase_max = user_max - user_holdings;
+
+                    $('#buy-sell-amount-input').val(purchase_max);
                     $('#buy-sell-amount-input').focus();
+
                 } else {
                     //determine current users holdings
-                    let stock = vm_dash_tab.currUserStocks.filter(
+                    var stock = vm_dash_tab.currUserStocks.filter(
                         d => d.stock_id === buySellModal.stock_uuid
                     )[0];
-                    
+                        console.log(stock)
                     if (stock !== undefined) {
-                        buySellModal.buySellAmount = stock.amount;
-                        $('#buy-sell-amount-input').val(buySellModal.buySellAmount);
-                        $('#buy-sell-amount-input').focus();
+                        user_max = stock.amount;
+                        if (buySellModal.buySellAmount > user_max) {
+                            buySellModal.buySellAmount = user_max;
+                            console.log(user_max)
+                            $('#buy-sell-amount-input').val(user_max);
+                            // $('#buy-sell-amount-input').focus();
+                        } else {
+                            buySellModal.buySellAmount = user_max;
+                            $('#buy-sell-amount-input').val(user_max);
+                        }
                     } else {
                         buySellModal.buySellAmount = 0;
                         $('#buy-sell-amount-input').val(buySellModal.buySellAmount);
@@ -132,19 +151,40 @@ function load_modal_vues() {
                     }
                 }
             },
-            determineMax: function() {
+            controlMax: function() {
+                var user_max;
+                
                 if (buySellModal.isBuying) {
-                    return buySellModal.stock.open_shares;
+                    var user_level = vm_portfolios.currentUser.level;
+                    user_max = vm_store.levels.filter(d => d.level == user_level)[0].max_shares;
+
+                    var stock = vm_dash_tab.currUserStocks.filter(
+                        d => d.stock_id === buySellModal.stock_uuid
+                        )[0];
+                    var user_holdings = stock.amount;
+                    
+                    var purchase_max = user_max - user_holdings;
+
+                    if (buySellModal.buySellAmount > purchase_max) {
+                        $('#buy-sell-amount-input').val(purchase_max);
+                        $('#buy-sell-amount-input').focus();
+                    }
+
                 } else {
                     //determine current users holdings
-                    let stock = vm_dash_tab.currUserStocks.filter(
+                    var stock = vm_dash_tab.currUserStocks.filter(
                         d => d.stock_id === buySellModal.stock_uuid
                     )[0];
-                    
+                        console.log(stock)
                     if (stock !== undefined) {
-                        return stock.amount;
+                        user_max = stock.amount;
+                        if (buySellModal.buySellAmount > user_max) {
+                            buySellModal.buySellAmount = user_max;
+                            $('#buy-sell-amount-input').val(user_max);
+                        }
                     } else {
-                        return 0;
+                        buySellModal.buySellAmount = 0;
+                        $('#buy-sell-amount-input').val(buySellModal.buySellAmount);
                     }
                 }
             },
@@ -232,7 +272,7 @@ function load_modal_vues() {
                 }
 
                 // find max and set it there
-                this.determineMax();
+                this.controlMax();
 
                 // do a prospectiveTrade
                 if (buySellModal.isBuying) {
