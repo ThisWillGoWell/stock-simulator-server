@@ -43,6 +43,11 @@ function load_investors_tab() {
           return false;
         }
       },
+      makeInvestorGraph: function(investor) {
+        $('button[data-route="research"]').click();
+        $('#query-type-container .investors').click();
+        graphUsers[0].selectize.setValue(investor.uuid);
+      }
     },
     computed: {
       investors: function() {
