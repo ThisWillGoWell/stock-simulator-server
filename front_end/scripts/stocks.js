@@ -54,6 +54,16 @@ function load_stocks_tab() {
     //     }
     //     this.reSort++;
     //   },
+      amountOwned: function(stockUUID) {
+        if (vm_dash_tab.currUserStocks !== undefined) {
+          if (vm_dash_tab.currUserStocks.filter(d => d.stock_id === stockUUID).length === 1) {
+            return vm_dash_tab.currUserStocks.filter(d => d.stock_id === stockUUID)[0].amount;
+          } else {
+            return 0;
+          }
+        }
+        return 0;
+      },
       createStockGraph: function(stockUUID) {
         let stock = Object.values(vm_stocks.stocks).filter(
           d => d.uuid === stockUUID
