@@ -46,7 +46,7 @@ function load_investors_tab() {
       makeInvestorGraph: function(investor) {
         $('button[data-route="research"]').click();
         $('#query-type-container .investors').click();
-        graphUsers[0].selectize.setValue(investor.uuid);
+        graphUsers[0].selectize.addItem(investor.uuid);
       }
     },
     computed: {
