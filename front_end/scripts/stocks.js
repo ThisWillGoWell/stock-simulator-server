@@ -54,6 +54,11 @@ function load_stocks_tab() {
     //     }
     //     this.reSort++;
     //   },
+      makeStockGraph: function(stock) {
+        $('button[data-route="research"]').click();
+        $('#query-type-container .stocks').click();
+        graphStocks[0].selectize.addItem(stock.uuid);
+      },
       amountOwned: function(stockUUID) {
         if (vm_dash_tab.currUserStocks !== undefined) {
           if (vm_dash_tab.currUserStocks.filter(d => d.stock_id === stockUUID).length === 1) {

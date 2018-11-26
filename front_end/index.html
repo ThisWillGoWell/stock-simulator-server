@@ -576,14 +576,14 @@
 															BUY
 														</li>
 													<li class="action-btn sell" v-bind:tid="stock.ticker_id" v-bind:tid="stock.uuid" v-on:click="openModal(stock.ticker_id, false)">
-															SELL
-														</li>	
-
-													<!-- <li class="action-btn chart" v-on:click="showChart(stock.uuid)">
+														SELL
+													</li>
+												
+													<li class="action-btn chart" v-on:click="makeStockGraph(stock)">
 														<i class="material-icons">
 																show_chart
-																</i>
-													</li> -->
+														</i>
+													</li>
 												</ul>
 											  </td>
 											  <td class="stock-open-shares">{{ stock.open_shares }} ({{ amountOwned(stock.uuid) }})</td>
