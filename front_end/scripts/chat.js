@@ -14,7 +14,8 @@ function appendNewMessage(msg, fromMe) {
     if (!vm_chat.showingChat) {
         vm_chat.unreadMessages = true;
         
-        if (!vm_chat.mute_notification_sfx) {
+        if (vm_config.config.settings.audioAlert) {
+            console.log("SOUND: " + vm_config.config.settings.audioAlert);
             notification_sound.play();
         }
     }
@@ -134,7 +135,7 @@ function load_chat_vue() {
         data: {
             showingChat: false,
             unreadMessages: false,
-            mute_notification_sfx: false,
+            mute_notification_sfx: true,
         },
         methods: {
             toggleChat: function() {
@@ -174,7 +175,7 @@ function load_chat_vue() {
                     link.rel = "shortcut icon";
                     link.href = "assets/favicon_green_unread.png";
                     document.getElementsByTagName("head")[0].appendChild(link);
-                    if (!vm_chat.mute_notification_sfx) {
+                    if (vm_config.config.settings.audioAlert) {
                         notification_sound.play();
                     }
                 } else {

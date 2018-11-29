@@ -13,7 +13,7 @@ function createConfig(config) {
                 sellAll: false,
                 realValuesSetting: false,
                 ticker: false,
-                audioAlert: false,
+                audioAlert: true,
             }
         };
     }
