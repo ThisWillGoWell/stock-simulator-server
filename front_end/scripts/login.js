@@ -14,6 +14,7 @@ $( document ).ready(function() {
     let input_create_pw_confirm = $("#create-pw-confirm");
     let input_create_name = $('#create-name');
     let input_create_submit = $('#input-create-submit');
+    var login_container = $("#login-container");
 
 	console.log("login js");
 
@@ -324,6 +325,7 @@ $( document ).ready(function() {
 
     function loginFailed(msg) {
         $('#login-failed-message').text(msg);
+        TweenMax.fromTo(login_container,0.10, {x:-20},{x:20,repeat:2,yoyo:true,ease:Sine.easeInOut,onComplete:function(){TweenMax.to(this.target,0.10,{x:0,ease:Elastic.easeOut})}})
     }
 
     $('#input-login-submit').click(function() {
