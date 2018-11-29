@@ -211,9 +211,9 @@ $(document).ready(function() {
   // }, 500);
 
 
-  console.log("----- USER ITEMS -----")
+  console.log("------ USER ITEMS ------")
   console.log(vm_items.items);
-  console.log("----- USERS -----");
+  console.log("------ USERS ------");
   console.log(vm_users.users);
   console.log("------ STOCKS ------");
   console.log(vm_stocks.stocks);
@@ -320,9 +320,10 @@ $(document).ready(function() {
   // });
 
   $(".buy-item-btn").hover(function(event) {
-    $(this)
-      .parent(".card.item")
+    $(event.currentTarget)
+      .find(".card.item")
       .toggleClass("hover");
+    console.log("hover");
   });
 
   // $(".buy-item-btn.item-disabled").hover(function(event) {
@@ -538,6 +539,7 @@ $(document).ready(function() {
             allViews.removeClass("active");
             researchView.addClass("active");
             currentViewName[0].innerHTML = "Research";
+            $('#research-graph-stock-select-selectized').focus();
             TweenMax.from(currentViewName, 0.2, {ease: Back.easeOut.config(1.7), x:-10, opacity:0});
           }
           break;

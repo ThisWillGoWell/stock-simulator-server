@@ -134,7 +134,7 @@ function load_chat_vue() {
         data: {
             showingChat: false,
             unreadMessages: false,
-            mute_notification_sfx: false
+            mute_notification_sfx: false,
         },
         methods: {
             toggleChat: function() {

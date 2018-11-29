@@ -1,12 +1,21 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=UA-54925150-2"></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){dataLayer.push(arguments);}
+			gtag('js', new Date());
+
+			gtag('config', 'UA-54925150-2');
+		</script>
 
 		<title>MockStarket</title>
 		
 		<meta charset="utf-8">
 		<meta name="description" content="A mock stock market">
-		<meta name="keywords" content="mockstarket">
+		<meta name="keywords" content="mockstarket mock starket model stock market">
 		<link rel="author" href="Brennan Sieck, Will Gowell, Jakob Elias" />
 		<link rel="icon" type="image/png" href="assets/favicon_green.png">
 		<!-- <link rel="icon" type="image/png" href="assets/favicon_darkblue.png"> -->
@@ -307,6 +316,7 @@
 						</button>
 					</li> -->
 				</ul>
+				<div class="copyright-text">© 2018 Mockstarket.  All rights reserved</div>
 			</section>
 
 			<section id="top-bar--container">
@@ -356,11 +366,11 @@
 										<i class="material-icons menu-icon">business</i>
 										<div v-if="realValuesSetting()" class="card-details">
 											<p><span class="small-money">$</span>{{ toPrice(currUserPortfolio.realNetworth) }}</p>
-											<div class="card-category">REAL NETWORTH</div>
+											<div class="card-category">REAL NET WORTH</div>
 										</div>
 										<div v-else class="card-details">
 											<p><span class="small-money">$</span>{{ toPrice(currUserPortfolio.net_worth) }}</p>
-											<div class="card-category">NETWORTH</div>
+											<div class="card-category">NET WORTH</div>
 										</div>
 									</div>
 								</div>
@@ -392,10 +402,12 @@
 								</div>
 							</div>
 							<div class="flex-column-100">
-								<div class="item-category buffer-top">STATISTICS</div>
+								<div class="item-category buffer-top">SUMMARY</div>
 							</div>
 							<div class="flex-column-100">
-									<div class="card wide"></div>
+									<div class="card wide">
+										
+									</div>
 								</div>
 							<div class="flex-column-100">
 								<div class="item-category buffer-top">MY STOCKS</div>
@@ -628,7 +640,7 @@
 											  <th scope="col" v-on:click="sortCol('level')" class="text-center">Level <i class="material-icons open-shares">arrow_drop_down</i></th>
 											  <th scope="col" v-on:click="sortCol('favorites')" class="text-center" style="padding-right: 0px;">Actions</th>
 											  <th scope="col" v-on:click="sortCol('wallet')">Cash <i class="material-icons open-shares">arrow_drop_down</i></th>
-											  <th scope="col" v-on:click="sortCol('net_worth')">Networth <i class="material-icons cost">arrow_drop_down</i></th>
+											  <th scope="col" v-on:click="sortCol('net_worth')">Net Worth <i class="material-icons cost">arrow_drop_down</i></th>
 											  
 											</tr>
 										  </thead>
@@ -693,6 +705,11 @@
 											</select>
 										</div>
 									</div>
+									<button id="refresh-graph-btn" v-on:click="refreshGraph()">
+										<i class="material-icons">
+										refresh
+										</i>
+									</button>
 									<div id="research-graph-svg-main"></div>
 								</div>
 							</div>
@@ -809,7 +826,7 @@
 								<div class="card settings-card flex-column-100">
 									<div class="settings-grp">
 										<div class="settings-input-grp">
-											Toggle Sell All button within the Dashboard tab.
+											Enable Sell All button within the Dashboard tab.
 											<!-- <div class="change-setting-btn" v-on:click="toggleSellAllButton()">Toggle</div> -->
 											<div class="toggle-switch" v-on:change="toggleSellAllButton()">
 												<input type="checkbox" name="toggle-switch" class="toggle-checkbox" id="sell-all-toggle-switch" unchecked>
@@ -821,11 +838,23 @@
 								<div class="card settings-card flex-column-100">
 									<div class="settings-grp">
 										<div class="settings-input-grp">
-											Toggle investments and net worth to be calculate with bonuses, fees, and taxes.
+											Enable investments and net worth to be calculated with bonuses, fees, and taxes automatically.
 											<!-- <div class="change-setting-btn" v-on:click="toggleRealValuesSetting()">Toggle</div> -->
 											<div class="toggle-switch" v-on:change="toggleRealValuesSetting()">
 												<input type="checkbox" name="toggle-switch" class="toggle-checkbox" id="actual-values-toggle-switch" unchecked>
 												<label class="toggle-label" for="actual-values-toggle-switch"></label>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="card settings-card flex-column-100">
+									<div class="settings-grp">
+										<div class="settings-input-grp">
+											Enable audio alert for unread chat messages.
+											<!-- <div class="change-setting-btn" v-on:click="toggleRealValuesSetting()">Toggle</div> -->
+											<div class="toggle-switch" v-on:change="toggleAudioAlertSetting()">
+												<input type="checkbox" name="toggle-switch" class="toggle-checkbox" id="audio-alert-toggle-switch" unchecked>
+												<label class="toggle-label" for="audio-alert-toggle-switch"></label>
 											</div>
 										</div>
 									</div>
@@ -897,10 +926,6 @@
 					<button v-on:click="toggleChat()"></button>
 				</div>
 
-				<!-- 
-					Make Chat resizable
-					Make user's own messages show differently 
-				-->
 				<ul class="chat-message--list">
 					
 				</ul>
@@ -920,10 +945,6 @@
 					<button></button>
 				</div>
 
-				<!-- 
-					Make Chat resizable
-					Make user's own messages show differently 
-				-->
 				<ul class="debug-message--list">
 					
 				</ul>

@@ -88,5 +88,45 @@
       "profit_multiplier": 0.2,
       "price": "$10,000,000",
       "cost": 1000000000
+    },
+    {
+      "label": "LEVEL 9",
+      "level": 9,
+      "title": "El Presidente",
+      "note": "+23% bonus profit",
+      "max_shares": 100,
+      "profit_multiplier": 0.23,
+      "price": "$25,000,000",
+      "cost": 2500000000
+    },
+    {
+      "label": "LEVEL 10",
+      "level": 10,
+      "title": "Captain Planet",
+      "note": "+27% bonus profit",
+      "max_shares": 100,
+      "profit_multiplier": 0.27,
+      "price": "$50,000,000",
+      "cost": 5000000000
+    },
+    {
+      "label": "LEVEL 11",
+      "level": 11,
+      "title": "King",
+      "note": "+30% bonus profit",
+      "max_shares": 100,
+      "profit_multiplier": 0.30,
+      "price": "$100,000,000",
+      "cost": 10000000000
+    },
+    {
+      "label": "LEVEL 12",
+      "level": 12,
+      "title": "Master",
+      "note": "+33% bonus profit",
+      "max_shares": 100,
+      "profit_multiplier": 0.33,
+      "price": "$250,000,000",
+      "cost": 25000000000
     }
   ]
