@@ -29,6 +29,11 @@ function load_settings_tab() {
                 config.settings.ticker = ! config.settings.ticker;
                 updateConfig(config, 'settings', config.settings);
             },
+            toggleAudioAlertSetting: function() {
+                var config = vm_config.config;
+                config.settings.audioAlert = ! config.settings.audioAlert;
+                updateConfig(config, 'settings', config.settings);
+            },
             changeDisplayName: function() {
                 // Get entered display name
                 var new_name = $("#change-display-name").val();
@@ -87,4 +92,5 @@ function checkSettingsBoxes() {
     $('#percent-toggle-switch').prop('checked', settings.changePercent);
     $('#sell-all-toggle-switch').prop('checked', settings.sellAll);
     $('#actual-values-toggle-switch').prop('checked', settings.realValuesSetting);
+    $('#audio-alert-toggle-switch').prop('checked', settings.audioAlert);
 }

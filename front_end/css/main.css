@@ -368,8 +368,9 @@ input[type=submit] {
     border-radius: 3px;
     text-align: center;
     color: #fff;
-    background-color: #DADFE1; 
-    border: 1px solid #DADFE1;
+    background-color: #17181a; 
+    /* border: 1px solid #DADFE1; */
+    border: none;
     /*margin-top: 30px;*/
     -moz-transition: all ease-in-out 0.13s;
     -o-transition: all ease-in-out 0.13s;
@@ -380,9 +381,9 @@ input[type=submit] {
 
 input[type=submit]:hover, input[type=submit]:focus {
     color: #fff;
-    background-color: #17181a; 
     box-shadow: 0 3px 5px rgba(0,0,0,0.10), 0 3px 5px rgba(0,0,0,0.15);
-    border: 1px solid #17181a;
+    /* border: 1px solid #17181a; */
+    transform: translate3d(0,-3px,0);
 }
 
 input[type=text]:focus,input[type=password]:focus {
@@ -425,15 +426,16 @@ input[type=password]:focus ~ .input-focus-border{
     padding-bottom: 20px;*/
     box-shadow: 0 3px 5px rgba(0,0,0,0.10), 0 3px 5px rgba(0,0,0,0.15);
     width: 40%;
+    border-radius: 3px;
     max-width: 450px;
     max-height: 520px;
     opacity: 0;
     overflow-y: hidden;
-    transform: translateY(50px);
-    -moz-transition: all cubic-bezier(.23,1,.32,1) 0.33s;
-    -o-transition: all cubic-bezier(.23,1,.32,1) 0.33s;
-    -webkit-transition: all cubic-bezier(.23,1,.32,1) 0.33s;
-    transition: all cubic-bezier(.23,1,.32,1) 0.33s;
+    transform: translateY(50px) rotateX(-20deg);
+    -moz-transition: all cubic-bezier(.23,1,.32,1) 0.53s;
+    -o-transition: all cubic-bezier(.23,1,.32,1) 0.53s;
+    -webkit-transition: all cubic-bezier(.23,1,.32,1) 0.53s;
+    transition: all cubic-bezier(.23,1,.32,1) 0.53s;
     position: relative;
 }
 
@@ -526,7 +528,7 @@ input[type=password]:focus ~ .input-focus-border{
 
 #login-container.entrance-anim {
     opacity: 1;
-    transform: translateY(0px);
+    transform: translateY(0px) rotateX(0deg);
 }
 
 #particles-js {
@@ -565,6 +567,17 @@ input[type=password]:focus ~ .input-focus-border{
     transition: all ease-in-out 0.13s;
 }
 
+.login-copyright-text {
+    height: 40px;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    color: #e4e4e4;
+    line-height: 40px;
+    font-size: 10px;
+    letter-spacing: 0.3px;
+}
+
 /* DASHBOARD */
 
 .app--container {
@@ -588,6 +601,17 @@ input[type=password]:focus ~ .input-focus-border{
     -webkit-box-shadow: 10px 0px 15px -2px rgba(0,0,0,0.1);
     -moz-box-shadow: 10px 0px 15px -2px rgba(0,0,0,0.1);
     box-shadow: 10px 0px 15px -2px rgba(0,0,0,0.1);
+}
+
+#side-menu--container .copyright-text {
+    height: 40px;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    color: #b4b4b4;
+    line-height: 40px;
+    font-size: 10px;
+    letter-spacing: 0.3px;
 }
 
 #side-menu--container .logo-mark {
@@ -853,11 +877,14 @@ input[type=password]:focus ~ .input-focus-border{
 #top-bar--container .account-settings-menu--container {
     position: absolute;
     z-index: -1;
-    right: -200px;
+    /* right: -200px;
+    top: 18px; */
+    right: 20px;
     top: 18px;
     height: 300px;
     width: 200px;
-
+    transform-origin: 50% -50%;
+    transform: translateY(50px) rotateX(-30deg);
     background-color: #34495e;
     -moz-transition: all cubic-bezier(.23,1,.32,1) 0.3s;
     -o-transition: all cubic-bezier(.23,1,.32,1) 0.3s;
@@ -865,6 +892,7 @@ input[type=password]:focus ~ .input-focus-border{
     transition: all cubic-bezier(.23,1,.32,1) 0.3s;
     box-shadow: rgba(0, 0, 0, 0.14) 0px 2px 2px 0px, rgba(0, 0, 0, 0.12) 0px 1px 5px 0px, rgba(0, 0, 0, 0.2) 0px 3px 1px -2px;
     opacity: 0;
+    pointer-events: none;
 }
 
 .account-settings-menu--container #account-settings-menu-close-btn{
@@ -884,6 +912,8 @@ input[type=password]:focus ~ .input-focus-border{
     opacity: 1;
     right: 20px;
     top: 18px;
+    transform: translateY(0px) rotateX(0deg);
+    pointer-events: all;
 }
 
 #top-bar--container .account-settings-menu--container ul {
@@ -1029,7 +1059,7 @@ input[type=password]:focus ~ .input-focus-border{
     right: 27px;
     z-index: 6;
     height: 400px;
-    width: 320px;
+    width: 350px;
     border-radius: 5px 5px 0px 0px;
     background-color: #4d4d4d;
     -webkit-box-shadow: 0px -4px 23px 2px rgba(0,0,0,0.18);
@@ -1302,8 +1332,8 @@ input[type=password]:focus ~ .input-focus-border{
 
 #chat-module--container .chat-message--list .msg-username{
     color: #9E9E9E;
-    font-size: 14px;
-    font-weight: 100;
+    font-size: 15px;
+    font-weight: 500;
 }
 
 #chat-module--container .chat-message--list .msg-username.is-me{
@@ -1637,6 +1667,12 @@ table.table tbody tr:nth-child(even) {
 table.table tbody tr:hover {
     
     background-color: #fafbfc;
+}
+
+table.table tbody tr:hover .action-list{
+    
+    opacity: 1;
+    pointer-events: all;
 }
 
 table.table thead tr th{
@@ -1979,12 +2015,17 @@ tbody tr:hover .money-transfer-btn{
 
 .action-list {
     list-style-type: none;
-    
+    -moz-transition: all cubic-bezier(.23,1,.32,1) 0.53s;
+    -o-transition: all cubic-bezier(.23,1,.32,1) 0.53s;
+    -webkit-transition: all cubic-bezier(.23,1,.32,1) 0.53s;
+    transition: all cubic-bezier(.23,1,.32,1) 0.53s;
     text-align: justify;
     text-justify: distribute-all-lines;
     padding: 0;
     display: inline-block;
     margin: 0 auto;
+    opacity: 0;
+    pointer-events: none;
 }
 
 .action-btn.buy {
@@ -1997,6 +2038,10 @@ tbody tr:hover .money-transfer-btn{
     border-radius: 3px;
     font-size: 12px;
     background-color: #1abc9c;
+    -moz-transition: all cubic-bezier(.23,1,.32,1) 0.53s;
+    -o-transition: all cubic-bezier(.23,1,.32,1) 0.53s;
+    -webkit-transition: all cubic-bezier(.23,1,.32,1) 0.53s;
+    transition: all cubic-bezier(.23,1,.32,1) 0.53s;
 }
 .action-btn.sell {
     display: inline-block;
@@ -2008,6 +2053,19 @@ tbody tr:hover .money-transfer-btn{
     border-radius: 3px;
     font-size: 12px;
     background-color: #e53935;
+    -moz-transition: all cubic-bezier(.23,1,.32,1) 0.53s;
+    -o-transition: all cubic-bezier(.23,1,.32,1) 0.53s;
+    -webkit-transition: all cubic-bezier(.23,1,.32,1) 0.53s;
+    transition: all cubic-bezier(.23,1,.32,1) 0.53s;
+}
+
+.action-btn.buy:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 5px rgba(0,0,0,0.10), 0 3px 5px rgba(0,0,0,0.15);
+}
+.action-btn.sell:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 5px rgba(0,0,0,0.10), 0 3px 5px rgba(0,0,0,0.15);
 }
 
 .action-btn {
@@ -2024,6 +2082,8 @@ tbody tr:hover .money-transfer-btn{
     color: #fff; */
     text-align: center;
     line-height: 25px;
+    overflow-x: hidden;
+    transform: translateY(6px);
     /* border-radius: 3px;
     background-color: rgba(0,0,0,0.35); */
 }
@@ -2624,6 +2684,40 @@ table thead.table-top-bar tr th:hover{
     width: 325px;   
 }
 
+#refresh-graph-btn {
+    position: absolute;
+    top: 130px;
+    right: 25px;
+    z-index: 3;
+    width: 325px;
+    font-size: 14px;
+    height: 32px;
+    width: 32px;
+    display: inline-block;
+    border-radius: 2px;
+    background-color: #1abc9c;
+    color: #fff;
+    cursor: pointer;
+    border: none;
+    -moz-transition: all ease-in-out 0.27s;
+    -o-transition: all ease-in-out 0.27s;
+    -webkit-transition: all ease-in-out 0.27s;
+    transition: all ease-in-out 0.27s;
+    opacity: 0.8;
+}
+
+#refresh-graph-btn:hover {
+    background-color: #1abc9c;
+    opacity: 1;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 13px 15px rgba(0,0,0,0.001), 0 3px 5px rgba(0,0,0,0.05);
+}
+
+#refresh-graph-btn i {
+    font-size: 20px;
+}
+
 #query-items-container select{
     width: 100%; 
 }
@@ -2659,6 +2753,7 @@ table thead.table-top-bar tr th:hover{
     padding: 8px 25px;
     color: #4d4d4d;
     background-color: #f7f7f7;
+    background-color: #1abc9c
 }
 
 #query-type-container {
@@ -2680,6 +2775,8 @@ table thead.table-top-bar tr th:hover{
     -webkit-justify-content: center;
     -ms-flex-pack: center;
     justify-content: center;
+    border-radius: 3px;
+    overflow: hidden;
 }
 
 #query-type-container .option {

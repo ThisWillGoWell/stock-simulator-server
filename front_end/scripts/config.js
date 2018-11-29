@@ -13,6 +13,7 @@ function createConfig(config) {
                 sellAll: false,
                 realValuesSetting: false,
                 ticker: false,
+                audioAlert: false,
             }
         };
     }
@@ -108,6 +109,12 @@ function getSellAllSetting() {
 function getTickerSetting() {
     if (vm_config !== undefined) {
         return vm_config.config.settings.ticker;
+    } else return false;
+}
+
+function getAudioAlertSetting() {
+    if (vm_config !== undefined) {
+        return vm_config.config.settings.audioAlert;
     } else return false;
 }
 

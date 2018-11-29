@@ -1,5 +1,5 @@
 var vm_research;
-var graphType, graphUsers, graphStocks;
+var graphType, graphUsers, graphStocks, selectedStocks, selectedUsers;
 
 function load_research_tab() {
     vm_research = new Vue({
@@ -20,14 +20,14 @@ function load_research_tab() {
                 var type = this.gType;
                 console.log("ACTIVE CHART TYPE: "+type);
                 if (type === "stocks") {
-                    let selected = getSelectized('#research-graph-stock-select');
-                    selected.forEach(function(d) {
+                    selectedStocks = getSelectized('#research-graph-stock-select');
+                    selectedStocks.forEach(function(d) {
                         uuids.push(d);
                         fields.push('current_price');
                     })
                 } else if (type === "investors") {
-                    let selected = getSelectized('#research-graph-user-select');
-                    selected.forEach(function(d) {
+                    selectedUsers = getSelectized('#research-graph-user-select');
+                    selectedUsers.forEach(function(d) {
                         uuids.push(d);
                         uuids.push(d);
                         fields.push('net_worth');
@@ -92,6 +92,11 @@ function load_research_tab() {
                     this.drawGraph();
                 }
             },
+            refreshGraph: function() {
+                
+                this.drawGraph();
+                
+            },
             
         },
         computed: {
@@ -141,7 +146,7 @@ function load_research_tab() {
             maxItems: 5,
             onItemAdd(value, $item) {
                 vm_research.drawGraph();
-                console.log($item);
+                //console.log($item);
             },
             onItemRemove(value) {
                 if($('.has-items').length == 0) {
