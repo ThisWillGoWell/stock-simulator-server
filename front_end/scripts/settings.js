@@ -32,6 +32,8 @@ function load_settings_tab() {
             toggleAudioAlertSetting: function() {
                 var config = vm_config.config;
                 config.settings.audioAlert = ! config.settings.audioAlert;
+                vm_chat.mute_notification_sfx = config.settings.audioAlert;
+                console.log("CONFIG SOUND: "+ config.settings.audioAlert);
                 updateConfig(config, 'settings', config.settings);
             },
             changeDisplayName: function() {
