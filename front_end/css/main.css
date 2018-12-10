@@ -420,6 +420,35 @@ input[type=password]:focus ~ .input-focus-border{
     flex: 1;
 }
 
+#login-banner {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 100px;
+    z-index: 10;
+    background-color: #fff;
+}
+
+#login-banner i.red {
+    color: #e53935;
+    position: absolute;
+    left: 25px;
+    font-size: 48px;
+    line-height: 100px;
+}
+
+#login-banner p {
+    position: absolute;
+    left: 100px;
+    padding-top: 15px; 
+    text-align: left;
+    color: #4d4d4d;
+    font-size: 16px;
+    font-weight: 300;
+    height: 100px;
+}
+
 #login-container {
     background-color: #fff;
     /*padding: 25px;
@@ -431,6 +460,7 @@ input[type=password]:focus ~ .input-focus-border{
     max-height: 520px;
     opacity: 0;
     overflow-y: hidden;
+    overflow-x: hidden;
     transform: translateY(50px) rotateX(-20deg);
     -moz-transition: all cubic-bezier(.23,1,.32,1) 0.53s;
     -o-transition: all cubic-bezier(.23,1,.32,1) 0.53s;
@@ -884,7 +914,7 @@ input[type=password]:focus ~ .input-focus-border{
     height: 300px;
     width: 200px;
     transform-origin: 50% -50%;
-    transform: translateY(50px) rotateX(-30deg);
+    transform: translate3D(0,-50px,0) rotateX(-30deg);
     background-color: #34495e;
     -moz-transition: all cubic-bezier(.23,1,.32,1) 0.3s;
     -o-transition: all cubic-bezier(.23,1,.32,1) 0.3s;
@@ -912,7 +942,7 @@ input[type=password]:focus ~ .input-focus-border{
     opacity: 1;
     right: 20px;
     top: 18px;
-    transform: translateY(0px) rotateX(0deg);
+    transform: translate3D(0,0,0) rotateX(0deg);
     pointer-events: all;
 }
 
@@ -1077,6 +1107,7 @@ input[type=password]:focus ~ .input-focus-border{
     z-index: 6;
     height: 720px;
     width: 520px;
+    transform: translate3d(0,0,0);
     border-radius: 5px 5px 0px 0px;
     background-color: #4d4d4d;
     -webkit-box-shadow: 0px -4px 23px 2px rgba(0,0,0,0.18);
@@ -1089,7 +1120,8 @@ input[type=password]:focus ~ .input-focus-border{
 }
 
 #chat-module--container.closed {
-    bottom: -360px;
+    /* bottom: -360px; */
+    transform: translate3d(0,360px,0);
 }
 
 #chat-module--container .chat-title-bar {
@@ -1798,6 +1830,7 @@ table.table tbody tr td{
     right: 0;
     z-index: -20;
     opacity: 0;
+    
     background-color: #fafbfc;
     background-color: rgba(0,0,0,0.8);
     -moz-transition: all ease-in-out 0.23s;
@@ -1825,7 +1858,6 @@ table.table tbody tr td{
 }
 
 #modal--container.open, #transfer-Modal--container.open, #generic-text-field-modal--container.open {
-    
     opacity: 1;
     z-index: 100;
 }
@@ -1835,6 +1867,7 @@ table.table tbody tr td{
     height: auto;
     display: inline-table;
     width: 500px;
+    transform: translateY(50px) rotateX(-30deg);
     background-color: #fafbfc;
     /*border: 1px solid #fff;*/
     border-radius: 20px;
@@ -1847,7 +1880,17 @@ table.table tbody tr td{
     /*border-radius: 2px;*/
     padding-bottom: 50px;
     pointer-events: none;
+    -moz-transition: all ease-in-out 0.23s;
+    -o-transition: all ease-in-out 0.23s;
+    -webkit-transition: all ease-in-out 0.23s;
+    transition: all ease-in-out 0.23s;
     /*box-shadow: 0 3px 5px rgba(0,0,0,0.10), 0 3px 5px rgba(0,0,0,0.15);*/
+}
+
+#modal--container.open .modal-card{
+    
+    transform: translateY(0px) rotateX(0deg);
+    
 }
 
 #generic-text-field-modal--container .modal-card{
