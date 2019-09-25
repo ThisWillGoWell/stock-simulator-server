@@ -49,16 +49,5 @@ services:
     volumes:
       - ${FILE_SERVE}:/usr/share/nginx/html
 
-  letsencrypt:
-    build:
-      context: docker
-      dockerfile: Dockerfile.certs
-    command: /bin/true
-    volumes:
-    - letsencrypt_certs:/etc/letsencrypt
-    - letsencrypt_www:/var/www/letsencrypt
-
 volumes:
   db_volume:
-  letsencrypt_certs:
-  letsencrypt_www:
