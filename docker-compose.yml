@@ -33,9 +33,6 @@ services:
     build:
         context: docker
         dockerfile: Dockerfile.proxy
-    volumes:
-    - letsencrypt_certs:/etc/nginx/certs
-    - letsencrypt_www:/var/www/letsencrypt
 
     ports:
     - "80:80"
