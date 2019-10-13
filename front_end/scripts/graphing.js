@@ -270,6 +270,20 @@ function DrawLineGraph(location, data, showWallet, append) {
 
     var brush = d3.brushX().on('end', brushEnd);
 
+	
+
+	// Creating graph legend
+	var legendParent = svg.append('foreignObject')//).append('g')
+		.attr('class', 'graph-legend')
+		.style('pointer-events', 'none')
+	
+	// var legendParent = legendParent.append('foreignObject')
+	// 	.attr('class', 'graph-legend');
+		
+	var legend = legendParent.append('xhtml:div').append('div');
+
+	// Selecting all tooltips
+	var toolTips = d3.selectAll('.graph-legend');
 
     // Add brush
     svg.append("g")
@@ -278,27 +292,37 @@ function DrawLineGraph(location, data, showWallet, append) {
 			toolTips.style('display', null); 
 		})
 		.on('mousemove', function() {
+			toolTips.style('display', 'none');
 			var mouseX = d3.mouse(this)[0];
 			var mouseY = d3.mouse(this)[1];
 			var xVal = scaleTime.invert(mouseX);
 			Object.keys(dat).forEach(function(key) {
-					// Get index of where a 'new' point would fit 
-					var i = bisectTime(dat[key], xVal, 1, dat[key].length - 1);
-					// Find points on either side
-					var d0 = dat[key][i - 1]; 
-					var d1 = dat[key][i];
-					// Compare which is closer
-					var tipPoint = xVal - d0.time > d1.time - xVal ? d1 : d0;
-
-					d3.select('#' + key).attr('transform', 'translate(' + scaleTime(tipPoint.time) + ',' + scaleValue(tipPoint.value) + ')');
-					d3.select('#legend-' + key).html(cleanLegendLabel(key) + ': $' + formatPrice(tipPoint.value));
-				});
+				// Get index of where a 'new' point would fit 
+				var i = bisectTime(dat[key], xVal, 1, dat[key].length - 1);
+				// Find points on either side
+				var d0 = dat[key][i - 1]; 
+				var d1 = dat[key][i];
+				// Compare which is closer
+				var tipPoint = xVal - d0.time > d1.time - xVal ? d1 : d0;
+				// Place graph points that follow cursor
+				d3.select('#' + key).attr('transform', 'translate(' + scaleTime(tipPoint.time) + ',' + scaleValue(tipPoint.value) + ')');
+				// Change legend text
+				d3.select('#legend-' + key).html(cleanLegendLabel(key) + ': $' + formatPrice(tipPoint.value));
+			});
 			
 			// Get legend size
-			var w = legendParent.select('div').node().getBoundingClientRect().width;
-			var h = legendParent.select('div').node().getBoundingClientRect().height;
-
+			console.log(legend)
+			var w = legend.node().getBoundingClientRect().width;
+			var h = legend.node().getBoundingClientRect().height;
+			legendParent.attr({
+				'width': w,
+				'height': h
+			})
+			// var legend = legendParent.select('div') 
+			console.log(w)
+			console.log(h)
 			// orientate the legend correctly
+			// legendParent.attr('transform', 'translate(700,700)');// + (mouseX - w - 30) + ',' + (mouseY + 15) + ')');
 			if (scaleTime(mouseX) > scaleTime(width/2)) {
 				if (scaleValue(mouseY) > scaleValue(height/2)) {
 					legendParent.attr('transform', 'translate(' + (mouseX - w - 30) + ',' + (mouseY + 15) + ')');
@@ -312,24 +336,18 @@ function DrawLineGraph(location, data, showWallet, append) {
 					legendParent.attr('transform', 'translate(' + (mouseX + 15) + ',' + (mouseY - h - 30) + ')');
 				}
 			}
+			toolTips.style('display', null); 
 		})
 		.on('mouseout', function() { 
 			// Get max of each graph
 			toolTips.style('display', 'none'); })
         .call(brush);
-    
+	
+
+
+
     // Used when finding which point to tooltip
     var bisectTime = d3.bisector(d => d.time).left;
-
-	// Creating graph legend
-	var legendParent = svg.append('g')
-		// .attr('class', 'graph-legend')
-		.style('pointer-events', 'none')
-		
-	var legend = legendParent.append('foreignObject')
-		.append('xhtml:div')
-		.attr('class', 'graph-legend');
-	
 	
 	// Y grid
 	function yGrid() {
@@ -371,10 +389,6 @@ function DrawLineGraph(location, data, showWallet, append) {
 
 		i++;
 	}
-
-	// Selecting all tooltips
-	var toolTips = d3.selectAll('.graph-legend');
-
 
 	// Creating x axis
 	var xAxisCall = d3.axisBottom(scaleTime)
