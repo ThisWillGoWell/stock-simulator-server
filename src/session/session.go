@@ -4,7 +4,7 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
-	"github.com/stock-simulator-server/src/lock"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
 	"time"
 )
 

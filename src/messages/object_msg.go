@@ -1,6 +1,6 @@
 package messages
 
-import "github.com/stock-simulator-server/src/change"
+import "github.com/ThisWillGoWell/stock-simulator-server/src/change"
 
 const ObjectAction = "object"
 

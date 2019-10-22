@@ -10,14 +10,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/stock-simulator-server/src/config"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/config"
 
-	"github.com/stock-simulator-server/src/metics"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/metics"
 
 	"github.com/gorilla/websocket"
-	"github.com/stock-simulator-server/src/account"
-	"github.com/stock-simulator-server/src/client"
-	"github.com/stock-simulator-server/src/messages"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/account"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/client"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/messages"
 )
 
 var clients = make(map[*websocket.Conn]http.Client) // connected clients

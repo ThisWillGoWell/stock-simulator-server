@@ -3,7 +3,7 @@ package database
 import (
 	"errors"
 
-	"github.com/stock-simulator-server/src/ledger"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/ledger"
 )
 
 var (
@@ -16,7 +16,6 @@ var (
 		`stock_id text NOT NULL, ` +
 		`amount bigint NULL` +
 		`);`
-	ledgerHistoryTSInit = `CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE; SELECT create_hypertable('` + ledgerHistoryTableName + `', 'time');`
 
 	ledgerHistoryTableUpdateInsert = `INSERT INTO ` + ledgerHistoryTableName + `(time, uuid, portfolio_id, stock_id, amount) values (NOW(),$1, $2, $3, $4)`
 
@@ -38,11 +37,6 @@ func initLedgerHistory() {
 	}
 	tx.Commit()
 	tx, err = db.Begin()
-	_, err = tx.Exec(ledgerHistoryTSInit)
-	if err != nil {
-
-	}
-	tx.Commit()
 }
 
 func writeLedgerHistory(entry *ledger.Entry) {

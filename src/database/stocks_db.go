@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/stock-simulator-server/src/valuable"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
 )
 
 var (

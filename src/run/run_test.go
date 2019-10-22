@@ -5,16 +5,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stock-simulator-server/src/money"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/money"
 
-	"github.com/stock-simulator-server/src/order"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/order"
 
-	"github.com/stock-simulator-server/src/portfolio"
-	"github.com/stock-simulator-server/src/valuable"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
 
-	"github.com/stock-simulator-server/src/record"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/record"
 
-	"github.com/stock-simulator-server/src/ledger"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/ledger"
 )
 
 func TestProspectAll(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/stock-simulator-server/src/notification"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/notification"
 )
 
 var (

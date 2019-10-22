@@ -5,16 +5,16 @@ import (
 	"log"
 	"time"
 
-	"github.com/stock-simulator-server/src/notification"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/notification"
 
-	"github.com/stock-simulator-server/src/change"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
 
-	"github.com/stock-simulator-server/src/merge"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/merge"
 
-	"github.com/stock-simulator-server/src/wires"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 
-	"github.com/stock-simulator-server/src/lock"
-	"github.com/stock-simulator-server/src/utils"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 )
 
 var EffectLock = lock.NewLock("EffectLock")

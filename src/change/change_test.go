@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/stock-simulator-server/src/wires"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 )
 
 type changeTest struct {

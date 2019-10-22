@@ -6,24 +6,24 @@ import (
 	"os"
 	"time"
 
-	"github.com/stock-simulator-server/src/effect"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/effect"
 
-	"github.com/stock-simulator-server/src/log"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 
-	"github.com/stock-simulator-server/src/record"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/record"
 
-	"github.com/stock-simulator-server/src/items"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/items"
 
-	"github.com/stock-simulator-server/src/notification"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/notification"
 
+	"github.com/ThisWillGoWell/stock-simulator-server/src/account"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/duplicator"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/ledger"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 	_ "github.com/lib/pq"
-	"github.com/stock-simulator-server/src/account"
-	"github.com/stock-simulator-server/src/duplicator"
-	"github.com/stock-simulator-server/src/ledger"
-	"github.com/stock-simulator-server/src/lock"
-	"github.com/stock-simulator-server/src/portfolio"
-	"github.com/stock-simulator-server/src/valuable"
-	"github.com/stock-simulator-server/src/wires"
 )
 
 var db *sql.DB
@@ -52,6 +52,7 @@ func InitDatabase(disableDbWrite bool) {
 		fmt.Println("	waitng for connection to db")
 		<-time.After(time.Second)
 	}
+	log.Log.Println("connected to database")
 
 	initLedger()
 	initStocks()

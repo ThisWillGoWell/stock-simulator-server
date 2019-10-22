@@ -4,11 +4,11 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/stock-simulator-server/src/level"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/level"
 
-	"github.com/stock-simulator-server/src/app"
-	"github.com/stock-simulator-server/src/items"
-	"github.com/stock-simulator-server/src/log"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/app"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/items"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 )
 
 const (

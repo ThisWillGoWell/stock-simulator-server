@@ -4,18 +4,18 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stock-simulator-server/src/effect"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/effect"
 
-	"github.com/stock-simulator-server/src/wires"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 
-	"github.com/stock-simulator-server/src/utils"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 
-	"github.com/stock-simulator-server/src/session"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/session"
 
-	"github.com/stock-simulator-server/src/account"
-	"github.com/stock-simulator-server/src/order"
-	"github.com/stock-simulator-server/src/portfolio"
-	"github.com/stock-simulator-server/src/valuable"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/account"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/order"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
 )
 
 func MakeUser(name string) string {

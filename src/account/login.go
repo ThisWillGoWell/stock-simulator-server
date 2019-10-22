@@ -3,11 +3,11 @@ package account
 import (
 	"errors"
 
-	"github.com/stock-simulator-server/src/wires"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 
-	"github.com/stock-simulator-server/src/portfolio"
-	"github.com/stock-simulator-server/src/session"
-	"github.com/stock-simulator-server/src/utils"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/session"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 )
 
 const minPasswordLength = 4

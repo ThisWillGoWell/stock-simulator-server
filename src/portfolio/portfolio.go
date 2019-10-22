@@ -4,18 +4,18 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/stock-simulator-server/src/effect"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/effect"
 
-	"github.com/stock-simulator-server/src/money"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/money"
 
-	"github.com/stock-simulator-server/src/change"
-	"github.com/stock-simulator-server/src/duplicator"
-	"github.com/stock-simulator-server/src/ledger"
-	"github.com/stock-simulator-server/src/level"
-	"github.com/stock-simulator-server/src/lock"
-	"github.com/stock-simulator-server/src/utils"
-	"github.com/stock-simulator-server/src/valuable"
-	"github.com/stock-simulator-server/src/wires"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/duplicator"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/ledger"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/level"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 )
 
 const (

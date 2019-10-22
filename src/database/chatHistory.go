@@ -8,7 +8,6 @@ var (
 		`uuid text NOT NULL,` +
 		`message text NULL,` +
 		`);`
-	chatHistoryTSInit = `CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE; SELECT create_hypertable('` + chatHistoryTableName + `', 'time');`
 
 	chatHistoryTableUpdateInsert = `INSERT INTO ` + chatHistoryTableName + `(time, uuid, message) values (NOW(), $1, $2)`
 
@@ -28,11 +27,6 @@ func initChatHistory() {
 	}
 	tx.Commit()
 	tx, err = db.Begin()
-	_, err = tx.Exec(chatHistoryTSInit)
-	if err != nil {
-		// pass on error
-	}
-	tx.Commit()
 }
 
 func SaveChatMessage(uuid, message string) {

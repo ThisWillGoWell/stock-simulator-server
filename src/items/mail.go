@@ -3,9 +3,9 @@ package items
 //
 //import (
 //	"github.com/pkg/errors"
-//	"github.com/stock-simulator-server/src/account"
-//	"github.com/stock-simulator-server/src/order"
-//	"github.com/stock-simulator-server/src/utils"
+//	"github.com/ThisWillGoWell/stock-simulator-server/src/account"
+//	"github.com/ThisWillGoWell/stock-simulator-server/src/order"
+//	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 //)
 //
 //const mailItemType = "mail"

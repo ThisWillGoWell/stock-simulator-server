@@ -1,10 +1,11 @@
 package database
 
 import (
-	"log"
 	"time"
 
-	"github.com/stock-simulator-server/src/record"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
+
+	"github.com/ThisWillGoWell/stock-simulator-server/src/record"
 )
 
 var (
@@ -22,7 +23,6 @@ var (
 		`bonus bigint NULL, ` +
 		`result bigint NULL` +
 		`);`
-	recordHistoryTSInit = `CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE; SELECT create_hypertable('` + recordHistoryTableName + `', 'time');`
 
 	recordHistoryTableUpdateInsert = `INSERT INTO ` + recordHistoryTableName + `(time, uuid, share_price, record_uuid, fees, amount, taxes, bonus, result) values (NOW(), $1, $2, $3, $4, $5, $6, $7, $8);`
 	recordHistoryQuery             = `SELECT * from ` + recordHistoryTableName
@@ -37,15 +37,8 @@ func initRecordHistory() {
 	}
 	_, err = tx.Exec(recordHistoryTableCreateStatement)
 	if err != nil {
-
+		log.Log.Printf("during create record history err=%v\n", err)
 	}
-	tx.Commit()
-	tx, err = db.Begin()
-	_, err = tx.Exec(recordHistoryTSInit)
-	if err != nil {
-
-	}
-	tx.Commit()
 }
 
 func writeRecordHistory(record *record.Record) {
@@ -68,21 +61,19 @@ func populateRecords() {
 	var t time.Time
 	rows, err := db.Query(recordHistoryQuery)
 	if err != nil {
-		log.Fatal("error query records database", err)
-		panic("could not populate records: " + err.Error())
+		log.Log.Fatal("error query records database", err)
 	}
 	defer rows.Close()
 	for rows.Next() {
 		err := rows.Scan(&id, &t, &uuid, &sharePrice, &recordUuid, &fees, &amount, &taxes, &bonus, &result)
 		if err != nil {
-			panic(err)
-			log.Fatal(err)
+			log.Log.Fatal(err)
 		}
 
 		record.MakeRecord(uuid, recordUuid, amount, sharePrice, taxes, fees, bonus, result, t)
 	}
 	err = rows.Err()
 	if err != nil {
-		log.Fatal(err)
+		log.Log.Fatal(err)
 	}
 }

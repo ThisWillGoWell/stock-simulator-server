@@ -4,15 +4,15 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/stock-simulator-server/src/change"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
 
-	"github.com/stock-simulator-server/src/sender"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/sender"
 
-	"github.com/stock-simulator-server/src/wires"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 
-	"github.com/stock-simulator-server/src/lock"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
 
-	"github.com/stock-simulator-server/src/utils"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 
 	"github.com/pkg/errors"
 )

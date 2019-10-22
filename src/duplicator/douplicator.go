@@ -7,8 +7,8 @@ import (
 	"encoding/json"
 	"reflect"
 
-	"github.com/stock-simulator-server/src/deepcopy"
-	"github.com/stock-simulator-server/src/lock"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/deepcopy"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
 )
 
 /**

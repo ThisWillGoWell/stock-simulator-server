@@ -1,8 +1,8 @@
 package database
 
 import (
-	"github.com/stock-simulator-server/src/ledger"
-	"github.com/stock-simulator-server/src/log"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/ledger"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 )
 
 var (

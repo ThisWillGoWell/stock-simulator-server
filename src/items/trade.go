@@ -1,8 +1,8 @@
 package items
 
 import (
-	"github.com/stock-simulator-server/src/effect"
-	"github.com/stock-simulator-server/src/utils"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/effect"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 )
 
 const TradeItemType = "trade_effect"

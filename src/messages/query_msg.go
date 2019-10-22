@@ -1,6 +1,6 @@
 package messages
 
-import "github.com/stock-simulator-server/src/utils"
+import "github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 
 const QueryAction = "query"
 

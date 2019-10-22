@@ -1,14 +1,14 @@
 package order
 
 import (
-	"github.com/stock-simulator-server/src/effect"
-	"github.com/stock-simulator-server/src/ledger"
-	"github.com/stock-simulator-server/src/level"
-	"github.com/stock-simulator-server/src/notification"
-	"github.com/stock-simulator-server/src/portfolio"
-	"github.com/stock-simulator-server/src/record"
-	"github.com/stock-simulator-server/src/valuable"
-	"github.com/stock-simulator-server/src/wires"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/effect"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/ledger"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/level"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/notification"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/record"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 )
 
 type Order interface {

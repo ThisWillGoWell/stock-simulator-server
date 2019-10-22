@@ -3,7 +3,7 @@ package metrics
 import (
 	"sync/atomic"
 
-	"github.com/stock-simulator-server/src/wires"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 )
 
 type InnerObjectMetric struct {
