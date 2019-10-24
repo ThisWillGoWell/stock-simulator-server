@@ -60,7 +60,7 @@ func NewLedgerEntry(portfolioId, stockId string, lockAcquired bool) *Entry {
 Make a Ledger
 */
 func MakeLedgerEntry(uuid, portfolioId, stockId, recordId string, amount int64) *Entry {
-
+	fmt.Println("making ledger ")
 	entry := &Entry{
 		Uuid:          uuid,
 		PortfolioId:   portfolioId,

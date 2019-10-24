@@ -1,8 +1,8 @@
 #!/bin/bash
-echo "building binary"
-GOARCH=amd64 GOOS=linux go build
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $GOPATH/src/github.com/ThisWillGoWell/stock-simulator-server
+echo "building binary"
+
 echo "building docker container"
 docker build . -t mockstarket-$1  --no-cache
 echo "save docker container"
@@ -20,10 +20,13 @@ elif [ "$1" == "dev" ]; then
   DB_URI="mockstarket-dev.c6ejpamhqiq5.us-west-2.rds.amazonaws.com"
 fi;
 
-
 scp -i $DIR/../mockstarket.pem mockstarket-$1.tgz ec2-user@$SERVER_HOST:
+
+rm -f mockstarket-$1.tgz
+rm stock-simulator-server
+
 echo "getting secrets"
-. $DIR/secrets.sh $1
+. $DIR/secrets.sh "prod"
 echo "running container "
 ssh -i $DIR/../mockstarket.pem  ec2-user@$SERVER_HOST "
 docker load -i mockstarket-$1.tgz
@@ -39,7 +42,3 @@ docker run -p 8000:8000 --name mockstarket-$1 \\
 -e DB_URI=\"host=$DB_URI port=5432 user=postgres password=$RDS_PASSWORD dbname=postgres\" \\
 -e DISCORD_TOKEN=$DISCORD_TOKEN \\
 mockstarket-$1:latest"
-
-
-rm -f mockstarket-$1.tgz
-rm stock-simulator-server

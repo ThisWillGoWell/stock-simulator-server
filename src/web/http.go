@@ -12,15 +12,19 @@ import (
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/config"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/metics"
+	metrics "github.com/ThisWillGoWell/stock-simulator-server/src/metics"
 
-	"github.com/gorilla/websocket"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/account"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/client"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/messages"
+	"github.com/gorilla/websocket"
 )
 
 var clients = make(map[*websocket.Conn]http.Client) // connected clients
+
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+}
 
 func StartHandlers() {
 	//shareDir := os.Getenv("FILE_SERVE")
