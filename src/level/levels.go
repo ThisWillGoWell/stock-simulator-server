@@ -3,8 +3,8 @@ package level
 import (
 	"encoding/json"
 
-	"github.com/stock-simulator-server/src/log"
-	"github.com/stock-simulator-server/src/money"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/money"
 )
 
 var Levels = make(map[int64]*Level)

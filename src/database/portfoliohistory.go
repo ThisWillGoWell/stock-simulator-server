@@ -3,7 +3,7 @@ package database
 import (
 	"errors"
 
-	"github.com/stock-simulator-server/src/portfolio"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
 )
 
 var (
@@ -15,7 +15,6 @@ var (
 		`net_worth bigint NULL,` +
 		`wallet bigint NULL` +
 		`);`
-	portfolioHistoryTSInit = `CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE; SELECT create_hypertable('` + portfolioHistoryTableName + `', 'time');`
 
 	portfolioHistoryTableUpdateInsert = `INSERT INTO ` + portfolioHistoryTableName + `(time, uuid, net_worth, wallet) values (NOW(),$1, $2, $3)`
 
@@ -33,12 +32,6 @@ func initPortfolioHistory() {
 		panic("could not begin portfolio init: " + err.Error())
 	}
 	_, err = tx.Exec(portfolioHistoryTableCreateStatement)
-	if err != nil {
-
-	}
-	tx.Commit()
-	tx, err = db.Begin()
-	_, err = tx.Exec(portfolioHistoryTSInit)
 	if err != nil {
 
 	}

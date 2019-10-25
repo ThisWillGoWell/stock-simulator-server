@@ -1,8 +1,8 @@
 package wires
 
 import (
-	"github.com/stock-simulator-server/src/duplicator"
-	"github.com/stock-simulator-server/src/utils"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/duplicator"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 )
 
 var ItemsNewObjects = duplicator.MakeDuplicator("items-new")

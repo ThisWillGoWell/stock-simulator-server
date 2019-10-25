@@ -5,28 +5,28 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/stock-simulator-server/src/effect"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/effect"
 
-	"github.com/stock-simulator-server/src/metics"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/metics"
 
-	"github.com/stock-simulator-server/src/log"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 
-	"github.com/stock-simulator-server/src/record"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/record"
 
-	"github.com/stock-simulator-server/src/items"
-	"github.com/stock-simulator-server/src/messages"
-	"github.com/stock-simulator-server/src/sender"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/items"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/messages"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/sender"
 
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
-	"github.com/stock-simulator-server/src/account"
-	"github.com/stock-simulator-server/src/histroy"
-	"github.com/stock-simulator-server/src/ledger"
-	"github.com/stock-simulator-server/src/lock"
-	"github.com/stock-simulator-server/src/notification"
-	"github.com/stock-simulator-server/src/order"
-	"github.com/stock-simulator-server/src/portfolio"
-	"github.com/stock-simulator-server/src/valuable"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/account"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/histroy"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/ledger"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/notification"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/order"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
 )
 
 var clientsLock = lock.NewLock("clients-lock")

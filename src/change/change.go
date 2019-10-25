@@ -4,12 +4,12 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/stock-simulator-server/src/log"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 
-	"github.com/stock-simulator-server/src/wires"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 
-	"github.com/stock-simulator-server/src/duplicator"
-	"github.com/stock-simulator-server/src/lock"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/duplicator"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
 )
 
 /*

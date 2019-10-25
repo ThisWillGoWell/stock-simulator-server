@@ -4,9 +4,9 @@ package items
 //import (
 //	"fmt"
 //
-//	"github.com/stock-simulator-server/src/money"
-//	"github.com/stock-simulator-server/src/utils"
-//	"github.com/stock-simulator-server/src/valuable"
+//	"github.com/ThisWillGoWell/stock-simulator-server/src/money"
+//	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
+//	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
 //)
 //
 //const insiderTradingItemType = "insider"

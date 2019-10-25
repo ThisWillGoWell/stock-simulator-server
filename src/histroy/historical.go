@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/stock-simulator-server/src/lock"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
 
-	"github.com/stock-simulator-server/src/database"
-	"github.com/stock-simulator-server/src/ledger"
-	"github.com/stock-simulator-server/src/messages"
-	"github.com/stock-simulator-server/src/portfolio"
-	"github.com/stock-simulator-server/src/utils"
-	"github.com/stock-simulator-server/src/valuable"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/ledger"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/messages"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
 )
 
 type queryCacheItem struct {

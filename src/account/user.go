@@ -5,18 +5,18 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/stock-simulator-server/src/sender"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/sender"
 
-	"github.com/stock-simulator-server/src/change"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
 
-	"github.com/stock-simulator-server/src/wires"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 
 	"unicode"
 
-	"github.com/stock-simulator-server/src/duplicator"
-	"github.com/stock-simulator-server/src/lock"
-	"github.com/stock-simulator-server/src/session"
-	"github.com/stock-simulator-server/src/utils"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/duplicator"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/session"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 )
 
 // keep the uuid to user

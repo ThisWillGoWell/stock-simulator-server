@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stock-simulator-server/src/wires"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 
-	"github.com/stock-simulator-server/src/utils"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 
 	"github.com/gotestyourself/gotestyourself/assert"
 )

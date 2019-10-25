@@ -3,7 +3,7 @@ package database
 import (
 	"log"
 
-	"github.com/stock-simulator-server/src/account"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/account"
 )
 
 var (

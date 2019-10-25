@@ -1,8 +1,8 @@
 package database
 
 import (
+	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
 	"github.com/pkg/errors"
-	"github.com/stock-simulator-server/src/valuable"
 )
 
 var (
@@ -14,7 +14,6 @@ var (
 		`current_price bigint NULL,` +
 		`open_shares bigint NULL` +
 		`);`
-	stocksHistoryTSInit = `CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE; SELECT create_hypertable('` + stocksHistoryTableName + `', 'time');`
 
 	stocksHistoryTableUpdateInsert = `INSERT INTO ` + stocksHistoryTableName + `(time, uuid, current_price, open_shares) values (NOW(),$1, $2, $3);`
 
@@ -35,12 +34,7 @@ func initStocksHistory() {
 
 	}
 	tx.Commit()
-	tx, err = db.Begin()
-	_, err = tx.Exec(stocksHistoryTSInit)
-	if err != nil {
 
-	}
-	tx.Commit()
 }
 
 func writeStockHistory(stock *valuable.Stock) {

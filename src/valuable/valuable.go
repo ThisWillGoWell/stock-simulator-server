@@ -1,8 +1,8 @@
 package valuable
 
 import (
-	"github.com/stock-simulator-server/src/duplicator"
-	"github.com/stock-simulator-server/src/lock"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/duplicator"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
 )
 
 var ValuablesLock = lock.NewLock("valuables")

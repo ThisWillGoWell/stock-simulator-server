@@ -3,7 +3,7 @@ package effect
 import (
 	"time"
 
-	"github.com/stock-simulator-server/src/utils"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 )
 
 const InsiderTradingEffectType = "insider"

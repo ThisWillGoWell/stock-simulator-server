@@ -5,22 +5,22 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/stock-simulator-server/src/config"
-	"github.com/stock-simulator-server/src/effect"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/config"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/effect"
 
-	"github.com/stock-simulator-server/src/metics"
+	metrics "github.com/ThisWillGoWell/stock-simulator-server/src/metics"
 
-	"github.com/stock-simulator-server/src/alert"
-	"github.com/stock-simulator-server/src/change"
-	"github.com/stock-simulator-server/src/database"
-	"github.com/stock-simulator-server/src/histroy"
-	"github.com/stock-simulator-server/src/log"
-	"github.com/stock-simulator-server/src/order"
-	"github.com/stock-simulator-server/src/sender"
-	"github.com/stock-simulator-server/src/session"
-	"github.com/stock-simulator-server/src/valuable"
-	"github.com/stock-simulator-server/src/web"
-	"github.com/stock-simulator-server/src/wires"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/alert"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/histroy"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/order"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/sender"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/session"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/web"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 )
 
 func App() {

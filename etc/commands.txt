@@ -1,3 +1,0 @@
-./ops/build.sh; git commit -a -m "testing server race condition"; git push
-
-git reset --hard && git pull && chmod 700 etc/run-server.sh && etc/run-server.sh

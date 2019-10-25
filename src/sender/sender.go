@@ -3,11 +3,11 @@ package sender
 import (
 	"fmt"
 
-	"github.com/stock-simulator-server/src/change"
-	"github.com/stock-simulator-server/src/duplicator"
-	"github.com/stock-simulator-server/src/lock"
-	"github.com/stock-simulator-server/src/messages"
-	"github.com/stock-simulator-server/src/wires"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/duplicator"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/messages"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 )
 
 var senders = make(map[string]*Sender)

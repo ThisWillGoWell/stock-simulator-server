@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/stock-simulator-server/src/effect"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/effect"
 )
 
 var (

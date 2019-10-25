@@ -6,9 +6,9 @@ import (
 	"runtime"
 	"runtime/pprof"
 
-	"github.com/stock-simulator-server/src/run"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/run"
 
-	"github.com/stock-simulator-server/src/log"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 )
 
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
