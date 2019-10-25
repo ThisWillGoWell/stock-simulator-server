@@ -34,12 +34,12 @@ func StartHandlers() {
 	//fmt.Println(shareDir)
 	//var fs = http.FileServer(http.Dir(shareDir))
 
-	http.HandleFunc("/load", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/api/load", func(w http.ResponseWriter, r *http.Request) {
 		config.Seed()
 		http.Redirect(w, r, "/", 301)
 	})
 
-	http.HandleFunc("/create", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/api/create", func(w http.ResponseWriter, r *http.Request) {
 		setupResponse(&w, r)
 		if (*r).Method == "OPTIONS" {
 			return
@@ -72,7 +72,7 @@ func StartHandlers() {
 		io.WriteString(w, token)
 	})
 
-	http.HandleFunc("/token", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/api/token", func(w http.ResponseWriter, r *http.Request) {
 		setupResponse(&w, r)
 		if (*r).Method == "OPTIONS" {
 			return
@@ -102,8 +102,8 @@ func StartHandlers() {
 		io.WriteString(w, token)
 	})
 
-	http.HandleFunc("/ws", handleConnections)
-	http.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/api/ws", handleConnections)
+	http.HandleFunc("/api/metrics", func(w http.ResponseWriter, r *http.Request) {
 		setupResponse(&w, r)
 		b, _ := json.Marshal(metrics.Counter)
 		io.WriteString(w, string(b))

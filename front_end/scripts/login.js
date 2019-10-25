@@ -2,9 +2,9 @@ $( document ).ready(function() {
 
     let url = "https://mockstarket.com";
     var port = location.port
-    if(port == "8000"){
-        url = "http://localhost:8000"
-    }
+    // if(port == "8000"){
+    //     url = "http://localhost:8000"
+    // }
 
     let input_login_uid = $('#login-uid');
     let input_login_pw = $('#login-pw');
@@ -281,7 +281,7 @@ $( document ).ready(function() {
 
     function getToken(user, password) {
         const Http = new XMLHttpRequest();
-        Http.open("GET", url+"/token", false);
+        Http.open("GET", url+"/api/token", false);
         Http.setRequestHeader("Authorization", authenticateUser(user, password));
         Http.send();
 
@@ -298,7 +298,7 @@ $( document ).ready(function() {
 
     function createUser(user, password, nickname) {
         const Http = new XMLHttpRequest();
-        Http.open("PUT", url+"/create", false);
+        Http.open("PUT", url+"/api/create", false);
         Http.setRequestHeader("Authorization", authenticateUser(user, password));
         Http.setRequestHeader("DisplayName", nickname);
         Http.send();

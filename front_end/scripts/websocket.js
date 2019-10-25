@@ -7,13 +7,23 @@ var REQUEST_ID = 1;
 
 if (token) {
 	/*  WEBSOCKETS */
-	var externalServer = "mockstarket.com";
-	var localServer = window.location.host;
-	var wsUri = "wss://"+ externalServer + "/ws";
-	var port = location.port;
-	if (port == "8000") {
-		wsUri = "ws://localhost:8000/ws"
-	}
+	// var externalServer = "mockstarket.com/api/ws";
+	// if(cururl.contains("dev")) {
+	// 	externalServer = "dev.mockstarket.com/api/ws";
+	// }
+	//
+	// let host = window.location.hostname;
+	// let port = window.location.port;
+	//
+	// host = " wss://mockstarket.com/api/ws";
+	// if(host.includes("localhost")){
+	// 	host = "dev.mockstarket.com"
+	// } else if(host.includes("home.")){
+	// 	host = host.replace("home.", "")
+	// }
+	//
+	// host = "mockstarket.com";
+	wsUri = "wss://mockstarket.com/api/ws";
 
 	var output;
 	var webSocket;
