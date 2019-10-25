@@ -1,9 +1,10 @@
 DevHost=ec2-35-164-117-217.us-west-2.compute.amazonaws.com
 DevDatabase=mockstarket-dev.c6ejpamhqiq5.us-west-2.rds.amazonaws.com
+DevFrontendBucket=mockstarket-frontend-dev
 
 ProdHost=ec2-34-221-86-219.us-west-2.compute.amazonaws.com
 ProdDatabase=mockstarket-prod.c6ejpamhqiq5.us-west-2.rds.amazonaws.com
-
+ProdFrontendBucket=mockstarket-frontend
 
 #################################################################
 #					Connect
@@ -18,7 +19,6 @@ connect_dev: connect
 
 connect:
 	ssh -i mockstarket.pem ec2-user@${ServerHost}
-
 
 
 #################################################################
@@ -85,6 +85,16 @@ connect_database:
 #					Build and deploy Frontend
 #################################################################
 
+deploy_prod_frontend: FrontendBucket=${ProdFrontendBucket}
+deploy_prod_frontend: deploy_frontend
+
+deploy_dev_frontend: FrontendBucket=${DevFrontendBucket}
+deploy_dev_frontend: deploy_frontend
+
+deploy_frontend:
+	cd front_end
+	find . -name '.DS_Store' -type f -delete
+	aws --profile mockstarket s3 sync ./front_end s3://${FrontendBucket}/ --delete
 
 
 #################################################################
@@ -92,7 +102,8 @@ connect_database:
 #################################################################
 
 download_key:
-	@$(AWS_PROFILE=${AWS_PROFILE} aws s3 cp s3://mockstarket-keys/mockstarket.pem mockstarket.pem)
+	aws --profile mockstarket s3 cp s3://mockstarket-keys/mockstarket.pem mockstarket.pem
+
 
 
 
