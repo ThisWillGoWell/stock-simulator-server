@@ -1,13 +1,16 @@
-DevHost=ec2-35-164-117-217.us-west-2.compute.amazonaws.com
+DevHost=ec2-34-211-231-2.us-west-2.compute.amazonaws.com
 DevDatabase=mockstarket-dev.c6ejpamhqiq5.us-west-2.rds.amazonaws.com
 DevFrontendBucket=mockstarket-frontend-dev
 
 ProdHost=ec2-34-221-86-219.us-west-2.compute.amazonaws.com
 ProdDatabase=mockstarket-prod.c6ejpamhqiq5.us-west-2.rds.amazonaws.com
 ProdFrontendBucket=mockstarket-frontend
+ProdDockerTag=mockstarket-prod
 
 DevEc2Instance=i-047084609e35c4df6
 DevRdsInstance=mockstarket-dev
+DevDockerTag=mockstarket-dev
+
 
 #################################################################
 #					Connect
@@ -33,18 +36,19 @@ AwsProfile := mockstarket
 
 RootPath=${GOPATH}/src/github.com/ThisWillGoWell/stock-simulator-server
 
-deploy_prod: DockerTag=mockstarket-prod
+deploy_prod: DockerTag=${ProdDockerTag}
 deploy_prod: ServerHost=${ProdHost}
 deploy_prod: DatabaseHost=${ProdDatabase}
 deploy_prod: | build_linux build_container save_container upload_container run_container
 
 deploy_dev: ServerHost=${DevHost}
 deploy_dev: DatabaseHost=${DevDatabase}
-deploy_dev: DockerTag=mockstarket-dev
+deploy_dev: DockerTag=${DevDockerTag}
 deploy_dev:  | build_linux build_container save_container upload_container run_container
 
 build_linux:
 	GOARCH=amd64 GOOS=linux go build
+
 build_container:
 	docker build . -t ${DockerTag} --no-cache
 
@@ -56,6 +60,7 @@ upload_container:
 
 run_container:
 	. etc/secrets.sh prod && ssh -i mockstarket.pem  ec2-user@${ServerHost} " \
+		sudo service docker start; \
 		docker load -i ${DockerTag}.tgz; \
 		docker stop ${DockerTag}; \
 		docker rm ${DockerTag}; \
@@ -111,10 +116,11 @@ stop_dev: stop_or_start
 
 start_dev: DbId=${DevRdsInstance}
 start_dev: Ec2Id=${DevEc2Instance}
+start_dev: DockerTag=${DevDockerTag}
 start_dev: action=start
+start_dev: ServerHost=${DevHost}
+start_dev: DatabaseHost=${DevDatabase}
 start_dev: stop_or_start wait_for_running run_container
-
-
 
 stop_or_start:
 	-aws --profile mockstarket --region us-west-2 rds ${action}-db-instance --db-instance-identifier ${DbId}
@@ -124,12 +130,15 @@ wait_for_running:
 	aws --profile mockstarket --region us-west-2 ec2 wait instance-running --instance-ids ${Ec2Id}
 	aws --profile mockstarket --region us-west-2 rds wait db-instance-available --db-instance-identifier ${DbId}
 
-power_on:
 
 
 #################################################################
 #					Other things
 #################################################################
+
+local_serve:
+	cd front_end && python -m SimpleHTTPServer
+
 
 download_key:
 	aws --profile mockstarket s3 cp s3://mockstarket-keys/mockstarket.pem mockstarket.pem
