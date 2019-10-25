@@ -6,6 +6,9 @@ ProdHost=ec2-34-221-86-219.us-west-2.compute.amazonaws.com
 ProdDatabase=mockstarket-prod.c6ejpamhqiq5.us-west-2.rds.amazonaws.com
 ProdFrontendBucket=mockstarket-frontend
 
+DevEc2Instance=i-047084609e35c4df6
+DevRdsInstance=mockstarket-dev
+
 #################################################################
 #					Connect
 #################################################################
@@ -95,6 +98,33 @@ deploy_frontend:
 	cd front_end
 	find . -name '.DS_Store' -type f -delete
 	aws --profile mockstarket s3 sync ./front_end s3://${FrontendBucket}/ --delete
+
+
+#################################################################
+#					Control Dev State
+#################################################################
+
+stop_dev: DbId=${DevRdsInstance}
+stop_dev: Ec2Id=${DevEc2Instance}
+stop_dev: action=stop
+stop_dev: stop_or_start
+
+start_dev: DbId=${DevRdsInstance}
+start_dev: Ec2Id=${DevEc2Instance}
+start_dev: action=start
+start_dev: stop_or_start wait_for_running run_container
+
+
+
+stop_or_start:
+	-aws --profile mockstarket --region us-west-2 rds ${action}-db-instance --db-instance-identifier ${DbId}
+	-aws --profile mockstarket --region us-west-2 ec2 ${action}-instances --instance-id ${Ec2Id}
+
+wait_for_running:
+	aws --profile mockstarket --region us-west-2 ec2 wait instance-running --instance-ids ${Ec2Id}
+	aws --profile mockstarket --region us-west-2 rds wait db-instance-available --db-instance-identifier ${DbId}
+
+power_on:
 
 
 #################################################################
