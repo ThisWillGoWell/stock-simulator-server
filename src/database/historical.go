@@ -7,7 +7,8 @@ import (
 )
 
 var (
-	historyTableTimeQuery  = `SELECT time_bucket('%s', time) AS tb, AVG(%s) AS val FROM %s WHERE time > NOW() - interval '%s' and uuid=$1 GROUP BY tb  ORDER BY tb DESC`
+	// historyTableTimeQuery  = `SELECT time_bucket('%s', time) AS tb, AVG(%s) AS val FROM %s WHERE time > NOW() - interval '%s' and uuid=$1 GROUP BY tb  ORDER BY tb DESC`
+	historyTableTimeQuery  = `SELECT time AS tb, AVG(%s) AS val FROM %s WHERE time > NOW() - interval '%s' and uuid=$1 GROUP BY tb  ORDER BY tb DESC`
 	historyTableLimitQuery = `SELECT time, %s FROM %s WHERE uuid=$1 LIMIT $2;`
 )
 
@@ -59,7 +60,8 @@ func MakeHistoryTimeQuery(table, uuid, timeLength, field, intervalLength string)
 }
 func makeHistoryTimeQuery(query *historicalTimeQuery) ([][]interface{}, error) {
 	//rows, err := tx.Query("SELECT time_bucket('60 seconds', time) AS tb, AVG(current_price) AS val FROM stocks_history  WHERE time > NOW() - interval '600 seconds' and uuid='E30B70AD77B26C' GROUP BY tb  ORDER BY tb DESC")
-	querySmt := fmt.Sprintf(historyTableTimeQuery, query.intervalLength, query.field, query.table, query.timeLength)
+	// querySmt := fmt.Sprintf(historyTableTimeQuery, query.intervalLength, query.field, query.table, query.timeLength)
+	querySmt := fmt.Sprintf(historyTableTimeQuery, query.field, query.table, query.timeLength)
 	rows, err := db.Query(querySmt, query.uuid)
 	if err != nil {
 		return nil, err
