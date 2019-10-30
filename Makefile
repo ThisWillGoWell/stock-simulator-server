@@ -16,6 +16,9 @@ DevDockerTag=mockstarket-dev
 #					Connect
 #################################################################
 
+convert_lines:
+	find . -name "*" | xargs dos2unix -q
+
 
 connect_prod: ServerHost=${ProdHost}
 connect_prod: connect

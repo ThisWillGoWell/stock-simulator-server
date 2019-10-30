@@ -1,2 +1,0 @@
-FROM nginx:stable
-COPY app.conf /etc/nginx/nginx.conf

@@ -1,7 +1,5 @@
-vendor
 docker
 ect
-src
 frontend
 .git
 *.tgz

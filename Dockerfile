@@ -1,13 +1,13 @@
-FROM golang:1.7.3
+FROM golang:1.13.3-alpine3.10
 WORKDIR /go/src/github.com/ThisWillGoWell/stock-simulator-server
-COPY main.go .
-COPY src .
-COPY vendor .
-RUN GOOS=linux go build cgo -o app .
-
-FROM alpine:3.10.3
-COPY --from=0 /go/src/github.com/ThisWillGoWell/stock-simulator-server/app .
-COPY config .
+COPY main.go main.go
+COPY src src
+COPY vendor vendor
+RUN GOOS=linux GOARCH=amd64  go build -o app .
+WORKDIR /bin
+RUN cp /go/src/github.com/ThisWillGoWell/stock-simulator-server/app .
+COPY config config
 RUN chmod +x app
+RUN ls -la
 EXPOSE 8000
-CMD ["./app"]
+CMD ["app"]
