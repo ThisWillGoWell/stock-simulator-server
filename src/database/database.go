@@ -6,33 +6,30 @@ import (
 	"os"
 	"time"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/effect"
-
 	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/record"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/items"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/notification"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/account"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/duplicator"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/ledger"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 	_ "github.com/lib/pq"
 )
 
-var db *sql.DB
-var ts *sql.DB
+var Db *Database
 
 var dbLock = lock.NewLock("db lock")
 
-func InitDatabase(disableDbWrite bool) {
-	dbConStr := os.Getenv("DB_URI")
+type Database struct {
+	enable bool
+	db     sql.DB
+}
+
+func InitDatabase(enableDb, enableDbWrite bool, host, port, username, password string) (Database, error) {
+	if !enableDb {
+		return
+	}
+
+	dbConStr := os.Getenv("RDS")
 	// if the env is not set, default to use the local host default port
 	database, err := sql.Open("postgres", dbConStr)
 	fmt.Println(dbConStr)
@@ -93,103 +90,22 @@ func InitDatabase(disableDbWrite bool) {
 
 }
 
-func databaseWriter() {
-	go func() {
-		portfolioDBWrite := duplicator.MakeDuplicator("portfolio-db-write")
-		portfolioDBWrite.RegisterInput(wires.PortfolioNewObject.GetBufferedOutput(100))
-		portfolioDBWrite.RegisterInput(wires.PortfolioUpdate.GetBufferedOutput(100))
-		write := portfolioDBWrite.GetBufferedOutput(1000)
-		for val := range write {
-			writePortfolio(val.(*portfolio.Portfolio))
-			writePortfolioHistory(val.(*portfolio.Portfolio))
-		}
-	}()
-
-	go func() {
-		userDBWrite := duplicator.MakeDuplicator("user-db-write")
-		userDBWrite.RegisterInput(wires.UsersNewObject.GetBufferedOutput(100))
-		userDBWrite.RegisterInput(wires.UsersUpdate.GetBufferedOutput(100))
-		write := userDBWrite.GetBufferedOutput(1000)
-		for val := range write {
-			writeUser(val.(*account.User))
-		}
-	}()
-
-	go func() {
-		ledgerDBWrite := duplicator.MakeDuplicator("ledger-db-write")
-		ledgerDBWrite.RegisterInput(wires.LedgerNewObject.GetBufferedOutput(100))
-		ledgerDBWrite.RegisterInput(wires.LedgerUpdate.GetBufferedOutput(100))
-		write := ledgerDBWrite.GetBufferedOutput(1000)
-		for val := range write {
-			writeLedger(val.(*ledger.Entry))
-			writeLedgerHistory(val.(*ledger.Entry))
-		}
-	}()
-
-	go func() {
-		itemsDBWrite := duplicator.MakeDuplicator("items-db-write")
-		itemsDBWrite.RegisterInput(wires.ItemsNewObjects.GetBufferedOutput(100))
-		itemsDBWrite.RegisterInput(wires.ItemsUpdate.GetBufferedOutput(100))
-		write := itemsDBWrite.GetBufferedOutput(1000)
-		for val := range write {
-			writeItem(val.(*items.Item))
-		}
-	}()
-	go func() {
-		itemDelete := wires.ItemsDelete.GetBufferedOutput(100)
-		for item := range itemDelete {
-			deleteItem(item.(*items.Item))
-		}
-	}()
-
-	go func() {
-		notificationDBWrite := duplicator.MakeDuplicator("notification-db-write")
-		notificationDBWrite.RegisterInput(wires.NotificationNewObject.GetBufferedOutput(100))
-		notificationDBWrite.RegisterInput(wires.NotificationUpdate.GetBufferedOutput(100))
-		write := notificationDBWrite.GetBufferedOutput(1000)
-		for val := range write {
-			writeNotification(val.(*notification.Notification))
-		}
-	}()
-	go func() {
-		notificationsDelete := wires.NotificationsDelete.GetBufferedOutput(100)
-		for note := range notificationsDelete {
-			deleteNotification(note.(*notification.Notification))
-		}
-	}()
-
-	go func() {
-		stockDBWrite := duplicator.MakeDuplicator("stock-9-write")
-		stockDBWrite.RegisterInput(wires.StocksNewObject.GetBufferedOutput(100))
-		stockDBWrite.RegisterInput(wires.StocksUpdate.GetBufferedOutput(100))
-		write := stockDBWrite.GetBufferedOutput(1000)
-		for val := range write {
-			writeStock(val.(*valuable.Stock))
-			writeStockHistory(val.(*valuable.Stock))
-		}
-	}()
-
-	go func() {
-		recordsWrite := wires.RecordsNewObject.GetBufferedOutput(1000)
-		for val := range recordsWrite {
-			writeRecordHistory(val.(*record.Record))
-		}
-	}()
-
-	go func() {
-		effectDBWrite := duplicator.MakeDuplicator("-db-write")
-		effectDBWrite.RegisterInput(wires.EffectsNewObject.GetBufferedOutput(100))
-		effectDBWrite.RegisterInput(wires.EffectsUpdate.GetBufferedOutput(100))
-		write := effectDBWrite.GetBufferedOutput(1000)
-		for val := range write {
-			writeEffect(val.(*effect.Effect))
-		}
-	}()
-	go func() {
-		effectDelete := wires.EffectsDelete.GetBufferedOutput(100)
-		for val := range effectDelete {
-			deleteEffect(val.(*effect.Effect))
-		}
-	}()
-
+func (d *Database) Exec(commandName, exec string, args ...interface{}) error {
+	if !d.enable {
+		return nil
+	}
+	tx, err := db.Begin()
+	if err != nil {
+		_ = db.Close()
+		return fmt.Errorf("begin %s: err=%v", commandName, err)
+	}
+	_, err = tx.Exec(itemsTableCreateStatement, args)
+	if err != nil {
+		_ = tx.Rollback()
+		return fmt.Errorf("exec %s: command=%v err=%v", commandName, exec, err)
+	}
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("commit %s: command=%v err=%v", commandName, exec, err)
+	}
+	return nil
 }

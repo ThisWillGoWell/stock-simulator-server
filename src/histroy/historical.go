@@ -1,9 +1,12 @@
 package histroy
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
 
@@ -27,30 +30,31 @@ var queryCache = make(map[string]*queryCacheItem)
 var queryCacheLock = lock.NewLock("query-cache-lock")
 var expirationTime = time.Hour * 12
 
-func RunCacheUpdater() {
-	go func() {
-		for {
-			queryCacheLock.Acquire("clean")
-			for queryKey, queryItem := range queryCache {
-				if time.Since(queryItem.lastUseTime) > expirationTime {
-					delete(queryCache, queryKey)
-				} else {
-					if time.Since(queryItem.lastUpdateTime) > queryItem.validTime {
-						fmt.Println("updating query:", queryKey, time.Now())
-						makeQuery(queryItem.query, true)
-						<-queryItem.query.ResponseChannel
-					}
-				}
-			}
-			queryCacheLock.Release()
-			<-time.After(time.Minute * 1)
-		}
-	}()
-}
+//
+//func RunCacheUpdater() {
+//	go func() {
+//		for {
+//			queryCacheLock.Acquire("clean")
+//			for queryKey, queryItem := range queryCache {
+//				if time.Since(queryItem.lastUseTime) > expirationTime {
+//					delete(queryCache, queryKey)
+//				} else {
+//					if time.Since(queryItem.lastUpdateTime) > queryItem.validTime {
+//						fmt.Println("updating query:", queryKey, time.Now())
+//						makeQuery(queryItem.query, true)
+//						<-queryItem.query.ResponseChannel
+//					}
+//				}
+//			}
+//			queryCacheLock.Release()
+//			<-time.After(time.Minute * 1)
+//		}
+//	}()
+//}
 
-func makeQueryHash(q *Query) string {
-	return fmt.Sprintf("%s-%s-%s-%d-%s-%s", q.Type, q.QueryUUID, q.QueryField, q.Limit, q.TimeLength, q.TimeInterval)
-}
+//func makeQueryHash(q *Query) string {
+//	return fmt.Sprintf("%s-%s-%s-%d-%s-%s", q.Type, q.QueryUUID, q.QueryField, q.Limit, q.TimeLength, q.TimeInterval)
+//}
 
 type Query struct {
 	Message         *messages.QueryMessage
@@ -101,22 +105,7 @@ prob should make sure they don't query like 1000 years or something
 */
 func MakeQuery(qm *messages.QueryMessage) *Query {
 	q := BuildQuery(qm)
-	queryCacheLock.Acquire("make-query")
-	defer queryCacheLock.Release()
-	// are we allowed to read from cache
-	if !qm.ForceUpdate {
-		hash := makeQueryHash(q)
-		cacheItem, ok := queryCache[hash]
-		if ok {
-			if time.Since(cacheItem.lastUpdateTime) > qm.CacheDuration.Duration {
-				q.ResponseChannel <- cacheItem.response
-				cacheItem.lastUseTime = time.Now()
-				return q
-			}
-		}
-
-	}
-	go makeQuery(q, false)
+	makeQuery(q, false)
 	return q
 }
 
@@ -133,30 +122,31 @@ func makeQuery(query *Query, lockAcquired bool) {
 	case *valuable.Stock:
 		switch query.Type {
 		case "time":
-			vals, err = database.MakeStockHistoryTimeQuery(query.QueryUUID, query.TimeLength, query.QueryField, query.TimeInterval)
+			vals, err = database.Db.MakeStockHistoryTimeQuery(query.QueryUUID, query.TimeLength, query.QueryField, query.TimeInterval)
 		case "limit":
-			vals, err = database.MakeStockHistoryLimitQuery(query.QueryUUID, query.QueryField, query.Limit)
+			vals, err = database.Db.MakeStockHistoryLimitQuery(query.QueryUUID, query.QueryField, query.Limit)
 		}
 	case *portfolio.Portfolio:
 		switch query.Type {
 		case "time":
-			vals, err = database.MakePortfolioHistoryTimeQuery(query.QueryUUID, query.TimeLength, query.QueryField, query.TimeInterval)
+			vals, err = database.Db.MakePortfolioHistoryTimeQuery(query.QueryUUID, query.TimeLength, query.QueryField, query.TimeInterval)
 		case "limit":
-			vals, err = database.MakePortfolioHistoryLimitQuery(query.QueryUUID, query.QueryField, query.Limit)
+			vals, err = database.Db.MakePortfolioHistoryLimitQuery(query.QueryUUID, query.QueryField, query.Limit)
 		}
 	case *ledger.Entry:
 		switch query.Type {
 		case "time":
-			vals, err = database.MakeLedgerHistoryTimeQuery(query.QueryUUID, query.TimeLength, query.QueryField, query.TimeInterval)
+			vals, err = database.Db.MakeLedgerHistoryTimeQuery(query.QueryUUID, query.TimeLength, query.QueryField, query.TimeInterval)
 		case "limit":
-			vals, err = database.MakeLedgerHistoryLimitQuery(query.QueryUUID, query.QueryField, query.Limit)
+			vals, err = database.Db.MakeLedgerHistoryLimitQuery(query.QueryUUID, query.QueryField, query.Limit)
 		}
-
 	default:
-		fmt.Printf("%T", v)
+		log.Log.Warnf("unknown type in query %T", v)
 	}
 
 	if err != nil {
+		v, _ := json.Marshal(query.Message)
+		log.Log.Warnf("failed query %v %s: ", err, string(v))
 		failedQuery(query, err)
 	}
 
@@ -182,25 +172,6 @@ func successQuery(query *Query, values [][]interface{}, lockAcquired bool) {
 		Error:   "",
 		Points:  values,
 		Message: query.Message,
-	}
-
-	if query.Type == "time" {
-		hash := makeQueryHash(query)
-		_, ok := queryCache[hash]
-		if !ok {
-			queryCache[hash] = &queryCacheItem{
-				lastUpdateTime: time.Now(),
-				lastUseTime:    time.Now(),
-				validTime:      query.Interval,
-				response:       response,
-				query:          query,
-			}
-
-		} else {
-			queryCache[hash].lastUpdateTime = time.Now()
-			queryCache[hash].response.Points = values
-
-		}
 	}
 
 	query.ResponseChannel <- response

@@ -11,6 +11,7 @@ import (
 	metrics "github.com/ThisWillGoWell/stock-simulator-server/src/metics"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/alert"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/aws"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/histroy"
@@ -32,6 +33,7 @@ func App() {
 	metrics.RunMetrics()
 
 	config.LoadConfigs()
+	secrest := aws.Secrets(os.Getenv("ENV"))
 
 	//start DB
 	if !disableDb {
@@ -43,7 +45,9 @@ func App() {
 	}
 	//valuable.ValuablesLock.EnableDebug()
 	//ledger.EntriesLock.EnableDebug()
-	discordAlertToken := os.Getenv("DISCORD_TOKEN")
+
+	discordAlertToken := secrest.DiscordToken
+
 	var alertWriter io.Writer
 	if discordAlertToken != "" {
 		alertWriter = alert.Init(discordAlertToken, "504397270075179029")

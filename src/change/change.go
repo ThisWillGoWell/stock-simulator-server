@@ -1,6 +1,7 @@
 package change
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -95,9 +96,7 @@ func registerChangeDetect(o Identifiable, outputChan chan interface{}) error {
 	defer subscribeablesLock.Release()
 
 	if _, ok := subscribeables[o.GetType()+o.GetId()]; ok {
-		log.Alerts.Fatal("Panic in Change Detect, cant register since already exists", o.GetId(), o.GetId())
-		log.Log.Fatal("Panic in Change Detect, cant register since already exists", o.GetId(), o.GetId())
-		panic("change detect already registered, check the code" + o.GetType() + o.GetId())
+		return fmt.Errorf("change detect already registered %s-%s", o.GetType(), o.GetId())
 	}
 
 	t := reflect.TypeOf(o)

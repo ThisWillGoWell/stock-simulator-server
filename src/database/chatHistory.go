@@ -12,7 +12,6 @@ var (
 	chatHistoryTableUpdateInsert = `INSERT INTO ` + chatHistoryTableName + `(time, uuid, message) values (NOW(), $1, $2)`
 
 	chatHistroyTableQueryStatement = "SELECT * FROM " + chatHistoryTableName + " WHERE uuid"
-	//getCurrentPrice()
 )
 
 func initChatHistory() {

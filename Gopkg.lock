@@ -2,6 +2,50 @@
 
 
 [[projects]]
+  digest = "1:f24e2a14304360ab060ce73eb66efc184b9bedb66ee963bcb468270df46d65cf"
+  name = "github.com/aws/aws-sdk-go"
+  packages = [
+    ".",
+    "aws",
+    "aws/awserr",
+    "aws/awsutil",
+    "aws/client",
+    "aws/client/metadata",
+    "aws/corehandlers",
+    "aws/credentials",
+    "aws/credentials/ec2rolecreds",
+    "aws/credentials/endpointcreds",
+    "aws/credentials/processcreds",
+    "aws/credentials/stscreds",
+    "aws/csm",
+    "aws/defaults",
+    "aws/ec2metadata",
+    "aws/endpoints",
+    "aws/request",
+    "aws/session",
+    "aws/signer/v4",
+    "internal/ini",
+    "internal/sdkio",
+    "internal/sdkmath",
+    "internal/sdkrand",
+    "internal/sdkuri",
+    "internal/shareddefaults",
+    "private/protocol",
+    "private/protocol/json/jsonutil",
+    "private/protocol/jsonrpc",
+    "private/protocol/query",
+    "private/protocol/query/queryutil",
+    "private/protocol/rest",
+    "private/protocol/xml/xmlutil",
+    "service/secretsmanager",
+    "service/sts",
+    "service/sts/stsiface",
+  ]
+  pruneopts = "UT"
+  revision = "95379426c152508a15cb44ed649fde05fa8d232b"
+  version = "v1.25.23"
+
+[[projects]]
   digest = "1:96f478a72f3392c19866f0da48241079e55dda3dffd917dbc60032fb7cd2eafa"
   name = "github.com/bwmarrin/discordgo"
   packages = ["."]
@@ -43,6 +87,13 @@
   pruneopts = "UT"
   revision = "f2728c79a87095c99f7a496701a81d3eae9fe3df"
   version = "v1.4.0"
+
+[[projects]]
+  digest = "1:bb81097a5b62634f3e9fec1014657855610c82d19b9a40c17612e32651e35dca"
+  name = "github.com/jmespath/go-jmespath"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "c2b33e84"
 
 [[projects]]
   digest = "1:31e761d97c76151dde79e9d28964a812c46efc5baee4085b86f68f0c654450de"
@@ -110,6 +161,11 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/aws/aws-sdk-go",
+    "github.com/aws/aws-sdk-go/aws",
+    "github.com/aws/aws-sdk-go/aws/endpoints",
+    "github.com/aws/aws-sdk-go/aws/session",
+    "github.com/aws/aws-sdk-go/service/secretsmanager",
     "github.com/bwmarrin/discordgo",
     "github.com/gorilla/websocket",
     "github.com/gotestyourself/gotestyourself/assert",

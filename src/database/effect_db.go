@@ -1,8 +1,9 @@
 package database
 
 import (
+	"database/sql"
 	"encoding/json"
-	"log"
+	"fmt"
 	"time"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/effect"
@@ -30,77 +31,46 @@ var (
 	effectTableDeleteStatement = "DELETE FROM " + effectTableName + " where uuid=$1"
 )
 
-func initEffect() {
-	tx, err := db.Begin()
-	if err != nil {
-		db.Close()
-		panic("could not begin effect init: " + err.Error())
-	}
-	_, err = tx.Exec(effectTableCreateStatement)
-	if err != nil {
-		tx.Rollback()
-		panic("error occurred while creating effect table " + err.Error())
-	}
-	tx.Commit()
+func (d *Database) initEffect() error {
+	return d.Exec("init-effect", effectTableCreateStatement)
 }
 
-func writeEffect(entry *effect.Effect) {
-	dbLock.Acquire("update-effect")
-	defer dbLock.Release()
-	tx, err := db.Begin()
-
-	if err != nil {
-		db.Close()
-		panic("could not begin effect init" + err.Error())
-	}
+func (d *Database) WriteEffect(entry *effect.Effect) error {
 	e, err := json.Marshal(entry.InnerEffect)
 	if err != nil {
+		return fmt.Errorf("failed to marshal inner effect err=%v", err)
 	}
-	_, err = tx.Exec(effectTableUpdateInsert, entry.Uuid, entry.PortfolioUuid, entry.Type, entry.Title, entry.Duration.Duration, entry.StartTime, entry.Tag, e)
-	if err != nil {
-		tx.Rollback()
-		panic("error occurred while insert effect in table " + err.Error())
-	}
-	tx.Commit()
+	return d.Exec("effect-update", effectTableUpdateInsert, entry.Uuid, entry.PortfolioUuid, entry.Type, entry.Title, entry.Duration.Duration, entry.StartTime, entry.Tag, e)
 }
 
-func populateEffects() {
+func (d *Database) DeleteEffect(effect *effect.Effect) error {
+	return d.Exec(effectTableDeleteStatement, effect.Uuid)
+}
+
+func (d *Database) populateEffects() error {
 	var effectType, effectJsonString, uuid, portfolioUuid, title, tag string
 	var duration float64
 	var startTime time.Time
-
-	rows, err := db.Query(effectTableQueryStatement)
-	if err != nil {
-		log.Fatal("error reading effect database")
-		panic("could not populate notifications: " + err.Error())
+	var rows *sql.Rows
+	var err error
+	if rows, err = d.db.Query(effectTableQueryStatement); err != nil {
+		return fmt.Errorf("failed to query portfolio err=%v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 	for rows.Next() {
-
-		err := rows.Scan(&uuid, &portfolioUuid, &effectType, &title, &duration, &startTime, &tag, &effectJsonString)
-		if err != nil {
-			log.Fatal("error in querying ledger: ", err)
+		if err = rows.Scan(&uuid, &portfolioUuid, &effectType, &title, &duration, &startTime, &tag, &effectJsonString); err != nil {
+			return err
 		}
-		innerEffect := effect.UnmarshalJsonEffect(effectType, effectJsonString)
-		effect.MakeEffect(uuid, portfolioUuid, title, effectType, tag, innerEffect, time.Duration(duration), startTime)
+		var innerEffect interface{}
+		if innerEffect, err = effect.UnmarshalJsonEffect(effectType, effectJsonString); err != nil {
+			return err
+		}
+		if _, err = effect.MakeEffect(uuid, portfolioUuid, title, effectType, tag, innerEffect, time.Duration(duration), startTime); err != nil {
+			return err
+		}
 	}
-	err = rows.Err()
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func deleteEffect(effect *effect.Effect) {
-	tx, err := db.Begin()
-	if err != nil {
-		db.Close()
-		panic("error opening db for deleting effect: " + err.Error())
-	}
-	_, err = tx.Exec(effectTableDeleteStatement, effect.Uuid)
-	if err != nil {
-		tx.Rollback()
-		panic("error delete effect: " + err.Error())
-	}
-	tx.Commit()
+	return rows.Err()
 
 }

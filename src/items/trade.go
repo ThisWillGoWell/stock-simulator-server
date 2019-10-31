@@ -2,6 +2,7 @@ package items
 
 import (
 	"github.com/ThisWillGoWell/stock-simulator-server/src/effect"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 )
 
@@ -48,7 +49,11 @@ func (p *TradeEffectItem) Activate(interface{}) (interface{}, error) {
 		BonusProfitMultiplier: p.ProfitMultiplier,
 	}
 	parent := Items[p.ParentItemUuid]
-	effect.NewTradeEffect(p.TargetPortfolio, parent.Name, parent.Name, tradeEffect, p.Duration.Duration)
-	parent.DeleteItem()
+	if err := effect.NewTradeEffect(p.TargetPortfolio, parent.Name, parent.Name, tradeEffect, p.Duration.Duration); err != nil {
+		return nil, err
+	}
+	if err := parent.DeleteItem(); err != nil {
+		log.Log.Error("failed to delete item (in database) err=%v", err)
+	}
 	return nil, nil
 }

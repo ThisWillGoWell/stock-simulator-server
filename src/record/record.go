@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/sender"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
@@ -73,29 +75,57 @@ func NewRecord(recordBookUuid string, amount, sharePrice, taxes, fees, bonus, re
 	uuid := utils.SerialUuid()
 	r := MakeRecord(uuid, recordBookUuid, amount, sharePrice, taxes, fees, bonus, result, time.Now())
 	wires.RecordsNewObject.Offer(r)
-	//sender.SendNewObject(portfolioUuid, record)
 }
 
-func MakeBook(uuid, ledgerUuid, portfolioUuid string) {
+func DeleteRecordBook(uuid string) {
+	recordsLock.Acquire("delete-record")
+	defer recordsLock.Release()
+	b, ok := books[uuid]
+	if !ok {
+		log.Log.Warnf("got delete for record book that we dont know uuid=%s", uuid)
+		return
+	}
+	delete(books, uuid)
+	if _, ok := portfolioBooks[b.PortfolioUuid]; ok {
+		remove := -1
+		for i, l := range portfolioBooks[b.PortfolioUuid] {
+			if l.Uuid == uuid {
+				remove = 1
+				break
+			}
+		}
+		if remove != -1 {
+			portfolioBooks[b.PortfolioUuid][remove] = portfolioBooks[b.PortfolioUuid][len(portfolioBooks[b.PortfolioUuid])-1]
+		}
+		portfolioBooks[b.PortfolioUuid] = portfolioBooks[b.PortfolioUuid][:len(portfolioBooks[b.PortfolioUuid])-1]
+	}
+}
 
-	books[uuid] = &Book{
+func MakeBook(uuid, ledgerUuid, portfolioUuid string) error {
+
+	book := &Book{
 		Uuid:             uuid,
 		LedgerUuid:       ledgerUuid,
 		PortfolioUuid:    portfolioUuid,
 		ActiveBuyRecords: make([]ActiveBuyRecord, 0),
 	}
+	bookChange := make(chan interface{})
+	if err := change.RegisterPrivateChangeDetect(book, bookChange); err != nil {
+		return err
+	}
+	books[uuid] = book
 	if _, ok := portfolioBooks[portfolioUuid]; !ok {
 		portfolioBooks[portfolioUuid] = make([]*Book, 0)
 	}
 	portfolioBooks[portfolioUuid] = append(portfolioBooks[portfolioUuid], books[uuid])
-	bookChange := make(chan interface{})
-	change.RegisterPrivateChangeDetect(books[uuid], bookChange)
+
 	sender.RegisterChangeUpdate(portfolioUuid, bookChange)
 	sender.SendNewObject(portfolioUuid, books[uuid])
 	utils.RegisterUuid(uuid, books[uuid])
+	return nil
 }
 
-func MakeRecord(uuid, recordBookUuid string, amount, sharePrice, taxes, fees, bonus, result int64, t time.Time) *Record {
+func MakeRecord(uuid, recordBookUuid string, amount, sharePrice, taxes, fees, bonus, result int64, t time.Time) (*Record, error) {
 	recordsLock.Acquire("new-record")
 	defer recordsLock.Release()
 

@@ -41,13 +41,15 @@ type TradeEffect struct {
 	TradeBlocked *bool `json:"trade_blocked" change:"-"` // if trade is blocked
 }
 
-func NewBaseTradeEffect(portfolioUuid string) {
+func NewBaseTradeEffect(portfolioUuid string) error {
 	baseTradeEffect := &TradeEffect{
 		BuyFeeAmount:  utils.CreateInt(BaseBuyFee),
 		SellFeeAmount: utils.CreateInt(BaseSellFell),
 		TaxPercent:    utils.CreateFloat(BaseTaxRate),
 	}
-	baseTradeEffect.parentEffect = newEffect(portfolioUuid, "Base Effect", TradeEffectType, baseTradeEffectTag, baseTradeEffect, 0)
+	var err error
+	baseTradeEffect.parentEffect, err = newEffect(portfolioUuid, "Base Effect", TradeEffectType, baseTradeEffectTag, baseTradeEffect, 0)
+	return err
 }
 
 func UpdateBaseProfit(portfolioUuid string, profitMultiplier float64) {
@@ -56,20 +58,21 @@ func UpdateBaseProfit(portfolioUuid string, profitMultiplier float64) {
 	effect := getTaggedEffect(portfolioUuid, baseTradeEffectTag)
 	effect.InnerEffect.(*TradeEffect).BonusProfitMultiplier = utils.CreateFloat(profitMultiplier)
 	wires.EffectsUpdate.Offer(effect)
-
 }
 
-func NewTradeEffect(portfolioUuid, title, tag string, effect *TradeEffect, duration time.Duration) {
-
-	effect.parentEffect = newEffect(portfolioUuid, title, TradeEffectType, tag, effect, duration)
+func NewTradeEffect(portfolioUuid, title, tag string, effect *TradeEffect, duration time.Duration) error {
+	var err error
+	effect.parentEffect, err = newEffect(portfolioUuid, title, TradeEffectType, tag, effect, duration)
+	return err
 }
 
-func NewTaxModifier(portfolioUuid, title string, duration time.Duration, taxMultiplier float64) {
+func NewTaxModifier(portfolioUuid, title string, duration time.Duration, taxMultiplier float64) error {
+	var err error
 	newTradeEffect := &TradeEffect{
 		TaxMultiplier: &taxMultiplier,
 	}
-	newTradeEffect.parentEffect = newEffect(portfolioUuid, title, "", TradeEffectType, newTradeEffect, duration)
-
+	newTradeEffect.parentEffect, err = newEffect(portfolioUuid, title, "", TradeEffectType, newTradeEffect, duration)
+	return err
 }
 
 // Calculate the total bonus  for a portfolio

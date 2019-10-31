@@ -1,10 +1,11 @@
 package database
 
 import (
-	"log"
-	"time"
+	"database/sql"
+	"fmt"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
+	"github.com/pkg/errors"
 )
 
 var (
@@ -25,62 +26,73 @@ var (
 		`ON CONFLICT (uuid) DO UPDATE SET current_price=EXCLUDED.current_price, open_shares=EXCLUDED.open_shares`
 
 	stocksTableQueryStatement = "SELECT uuid, ticker_id, name, current_price, open_shares, change_interval FROM " + stocksTableName
-	//getCurrentPrice()z
+
+	stocksHistoryTableName            = `stocks_history`
+	stocksHistoryTableCreateStatement = `CREATE TABLE IF NOT EXISTS ` + stocksHistoryTableName +
+		`( ` +
+		`time TIMESTAMPTZ NOT NULL,` +
+		`uuid text NOT NULL,` +
+		`current_price bigint NULL,` +
+		`open_shares bigint NULL` +
+		`);`
+
+	stocksHistoryTableUpdateInsert = `INSERT INTO ` + stocksHistoryTableName + `(time, uuid, current_price, open_shares) values (NOW(),$1, $2, $3);`
+
+	validStockFields = map[string]bool{
+		"current_price": true,
+	}
 )
 
-func initStocks() {
-	tx, err := db.Begin()
-	if err != nil {
-		db.Close()
-		panic("could not begin stocks init: " + err.Error())
+func (d *Database) InitStocks() error {
+	if err := d.Exec("stocks-init", stocksTableCreateStatement); err != nil {
+		return err
 	}
-	_, err = tx.Exec(stocksTableCreateStatement)
-	if err != nil {
-		tx.Rollback()
-		panic("error occurred while creating metrics table " + err.Error())
-	}
-	tx.Commit()
+	return d.Exec("stocks-history-init", stocksHistoryTableCreateStatement)
 }
 
-func writeStock(stock *valuable.Stock) {
-	dbLock.Acquire("update-stock")
-	defer dbLock.Release()
-	tx, err := db.Begin()
+func (d *Database) WriteStock(stock *valuable.Stock) error {
+	if err := d.Exec(stocksTableUpdateInsert, stock.Uuid, stock.TickerId, stock.Name, stock.CurrentPrice, stock.OpenShares, stock.ChangeDuration); err != nil {
+		return err
+	}
+	return d.Exec(stocksHistoryTableUpdateInsert, stock.Uuid, stock.CurrentPrice, stock.OpenShares)
 
-	if err != nil {
-		db.Close()
-		panic("could not begin stocks init: " + err.Error())
-	}
-	_, err = tx.Exec(stocksTableUpdateInsert, stock.Uuid, stock.TickerId, stock.Name, stock.CurrentPrice, stock.OpenShares, stock.ChangeDuration)
-	if err != nil {
-		tx.Rollback()
-		panic("error occurred while insert stock in table " + err.Error())
-	}
-	tx.Commit()
 }
 
-func populateStocks() {
+func (d *Database) MakeStockHistoryTimeQuery(uuid, timeLength, field, intervalLength string) ([][]interface{}, error) {
+	if _, valid := validStockFields[field]; !valid {
+		return nil, errors.New("not valid choice")
+	}
+	return MakeHistoryTimeQuery(stocksHistoryTableName, uuid, timeLength, field, intervalLength)
+
+}
+
+func (d *Database) MakeStockHistoryLimitQuery(uuid, field string, limit int) ([][]interface{}, error) {
+	if _, valid := validStockFields[field]; !valid {
+		return nil, errors.New("not valid choice")
+	}
+	return MakeHistoryLimitQuery(stocksHistoryTableName, uuid, field, limit)
+}
+
+func (d *Database) populateStocks() error {
 	var uuid, name, tickerId string
 	var currentPrice, openShares int64
 	var changeInterval float64
 
-	rows, err := db.Query(stocksTableQueryStatement)
-	if err != nil {
-		log.Fatal("error query data", err)
-		panic("could not populate portfolios: " + err.Error())
+	var rows *sql.Rows
+	var err error
+	if rows, err = d.db.Query(stocksTableQueryStatement); err != nil {
+		return fmt.Errorf("failed to query portfolio err=%v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 	for rows.Next() {
-		err := rows.Scan(&uuid, &tickerId, &name, &currentPrice, &openShares, &changeInterval)
-		if err != nil {
-			panic(err)
-			log.Fatal(err)
+		if err = rows.Scan(&uuid, &tickerId, &name, &currentPrice, &openShares, &changeInterval); err != nil {
+			return err
 		}
-		t := time.Duration(changeInterval)
-		valuable.MakeStock(uuid, tickerId, name, currentPrice, openShares, t)
+		if _, err = valuable.MakeStock(uuid, tickerId, name, currentPrice, openShares, t); err != nil {
+			return err
+		}
 	}
-	err = rows.Err()
-	if err != nil {
-		log.Fatal(err)
-	}
+	return rows.Err()
 }

@@ -2,19 +2,22 @@ package items
 
 import (
 	"encoding/json"
-	"log"
+	"fmt"
 	"time"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/merge"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
 
-	"github.com/pkg/errors"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/merge"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/notification"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/sender"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
+	"github.com/pkg/errors"
 )
 
 var ItemsPortInventory = make(map[string]map[string]*Item)
@@ -58,19 +61,30 @@ func (*Item) GetType() string {
 	return ItemIdentifiableType
 }
 
-func newItem(portfolioUuid, configId, itemType, name string, innerItem interface{}) *Item {
+func newItem(portfolioUuid, configId, itemType, name string, innerItem interface{}) (i *Item, err error) {
 
-	item := MakeItem(utils.SerialUuid(), portfolioUuid, configId, itemType, name, innerItem, time.Now())
-	sender.SendNewObject(portfolioUuid, item)
-	wires.ItemsNewObjects.Offer(item)
-	return item
+	if i, err = MakeItem(utils.SerialUuid(), portfolioUuid, configId, itemType, name, innerItem, time.Now()); err != nil {
+		log.Log.Errorf("making item err=%v", err)
+		return nil, err
+	}
 
+	if err := database.Db.WriteItem(i); err != nil {
+		_ = DeleteItem(i.Uuid, portfolioUuid, false)
+		return nil, err
+	}
+
+	sender.SendNewObject(portfolioUuid, i)
+	wires.ItemsNewObjects.Offer(i)
+	return
 }
 
-func MakeItem(uuid, portfolioUuid, itemConfigId, itemType, name string, innerItem interface{}, createTime time.Time) *Item {
+func MakeItem(uuid, portfolioUuid, itemConfigId, itemType, name string, innerItem interface{}, createTime time.Time) (*Item, error) {
 	switch innerItem.(type) {
 	case string:
-		innerItem = UnmarshalJsonItem(itemType, innerItem.(string))
+		var err error
+		if innerItem, err = UnmarshalJsonItem(itemType, innerItem.(string)); err != nil {
+			return nil, err
+		}
 	}
 	i := &Item{
 		Name:          name,
@@ -82,17 +96,22 @@ func MakeItem(uuid, portfolioUuid, itemConfigId, itemType, name string, innerIte
 		UpdateChannel: make(chan interface{}),
 		CreateTime:    createTime,
 	}
-	utils.RegisterUuid(uuid, i)
 
 	if _, ok := ItemsPortInventory[i.PortfolioUuid]; !ok {
 		ItemsPortInventory[i.PortfolioUuid] = make(map[string]*Item)
 	}
 	i.InnerItem.SetParentItemUuid(i.Uuid)
+
+	if err := change.RegisterPrivateChangeDetect(i, i.UpdateChannel); err != nil {
+		return nil, err
+	}
+
+	utils.RegisterUuid(uuid, i)
 	ItemsPortInventory[i.PortfolioUuid][i.Uuid] = i
 	Items[i.Uuid] = i
-	change.RegisterPrivateChangeDetect(i, i.UpdateChannel)
+
 	sender.RegisterChangeUpdate(i.PortfolioUuid, i.UpdateChannel)
-	return i
+	return i, nil
 }
 
 func BuyItem(portUuid, configId string) (string, error) {
@@ -120,17 +139,20 @@ func BuyItem(portUuid, configId string) (string, error) {
 	if _, ok := ItemsPortInventory[port.Uuid]; !ok {
 		ItemsPortInventory[port.Uuid] = make(map[string]*Item)
 	}
+	var i *Item
+	var err error
+	if i, err = newItem(portUuid, configId, config.Type, config.Name, config.Prams.Copy()); err != nil {
+		port.Wallet += config.Cost
+		log.Log.Errorf("failed to make item err=%v", err)
+		return "", fmt.Errorf("failed to make item")
+	}
+	i.InnerItem.SetPortfolioUuid(portUuid)
+	ItemsPortInventory[port.Uuid][i.PortfolioUuid] = i
+	Items[i.Uuid] = i
 
-	//todo
-
-	newItem := newItem(portUuid, configId, config.Type, config.Name, config.Prams.Copy())
-	newItem.InnerItem.SetPortfolioUuid(portUuid)
-	ItemsPortInventory[port.Uuid][newItem.PortfolioUuid] = newItem
-	Items[newItem.Uuid] = newItem
-
-	notification.NewItemNotification(portUuid, newItem.Type, newItem.Uuid)
+	notification.NewItemNotification(portUuid, i.Type, i.Uuid)
 	go port.Update()
-	return newItem.Uuid, nil
+	return i.Uuid, nil
 }
 
 func (i *Item) DeleteItem() error {
@@ -151,6 +173,8 @@ func DeleteItem(uuid, portfolioUuid string, lockAcquired bool) error {
 		return errors.New("item does not exist")
 	}
 
+	dbErr := database.Db.DeleteItem(item)
+
 	change.UnregisterChangeDetect(item)
 	close(item.UpdateChannel)
 	delete(Items, uuid)
@@ -161,7 +185,7 @@ func DeleteItem(uuid, portfolioUuid string, lockAcquired bool) error {
 	utils.RemoveUuid(uuid)
 	sender.SendDeleteObject(portfolioUuid, item)
 	wires.ItemsDelete.Offer(item)
-	return nil
+	return dbErr
 }
 
 func GetItemsForPortfolio(portfolioUuid string) []*Item {
@@ -242,17 +266,17 @@ func TransferItem(currentOwner, newOwner, itemId string) error {
 	return nil
 }
 
-func UnmarshalJsonItem(itemType, jsonStr string) InnerItem {
+func UnmarshalJsonItem(itemType, jsonStr string) (InnerItem, error) {
 	var item InnerItem
 	switch itemType {
 	case TradeItemType:
 		item = &TradeEffectItem{}
 	}
-	err := json.Unmarshal([]byte(jsonStr), &item)
-	if err != nil {
-		log.Fatal("error unmarshal json item", err.Error())
+
+	if err := json.Unmarshal([]byte(jsonStr), &item); err != nil {
+		return nil, err
 	}
-	return item
+	return item, nil
 }
 
 func (i *Item) MarshalJSON() ([]byte, error) {

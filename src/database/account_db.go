@@ -1,7 +1,8 @@
 package database
 
 import (
-	"log"
+	"database/sql"
+	"fmt"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/account"
 )
@@ -19,64 +20,38 @@ var (
 		`config json NULL, ` +
 		`PRIMARY KEY(uuid)` +
 		`);`
-	//todo seperate inset for json, not each time
+
 	accountTableUpdateInsert = `INSERT into ` + accountTableName + `(uuid, name, display_name, password, portfolio_uuid, config) values($1, $2, $3, $4, $5, $6) ` +
 		`ON CONFLICT (uuid) DO UPDATE SET display_name=EXCLUDED.display_name, password=EXCLUDED.password, config=EXCLUDED.config;`
 
 	accountTableQueryStatement = "SELECT uuid, name, display_name, password, portfolio_uuid, config FROM " + accountTableName + `;`
-	//getCurrentPrice()
 )
 
-func initAccount() {
-	tx, err := db.Begin()
-	if err != nil {
-		db.Close()
-		panic("could not begin account db init: " + err.Error())
-	}
-	_, err = tx.Exec(accountTableCreateStatement)
-	if err != nil {
-		tx.Rollback()
-		panic("error occurred while creating account table " + err.Error())
-	}
-	tx.Commit()
+func (d *Database) initAccount() error {
+	return d.Exec("account-init", accountTableCreateStatement)
 }
 
-func writeUser(user *account.User) {
-	dbLock.Acquire("add user")
-	defer dbLock.Release()
-	tx, err := db.Begin()
-
-	if err != nil {
-		db.Close()
-		panic("could not begin user init: " + err.Error())
-	}
-
-	_, err = tx.Exec(accountTableUpdateInsert, user.Uuid, user.UserName, user.DisplayName, user.Password, user.PortfolioId, user.ConfigStr)
-	if err != nil {
-		tx.Rollback()
-		panic("error occurred while insert account in table " + err.Error())
-	}
-	tx.Commit()
+func (d *Database) WriteAccount(user *account.User) error {
+	return d.Exec("account-update", accountTableUpdateInsert, user.Uuid, user.UserName, user.DisplayName, user.Password, user.PortfolioId, user.ConfigStr)
 }
 
-func populateUsers() {
+func (d *Database) populateUsers() error {
 	var uuid, name, displayName, password, portfolioId, config string
-
-	rows, err := db.Query(accountTableQueryStatement)
-	if err != nil {
-		log.Fatal("error quiering databse", err)
-		panic("could not populate users: " + err.Error())
+	var rows *sql.Rows
+	var err error
+	if rows, err = d.db.Query(effectTableQueryStatement); err != nil {
+		return fmt.Errorf("failed to query portfolio err=%v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 	for rows.Next() {
-		err := rows.Scan(&uuid, &name, &displayName, &password, &portfolioId, &config)
-		if err != nil {
-			log.Fatal("error :", err)
+		if err = rows.Scan(&uuid, &name, &displayName, &password, &portfolioId, &config); err != nil {
+			return err
 		}
-		account.MakeUser(uuid, name, displayName, password, portfolioId, config)
+		if _, err = account.MakeUser(uuid, name, displayName, password, portfolioId, config); err != nil {
+			return err
+		}
 	}
-	err = rows.Err()
-	if err != nil {
-		log.Fatal(err)
-	}
+	return rows.Err()
 }
