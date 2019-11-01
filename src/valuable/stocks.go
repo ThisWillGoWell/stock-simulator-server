@@ -207,8 +207,13 @@ func (randPrice *RandomPrice) change(stock *Stock) {
 		change = change * -1 * .25
 	}
 
-	stock.CurrentPrice = int64(float64(2345) + (rand.NormFloat64() * 75))
+	possible_price := int64(float64(stock.CurrentPrice) + (utils.Norm(0, 75) * 75))
 
+	lower_bound := int64(1500) // $15.00
+
+	if possible_price <= lower_bound {
+		stock.CurrentPrice = int64(float64(stock.CurrentPrice) + (utils.ChiSq(0, 1) * 20))
+	}
 	stock.UpdateChannel.Offer(stock)
 
 }
