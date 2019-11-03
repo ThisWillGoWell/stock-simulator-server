@@ -477,17 +477,32 @@
 							<div class="flex-column-100" v-if="currUserRecords">
 								<div v-for="trade in currUserRecords">
 									Record Entry
-									<ul>
-										<li>uuid: ${{trade.uuid}}</li>
-										<li>share_price: ${{trade.share_price}}</li>
-										<li>share_count: ${{trade.share_count}}</li>
-										<li>time: ${{trade.time}}</li>
-										<li>book_uuid: ${{trade.book_uuid}}</li>
-										<li>fee: ${{trade.fee}}</li>
-										<li>taxes: ${{trade.taxes}}</li>
-										<li>bonus: ${{trade.bonus}}</li>
-										<li>result: ${{trade.result}}</li>
-									</ul>
+									<table class="table">
+										<thead class="table-top-bar">
+											<th>uuid</th>
+											<th>share_price</th>
+											<th>share_count</th>
+											<th>time</th>
+											<th>book_uuid</th>
+											<th>fee</th>
+											<th>taxes</th>
+											<th>bonus</th>
+											<th>result</th>
+										</thead>
+										<tbody>
+											<tr v-for="trade in currUserRecords">
+												<td>{{trade.uuid}}</td>
+												<td>${{ toPrice(trade.share_price)}}</td>
+												<td>{{trade.share_count}}</td>
+												<td>{{trade.time}}</td>
+												<td>{{trade.book_uuid}}</td>
+												<td>${{ toPrice(trade.fee) }}</td>
+												<td>${{ toPrice(trade.taxes)}}</td>
+												<td>${{ toPrice(trade.bonus)}}</td>
+												<td>${{ toPrice(trade.result) }}</td>
+											</tr>
+										</tbody>
+									</table>
 								</div>
 							</div>
 
