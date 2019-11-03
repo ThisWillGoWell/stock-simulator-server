@@ -37,10 +37,10 @@ const SellRecordType = "sell"
 //}
 
 type Book struct {
-	Uuid             string            `json:"uuid"`
-	LedgerUuid       string            `json:"ledger_uuid"`
-	PortfolioUuid    string            `json:"portfolio_uuid"`
-	ActiveBuyRecords []ActiveBuyRecord `json:"buy_records" change:"-"`
+	Uuid          string            `json:"uuid"`
+	LedgerUuid    string            `json:"ledger_uuid"`
+	PortfolioUuid string            `json:"portfolio_uuid"`
+	ActiveRecords []ActiveBuyRecord `json:"active_records" change:"-"`
 }
 
 type ActiveBuyRecord struct {
@@ -102,8 +102,10 @@ func deleteRecord(r *Record) error {
 		return nil
 	}
 	//remove the record from the book
-	// we know its the last record on the book and that it was a buy so no need to rewalk
-	book.ActiveBuyRecords = book.ActiveBuyRecords[:len(book.ActiveBuyRecords)-1]
+	book.ActiveRecords = book.ActiveRecords[:len(book.ActiveRecords)-1]
+	if r.ShareCount < 0 { // we have a sell, need to readd those those
+
+	}
 	// attempt to delete even though we know something failed with the db
 	// remove from db first
 	dbErr := database.Db.DeleteRecord(r)
@@ -111,7 +113,7 @@ func deleteRecord(r *Record) error {
 	utils.RemoveUuid(r.Uuid)
 	return dbErr
 
-	//for i, r := range book.ActiveBuyRecords {
+	//for i, r := range book.ActiveRecords {
 	//	if r.RecordUuid == r.RecordUuid {
 	//		remove = i
 	//		continue
@@ -119,13 +121,13 @@ func deleteRecord(r *Record) error {
 	//}
 	//if remove != -1 {
 	//	// Remove the element at index i from a.
-	//	copy(book.ActiveBuyRecords[remove:], book.ActiveBuyRecords[remove+1:])       // Shift a[i+1:] left one index.
-	//	book.ActiveBuyRecords[len(book.ActiveBuyRecords)-1] = ActiveBuyRecord{}      // Erase last element (write zero value).
-	//	book.ActiveBuyRecords = book.ActiveBuyRecords[:len(book.ActiveBuyRecords)-1] // Truncate slice.
+	//	copy(book.ActiveRecords[remove:], book.ActiveRecords[remove+1:])       // Shift a[i+1:] left one index.
+	//	book.ActiveRecords[len(book.ActiveRecords)-1] = ActiveBuyRecord{}      // Erase last element (write zero value).
+	//	book.ActiveRecords = book.ActiveRecords[:len(book.ActiveRecords)-1] // Truncate slice.
 	//
-	//	removedRecord := book.ActiveBuyRecords[remove]
-	//	book.ActiveBuyRecords[remove] = book.ActiveBuyRecords[len(book.ActiveBuyRecords)-1]
-	//	book.ActiveBuyRecords = book.ActiveBuyRecords[len(book.ActiveBuyRecords)-1:]
+	//	removedRecord := book.ActiveRecords[remove]
+	//	book.ActiveRecords[remove] = book.ActiveRecords[len(book.ActiveRecords)-1]
+	//	book.ActiveRecords = book.ActiveRecords[len(book.ActiveRecords)-1:]
 	//} else {
 	//	log.Log.Printf("did not find buy record=%s for book=%s", r.Uuid, r.RecordBookUuid)
 
@@ -160,10 +162,10 @@ func DeleteRecordBook(uuid string) {
 func MakeBook(uuid, ledgerUuid, portfolioUuid string) error {
 
 	book := &Book{
-		Uuid:             uuid,
-		LedgerUuid:       ledgerUuid,
-		PortfolioUuid:    portfolioUuid,
-		ActiveBuyRecords: make([]ActiveBuyRecord, 0),
+		Uuid:          uuid,
+		LedgerUuid:    ledgerUuid,
+		PortfolioUuid: portfolioUuid,
+		ActiveRecords: make([]ActiveBuyRecord, 0),
 	}
 	bookChange := make(chan interface{})
 	if err := change.RegisterPrivateChangeDetect(book, bookChange); err != nil {
@@ -204,7 +206,7 @@ func MakeRecord(uuid, recordBookUuid string, amount, sharePrice, taxes, fees, bo
 	}
 	records[uuid] = newRecord
 	if amount > 0 {
-		book.ActiveBuyRecords = append(book.ActiveBuyRecords, ActiveBuyRecord{RecordUuid: uuid, AmountLeft: amount})
+		book.ActiveRecords = append(book.ActiveRecords, ActiveBuyRecord{RecordUuid: uuid, AmountLeft: amount})
 	} else {
 		walkRecords(book, amount*-1, true)
 	}
@@ -226,11 +228,11 @@ func walkRecords(book *Book, shares int64, mark bool) int64 {
 	sharesLeft := shares
 	totalCost := int64(0)
 	for sharesLeft != 0 {
-		if amountCleared >= len(book.ActiveBuyRecords) {
+		if amountCleared >= len(book.ActiveRecords) {
 			fmt.Println("WRONG")
 		}
 		lastAmountCleared = sharesLeft
-		activeBuyRecord := book.ActiveBuyRecords[amountCleared]
+		activeBuyRecord := book.ActiveRecords[amountCleared]
 		record := records[activeBuyRecord.RecordUuid]
 		removedShares := activeBuyRecord.AmountLeft
 
@@ -250,9 +252,9 @@ func walkRecords(book *Book, shares int64, mark bool) int64 {
 	}
 
 	if mark {
-		book.ActiveBuyRecords = book.ActiveBuyRecords[amountCleared:] // remove any that we have
-		if len(book.ActiveBuyRecords) != 0 {
-			book.ActiveBuyRecords[0].AmountLeft -= lastAmountCleared // remove any remainder off the new count
+		book.ActiveRecords = book.ActiveRecords[amountCleared:] // remove any that we have
+		if len(book.ActiveRecords) != 0 {
+			book.ActiveRecords[0].AmountLeft -= lastAmountCleared // remove any remainder off the new count
 		}
 	}
 	return totalCost
@@ -272,7 +274,7 @@ func GetRecordsForPortfolio(portfolioUuid string) ([]*Book, []*Record) {
 	portRecord := make([]*Record, 0)
 
 	for _, b := range books {
-		for _, active := range b.ActiveBuyRecords {
+		for _, active := range b.ActiveRecords {
 			portRecord = append(portRecord, records[active.RecordUuid])
 		}
 	}

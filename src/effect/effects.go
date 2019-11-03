@@ -47,7 +47,6 @@ func deleteEffect(uuid string, lockAcquired bool) error {
 		delete(portfolioEffectTags, e.PortfolioUuid)
 	}
 	change.UnregisterChangeDetect(e)
-	notification.EndEffectNotification(e.PortfolioUuid, e.Title)
 	utils.RemoveUuid(uuid)
 
 	return dbErr
@@ -67,7 +66,9 @@ func newEffect(portfolioUuid, title, effectType, tag string, innerEffect interfa
 	}
 
 	wires.EffectsNewObject.Offer(e)
-	notification.NewEffectNotification(portfolioUuid, title)
+	if err := notification.NewEffectNotification(portfolioUuid, title); err != nil {
+		log.Log.Warnf("failed to make new %s effect notification for %s ", title, portfolioUuid)
+	}
 	return e, nil
 }
 
@@ -197,6 +198,10 @@ func RunEffectCleaner() {
 				if effect.Duration.Duration != 0 && time.Since(effect.StartTime) > effect.Duration.Duration {
 					if err := deleteEffect(uuid, true); err != nil {
 						log.Log.Errorf("failed to clean effect err=[%v]", err)
+					} else {
+						if err := notification.EndEffectNotification(effect.PortfolioUuid, effect.Title); err != nil {
+							log.Log.Errorf("failed to send end effect notification to %s id=%s err=[%v]", effect.PortfolioUuid, effect.Uuid, err)
+						}
 					}
 				}
 			}

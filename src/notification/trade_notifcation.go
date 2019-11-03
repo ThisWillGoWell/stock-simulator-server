@@ -20,11 +20,12 @@ type MoneyTransferNotification struct {
 }
 
 func DoneTradeNotification(portfilioUuid, stockUuid string, amount int64) error {
-	NewNotification(portfilioUuid, TradeNotificationType, &TradeNotification{
+	_, err := NewNotification(portfilioUuid, TradeNotificationType, &TradeNotification{
 		Amount:    amount,
 		StockUuid: stockUuid,
 		Success:   true,
 	})
+	return err
 }
 
 func SendMoneyTradeNotification(portfolioUuid, receiverUuid string, amount int64) error {

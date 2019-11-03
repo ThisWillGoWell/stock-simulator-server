@@ -7,9 +7,14 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/money"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
+
+	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
+
+	"github.com/ThisWillGoWell/stock-simulator-server/src/money"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/duplicator"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
@@ -59,6 +64,7 @@ type Stock struct {
 	PriceChanger   PriceChange                   `json:"-"`
 	UpdateChannel  *duplicator.ChannelDuplicator `json:"-"`
 	lock           *lock.Lock                    `json:"-"`
+	close          chan interface{}              `json:"-"`
 }
 
 func (stock *Stock) GetType() string {
@@ -72,7 +78,30 @@ func NewStock(tickerID, name string, startPrice int64, runInterval time.Duration
 
 	uuidString := utils.SerialUuid()
 
-	return MakeStock(uuidString, tickerID, name, startPrice, 1000, runInterval)
+	s, err := MakeStock(uuidString, tickerID, name, startPrice, 1000, runInterval)
+	if err != nil {
+		return nil, err
+	}
+	if err := database.Db.WriteStock(s); err != nil {
+		_ = deleteStock(s.Uuid)
+		return nil, fmt.Errorf("failed to make stock because db err=[%v]", err)
+	}
+	wires.StocksNewObject.Offer(s)
+	return s, nil
+}
+
+func deleteStock(uuid string) error {
+	s, ok := Stocks[uuid]
+	if !ok {
+		log.Log.Errorf("got delete for stock something that does not exists? uuid=%s", uuid)
+	}
+	dbErr := database.Db.DeleteStock(uuid)
+	s.UpdateChannel.StopDuplicator()
+	close(s.close)
+	delete(Stocks, uuid)
+	utils.RemoveUuid(uuid)
+	change.UnregisterChangeDetect(s)
+	return dbErr
 }
 
 func MakeStock(uuid, tickerID, name string, startPrice, openShares int64, runInterval time.Duration) (*Stock, error) {
@@ -100,12 +129,13 @@ func MakeStock(uuid, tickerID, name string, startPrice, openShares int64, runInt
 		Volatility:            5,
 		RandomNoise:           .15,
 	}
+	if err := change.RegisterPublicChangeDetect(stock); err != nil {
+		return nil, err
+	}
 	go stock.stockUpdateRoutine()
 	Stocks[uuid] = stock
 	stock.UpdateChannel.EnableCopyMode()
-	change.RegisterPublicChangeDetect(stock)
 	wires.StocksUpdate.RegisterInput(stock.UpdateChannel.GetBufferedOutput(1000))
-	wires.StocksNewObject.Offer(stock)
 	utils.RegisterUuid(uuid, stock)
 	return stock, nil
 }
@@ -132,8 +162,14 @@ func (stock *Stock) GetId() string {
 
 func (stock *Stock) stockUpdateRoutine() {
 	update := timeSimulation.GetOutput()
-	for range update {
-		stock.PriceChanger.change(stock)
+loop:
+	for {
+		select {
+		case <-update:
+			stock.PriceChanger.change(stock)
+		case <-stock.close:
+			break loop
+		}
 	}
 }
 

@@ -345,7 +345,7 @@ func (client *Client) processDeleteAction(baseMessage *messages.BaseMessage) {
 	var err error
 	switch deleteMsg.Type {
 	case items.ItemIdentifiableType:
-		err = items.DeleteItem(deleteMsg.Uuid, client.user.PortfolioId, false, true)
+		err = items.DeleteItem(deleteMsg.Uuid, client.user.PortfolioId, false, true, false)
 	case notification.IdentifiableType:
 		err = notification.DeleteNotification(deleteMsg.Uuid, client.user.PortfolioId, false, true, false)
 	}

@@ -443,7 +443,9 @@ func executeTransfer(o *TransferOrder) {
 	receiver.Wallet += o.Amount
 	port.Wallet -= o.Amount
 	successOrder(o, Details{})
-	notification.SendMoneyTradeNotification(port.Uuid, receiver.Uuid, o.Amount)
+	if err := notification.SendMoneyTradeNotification(port.Uuid, receiver.Uuid, o.Amount); err != nil {
+		log.Log.Errorf("failed to send money trade notification from=%s err=%s err=[%v]", port.Uuid, receiver.Uuid, err)
+	}
 	go port.Update()
 	go receiver.Update()
 }

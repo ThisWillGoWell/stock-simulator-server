@@ -38,6 +38,9 @@ var (
 
 	stocksHistoryTableUpdateInsert = `INSERT INTO ` + stocksHistoryTableName + `(time, uuid, current_price, open_shares) values (NOW(),$1, $2, $3);`
 
+	stocksTableDeleteStatement        = "DELETE from " + stocksTableName + `WHERE uuid = $1`
+	stocksHistoryTableDeleteStatement = "DELETE from " + stocksHistoryTableName + `WHERE uuid = $1`
+
 	validStockFields = map[string]bool{
 		"current_price": true,
 	}
@@ -58,11 +61,20 @@ func (d *Database) WriteStock(stock *valuable.Stock) error {
 
 }
 
+func (d *Database) DeleteStock(uuid string) error {
+	e1 := d.Exec("delete-stock", stocksTableDeleteStatement, uuid)
+	e2 := d.Exec("delete-stock", stocksHistoryTableDeleteStatement, uuid)
+	if e1 != nil || e2 != nil {
+		return fmt.Errorf("delete stock uuid=%s stockdb=[%v] history=[%v]", uuid, e1, e2)
+	}
+	return nil
+}
+
 func (d *Database) MakeStockHistoryTimeQuery(uuid, timeLength, field, intervalLength string) ([][]interface{}, error) {
 	if _, valid := validStockFields[field]; !valid {
 		return nil, errors.New("not valid choice")
 	}
-	return MakeHistoryTimeQuery(stocksHistoryTableName, uuid, timeLength, field, intervalLength)
+	return d.MakeHistoryTimeQuery(stocksHistoryTableName, uuid, timeLength, field, intervalLength)
 
 }
 
@@ -70,7 +82,7 @@ func (d *Database) MakeStockHistoryLimitQuery(uuid, field string, limit int) ([]
 	if _, valid := validStockFields[field]; !valid {
 		return nil, errors.New("not valid choice")
 	}
-	return MakeHistoryLimitQuery(stocksHistoryTableName, uuid, field, limit)
+	return d.MakeHistoryLimitQuery(stocksHistoryTableName, uuid, field, limit)
 }
 
 func (d *Database) populateStocks() error {

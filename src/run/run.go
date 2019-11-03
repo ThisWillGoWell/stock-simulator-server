@@ -14,7 +14,6 @@ import (
 	"github.com/ThisWillGoWell/stock-simulator-server/src/aws"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/histroy"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/order"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/sender"
@@ -65,7 +64,6 @@ func App() {
 	change.StartDetectChanges()
 	session.StartSessionCleaner()
 	sender.RunGlobalSender()
-	histroy.RunCacheUpdater()
 	effect.RunEffectCleaner()
 
 	order.Run()

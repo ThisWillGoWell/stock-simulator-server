@@ -27,7 +27,7 @@ func ValidateRecords(t *testing.T) {
 	amounts := make(map[string]int64)
 	for _, b := range record.GetAllBooks() {
 		summ := int64(0)
-		for _, rec := range b.ActiveBuyRecords {
+		for _, rec := range b.ActiveRecords {
 			summ += rec.AmountLeft
 		}
 		amounts[b.LedgerUuid] = summ
