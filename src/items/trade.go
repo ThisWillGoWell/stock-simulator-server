@@ -53,7 +53,7 @@ func (p *TradeEffectItem) Activate(interface{}) (interface{}, error) {
 		return nil, err
 	}
 	if err := parent.DeleteItem(); err != nil {
-		log.Log.Error("failed to delete item (in database) err=%v", err)
+		log.Log.Error("failed to delete item (in database) err=[%v]", err)
 	}
 	return nil, nil
 }

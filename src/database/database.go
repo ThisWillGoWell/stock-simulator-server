@@ -97,15 +97,15 @@ func (d *Database) Exec(commandName, exec string, args ...interface{}) error {
 	tx, err := db.Begin()
 	if err != nil {
 		_ = db.Close()
-		return fmt.Errorf("begin %s: err=%v", commandName, err)
+		return fmt.Errorf("begin %s: err=[%v]", commandName, err)
 	}
 	_, err = tx.Exec(itemsTableCreateStatement, args)
 	if err != nil {
 		_ = tx.Rollback()
-		return fmt.Errorf("exec %s: command=%v err=%v", commandName, exec, err)
+		return fmt.Errorf("exec %s: command=%v err=[%v]", commandName, exec, err)
 	}
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("commit %s: command=%v err=%v", commandName, exec, err)
+		return fmt.Errorf("commit %s: command=%v err=[%v]", commandName, exec, err)
 	}
 	return nil
 }

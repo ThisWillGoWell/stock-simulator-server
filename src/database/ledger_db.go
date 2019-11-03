@@ -25,49 +25,20 @@ var (
 
 	ledgerTableQueryStatement = "SELECT uuid, portfolio_id, stock_id, record_id,  amount FROM " + ledgerTableName + `;`
 
-	ledgerHistoryTableName            = `ledger_history`
-	ledgerHistoryTableCreateStatement = `CREATE TABLE IF NOT EXISTS ` + ledgerHistoryTableName +
-		`( ` +
-		`time TIMESTAMPTZ NOT NULL,` +
-		`uuid text NOT NULL,` +
-		`portfolio_id text NOT NULL, ` +
-		`stock_id text NOT NULL, ` +
-		`amount bigint NULL` +
-		`);`
-
-	ledgerHistoryTableUpdateInsert = `INSERT INTO ` + ledgerHistoryTableName + `(time, uuid, portfolio_id, stock_id, amount) values (NOW(),$1, $2, $3, $4)`
-
-	validLedgerFields = map[string]bool{
-		"amount": true,
-	}
+	ledgerTableDeleteStatement = "DELETE from " + ledgerTableName + `WHERE uuid = $1`
 )
 
 func (d *Database) InitLedger() error {
-	if err := d.Exec("ledgers-init", ledgerTableCreateStatement); err != nil {
-		return err
-	}
-	return d.Exec("ledgers-history-init", ledgerHistoryTableCreateStatement)
+	return d.Exec("ledgers-init", ledgerTableCreateStatement)
 }
 
 func (d *Database) WriteLedger(entry *ledger.Entry) error {
-	if err := d.Exec("ledger-update", ledgerTableUpdateInsert, entry.Uuid, entry.PortfolioId, entry.RecordBookId, entry.StockId, entry.Amount); err != nil {
-		return err
-	}
-	return d.Exec("ledger-history", ledgerHistoryTableUpdateInsert, entry.Uuid, entry.PortfolioId, entry.StockId, entry.Amount)
+	return d.Exec("ledger-update", ledgerTableUpdateInsert, entry.Uuid, entry.PortfolioId, entry.RecordBookId, entry.StockId, entry.Amount)
+
 }
 
-func (d *Database) MakeLedgerHistoryTimeQuery(uuid, timeLength, field, intervalLength string) ([][]interface{}, error) {
-	if _, valid := validLedgerFields[field]; !valid {
-		return nil, fmt.Errorf("not valid choice")
-	}
-	return MakeHistoryTimeQuery(ledgerHistoryTableName, uuid, timeLength, field, intervalLength)
-}
-
-func (d *Database) MakeLedgerHistoryLimitQuery(uuid, field string, limit int) ([][]interface{}, error) {
-	if _, valid := validLedgerFields[field]; !valid {
-		return nil, fmt.Errorf("not valid choice")
-	}
-	return MakeHistoryLimitQuery(ledgerHistoryTableName, uuid, field, limit)
+func (d Database) DeleteLedger(uuid string) error {
+	return d.Exec("ledger-delete", ledgerTableDeleteStatement, uuid)
 }
 
 func (d *Database) populateLedger() error {
@@ -77,7 +48,7 @@ func (d *Database) populateLedger() error {
 	var rows *sql.Rows
 	var err error
 	if rows, err = d.db.Query(ledgerTableQueryStatement); err != nil {
-		return fmt.Errorf("failed to query portfolio err=%v", err)
+		return fmt.Errorf("failed to query portfolio err=[%v]", err)
 	}
 	defer func() {
 		_ = rows.Close()

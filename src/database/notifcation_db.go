@@ -37,14 +37,14 @@ func (d *Database) InitNotification() error {
 func (d *Database) WriteNotification(entry *notification.Notification) error {
 	jsonString, err := json.Marshal(entry.Notification)
 	if err != nil {
-		return fmt.Errorf("failed to marshal inner notificaion err=%v", err)
+		return fmt.Errorf("failed to marshal inner notificaion err=[%v]", err)
 	}
 
 	return d.Exec(notificationTableUpdateInsert, entry.Uuid, entry.PortfolioUuid, entry.Seen, entry.Type, entry.Timestamp, jsonString)
 }
 
-func (d *Database) DeleteNotification(note *notification.Notification) error {
-	return d.Exec("notification-delete", notificationDeleteStatement, note.Uuid)
+func (d *Database) DeleteNotification(uuid string) error {
+	return d.Exec("notification-delete", notificationDeleteStatement, uuid)
 }
 
 func (d *Database) populateNotification() {

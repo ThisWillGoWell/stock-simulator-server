@@ -1,14 +1,17 @@
 package order
 
 import (
+	"fmt"
+
+	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/effect"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/ledger"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/level"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/notification"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/record"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 )
 
 type Order interface {
@@ -151,6 +154,7 @@ func executeTrade(o *TradeOrder) {
 	//get the stock if it exists
 	//valuable.ValuablesLock.EnableDebug()
 	//ledger.EntriesLock.EnableDebug()
+	var err error
 	valuable.ValuablesLock.Acquire("trade")
 	defer valuable.ValuablesLock.Release()
 
@@ -202,7 +206,12 @@ func executeTrade(o *TradeOrder) {
 				failureOrder("can't own that many shares", o)
 				return
 			}
-			ledgerEntry = ledger.NewLedgerEntry(o.PortfolioID, o.ValuableID, true)
+			ledgerEntry, err = ledger.NewLedgerEntry(o.PortfolioID, o.ValuableID)
+			if err != nil {
+				// nothing else to do here to undo
+				failureOrder(fmt.Sprintf("somehting went wrong, send help! err:%v", err), o)
+				return
+			}
 			port.UpdateInput.RegisterInput(ledgerEntry.UpdateChannel.GetBufferedOutput(10))
 		} else {
 			newShareCount := o.Amount + ledgerEntry.Amount
@@ -217,7 +226,7 @@ func executeTrade(o *TradeOrder) {
 		port.Wallet += details.Result
 		//add the holder amount
 		ledgerEntry.Amount += o.Amount
-		successOrder(o, details)
+
 	} else {
 		if !ledgerExists {
 			failureOrder("not enough shares", o)
@@ -240,16 +249,70 @@ func executeTrade(o *TradeOrder) {
 		ledgerEntry.Amount -= amount
 		details = calculateSellDetails(o.Amount, value, ledgerEntry.RecordBookId, tradeEffects, activeEffects)
 		port.Wallet += details.Result
-		successOrder(o, details)
+
 	}
+
+	err = record.NewRecord(ledgerEntry.RecordBookId, details.ShareCount, details.SharePrice, details.Tax, details.Fees, details.Bonus, details.Result)
+	if err != nil {
+		// uaa oh, record failed, but we already made the trade
+		// so what?
+		// delete the ledger if it was made and undo the trade
+		log.Alerts.Printf("Send Help! somehow we hit this edge case! 0x45")
+		// 1 undo the trade
+		port.Wallet -= details.Result
+		//update the ledger
+		ledgerEntry.Amount -= o.Amount
+		//delete the ledger if we had it
+		if ledgerEntry.Amount != 0 {
+			ledger.DeleteLedger(ledgerEntry.Uuid, false)
+		}
+		failureOrder("Opps! Something Went wrong", o)
+		return
+	}
+
+	// commit the ledger entry to the database
+	err = database.Db.WriteLedger(ledgerEntry)
+	if err != nil {
+		// we failed to update the ledger entry, undo the trade
+		// 1 undo the trade
+		port.Wallet -= details.Result
+		//update the ledger
+		ledgerEntry.Amount -= o.Amount
+		//delete the ledger if we made it
+		if ledgerEntry.Amount != 0 {
+			ledger.DeleteLedger(ledgerEntry.Uuid, false)
+		}
+		log.Alerts.Printf("Send Help! somehow we hit this edge case! 0x1A4")
+		// delete the recrd
+		failureOrder("Opps! Something Went wrong", o)
+		return
+	}
+
+	// commit the portfolio to the database
+	if err := database.Db.WritePortfolio(port); err != nil {
+		// undo the trade
+		// we failed to update the ledger entry, undo the trade
+		// 1 undo the trade
+		port.Wallet -= details.Result
+		//update the ledger
+		ledgerEntry.Amount -= o.Amount
+		//delete the ledger if we had it
+		if ledgerEntry.Amount != 0 {
+			ledger.DeleteLedger(ledgerEntry.Uuid, false)
+		}
+		//delete the record
+	}
+
 	if !ledgerExists {
-		wires.LedgerUpdate.Offer(ledgerEntry)
-		port.UpdateInput.RegisterInput(value.UpdateChannel.GetBufferedOutput(1000))
-	} else {
-		ledgerEntry.UpdateChannel.Offer(ledgerEntry)
+		port.UpdateInput.RegisterInput(value.UpdateChannel.GetBufferedOutput(100))
 	}
-	record.NewRecord(ledgerEntry.RecordBookId, details.ShareCount, details.SharePrice, details.Tax, details.Fees, details.Bonus, details.Result)
-	notification.DoneTradeNotification(port.Uuid, value.Uuid, o.Amount)
+	ledgerEntry.UpdateChannel.Offer(ledgerEntry)
+
+	if err := notification.DoneTradeNotification(port.Uuid, value.Uuid, o.Amount); err != nil {
+		log.Log.Errorf("failed to make notification for trade err=[%v]", err)
+		//no point to fail trade on notification failure
+	}
+	successOrder(o, details)
 	go value.Update()
 	go port.Update()
 }

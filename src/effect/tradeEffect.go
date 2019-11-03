@@ -1,7 +1,10 @@
 package effect
 
 import (
+	"fmt"
 	"time"
+
+	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 
@@ -49,7 +52,11 @@ func NewBaseTradeEffect(portfolioUuid string) error {
 	}
 	var err error
 	baseTradeEffect.parentEffect, err = newEffect(portfolioUuid, "Base Effect", TradeEffectType, baseTradeEffectTag, baseTradeEffect, 0)
-	return err
+	if err != nil {
+		log.Log.Errorf("failed to make base effect err=[%v]", err)
+		return fmt.Errorf("failed to make effect")
+	}
+	return nil
 }
 
 func UpdateBaseProfit(portfolioUuid string, profitMultiplier float64) {
@@ -63,7 +70,11 @@ func UpdateBaseProfit(portfolioUuid string, profitMultiplier float64) {
 func NewTradeEffect(portfolioUuid, title, tag string, effect *TradeEffect, duration time.Duration) error {
 	var err error
 	effect.parentEffect, err = newEffect(portfolioUuid, title, TradeEffectType, tag, effect, duration)
-	return err
+	if err != nil {
+		log.Log.Errorf("failed to make trade effect err=[%v]", err)
+		return fmt.Errorf("failed to make effect")
+	}
+	return nil
 }
 
 func NewTaxModifier(portfolioUuid, title string, duration time.Duration, taxMultiplier float64) error {
@@ -72,7 +83,11 @@ func NewTaxModifier(portfolioUuid, title string, duration time.Duration, taxMult
 		TaxMultiplier: &taxMultiplier,
 	}
 	newTradeEffect.parentEffect, err = newEffect(portfolioUuid, title, "", TradeEffectType, newTradeEffect, duration)
-	return err
+	if err != nil {
+		log.Log.Errorf("failed to make tax effect err=[%v]", err)
+		return fmt.Errorf("failed to make effect")
+	}
+	return nil
 }
 
 // Calculate the total bonus  for a portfolio

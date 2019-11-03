@@ -62,7 +62,7 @@ func (d *Database) populatePortfolios() error {
 	var rows *sql.Rows
 	var err error
 	if rows, err = d.db.Query(portfolioTableQueryStatement); err != nil {
-		return fmt.Errorf("failed to query portfolio err=%v", err)
+		return fmt.Errorf("failed to query portfolio err=[%v]", err)
 	}
 	defer func() {
 		_ = rows.Close()

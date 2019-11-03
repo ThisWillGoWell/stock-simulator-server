@@ -11,7 +11,6 @@ import (
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/ledger"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/messages"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
@@ -132,13 +131,6 @@ func makeQuery(query *Query, lockAcquired bool) {
 			vals, err = database.Db.MakePortfolioHistoryTimeQuery(query.QueryUUID, query.TimeLength, query.QueryField, query.TimeInterval)
 		case "limit":
 			vals, err = database.Db.MakePortfolioHistoryLimitQuery(query.QueryUUID, query.QueryField, query.Limit)
-		}
-	case *ledger.Entry:
-		switch query.Type {
-		case "time":
-			vals, err = database.Db.MakeLedgerHistoryTimeQuery(query.QueryUUID, query.TimeLength, query.QueryField, query.TimeInterval)
-		case "limit":
-			vals, err = database.Db.MakeLedgerHistoryLimitQuery(query.QueryUUID, query.QueryField, query.Limit)
 		}
 	default:
 		log.Log.Warnf("unknown type in query %T", v)

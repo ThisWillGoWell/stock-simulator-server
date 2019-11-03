@@ -2,7 +2,12 @@ package notification
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
+
+	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
+
+	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
 
@@ -32,9 +37,51 @@ type Notification struct {
 	Seen          bool        `json:"seen"`
 }
 
-func NewNotification(portfolioUuid, t string, notification interface{}) *Notification {
+func NewNotification(portfolioUuid, t string, notification interface{}) (*Notification, error) {
 	uuid := utils.SerialUuid()
-	return MakeNotification(uuid, portfolioUuid, t, time.Now(), false, notification)
+	n := MakeNotification(uuid, portfolioUuid, t, time.Now(), false, notification)
+
+	if err := database.Db.WriteNotification(n); err != nil {
+		_ = DeleteNotification(uuid, portfolioUuid, true, false, false)
+		return nil, fmt.Errorf("failed to write notificaion to db err=[%v]", err)
+	}
+	wires.NotificationNewObject.Offer(n)
+	return n, nil
+}
+
+func DeleteNotification(uuid, portfolioUuid string, lockAcquired, broadcastDelete, force bool) error {
+	if !lockAcquired {
+		notificationLock.Acquire("delete note")
+		defer notificationLock.Release()
+	}
+
+	if _, exists := notificationsPortfolioUuid[portfolioUuid]; !exists {
+		return errors.New("user does not have any notification")
+	}
+	note, exists := notificationsPortfolioUuid[portfolioUuid][uuid]
+	if !exists {
+		return errors.New("notification does not exist")
+	}
+	if err := database.Db.DeleteNotification(uuid); err != nil {
+		log.Log.Errorf("failed to delete notification in db err=[%v]", err)
+		if !force {
+			return fmt.Errorf("opps! something happened 0x032")
+		}
+	}
+
+	delete(notifications, uuid)
+	delete(notificationsPortfolioUuid[note.PortfolioUuid], uuid)
+	if len(notificationsPortfolioUuid[note.PortfolioUuid]) == 0 {
+		delete(notificationsPortfolioUuid, note.PortfolioUuid)
+	}
+
+	utils.RemoveUuid(uuid)
+	if broadcastDelete {
+		sender.SendDeleteObject(portfolioUuid, note)
+		wires.NotificationsDelete.Offer(note)
+	}
+
+	return nil
 }
 
 func MakeNotification(uuid, portfolioUuid, t string, timestamp time.Time, seen bool, notification interface{}) *Notification {
@@ -54,7 +101,7 @@ func MakeNotification(uuid, portfolioUuid, t string, timestamp time.Time, seen b
 	}
 	notificationsPortfolioUuid[portfolioUuid][uuid] = note
 	utils.RegisterUuid(uuid, note)
-	wires.NotificationNewObject.Offer(note)
+
 	sender.SendNewObject(portfolioUuid, note)
 	return note
 }
@@ -126,28 +173,6 @@ func JsonToNotification(jsonString, notificationType string) interface{} {
 
 	json.Unmarshal([]byte(jsonString), &i)
 	return &i
-}
-
-func DeleteNotification(uuid, portfolioUuid string) error {
-	notificationLock.Acquire("delete note")
-	defer notificationLock.Release()
-	if _, exists := notificationsPortfolioUuid[portfolioUuid]; !exists {
-		return errors.New("user does not have any notification")
-	}
-	note, exists := notificationsPortfolioUuid[portfolioUuid][uuid]
-	if !exists {
-		return errors.New("notification does not exist")
-	}
-	delete(notifications, uuid)
-	delete(notificationsPortfolioUuid[note.PortfolioUuid], uuid)
-	if len(notificationsPortfolioUuid[note.PortfolioUuid]) == 0 {
-		delete(notificationsPortfolioUuid, note.PortfolioUuid)
-	}
-
-	utils.RemoveUuid(uuid)
-	sender.SendDeleteObject(portfolioUuid, note)
-	wires.NotificationsDelete.Offer(note)
-	return nil
 }
 
 func (note *Notification) GetId() string {

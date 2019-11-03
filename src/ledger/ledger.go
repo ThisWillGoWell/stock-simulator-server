@@ -3,6 +3,8 @@ package ledger
 import (
 	"fmt"
 
+	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/record"
@@ -47,28 +49,40 @@ type Entry struct {
 build a new ledger entry and generate a new uuid for it
 takes in the lock acquired since trade already owns the lock for the entries
 */
-func NewLedgerEntry(portfolioId, stockId string, lockAcquired bool) (*Entry, error) {
-	if !lockAcquired {
-		EntriesLock.Acquire("make ledger entry")
-		defer EntriesLock.Release()
-	}
+func NewLedgerEntry(portfolioId, stockId string) (*Entry, error) {
+	EntriesLock.Acquire("new-entry")
+	defer EntriesLock.Release()
+
 	uuid := utils.SerialUuid()
 	recordId := utils.SerialUuid()
 
-	return MakeLedgerEntry(uuid, portfolioId, stockId, recordId, 0)
+	e, err := MakeLedgerEntry(uuid, portfolioId, stockId, recordId, 0, true)
+	if err != nil {
+		return nil, err
+	}
 
+	if err = database.Db.WriteLedger(e); err != nil {
+		DeleteLedger(uuid, true)
+		return nil, err
+	}
+
+	wires.LedgerNewObject.Offer(e)
+	return e, nil
 }
 
-func deleteLedger(uuid string) {
-	// does not delete the item in the database as this is only called
-	// when a ledger fails to create
-	EntriesLock.Acquire("delete-ledger")
-	defer EntriesLock.Release()
+func DeleteLedger(uuid string, lockAquired bool) {
+	if !lockAquired {
+		EntriesLock.Acquire("delete-ledger")
+		defer EntriesLock.Release()
+	}
 	var l *Entry
 	var ok bool
 	if l, ok = Entries[uuid]; !ok {
 		log.Log.Warnf("go delete for uuid not found uuid=%s", uuid)
 		return
+	}
+	if err := database.Db.DeleteLedger(uuid); err != nil {
+		log.Log.Errorf("err during delete ledger err=[%v]", err)
 	}
 	delete(Entries, uuid)
 	if _, ok := EntriesPortfolioStock[l.PortfolioId]; ok {
@@ -77,6 +91,7 @@ func deleteLedger(uuid string) {
 	if _, ok := EntriesStockPortfolio[l.PortfolioId]; ok {
 		delete(EntriesStockPortfolio[l.PortfolioId], uuid)
 	}
+
 	change.UnregisterChangeDetect(l)
 	utils.RemoveUuid(uuid)
 }
@@ -84,8 +99,11 @@ func deleteLedger(uuid string) {
 /**
 Make a Ledger
 */
-func MakeLedgerEntry(uuid, portfolioId, stockId, recordId string, amount int64) (*Entry, error) {
-	fmt.Println("making ledger ")
+func MakeLedgerEntry(uuid, portfolioId, stockId, recordId string, amount int64, lockAquired bool) (*Entry, error) {
+	if !lockAquired {
+		EntriesLock.Acquire("make-ledger")
+		defer EntriesLock.Release()
+	}
 	entry := &Entry{
 		Uuid:          uuid,
 		PortfolioId:   portfolioId,
@@ -94,7 +112,9 @@ func MakeLedgerEntry(uuid, portfolioId, stockId, recordId string, amount int64) 
 		RecordBookId:  recordId,
 		UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("LedgerEntry-%s", uuid)),
 	}
-	record.MakeBook(recordId, uuid, portfolioId)
+	if err := record.MakeBook(recordId, uuid, portfolioId); err != nil {
+		return nil, fmt.Errorf("failed to make recored book for ledger err=[%v]", err)
+	}
 
 	if err := change.RegisterPublicChangeDetect(entry); err != nil {
 		return nil, err
@@ -108,11 +128,10 @@ func MakeLedgerEntry(uuid, portfolioId, stockId, recordId string, amount int64) 
 	if EntriesStockPortfolio[stockId] == nil {
 		EntriesStockPortfolio[stockId] = make(map[string]*Entry)
 	}
+
 	Entries[uuid] = entry
 	EntriesStockPortfolio[stockId][portfolioId] = entry
 	entry.UpdateChannel.EnableCopyMode()
-
-	wires.LedgerNewObject.Offer(entry)
 	wires.LedgerUpdate.RegisterInput(entry.UpdateChannel.GetOutput())
 	utils.RegisterUuid(uuid, entry)
 	return entry, nil

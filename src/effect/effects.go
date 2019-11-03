@@ -2,14 +2,11 @@ package effect
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
-
-	"github.com/sirupsen/logrus"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/notification"
 
@@ -57,15 +54,16 @@ func deleteEffect(uuid string, lockAcquired bool) error {
 }
 
 func newEffect(portfolioUuid, title, effectType, tag string, innerEffect interface{}, duration time.Duration) (e *Effect, err error) {
+	EffectLock.Acquire("make-effect")
+	defer EffectLock.Release()
 	uuid := utils.SerialUuid()
-	if e, err = MakeEffect(uuid, portfolioUuid, title, effectType, tag, innerEffect, duration, time.Now()); err != nil {
-		logrus.Errorf("making effect err=%v", err)
-		return nil, fmt.Errorf("failed to make effect")
+	if e, err = MakeEffect(uuid, portfolioUuid, title, effectType, tag, innerEffect, duration, time.Now(), true); err != nil {
+		return nil, err
 	}
 
 	if err := database.Db.WriteEffect(e); err != nil {
 		_ = deleteEffect(uuid, false)
-		return nil, fmt.Errorf("failed to make effect")
+		return nil, err
 	}
 
 	wires.EffectsNewObject.Offer(e)
@@ -85,9 +83,11 @@ func getTaggedEffect(portfolioUuid, tag string) *Effect {
 	return effect
 }
 
-func MakeEffect(uuid, portfolioUuid, title, effectType, tag string, innerEffect interface{}, duration time.Duration, startTime time.Time) (*Effect, error) {
-	EffectLock.Acquire("make-effect")
-	defer EffectLock.Release()
+func MakeEffect(uuid, portfolioUuid, title, effectType, tag string, innerEffect interface{}, duration time.Duration, startTime time.Time, lockAcquired bool) (*Effect, error) {
+	if !lockAcquired {
+		EffectLock.Acquire("make-effect")
+		defer EffectLock.Release()
+	}
 	newEffect := &Effect{
 		PortfolioUuid: portfolioUuid,
 		Uuid:          uuid,
@@ -196,7 +196,7 @@ func RunEffectCleaner() {
 			for uuid, effect := range effects {
 				if effect.Duration.Duration != 0 && time.Since(effect.StartTime) > effect.Duration.Duration {
 					if err := deleteEffect(uuid, true); err != nil {
-						log.Log.Errorf("failed to clean effect err=%v", err)
+						log.Log.Errorf("failed to clean effect err=[%v]", err)
 					}
 				}
 			}

@@ -7,7 +7,7 @@ import (
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/effect"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/metics"
+	metrics "github.com/ThisWillGoWell/stock-simulator-server/src/metics"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 
@@ -17,8 +17,6 @@ import (
 	"github.com/ThisWillGoWell/stock-simulator-server/src/messages"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/sender"
 
-	"github.com/gorilla/websocket"
-	"github.com/pkg/errors"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/account"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/histroy"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/ledger"
@@ -27,6 +25,8 @@ import (
 	"github.com/ThisWillGoWell/stock-simulator-server/src/order"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
+	"github.com/gorilla/websocket"
+	"github.com/pkg/errors"
 )
 
 var clientsLock = lock.NewLock("clients-lock")
@@ -345,9 +345,9 @@ func (client *Client) processDeleteAction(baseMessage *messages.BaseMessage) {
 	var err error
 	switch deleteMsg.Type {
 	case items.ItemIdentifiableType:
-		err = items.DeleteItem(deleteMsg.Uuid, client.user.PortfolioId, false)
+		err = items.DeleteItem(deleteMsg.Uuid, client.user.PortfolioId, false, true)
 	case notification.IdentifiableType:
-		err = notification.DeleteNotification(deleteMsg.Uuid, client.user.PortfolioId)
+		err = notification.DeleteNotification(deleteMsg.Uuid, client.user.PortfolioId, false, true, false)
 	}
 	client.sendMessage(messages.BuildDeleteResponseMsg(baseMessage.RequestID, err))
 }

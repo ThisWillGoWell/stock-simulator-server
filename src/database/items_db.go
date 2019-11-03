@@ -38,7 +38,7 @@ func (d *Database) WriteItem(entry *items.Item) error {
 
 	innerItemStr, err := json.Marshal(entry.InnerItem)
 	if err != nil {
-		return fmt.Errorf("failed to marshal inner item err=%v", err)
+		return fmt.Errorf("failed to marshal inner item err=[%v]", err)
 	}
 	return d.Exec("items-update", itemsTableUpdateInsert, entry.Uuid, entry.Type, entry.Name, entry.ConfigId, entry.PortfolioUuid, innerItemStr, entry.CreateTime)
 }
@@ -54,7 +54,7 @@ func (d *Database) populateItems() error {
 	var rows *sql.Rows
 	var err error
 	if rows, err = d.db.Query(itemsTableQueryStatement); err != nil {
-		return fmt.Errorf("failed to query portfolio err=%v", err)
+		return fmt.Errorf("failed to query portfolio err=[%v]", err)
 	}
 	defer func() {
 		_ = rows.Close()

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/sender"
@@ -71,33 +73,87 @@ type Record struct {
 //	ShareCount     int64  `json:"amount"`
 //}
 
-func NewRecord(recordBookUuid string, amount, sharePrice, taxes, fees, bonus, result int64) {
+func NewRecord(recordBookUuid string, amount, sharePrice, taxes, fees, bonus, result int64) error {
 	uuid := utils.SerialUuid()
-	r := MakeRecord(uuid, recordBookUuid, amount, sharePrice, taxes, fees, bonus, result, time.Now())
+	// need to hold the lock to make sure if it fails, we can delete it before another one gets made, messing up the activeBuyRecords
+	recordsLock.Acquire("new-record")
+	defer recordsLock.Release()
+
+	r, err := MakeRecord(uuid, recordBookUuid, amount, sharePrice, taxes, fees, bonus, result, time.Now(), true)
+	if err != nil {
+		return fmt.Errorf("failed to make record err=[%v]", err)
+	}
+	if err := database.Db.WriteRecord(r); err != nil {
+		_ = deleteRecord(r)
+		return fmt.Errorf("failed to make record err=[%v]", err)
+	}
 	wires.RecordsNewObject.Offer(r)
+	return nil
+}
+
+func deleteRecord(r *Record) error {
+	log.Log.Printf("deleting record from book uuid=%s", r.RecordBookUuid)
+	// this should only get called if the database write fails
+	recordsLock.Acquire("delete-record")
+	defer recordsLock.Release()
+	book, ok := books[r.RecordBookUuid]
+	if !ok {
+		log.Log.Errorf("got delete for a record but there was no book %s", r.RecordBookUuid)
+		return nil
+	}
+	//remove the record from the book
+	// we know its the last record on the book and that it was a buy so no need to rewalk
+	book.ActiveBuyRecords = book.ActiveBuyRecords[:len(book.ActiveBuyRecords)-1]
+	// attempt to delete even though we know something failed with the db
+	// remove from db first
+	dbErr := database.Db.DeleteRecord(r)
+	delete(records, r.Uuid)
+	utils.RemoveUuid(r.Uuid)
+	return dbErr
+
+	//for i, r := range book.ActiveBuyRecords {
+	//	if r.RecordUuid == r.RecordUuid {
+	//		remove = i
+	//		continue
+	//	}
+	//}
+	//if remove != -1 {
+	//	// Remove the element at index i from a.
+	//	copy(book.ActiveBuyRecords[remove:], book.ActiveBuyRecords[remove+1:])       // Shift a[i+1:] left one index.
+	//	book.ActiveBuyRecords[len(book.ActiveBuyRecords)-1] = ActiveBuyRecord{}      // Erase last element (write zero value).
+	//	book.ActiveBuyRecords = book.ActiveBuyRecords[:len(book.ActiveBuyRecords)-1] // Truncate slice.
+	//
+	//	removedRecord := book.ActiveBuyRecords[remove]
+	//	book.ActiveBuyRecords[remove] = book.ActiveBuyRecords[len(book.ActiveBuyRecords)-1]
+	//	book.ActiveBuyRecords = book.ActiveBuyRecords[len(book.ActiveBuyRecords)-1:]
+	//} else {
+	//	log.Log.Printf("did not find buy record=%s for book=%s", r.Uuid, r.RecordBookUuid)
+
 }
 
 func DeleteRecordBook(uuid string) {
-	recordsLock.Acquire("delete-record")
+	// is called when a ledger fails to make, must delete the record book
+	recordsLock.Acquire("delete-record-book")
 	defer recordsLock.Release()
 	b, ok := books[uuid]
 	if !ok {
 		log.Log.Warnf("got delete for record book that we dont know uuid=%s", uuid)
-		return
 	}
 	delete(books, uuid)
 	if _, ok := portfolioBooks[b.PortfolioUuid]; ok {
 		remove := -1
 		for i, l := range portfolioBooks[b.PortfolioUuid] {
 			if l.Uuid == uuid {
-				remove = 1
+				remove = i
 				break
 			}
 		}
 		if remove != -1 {
 			portfolioBooks[b.PortfolioUuid][remove] = portfolioBooks[b.PortfolioUuid][len(portfolioBooks[b.PortfolioUuid])-1]
+			portfolioBooks[b.PortfolioUuid] = portfolioBooks[b.PortfolioUuid][:len(portfolioBooks[b.PortfolioUuid])-1]
+		} else {
+			log.Log.Printf("did not find delete record book=%s for protfolio=%s", uuid, b.PortfolioUuid)
 		}
-		portfolioBooks[b.PortfolioUuid] = portfolioBooks[b.PortfolioUuid][:len(portfolioBooks[b.PortfolioUuid])-1]
 	}
 }
 
@@ -125,13 +181,15 @@ func MakeBook(uuid, ledgerUuid, portfolioUuid string) error {
 	return nil
 }
 
-func MakeRecord(uuid, recordBookUuid string, amount, sharePrice, taxes, fees, bonus, result int64, t time.Time) (*Record, error) {
-	recordsLock.Acquire("new-record")
-	defer recordsLock.Release()
+func MakeRecord(uuid, recordBookUuid string, amount, sharePrice, taxes, fees, bonus, result int64, t time.Time, lockAcquired bool) (*Record, error) {
+	if !lockAcquired {
+		recordsLock.Acquire("new-record")
+		defer recordsLock.Release()
+	}
 
 	book, ok := books[recordBookUuid]
 	if !ok {
-		panic("record book not found " + recordBookUuid)
+		return nil, fmt.Errorf("record book id %s not found for record how?", recordBookUuid)
 	}
 	newRecord := &Record{
 		Uuid:           uuid,
@@ -151,12 +209,17 @@ func MakeRecord(uuid, recordBookUuid string, amount, sharePrice, taxes, fees, bo
 		walkRecords(book, amount*-1, true)
 	}
 	utils.RegisterUuid(uuid, newRecord)
-
 	wires.BookUpdate.Offer(book)
 	sender.SendNewObject(book.PortfolioUuid, newRecord)
-	return newRecord
+	return newRecord, nil
 }
 
+// ok so how does this work?
+// start with book: current booke
+// shares: the number of shares is the (-) of the total shares
+// mark: do you actually commit the wirte to the data
+// this returns the total amount of $$ we have for all the stocks we have bought
+// so we can ask "If I were to sell my 10 shares, that came from 5 different purchases, we can see how much
 func walkRecords(book *Book, shares int64, mark bool) int64 {
 	amountCleared := 0
 	lastAmountCleared := int64(0)
@@ -187,9 +250,9 @@ func walkRecords(book *Book, shares int64, mark bool) int64 {
 	}
 
 	if mark {
-		book.ActiveBuyRecords = book.ActiveBuyRecords[amountCleared:]
+		book.ActiveBuyRecords = book.ActiveBuyRecords[amountCleared:] // remove any that we have
 		if len(book.ActiveBuyRecords) != 0 {
-			book.ActiveBuyRecords[0].AmountLeft -= lastAmountCleared
+			book.ActiveBuyRecords[0].AmountLeft -= lastAmountCleared // remove any remainder off the new count
 		}
 	}
 	return totalCost
