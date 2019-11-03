@@ -166,18 +166,19 @@ function load_dashboard_tab() {
         }
         return [];
       },
-      currUserTrades: function() {
-        var currUserUUID = sessionStorage.getItem("uuid");
-        if (vm_users.users[currUserUUID] !== undefined) {
-          var currUserPortfolioUUID = vm_users.users[currUserUUID].portfolio_uuid;
-        }
-        if (Object.values(vm_notify.notes) === []) {
-          var trades = Object.values(vm_notify.notes).filter(d => d.portfolio_uuid === currUserPortfolioUUID & d.type === "trade");
-          console.log("Current User Trades")
-          console.log(trades)
-          return trades;
-        }
-        return {};
+      currUserRecords: function() {
+        return Object.values(vm_recordEntry.entries)
+        // var currUserUUID = sessionStorage.getItem("uuid");
+        // if (vm_users.users[currUserUUID] !== undefined) {
+        //   var currUserPortfolioUUID = vm_users.users[currUserUUID].portfolio_uuid;
+        //   if (Object.values(vm_notify.notes) !== []) {
+        //     var trades = Object.values(vm_notify.notes).filter(d => d.portfolio_uuid === currUserPortfolioUUID & d.type === "trade");
+        //     console.log("Current User Trades")
+        //     console.log(trades)
+        //     return trades;
+        //   }
+        // }
+        // return [];
       },
       userEffects: function() {
         var currUserUUID = vm_users.currentUser;

@@ -474,10 +474,21 @@
 								<div class="item-category buffer-top">MY PURCHASE HISTORY</div>
 							</div>
 
-							<div class="flex-column-100" v-if="currUserTrades">
-								<!-- <div v-for="trade in currUserTrades"> -->
-									${{ currUserTrades }}
-								<!-- </div> -->
+							<div class="flex-column-100" v-if="currUserRecords">
+								<div v-for="trade in currUserRecords">
+									Record Entry
+									<ul>
+										<li>uuid: ${{trade.uuid}}</li>
+										<li>share_price: ${{trade.share_price}}</li>
+										<li>share_count: ${{trade.share_count}}</li>
+										<li>time: ${{trade.time}}</li>
+										<li>book_uuid: ${{trade.book_uuid}}</li>
+										<li>fee: ${{trade.fee}}</li>
+										<li>taxes: ${{trade.taxes}}</li>
+										<li>bonus: ${{trade.bonus}}</li>
+										<li>result: ${{trade.result}}</li>
+									</ul>
+								</div>
 							</div>
 
 							<div class="flex-column-100">
