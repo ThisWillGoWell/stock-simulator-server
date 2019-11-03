@@ -17,13 +17,13 @@ import (
 	"github.com/ThisWillGoWell/stock-simulator-server/src/messages"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/sender"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/account"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/histroy"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/ledger"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/notification"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/order"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/user"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
@@ -55,13 +55,13 @@ type Client struct {
 
 	ws websocket.Conn
 
-	user   *account.User
+	user   *user.User
 	active bool
 }
 
 /**
 Because for some reason, the js web socket class does not have headers,
-We accept all connections and pull the initial payload as a login/account create command
+We accept all connections and pull the initial payload as a login/user create command
 */
 func InitialReceive(initialPayload string, tx, rx chan string) error {
 	log.Log.Info("initial recieve of new client", initialPayload)
@@ -74,10 +74,10 @@ func InitialReceive(initialPayload string, tx, rx chan string) error {
 		log.Log.Error("Unmarshal error: ", initialPayload)
 		return unmarshalErr
 	}
-	user := new(account.User)
+	user := new(user.User)
 	var sessionToken string
 	if initialMessage.IsConnect() {
-		userTemp, err := account.ConnectUser(initialMessage.Msg.(*messages.ConnectMessage).SessionToken)
+		userTemp, err := user.ConnectUser(initialMessage.Msg.(*messages.ConnectMessage).SessionToken)
 		if err != nil {
 			log.Log.Error("error in connecting user: ", err, user.Uuid)
 			return err
@@ -116,7 +116,7 @@ Also send the success login to make sure that happens first on the login
 */
 func (client *Client) tx(sessionToken string) {
 	client.sendMessage(messages.SuccessConnect(client.user.Uuid, sessionToken, client.user.Config))
-	for _, v := range account.GetAllUsers() {
+	for _, v := range user.GetAllUsers() {
 		client.sendMessage(messages.NewObjectMessage(v))
 	}
 	for _, v := range portfolio.GetAllPortfolios() {

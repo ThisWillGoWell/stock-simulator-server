@@ -14,9 +14,9 @@ import (
 
 	metrics "github.com/ThisWillGoWell/stock-simulator-server/src/metics"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/account"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/client"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/messages"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/user"
 	"github.com/gorilla/websocket"
 )
 
@@ -65,7 +65,7 @@ func StartHandlers() {
 			http.Error(w, "create failed", http.StatusBadRequest)
 			return
 		}
-		token, err := account.NewUser(pair[0], displayName, pair[1])
+		token, err := user.NewUser(pair[0], displayName, pair[1])
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
@@ -95,7 +95,7 @@ func StartHandlers() {
 			http.Error(w, "authorization failed", http.StatusUnauthorized)
 			return
 		}
-		token, err := account.ValidateUser(pair[0], pair[1])
+		token, err := user.ValidateUser(pair[0], pair[1])
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusUnauthorized)
 		}

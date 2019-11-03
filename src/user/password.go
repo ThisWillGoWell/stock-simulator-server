@@ -1,7 +1,10 @@
-package account
+package user
 
-import "log"
-import "golang.org/x/crypto/bcrypt"
+import (
+	"log"
+
+	"golang.org/x/crypto/bcrypt"
+)
 
 func hashAndSalt(password string) string {
 	pwd := []byte(password)

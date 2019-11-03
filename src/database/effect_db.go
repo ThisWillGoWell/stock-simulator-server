@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/effect"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
 )
 
 var (
@@ -35,7 +36,7 @@ func (d *Database) initEffect() error {
 	return d.Exec("init-effect", effectTableCreateStatement)
 }
 
-func (d *Database) WriteEffect(entry *effect.Effect) error {
+func (d *Database) WriteEffect(entry models.Effect) error {
 	e, err := json.Marshal(entry.InnerEffect)
 	if err != nil {
 		return fmt.Errorf("failed to marshal inner effect err=[%v]", err)
@@ -43,8 +44,8 @@ func (d *Database) WriteEffect(entry *effect.Effect) error {
 	return d.Exec("effect-update", effectTableUpdateInsert, entry.Uuid, entry.PortfolioUuid, entry.Type, entry.Title, entry.Duration.Duration, entry.StartTime, entry.Tag, e)
 }
 
-func (d *Database) DeleteEffect(effect *effect.Effect) error {
-	return d.Exec(effectTableDeleteStatement, effect.Uuid)
+func (d *Database) DeleteEffect(uuid string) error {
+	return d.Exec(effectTableDeleteStatement, uuid)
 }
 
 func (d *Database) populateEffects() error {

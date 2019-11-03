@@ -66,11 +66,11 @@ $( document ).ready(function() {
         disableWheelScroll(); 
     });
 
-    $('.create-account-btn ').click(function() {
+    $('.create-user-btn ').click(function() {
         //enableScroll();
         $('.card-title-panel').addClass('show');
 
-        var create_group = $("#create-account--container");
+        var create_group = $("#create-user--container");
         
         console.log(cardGroup[0].scrollHeight);
 
@@ -141,7 +141,7 @@ $( document ).ready(function() {
 
     
 
-    $('.create-account-btn').click(function() {
+    $('.create-user-btn').click(function() {
    
         input_login_uid.prop('disabled', true);
         input_login_pw.prop('disabled', true);
@@ -152,7 +152,7 @@ $( document ).ready(function() {
         input_create_name.prop('disabled', false);
         input_create_submit.prop('disabled', false);
 
-        console.log("clicked create account");
+        console.log("clicked create user");
 
     });
 
@@ -343,7 +343,7 @@ $( document ).ready(function() {
         if(input_pw === input_create_pw_confirm) {
             createUser(input_uid, input_pw, nickname);
         }
-        console.log("created account attempting login");
+        console.log("created user attempting login");
         
     });
 

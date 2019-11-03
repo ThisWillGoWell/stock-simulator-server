@@ -1,7 +1,10 @@
-package account
+package user
 
 import (
 	"errors"
+	"fmt"
+
+	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 
@@ -86,13 +89,23 @@ func NewUser(username, displayName, password string) (string, error) {
 	portUuid := utils.SerialUuid()
 
 	hashedPassword := hashAndSalt(password)
-	user, err := MakeUser(uuid, username, displayName, hashedPassword, portUuid, "{}")
+	user, err := MakeUser(uuid, username, displayName, hashedPassword, portUuid, "{}", false)
 	if err != nil {
-		utils.RemoveUuid(uuid)
-		utils.RemoveUuid(portUuid)
-		return "", err
+		log.Log.Errorf("failed to make user err=[%v]", err)
+		return "", fmt.Errorf("opps! Something went wrong 0x834")
 	}
-	portfolio.NewPortfolio(portUuid, uuid)
+	port, err := portfolio.NewPortfolio(portUuid, uuid)
+	if err != nil {
+		log.Log.Errorf("failed to make portfolio err=[%v]", err)
+		deleteErr := deleteUser(uuid, false, true)
+		if deleteErr != nil {
+			log.Log.Errorf("reached a unrecoverable error, cant delete user %s after port failed err=[%v]", err)
+		}
+		return "", fmt.Errorf("opps! Something went wrong 0x042")
+	}
 	sessionToken := session.NewSessionToken(user.Uuid)
+
+	wires.UsersNewObject.Offer(user)
+	wires.PortfolioNewObject.Offer(port)
 	return sessionToken, nil
 }

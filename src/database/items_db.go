@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/items"
 )
 
@@ -34,8 +36,7 @@ func (d *Database) initItems() error {
 	return d.Exec("init-items", itemsTableCreateStatement)
 }
 
-func (d *Database) WriteItem(entry *items.Item) error {
-
+func (d *Database) WriteItem(entry models.Item) error {
 	innerItemStr, err := json.Marshal(entry.InnerItem)
 	if err != nil {
 		return fmt.Errorf("failed to marshal inner item err=[%v]", err)
@@ -43,8 +44,8 @@ func (d *Database) WriteItem(entry *items.Item) error {
 	return d.Exec("items-update", itemsTableUpdateInsert, entry.Uuid, entry.Type, entry.Name, entry.ConfigId, entry.PortfolioUuid, innerItemStr, entry.CreateTime)
 }
 
-func (d *Database) DeleteItem(item *items.Item) error {
-	return d.Exec("items-delete", itemsTableDeleteStatement, item.Uuid)
+func (d *Database) DeleteItem(uuid string) error {
+	return d.Exec("items-delete", itemsTableDeleteStatement, uuid)
 }
 
 func (d *Database) populateItems() error {

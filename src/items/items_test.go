@@ -12,16 +12,16 @@ import (
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/session"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/account"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/order"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/user"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
 )
 
 func MakeUser(name string) string {
-	sessionToken, _ := account.NewUser(name, "test", "password")
+	sessionToken, _ := user.NewUser(name, "test", "password")
 	userId, _ := session.GetUserId(sessionToken)
-	port := portfolio.Portfolios[account.UserList[userId].PortfolioId]
+	port := portfolio.Portfolios[user.UserList[userId].PortfolioId]
 	port.Wallet = 1000000000
 	port.Level = 2
 	return port.Uuid
@@ -66,6 +66,6 @@ func TestMail(t *testing.T) {
 	//itemId := BuyItem(u1, mailItemType)
 	//_, err := Use(itemId, u1, MailItemParameters{To:u2, ShareCount:1000})
 	//t.Log(err)
-	t.Log(portfolio.Portfolios[account.UserList[u1].PortfolioId].Wallet)
-	t.Log(portfolio.Portfolios[account.UserList[u2].PortfolioId].Wallet)
+	t.Log(portfolio.Portfolios[user.UserList[u1].PortfolioId].Wallet)
+	t.Log(portfolio.Portfolios[user.UserList[u2].PortfolioId].Wallet)
 }

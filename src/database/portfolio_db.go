@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
 	"github.com/pkg/errors"
 )
@@ -36,6 +37,9 @@ var (
 
 	portfolioHistoryTableUpdateInsert = `INSERT INTO ` + portfolioHistoryTableName + `(time, uuid, net_worth, wallet) values (NOW(),$1, $2, $3)`
 
+	portfolioTableDelete        = "DELETE from " + portfolioTableName + `WHERE uuid = $1`
+	portfolioHistroyTableDelete = "DELETE from " + portfolioHistoryTableName + `WHERE uuid = $1`
+
 	validPortfolioFields = map[string]bool{
 		"wallet":    true,
 		"net_worth": true,
@@ -49,11 +53,20 @@ func (d *Database) InitPortfolio() error {
 	return d.Exec("portfolio-history-init", portfolioHistoryTableCreateStatement)
 }
 
-func (d *Database) WritePortfolio(port *portfolio.Portfolio) error {
+func (d *Database) WritePortfolio(port models.Portfolio) error {
 	if err := d.Exec(portfolioTableUpdateInsert, port.Uuid, port.UserUUID, port.Wallet, port.Level); err != nil {
 		return err
 	}
 	return d.Exec(portfolioHistoryTableUpdateInsert, port.Uuid, port.NetWorth, port.Wallet)
+}
+
+func (d *Database) DeletePortfolio(uuid string) error {
+	e1 := d.Exec("delete-portfolio", portfolioTableDelete, uuid)
+	e2 := d.Exec("delete-portfolio", portfolioHistroyTableDelete, uuid)
+	if e1 != nil || e2 != nil {
+		return fmt.Errorf("delete stock uuid=%s stockdb=[%v] history=[%v]", uuid, e1, e2)
+	}
+	return nil
 }
 
 func (d *Database) populatePortfolios() error {
@@ -71,7 +84,7 @@ func (d *Database) populatePortfolios() error {
 		if err = rows.Scan(&uuid, &userUuid, &wallet, &level); err != nil {
 			return err
 		}
-		if _, err = portfolio.MakePortfolio(uuid, userUuid, wallet, level); err != nil {
+		if _, err = portfolio.MakePortfolio(uuid, userUuid, wallet, level, false); err != nil {
 			return err
 		}
 	}

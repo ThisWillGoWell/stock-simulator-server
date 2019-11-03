@@ -3,7 +3,7 @@ package items
 //
 //import (
 //	"github.com/pkg/errors"
-//	"github.com/ThisWillGoWell/stock-simulator-server/src/account"
+//	"github.com/ThisWillGoWell/stock-simulator-server/src/user"
 //	"github.com/ThisWillGoWell/stock-simulator-server/src/order"
 //	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 //)
@@ -104,8 +104,8 @@ package items
 //	if !ok {
 //		return nil, errors.New("incorrect parameters type, how?")
 //	}
-//	senderId := account.UserList[it.UserUuid].PortfolioId
-//	receiver, ok := account.UserList[mailParams.To]
+//	senderId := user.UserList[it.UserUuid].PortfolioId
+//	receiver, ok := user.UserList[mailParams.To]
 //	if !ok {
 //		return nil, errors.New("giver user id not found")
 //	}

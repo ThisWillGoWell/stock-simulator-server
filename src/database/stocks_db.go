@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
 	"github.com/pkg/errors"
 )
@@ -53,7 +55,7 @@ func (d *Database) InitStocks() error {
 	return d.Exec("stocks-history-init", stocksHistoryTableCreateStatement)
 }
 
-func (d *Database) WriteStock(stock *valuable.Stock) error {
+func (d *Database) WriteStock(stock models.Stock) error {
 	if err := d.Exec(stocksTableUpdateInsert, stock.Uuid, stock.TickerId, stock.Name, stock.CurrentPrice, stock.OpenShares, stock.ChangeDuration); err != nil {
 		return err
 	}

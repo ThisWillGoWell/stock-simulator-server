@@ -230,11 +230,10 @@ func (ch *ChannelDuplicator) StopDuplicator() {
 /**
 Unlink two duplicators from each other
 */
-func UnlinkDouplicator(input, output *ChannelDuplicator) {
+func UnlinkDuplicator(input, output *ChannelDuplicator) {
 	for _, inputCh := range input.inputs {
 		for _, outputCh := range output.outputs {
 			if inputCh == outputCh {
-				fmt.Println("unlinked")
 				output.UnregisterOutput(outputCh)
 				close(outputCh)
 			}

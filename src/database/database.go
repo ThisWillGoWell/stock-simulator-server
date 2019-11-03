@@ -78,9 +78,6 @@ func InitDatabase(enableDb, enableDbWrite bool, host, port, username, password s
 		port.UpdateInput.RegisterInput(stock.UpdateChannel.GetBufferedOutput(100))
 		port.UpdateInput.RegisterInput(l.UpdateChannel.GetBufferedOutput(100))
 	}
-	for _, port := range portfolio.Portfolios {
-		port.Update()
-	}
 
 	runHistoricalQueries()
 	if !disableDbWrite {

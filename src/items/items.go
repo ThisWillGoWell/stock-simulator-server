@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/merge"
@@ -34,14 +36,8 @@ type InnerItem interface {
 }
 
 type Item struct {
-	Uuid          string           `json:"uuid"`
-	Name          string           `json:"name"`
-	ConfigId      string           `json:"config"`
-	Type          string           `json:"type"`
-	PortfolioUuid string           `json:"portfolio_uuid"`
+	models.Item
 	UpdateChannel chan interface{} `json:"-"`
-	InnerItem     InnerItem        `json:"-" change:"inner"`
-	CreateTime    time.Time        `json:"create_time"`
 }
 
 type i2 struct {
@@ -51,6 +47,7 @@ type i2 struct {
 	Type          string    `json:"type"`
 	PortfolioUuid string    `json:"portfolio_uuid"`
 	CreateTime    time.Time `json:"create_time"`
+	InnerItem     InnerItem `json:"-" change:"inner"`
 }
 
 func (i *Item) GetId() string {
@@ -67,8 +64,7 @@ func newItem(portfolioUuid, configId, itemType, name string, innerItem interface
 		log.Log.Errorf("making item err=[%v]", err)
 		return nil, err
 	}
-
-	if err := database.Db.WriteItem(i); err != nil {
+	if err := database.Db.WriteItem(i.Item); err != nil {
 		_ = DeleteItem(i.Uuid, portfolioUuid, false, false, true)
 		return nil, err
 	}
@@ -87,20 +83,25 @@ func MakeItem(uuid, portfolioUuid, itemConfigId, itemType, name string, innerIte
 		}
 	}
 	i := &Item{
-		Name:          name,
-		ConfigId:      itemConfigId,
-		Uuid:          uuid,
-		PortfolioUuid: portfolioUuid,
-		Type:          itemType,
-		InnerItem:     innerItem.(InnerItem),
+		Item: models.Item{
+			Name:          name,
+			ConfigId:      itemConfigId,
+			Uuid:          uuid,
+			PortfolioUuid: portfolioUuid,
+			Type:          itemType,
+			CreateTime:    createTime,
+			InnerItem:     innerItem,
+		},
 		UpdateChannel: make(chan interface{}),
-		CreateTime:    createTime,
+	}
+	if err := sender.RegisterChangeUpdate(i.PortfolioUuid, i.UpdateChannel); err != nil {
+		return nil, err
 	}
 
 	if _, ok := ItemsPortInventory[i.PortfolioUuid]; !ok {
 		ItemsPortInventory[i.PortfolioUuid] = make(map[string]*Item)
 	}
-	i.InnerItem.SetParentItemUuid(i.Uuid)
+	i.InnerItem.(InnerItem).SetParentItemUuid(i.Uuid)
 
 	if err := change.RegisterPrivateChangeDetect(i, i.UpdateChannel); err != nil {
 		return nil, err
@@ -110,7 +111,6 @@ func MakeItem(uuid, portfolioUuid, itemConfigId, itemType, name string, innerIte
 	ItemsPortInventory[i.PortfolioUuid][i.Uuid] = i
 	Items[i.Uuid] = i
 
-	sender.RegisterChangeUpdate(i.PortfolioUuid, i.UpdateChannel)
 	return i, nil
 }
 
@@ -146,11 +146,14 @@ func BuyItem(portUuid, configId string) (string, error) {
 		log.Log.Errorf("failed to make item err=[%v]", err)
 		return "", fmt.Errorf("failed to make item")
 	}
-	i.InnerItem.SetPortfolioUuid(portUuid)
+	i.InnerItem.(InnerItem).SetPortfolioUuid(portUuid)
 	ItemsPortInventory[port.Uuid][i.PortfolioUuid] = i
 	Items[i.Uuid] = i
 
-	notification.NewItemNotification(portUuid, i.Type, i.Uuid)
+	if err := notification.NewItemNotification(portUuid, i.Type, i.Uuid); err != nil {
+		log.Log.Errorf("failed to make %s new-item notification for %s err=[%v]", portUuid, err)
+	}
+
 	go port.Update()
 	return i.Uuid, nil
 }
@@ -173,11 +176,11 @@ func DeleteItem(uuid, portfolioUuid string, broadcastDelete, lockAcquired, force
 		return errors.New("item does not exist")
 	}
 
-	dbErr := database.Db.DeleteItem(item)
+	dbErr := database.Db.DeleteItem(item.Uuid)
 	if dbErr != nil {
 		log.Log.Errorf("Failed to delete Item in database uuid=%v err=[%v]", item.Uuid, dbErr)
 		if !force {
-			return fmt.Errorf("Opps something went wrong 0x01432")
+			return fmt.Errorf("oops! something went wrong 0x01432")
 		}
 	}
 
@@ -189,7 +192,6 @@ func DeleteItem(uuid, portfolioUuid string, broadcastDelete, lockAcquired, force
 		delete(ItemsPortInventory, item.PortfolioUuid)
 	}
 	utils.RemoveUuid(uuid)
-
 	if broadcastDelete {
 		sender.SendDeleteObject(portfolioUuid, item)
 		wires.ItemsDelete.Offer(item)
@@ -245,9 +247,11 @@ func Use(itemId, portfolioUuid string, itemParameters interface{}) (interface{},
 		return nil, err
 	}
 
-	val, err := item.InnerItem.Activate(itemParameters)
+	val, err := item.InnerItem.(InnerItem).Activate(itemParameters)
 	if err != nil {
-		notification.UsedItemNotification(portfolioUuid, itemId, item.Type)
+		if err := notification.UsedItemNotification(portfolioUuid, itemId, item.Type); err != nil {
+			log.Log.Errorf("failed to make %s used-item notification for %s err=[%v]", portfolioUuid, err)
+		}
 	}
 	return val, err
 }

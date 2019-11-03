@@ -189,7 +189,7 @@ func executeTrade(o *TradeOrder) {
 			return
 		}
 
-		// does the account have enough money
+		// does the user have enough money
 		costOfTrade := o.Amount * value.GetValue()
 		if costOfTrade > port.Wallet {
 			failureOrder("not enough $$", o)
@@ -407,7 +407,7 @@ func calculateSellDetails(amount int64, v *valuable.Stock, recordUuid string, tr
 
 func executeTransfer(o *TransferOrder) {
 	if o.ReceiverID == o.PortfolioID {
-		failureOrder("cant transfer to and from same account", o)
+		failureOrder("cant transfer to and from same user", o)
 		return
 	}
 	port, exists := portfolio.Portfolios[o.PortfolioID]

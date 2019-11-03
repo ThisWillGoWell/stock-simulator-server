@@ -16,7 +16,7 @@ import (
 	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/account"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/user"
 )
 
 type JsonStock struct {
@@ -56,14 +56,14 @@ func LoadConfig(dat []byte) {
 	}
 
 	for username, userConfig := range config.Accounts {
-		token, err := account.NewUser(username, userConfig.Name, userConfig.Password)
+		token, err := user.NewUser(username, userConfig.Name, userConfig.Password)
 		if err != nil {
 			log.Log.Error("error making user from config config: ", err)
 		} else {
 			user, _ := session.GetUserId(token)
 			if userConfig.Wallet != 0 {
-				portfolio.Portfolios[account.UserList[user].PortfolioId].Wallet = userConfig.Wallet
-				portfolios = append(portfolios, account.UserList[user].PortfolioId)
+				portfolio.Portfolios[user.UserList[user].PortfolioId].Wallet = userConfig.Wallet
+				portfolios = append(portfolios, user.UserList[user].PortfolioId)
 			}
 
 		}

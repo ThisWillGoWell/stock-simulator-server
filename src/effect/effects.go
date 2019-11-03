@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
@@ -38,7 +40,7 @@ func deleteEffect(uuid string, lockAcquired bool) error {
 	}
 	e := effects[uuid]
 	wires.EffectsDelete.Offer(e)
-	dbErr := database.Db.DeleteEffect(e)
+	dbErr := database.Db.DeleteEffect(e.Uuid)
 	delete(portfolioEffectTags[e.PortfolioUuid], e.Tag)
 	delete(effects, uuid)
 	delete(portfolioEffects[e.PortfolioUuid], uuid)
@@ -60,7 +62,7 @@ func newEffect(portfolioUuid, title, effectType, tag string, innerEffect interfa
 		return nil, err
 	}
 
-	if err := database.Db.WriteEffect(e); err != nil {
+	if err := database.Db.WriteEffect(e.Effect); err != nil {
 		_ = deleteEffect(uuid, false)
 		return nil, err
 	}
@@ -90,14 +92,16 @@ func MakeEffect(uuid, portfolioUuid, title, effectType, tag string, innerEffect 
 		defer EffectLock.Release()
 	}
 	newEffect := &Effect{
-		PortfolioUuid: portfolioUuid,
-		Uuid:          uuid,
-		Title:         title,
-		StartTime:     startTime,
-		Duration:      utils.Duration{Duration: duration},
-		Type:          effectType,
-		InnerEffect:   innerEffect,
-		Tag:           tag,
+		Effect: models.Effect{
+			PortfolioUuid: portfolioUuid,
+			Uuid:          uuid,
+			Title:         title,
+			StartTime:     startTime,
+			Duration:      utils.Duration{Duration: duration},
+			Type:          effectType,
+			InnerEffect:   innerEffect,
+			Tag:           tag,
+		},
 	}
 
 	if err := change.RegisterPublicChangeDetect(newEffect); err != nil {
@@ -157,14 +161,7 @@ type EffectType interface {
 //
 
 type Effect struct {
-	PortfolioUuid string         `json:"portfolio_uuid"`
-	Uuid          string         `json:"uuid"`
-	Title         string         `json:"title" change:"-"`
-	Duration      utils.Duration `json:"duration"`
-	StartTime     time.Time      `json:"time"`
-	Type          string         `json:"type"`
-	InnerEffect   interface{}    `json:"-" change:"inner"`
-	Tag           string         `json:"tag"`
+	models.Effect
 }
 
 type e2 struct {

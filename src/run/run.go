@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/config"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/effect"
 
@@ -38,6 +40,9 @@ func App() {
 	if !disableDb {
 		database.InitDatabase(disableDbWrite)
 	}
+
+	portfolio.UpdateAll()
+
 	if serveLog {
 		filepath := os.Getenv("FILE_SERVE")
 		web.ServePath(filepath)

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
 
@@ -55,16 +56,11 @@ func StartStockStimulation() {
 
 //Stock type for storing the stock information
 type Stock struct {
-	Uuid           string                        `json:"uuid"`
-	Name           string                        `json:"name"`
-	TickerId       string                        `json:"ticker_id"`
-	CurrentPrice   int64                         `json:"current_price" change:"-"`
-	OpenShares     int64                         `json:"open_shares" change:"-"`
-	ChangeDuration time.Duration                 `json:"-"`
-	PriceChanger   PriceChange                   `json:"-"`
-	UpdateChannel  *duplicator.ChannelDuplicator `json:"-"`
-	lock           *lock.Lock                    `json:"-"`
-	close          chan interface{}              `json:"-"`
+	models.Stock
+	PriceChanger  PriceChange                   `json:"-"`
+	UpdateChannel *duplicator.ChannelDuplicator `json:"-"`
+	lock          *lock.Lock                    `json:"-"`
+	close         chan interface{}              `json:"-"`
 }
 
 func (stock *Stock) GetType() string {
@@ -82,7 +78,7 @@ func NewStock(tickerID, name string, startPrice int64, runInterval time.Duration
 	if err != nil {
 		return nil, err
 	}
-	if err := database.Db.WriteStock(s); err != nil {
+	if err := database.Db.WriteStock(s.Stock); err != nil {
 		_ = deleteStock(s.Uuid)
 		return nil, fmt.Errorf("failed to make stock because db err=[%v]", err)
 	}
@@ -111,14 +107,16 @@ func MakeStock(uuid, tickerID, name string, startPrice, openShares int64, runInt
 		}
 	}
 	stock := &Stock{
-		ChangeDuration: runInterval,
-		OpenShares:     openShares,
-		Uuid:           uuid,
-		lock:           lock.NewLock(fmt.Sprintf("stock-%s", tickerID)),
-		Name:           name,
-		TickerId:       tickerID,
-		CurrentPrice:   startPrice,
-		UpdateChannel:  duplicator.MakeDuplicator(fmt.Sprintf("stock-%s-update", tickerID)),
+		Stock: models.Stock{
+			OpenShares:     openShares,
+			Uuid:           uuid,
+			Name:           name,
+			TickerId:       tickerID,
+			CurrentPrice:   startPrice,
+			ChangeDuration: runInterval,
+		},
+		lock:          lock.NewLock(fmt.Sprintf("stock-%s", tickerID)),
+		UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("stock-%s-update", tickerID)),
 	}
 	//stock.lock.EnableDebug()
 
@@ -171,6 +169,7 @@ loop:
 			break loop
 		}
 	}
+	timeSimulation.UnregisterOutput(update)
 }
 
 func (stock *Stock) ChangeDetected() reflect.Type {

@@ -56,6 +56,8 @@ type Sender struct {
 	Deletes       *duplicator.ChannelDuplicator
 	Output        *duplicator.ChannelDuplicator
 	close         chan interface{}
+	userId        string
+	portfolioId   string
 }
 
 func NewSender(userUuid, portfolioUuid string) *Sender {
@@ -68,13 +70,14 @@ func NewSender(userUuid, portfolioUuid string) *Sender {
 		Notifications: duplicator.MakeDuplicator("notification-Sender-" + userUuid),
 		Output:        duplicator.MakeDuplicator("output-message-" + userUuid),
 		close:         make(chan interface{}),
+		userId:        userUuid,
+		portfolioId:   portfolioUuid,
 	}
 	sender.Output.RegisterInput(GlobalMessages.GetBufferedOutput(10000))
 	sender.runSendDeletes()
 	sender.runSendObjects()
 	sender.runSendUpdates()
 	sender.runSendNotifications()
-	sender.Output.EnableSink()
 	senders[userUuid] = sender
 	senders[portfolioUuid] = sender
 	return sender
@@ -104,16 +107,15 @@ func (s *Sender) RegisterUpdateInput(ch chan interface{}) {
 	s.Updates.RegisterInput(ch)
 }
 
-func (s *Sender) stop() {
-	for i := 0; i < 4; i++ {
-		s.close <- nil
-	}
+func (s *Sender) Stop() {
 	s.Notifications.StopDuplicator()
 	s.Updates.StopDuplicator()
 	s.NewObjects.StopDuplicator()
 	s.Deletes.StopDuplicator()
 	s.Output.StopDuplicator()
-
+	delete(senders, s.portfolioId)
+	delete(senders, s.userId)
+	duplicator.UnlinkDuplicator(s.Output, GlobalMessages)
 	close(s.close)
 }
 
@@ -190,12 +192,13 @@ func SendDeleteObject(id string, deleteObject change.Identifiable) {
 	senders[id].Deletes.Offer(deleteObject)
 }
 
-func RegisterChangeUpdate(id string, changeChannel chan interface{}) {
+func RegisterChangeUpdate(id string, changeChannel chan interface{}) error {
 	if _, exists := senders[id]; !exists {
-		fmt.Println("cant find sender during add change update: " + id)
-		return
+		return fmt.Errorf("cant find sender during add change update: " + id)
+
 	}
 	senders[id].Updates.RegisterInput(changeChannel)
+	return nil
 }
 
 func SendChangeUpdate(id string, changeNotify *change.ChangeNotify) {

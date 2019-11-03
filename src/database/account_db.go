@@ -4,11 +4,13 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/account"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
+
+	"github.com/ThisWillGoWell/stock-simulator-server/src/user"
 )
 
 var (
-	accountTableName            = `account`
+	accountTableName            = `user`
 	accountTableCreateStatement = `CREATE TABLE IF NOT EXISTS ` + accountTableName +
 		`( ` +
 		`id serial,` +
@@ -25,14 +27,19 @@ var (
 		`ON CONFLICT (uuid) DO UPDATE SET display_name=EXCLUDED.display_name, password=EXCLUDED.password, config=EXCLUDED.config;`
 
 	accountTableQueryStatement = "SELECT uuid, name, display_name, password, portfolio_uuid, config FROM " + accountTableName + `;`
+	userTableDelete            = "DELETE from " + accountTableName + `WHERE uuid = $1`
 )
 
 func (d *Database) initAccount() error {
-	return d.Exec("account-init", accountTableCreateStatement)
+	return d.Exec("user-init", accountTableCreateStatement)
 }
 
-func (d *Database) WriteAccount(user *account.User) error {
-	return d.Exec("account-update", accountTableUpdateInsert, user.Uuid, user.UserName, user.DisplayName, user.Password, user.PortfolioId, user.ConfigStr)
+func (d *Database) WriteUser(user models.User) error {
+	return d.Exec("user-update", accountTableUpdateInsert, user.Uuid, user.UserName, user.DisplayName, user.Password, user.PortfolioId, user.ConfigStr)
+}
+
+func (d *Database) DeleteUser(uuid string) error {
+	return d.Exec("user-delete", userTableDelete, uuid)
 }
 
 func (d *Database) populateUsers() error {
@@ -49,7 +56,7 @@ func (d *Database) populateUsers() error {
 		if err = rows.Scan(&uuid, &name, &displayName, &password, &portfolioId, &config); err != nil {
 			return err
 		}
-		if _, err = account.MakeUser(uuid, name, displayName, password, portfolioId, config); err != nil {
+		if _, err = user.MakeUser(uuid, name, displayName, password, portfolioId, config); err != nil {
 			return err
 		}
 	}

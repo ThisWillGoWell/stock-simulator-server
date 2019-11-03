@@ -1,13 +1,19 @@
-package account
+package user
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/sender"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
+
+	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
+
+	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
+
+	"github.com/ThisWillGoWell/stock-simulator-server/src/sender"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 
@@ -31,16 +37,8 @@ User Object
 Represents a unique individual of the system
 */
 type User struct {
-	UserName       string                        `json:"-"`
-	Password       string                        `json:"-"`
-	DisplayName    string                        `json:"display_name" change:"-"`
-	Uuid           string                        `json:"-"`
-	Active         bool                          `json:"active" change:"-"`
-	ActiveClients  int64                         `json:"-"`
+	models.User
 	Lock           *lock.Lock                    `json:"-"`
-	PortfolioId    string                        `json:"portfolio_uuid"`
-	Config         map[string]interface{}        `json:"-"`
-	ConfigStr      string                        `json:"-"`
 	UserUpdateChan *duplicator.ChannelDuplicator `json:"-"`
 	Sender         *sender.Sender                `json:"-"`
 }
@@ -82,9 +80,34 @@ func RenewUser(sessionToken string) (*User, error) {
 	return user, nil
 }
 
-func MakeUser(uuid, username, displayName, password, portfolioUUID, config string) (*User, error) {
-	UserListLock.Acquire("new-user")
-	defer UserListLock.Release()
+func deleteUser(uuid string, lockAquired, force bool) error {
+	if !lockAquired {
+		UserListLock.Acquire("delete-user")
+		defer UserListLock.Release()
+	}
+	u, ok := UserList[uuid]
+	if !ok {
+		return fmt.Errorf("uuid delete not found")
+	}
+	dbErr := database.Db.DeleteUser(uuid)
+	if dbErr != nil {
+		log.Log.Errorf("delete-user db err=[%v]", dbErr)
+		if !force {
+			return dbErr
+		}
+	}
+	change.UnregisterChangeDetect(u)
+	delete(UserList, uuid)
+	delete(uuidList, u.DisplayName)
+	u.Sender.Stop()
+	return dbErr
+}
+
+func MakeUser(uuid, username, displayName, password, portfolioUUID, config string, lockAquired bool) (*User, error) {
+	if !lockAquired {
+		UserListLock.Acquire("make-user")
+		defer UserListLock.Release()
+	}
 	_, userNameExists := uuidList[username]
 	if userNameExists {
 		return nil, errors.New("username already exists")
@@ -95,25 +118,30 @@ func MakeUser(uuid, username, displayName, password, portfolioUUID, config strin
 		fmt.Println("error making config json in MakeUser: ", err)
 		configMap = make(map[string]interface{})
 	}
-	uuidList[username] = uuid
-	UserList[uuid] = &User{
-		UserName:       username,
-		DisplayName:    displayName,
-		Password:       password,
-		Uuid:           uuid,
-		PortfolioId:    portfolioUUID,
-		Lock:           lock.NewLock("user"),
-		Active:         false,
-		Config:         configMap,
-		ConfigStr:      config,
+
+	u := &User{
+		User: models.User{
+			UserName:    username,
+			DisplayName: displayName,
+			Password:    password,
+			Uuid:        uuid,
+			PortfolioId: portfolioUUID,
+			Active:      false,
+			Config:      configMap,
+			ConfigStr:   config,
+		},
+		Lock:           lock.NewLock("user-" + uuid),
 		UserUpdateChan: duplicator.MakeDuplicator("user-" + uuid),
 		Sender:         sender.NewSender(uuid, portfolioUUID),
 	}
-	change.RegisterPublicChangeDetect(UserList[uuid])
-	wires.UsersNewObject.Offer(UserList[uuid])
+
+	if err := change.RegisterPublicChangeDetect(u); err != nil {
+		return nil, err
+	}
+	uuidList[username] = uuid
+	UserList[uuid] = u
 	utils.RegisterUuid(uuid, UserList[uuid])
 	return UserList[uuid], nil
-
 }
 
 /**

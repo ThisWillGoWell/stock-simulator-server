@@ -42,7 +42,7 @@ func ConnectWires() {
 	LedgerNewObject.EnableCopyMode()
 	NotificationNewObject.EnableCopyMode()
 	BookNewObject.EnableCopyMode()
-	// enable copy mode only account, the rest have copy mode on a channel before
+	// enable copy mode only user, the rest have copy mode on a channel before
 	ItemsUpdate.EnableCopyMode()
 	BookUpdate.EnableCopyMode()
 

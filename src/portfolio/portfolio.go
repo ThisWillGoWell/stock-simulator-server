@@ -4,6 +4,10 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
+
+	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/effect"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/money"
@@ -29,18 +33,13 @@ var PortfoliosLock = lock.NewLock("portfolios")
 Portfolios are the $$$ part of a user
 */
 type Portfolio struct {
-	UserUUID string `json:"user_uuid"`
-	Uuid     string `json:"uuid"`
-	Wallet   int64  `json:"wallet" change:"-"`
-	NetWorth int64  `json:"net_worth" change:"-"`
-
+	models.Portfolio
 	//keeps track of how much $$$ they own, used for some slight optomization on calc networth
 	// stock_uuid -> ledgerObject
-
 	UpdateChannel *duplicator.ChannelDuplicator `json:"-"`
 	UpdateInput   *duplicator.ChannelDuplicator `json:"-"`
-	Level         int64                         `json:"level" change:"-"`
 	Lock          *lock.Lock                    `json:"-"`
+	close         chan interface{}
 }
 
 func (port *Portfolio) GetId() string {
@@ -52,38 +51,73 @@ func (port *Portfolio) GetType() string {
 }
 
 func NewPortfolio(portfolioUuid, userUuid string) (*Portfolio, error) {
-	port, err := MakePortfolio(portfolioUuid, userUuid, 10*money.Thousand, 0)
+	PortfoliosLock.Acquire("new-portfolio")
+	defer PortfoliosLock.Release()
+
+	port, err := MakePortfolio(portfolioUuid, userUuid, 10*money.Thousand, 0, true)
 	if err != nil {
-		return port, err
-	} else {
-		effect.NewBaseTradeEffect(port.Uuid)
+		return nil, err
 	}
+	if err := database.Db.WritePortfolio(port.Portfolio); err != nil {
+		_ = DeletePortfolio(portfolioUuid, true, true)
+		return nil, fmt.Errorf("failed to make portfolio db err =[%v]", err)
+	}
+	wires.PortfolioNewObject.Offer(port)
 	return port, err
 }
 
-func MakePortfolio(uuid, userUUID string, wallet, level int64) (*Portfolio, error) {
+func DeletePortfolio(uuid string, lockAquired, force bool) error {
+	if !lockAquired {
+		PortfoliosLock.Acquire("delete-portfolio")
+		defer PortfoliosLock.Release()
+	}
+	port, ok := Portfolios[uuid]
+	if !ok {
+		return fmt.Errorf("got a delete for a uud not found")
+	}
+	dbErr := database.Db.DeletePortfolio(uuid)
+	if dbErr != nil && force {
+		return dbErr
+	}
+	close(port.close)
+	port.UpdateInput.StopDuplicator()
+	port.UpdateChannel.StopDuplicator()
+	change.UnregisterChangeDetect(port)
+	delete(Portfolios, uuid)
+	utils.RemoveUuid(uuid)
+	return dbErr
+}
+
+func MakePortfolio(uuid, userUUID string, wallet, level int64, lockAquired bool) (*Portfolio, error) {
 	//PortfoliosUpdateChannel.EnableDebug("port update")
-	PortfoliosLock.Acquire("new-portfolio")
-	defer PortfoliosLock.Release()
+	if !lockAquired {
+		PortfoliosLock.Acquire("new-portfolio")
+		defer PortfoliosLock.Release()
+	}
 	if _, exists := Portfolios[uuid]; exists {
 		utils.RemoveUuid(uuid)
 		return nil, errors.New("portfolio uuid already Exists")
 	}
 	port :=
 		&Portfolio{
-			UserUUID:      userUUID,
-			Uuid:          uuid,
-			Wallet:        wallet,
+			Portfolio: models.Portfolio{
+				UserUUID: userUUID,
+				Uuid:     uuid,
+				Wallet:   wallet,
+				NetWorth: wallet,
+				Level:    level,
+			},
 			UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-update", uuid)),
 			Lock:          lock.NewLock(fmt.Sprintf("portfolio-%s", uuid)),
 			UpdateInput:   duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-valueable-update", uuid)),
-			NetWorth:      wallet,
-			Level:         level,
 		}
-	Portfolios[uuid] = port
-	//port.Lock.EnableDebug()
+
 	port.UpdateChannel.EnableCopyMode()
-	change.RegisterPublicChangeDetect(port)
+	if err := change.RegisterPublicChangeDetect(port); err != nil {
+		return nil, err
+	}
+	Portfolios[uuid] = port
+
 	wires.PortfolioNewObject.Offer(port)
 	wires.PortfolioUpdate.RegisterInput(port.UpdateChannel.GetBufferedOutput(1000))
 	utils.RegisterUuid(uuid, port)
@@ -99,6 +133,12 @@ func (port *Portfolio) valuableUpdate() {
 	updateChannel := port.UpdateInput.GetBufferedOutput(1000)
 	for range updateChannel {
 		port.Update()
+	}
+}
+
+func UpdateAll() {
+	for _, p := range Portfolios {
+		p.Update()
 	}
 }
 
