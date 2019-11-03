@@ -160,7 +160,33 @@ func (randPrice *RandomPrice) GetTargetPrice() int64 {
 	return randPrice.TargetPrice
 }
 
-//change the stock using the changer
+// //change the stock using the changer
+// func (randPrice *RandomPrice) change(stock *Stock) {
+// 	if rand.Float64() >= randPrice.RunPercent {
+// 		return
+// 	}
+// 	stock.lock.Acquire("change-stock")
+// 	defer stock.lock.Release()
+
+// 	if rand.Float64() <= randPrice.PercentToChangeTarget {
+// 		randPrice.changeValues()
+// 	}
+
+// 	moveToTarget := int64(utils.RandRangeFloat(float64(randPrice.TargetPrice)*0.9, float64(randPrice.TargetPrice)*1.1))
+
+// 	change := float64(moveToTarget-stock.CurrentPrice) /
+// 		utils.MapNumFloat(randPrice.Volatility, volatilityMin, volatilityMax, volatilityMinTurns, volatilityMaxTurns)
+
+// 	if rand.Float64() <= randPrice.RandomNoise {
+// 		change = change * -1 * .25
+// 	}
+// 	stock.CurrentPrice = int64(float64(stock.CurrentPrice) + (change * .5))
+
+// 	stock.UpdateChannel.Offer(stock)
+
+// }
+
+// Jake's version - change the stock using the changer
 func (randPrice *RandomPrice) change(stock *Stock) {
 	if rand.Float64() >= randPrice.RunPercent {
 		return
@@ -180,8 +206,16 @@ func (randPrice *RandomPrice) change(stock *Stock) {
 	if rand.Float64() <= randPrice.RandomNoise {
 		change = change * -1 * .25
 	}
-	stock.CurrentPrice = int64(float64(stock.CurrentPrice) + (change * .5))
 
+	possible_price := int64(float64(stock.CurrentPrice) + (utils.Norm(0, 75) * 75))
+
+	lower_bound := int64(1500) // $15.00
+
+	if possible_price <= lower_bound {
+		stock.CurrentPrice = int64(float64(stock.CurrentPrice) + (utils.ChiSq(0, 1) * 20))
+	} else {
+		stock.CurrentPrice = possible_price
+	}
 	stock.UpdateChannel.Offer(stock)
 
 }

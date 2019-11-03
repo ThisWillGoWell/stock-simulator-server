@@ -50,7 +50,7 @@ deploy_dev: DockerTag=${DevDockerTag}
 deploy_dev:  | build_linux build_container save_container upload_container run_container
 
 build_linux:
-	GOARCH=amd64 GOOS=linux go build
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build
 
 build_container:
 	docker build . -t ${DockerTag} --no-cache

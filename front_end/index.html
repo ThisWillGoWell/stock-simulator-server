@@ -471,6 +471,16 @@
 							</div>
 							
 							<div class="flex-column-100">
+								<div class="item-category buffer-top">MY PURCHASE HISTORY</div>
+							</div>
+
+							<div class="flex-column-100" v-if="currUserTrades">
+								<!-- <div v-for="trade in currUserTrades"> -->
+									${{ currUserTrades }}
+								<!-- </div> -->
+							</div>
+
+							<div class="flex-column-100">
 								<div class="item-category buffer-top">MY EFFECTS</div>
 							</div>
 							<div class="card" v-for="effect in userEffects">
