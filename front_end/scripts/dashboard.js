@@ -23,6 +23,11 @@ function load_dashboard_tab() {
           this.sortBy = col;
         }
       },
+      drawStockGraph: function(stock) {
+        $('button[data-route="research"]').click();
+        $('#query-type-container .stocks').click();
+        graphStocks[0].selectize.addItem(stock.stock_id);
+      },
       createPortfolioGraph: function() {
         // Get curr user portfolioUUID
         let portfolioUUID = vm_dash_tab.currUserPortfolio.uuid;
@@ -167,18 +172,21 @@ function load_dashboard_tab() {
         return [];
       },
       currUserRecords: function() {
-        return Object.values(vm_recordEntry.entries)
-        // var currUserUUID = sessionStorage.getItem("uuid");
-        // if (vm_users.users[currUserUUID] !== undefined) {
-        //   var currUserPortfolioUUID = vm_users.users[currUserUUID].portfolio_uuid;
-        //   if (Object.values(vm_notify.notes) !== []) {
-        //     var trades = Object.values(vm_notify.notes).filter(d => d.portfolio_uuid === currUserPortfolioUUID & d.type === "trade");
-        //     console.log("Current User Trades")
-        //     console.log(trades)
-        //     return trades;
-        //   }
-        // }
-        // return [];
+        if (Object.values(vm_recordEntry.entries) !== [] & Object.values(vm_recordBook.records) !== []) {
+          var recordEntries = Object.values(vm_recordEntry.entries);
+          recordEntries.forEach(function(d){
+            // add entry action
+            if (d.share_count > 0){
+              d.action = "Purchase"
+            } else {
+              d.action = "Sell"
+            }
+            // add stock details
+            d.stock = vm_stocks.stocks[vm_recordBook.records[d.book_uuid].stock_uuid];
+          });
+          return recordEntries;
+        }
+        return [];
       },
       userEffects: function() {
         var currUserUUID = vm_users.currentUser;

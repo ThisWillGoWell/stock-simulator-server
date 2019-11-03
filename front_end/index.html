@@ -442,11 +442,11 @@
 																SELL
 															</li>	
 		
-															<!-- <li class="action-btn chart" v-on:click="showChart(stock.uuid)">
+															<li class="action-btn chart" v-on:click="drawStockGraph(stock)">
 																<i class="material-icons">
 																show_chart
 																</i>
-															</li> -->
+															</li>
 														</ul>
 													  </td>
 												<td v-if="sellAllSetting()" class="stock-price layered-clickable" style="text-align: right; padding-right: 25px;">
@@ -475,31 +475,32 @@
 							</div>
 
 							<div class="flex-column-100" v-if="currUserRecords">
-								<div v-for="trade in currUserRecords">
-									Record Entry
+								<div class="card stock-list">
 									<table class="table">
 										<thead class="table-top-bar">
-											<th>uuid</th>
-											<th>share_price</th>
-											<th>share_count</th>
+											<th>stock</th>
+											<th>action</th>
+											<th>price at action</th>
+											<th>share count</th>
 											<th>time</th>
-											<th>book_uuid</th>
 											<th>fee</th>
 											<th>taxes</th>
 											<th>bonus</th>
 											<th>result</th>
+											<th>stock details</th>
 										</thead>
 										<tbody>
 											<tr v-for="trade in currUserRecords">
-												<td>{{trade.uuid}}</td>
-												<td>${{ toPrice(trade.share_price)}}</td>
-												<td>{{trade.share_count}}</td>
-												<td>{{trade.time}}</td>
-												<td>{{trade.book_uuid}}</td>
-												<td>${{ toPrice(trade.fee) }}</td>
-												<td>${{ toPrice(trade.taxes)}}</td>
-												<td>${{ toPrice(trade.bonus)}}</td>
-												<td>${{ toPrice(trade.result) }}</td>
+												<td style="text-align: right; padding-right: 25px;">{{ trade.stock.ticker_id }}</td>
+												<td style="text-align: right; padding-right: 25px;">{{trade.action}}</td>
+												<td style="text-align: right; padding-right: 25px;">${{ toPrice(trade.share_price)}}</td>
+												<td style="text-align: right; padding-right: 25px;">{{trade.share_count}}</td>
+												<td style="text-align: right; padding-right: 25px;">{{trade.time}}</td>
+												<td style="text-align: right; padding-right: 25px;">${{ toPrice(trade.fee) }}</td>
+												<td style="text-align: right; padding-right: 25px;">${{ toPrice(trade.taxes)}}</td>
+												<td style="text-align: right; padding-right: 25px;">${{ toPrice(trade.bonus)}}</td>
+												<td style="text-align: right; padding-right: 25px;">${{ toPrice(trade.result) }}</td>
+												<td style="text-align: right; padding-right: 25px;">{{ trade.stock }}</td>
 											</tr>
 										</tbody>
 									</table>
