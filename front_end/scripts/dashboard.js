@@ -76,7 +76,7 @@ function load_dashboard_tab() {
           buySellModal.showModal = true;
           buySellModal.stock_uuid = stock.uuid;
 
-          toggleModal();
+          toggleModal(); 
           
       },
     },
@@ -161,10 +161,21 @@ function load_dashboard_tab() {
               return 0;
             });
 
-            return ownedStocks;
+            return ownedStocks; 
           }
         }
         return [];
+      },
+      currUserTrades: function() {
+        var currUserUUID = sessionStorage.getItem("uuid");
+        if (vm_users.users[currUserUUID] !== undefined) {
+          var currUserPortfolioUUID = vm_users.users[currUserUUID].portfolio_uuid;
+        }
+        if (Object.values(vm_notify.notes) === []) {
+          var trades = Object.values(vm_notify.notes).filter(d => d.portfolio_uuid === currUserPortfolioUUID & d.type === "trade");
+          return trades;
+        }
+        return {};
       },
       userEffects: function() {
         var currUserUUID = vm_users.currentUser;
