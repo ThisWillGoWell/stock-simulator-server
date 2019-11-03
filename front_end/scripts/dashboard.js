@@ -173,6 +173,8 @@ function load_dashboard_tab() {
         }
         if (Object.values(vm_notify.notes) === []) {
           var trades = Object.values(vm_notify.notes).filter(d => d.portfolio_uuid === currUserPortfolioUUID & d.type === "trade");
+          console.log("Current User Trades")
+          console.log(trades)
           return trades;
         }
         return {};
