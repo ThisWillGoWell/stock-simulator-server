@@ -6,23 +6,6 @@ var REQUESTS = {};
 var REQUEST_ID = 1;
 
 if (token) {
-	/*  WEBSOCKETS */
-	// var externalServer = "mockstarket.com/api/ws";
-	// if(cururl.contains("dev")) {
-	// 	externalServer = "dev.mockstarket.com/api/ws";
-	// }
-	//
-	// let host = window.location.hostname;
-	// let port = window.location.port;
-	//
-	// host = " wss://mockstarket.com/api/ws";
-	// if(host.includes("localhost")){
-	// 	host = "dev.mockstarket.com"
-	// } else if(host.includes("home.")){
-	// 	host = host.replace("home.", "")
-	// }
-	//
-	// host = "mockstarket.com";
 	wsUri = "wss://mockstarket.com/api/ws";
 
 	var output;
@@ -51,24 +34,20 @@ if (token) {
 	function onClose(evt) {
 		notifyTopBar("DISCONNECTED FROM WS", RED, false);
 		onEvent("Disconnected");
-		// Uncomment underneath line for return to login on disconnect
-		// window.location.href = "/login.html";
 	};
 
 	function onEvent(message){
-	    console.log(message);
+	    // console.log(message);
 	};
 
 	function onMessage(evt) {
 	    var msg = JSON.parse(evt.data);
-	    // console.log(msg);
 		
 		if (msg.action) {
 			try {
 				router[msg.action](msg);
 			} catch (err) {
-				console.log(msg);
-				//console.error(err);
+				console.error(err);
 			}
 		} else {
 			if (msg.type == "error") {
@@ -82,7 +61,6 @@ if (token) {
 
 	function onError(evt) {
 		console.log(evt);
-	    // writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
 	};
 
 	function doSend(action, msg, callback) {

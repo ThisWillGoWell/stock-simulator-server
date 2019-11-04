@@ -316,7 +316,7 @@
 						</button>
 					</li> -->
 				</ul>
-				<div class="copyright-text">© 2018 Mockstarket.  All rights reserved</div>
+				<div class="copyright-text">© 2019 Mockstarket.  All rights reserved</div>
 			</section>
 
 			<section id="top-bar--container">
@@ -473,37 +473,38 @@
 							<div class="flex-column-100">
 								<div class="item-category buffer-top">MY PURCHASE HISTORY</div>
 							</div>
-
 							<div class="flex-column-100" v-if="currUserRecords">
-								<div class="card stock-list">
-									<table class="table">
-										<thead class="table-top-bar">
-											<th>stock</th>
-											<th>action</th>
-											<th>price at action</th>
-											<th>share count</th>
-											<th>time</th>
-											<th>fee</th>
-											<th>taxes</th>
-											<th>bonus</th>
-											<th>result</th>
-											<th>stock details</th>
-										</thead>
-										<tbody>
-											<tr v-for="trade in currUserRecords">
-												<td style="text-align: right; padding-right: 25px;">{{ trade.stock.ticker_id }}</td>
-												<td style="text-align: right; padding-right: 25px;">{{trade.action}}</td>
-												<td style="text-align: right; padding-right: 25px;">${{ toPrice(trade.share_price)}}</td>
-												<td style="text-align: right; padding-right: 25px;">{{trade.share_count}}</td>
-												<td style="text-align: right; padding-right: 25px;">{{trade.time}}</td>
-												<td style="text-align: right; padding-right: 25px;">${{ toPrice(trade.fee) }}</td>
-												<td style="text-align: right; padding-right: 25px;">${{ toPrice(trade.taxes)}}</td>
-												<td style="text-align: right; padding-right: 25px;">${{ toPrice(trade.bonus)}}</td>
-												<td style="text-align: right; padding-right: 25px;">${{ toPrice(trade.result) }}</td>
-												<td style="text-align: right; padding-right: 25px;">{{ trade.stock }}</td>
-											</tr>
-										</tbody>
-									</table>
+								<div v-for="record in currUserRecords">
+									<div><strong>{{record.stock.ticker_id}} </br>Current Price: ${{ toPrice(record.stock.current_price)}}</strong></div>
+									<div class="card stock-list">
+										<table class="table">
+											<thead class="table-top-bar">
+												<th>stock</th>
+												<th>action</th>
+												<th>price at action</th>
+												<th>share count</th>
+												<th>time</th>
+												<th>fee</th>
+												<th>taxes</th>
+												<th>bonus</th>
+												<th>result</th>
+											</thead>
+											<tbody>
+												<tr v-for="hist in record.history">
+													<td style="text-align: right; padding-right: 25px;">{{ hist.stock.ticker_id }}</td>
+													<td style="text-align: right; padding-right: 25px;">{{hist.action}}</td>
+													<td style="text-align: right; padding-right: 25px;">${{ toPrice(hist.share_price)}}</td>
+													<td style="text-align: right; padding-right: 25px;">{{hist.share_count}}</td>
+													<td style="text-align: right; padding-right: 25px;">{{hist.time}}</td>
+													<td style="text-align: right; padding-right: 25px;">${{ toPrice(hist.fee) }}</td>
+													<td style="text-align: right; padding-right: 25px;">${{ toPrice(hist.taxes)}}</td>
+													<td style="text-align: right; padding-right: 25px;">${{ toPrice(hist.bonus)}}</td>
+													<td style="text-align: right; padding-right: 25px;">${{ toPrice(hist.result) }}</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+									<div></br></br></br></div>
 								</div>
 							</div>
 

@@ -94,8 +94,6 @@ function queryDB(uuid, field, requests, responses, data, num_points = 1000, leng
 	// Store request on front end
 	requests.push(REQUEST_ID.toString());
 	var callback = function(msg) {
-		console.log("GRAPH msg HERE")
-		console.log(msg)
 		// Pull out the data and format it
 		var points = msg.msg.points;
 		points = points.map(function(d) {
@@ -153,14 +151,6 @@ function DrawLineGraph(location, data, showWallet, append) {
 	
 	var tags = data.tags;
 
-	// logging remove later
-	console.log("DATA");
-	console.log(dat);
-	console.log("TAGS");
-	console.log(data.tags);
-	// logging remove later
-
-	// var width = 700;
 	var height = 475;
 	var margin = {
 		'top': 60,
@@ -311,18 +301,13 @@ function DrawLineGraph(location, data, showWallet, append) {
 			});
 			
 			// Get legend size
-			console.log(legend)
 			var w = legend.node().getBoundingClientRect().width;
 			var h = legend.node().getBoundingClientRect().height;
 			legendParent.attr({
 				'width': w,
 				'height': h
 			})
-			// var legend = legendParent.select('div') 
-			console.log(w)
-			console.log(h)
 			// orientate the legend correctly
-			// legendParent.attr('transform', 'translate(700,700)');// + (mouseX - w - 30) + ',' + (mouseY + 15) + ')');
 			if (scaleTime(mouseX) > scaleTime(width/2)) {
 				if (scaleValue(mouseY) > scaleValue(height/2)) {
 					legendParent.attr('transform', 'translate(' + (mouseX - w - 30) + ',' + (mouseY + 15) + ')');
@@ -437,7 +422,6 @@ function DrawLineGraph(location, data, showWallet, append) {
 				.attr('transform', 'translate(' + (width/2) + ', 40)');
 		}
 	}
-	//console.log(labels)
 };
 	
 

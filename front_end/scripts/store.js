@@ -54,15 +54,12 @@ function load_store_tab() {
     // Get level details
     var levelsJSON = $.getJSON("json/levels.json", function(data) {
         levelsJSON = data;
-        console.log(levelsJSON)
     }).then(function(data) {
-        console.log(data);
         Vue.set(vm_store.store, 'levels', data);
     });
 
     // Load items
     var itemsJSON = $.getJSON("json/items.json", function(data) {
-        console.log(itemsJSON)
     }).then(function(data){
         Vue.set(vm_store.store, 'items', data);
     });
@@ -72,13 +69,8 @@ function load_store_tab() {
 function purchaseItem(item) {
     // Set callback
     var callback = function (msg) {
-        if (msg.msg.o.success) {
+        if (!msg.msg.o.success) {
             
-            console.log("nothing for purchaseItem success callback");
-            console.log(msg);
-            
-        } else {
-
             var message = msg.msg.o.err;
             var color = RED;
 
@@ -103,7 +95,7 @@ function level_up() {
     };
 
     // Send message
-    doSend("level_up", {}, callback);// REDO REQUEST ID CALC EVERYWHERE
+    doSend("level_up", {}, callback);// TODO: REDO REQUEST ID CALC EVERYWHERE
 };
 
 function level_up_response(msg, level) {

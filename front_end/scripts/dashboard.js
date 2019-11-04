@@ -16,7 +16,6 @@ function load_dashboard_tab() {
         // If sorting by selected column
         if (this.sortBy == col) {
           // Change sort direction
-          // console.log(col);
           this.sortDesc = -this.sortDesc;
         } else {
           // Change sorted column
@@ -48,12 +47,7 @@ function load_dashboard_tab() {
       sellAllSetting: getSellAllSetting,
       realValuesSetting: getRealValuesSetting,
       buyOrder: function(tid, uuid) {
-        console.log("BUY ORDER: "+uuid);
         var ticker_id = tid;
-            
-
-        console.log("TID: " + tid);
-
         var stock = Object.values(vm_stocks.stocks).filter(
             d => d.ticker_id === ticker_id
         )[0];
@@ -65,13 +59,7 @@ function load_dashboard_tab() {
         toggleModal();
       },
       sellOrder: function(tid, uuid) {
-          console.log("SELL ORDER: "+uuid);
-          // var ticker_id = $(this)
-          //     .attr("tid");
-
           var ticker_id = tid;
-
-          console.log("TID: " + tid);
 
           var stock = Object.values(vm_stocks.stocks).filter(
               d => d.ticker_id === ticker_id
@@ -137,13 +125,9 @@ function load_dashboard_tab() {
               var targetChangeElem = $(
                 'tr[uuid="dash' + d.stock_uuid + '"].clickable > td.stock-change'
               );
-              // targetChangeElem.addClass("rising");
               if (d.stock_roi > 0) {
               	targetChangeElem.removeClass("falling");
               	targetChangeElem.addClass("rising");
-              // } else if (d.stock_roi === 0) {
-              // 	targetChangeElem.removeClass("falling");
-              // 	targetChangeElem.removeClass("rising");
               } else {
               	targetChangeElem.removeClass("rising");
               	targetChangeElem.addClass("falling");
@@ -184,7 +168,19 @@ function load_dashboard_tab() {
             // add stock details
             d.stock = vm_stocks.stocks[vm_recordBook.records[d.book_uuid].stock_uuid];
           });
-          return recordEntries;
+          // Restructuring data
+          var tmpRecordEntries = {}
+          recordEntries.map(function(d) {
+            if (Object.keys(tmpRecordEntries).indexOf(d.stock.ticker_id) < 0) {
+              tmpRecordEntries[d.stock.ticker_id] = {
+                "stock": d.stock,
+                "history": [d]
+              }
+            } else {
+              tmpRecordEntries[d.stock.ticker_id].history.push(d)
+            }
+          })
+          return tmpRecordEntries;
         }
         return [];
       },
@@ -192,9 +188,7 @@ function load_dashboard_tab() {
         var currUserUUID = vm_users.currentUser;
         if (vm_users.users[currUserUUID] !== undefined) {
           var currUserFolioUUID = vm_users.users[currUserUUID].portfolio_uuid;
-          console.log(vm_effects.effects)
           var effects = Object.values(vm_effects.effects).filter(d => d.portfolio_uuid === currUserFolioUUID);
-          console.log(effects);
 
           effects.forEach(function(e) {
             switch(e.title) {
@@ -223,7 +217,6 @@ function load_dashboard_tab() {
         if (vm_users.users[currUserUUID] !== undefined) {
           var currUserFolioUUID = vm_users.users[currUserUUID].portfolio_uuid;
           var items = Object.values(vm_items.items).filter(d => d.portfolio_uuid === currUserFolioUUID);
-          console.log(items)
           var ret = items.map(function(i) {
             var item = {
               name: i.name,
@@ -240,10 +233,8 @@ function load_dashboard_tab() {
                 ]
                 break;
             }
-            console.log(item)
             return item;
           })
-          console.log(ret)
           return ret;
         }
         return {};
@@ -331,7 +322,6 @@ function getROI(portfolio_uuid, stock_id, stock_price) {
 }
 
 function createPortfolioGraph(portfolioUUID, location) {
-  // what it will be
   var uuids = [portfolioUUID, portfolioUUID];
   var fields = ['net_worth', 'wallet'];
   queryDrawGraph(location, uuids, fields);

@@ -39,25 +39,6 @@ var vm_portfolios = new Vue({
   }
 });
 
-// var vm_items = new Vue({
-//   data: {
-//     items: {}
-//   },
-//   computed: {
-//     userItems: function() {
-//       return this.items.map(function(i) {
-//         switch(i.config) {
-//           case 'personal_broker':
-//             i.include
-//             break;
-//         }
-//         console.log(i)
-//       })
-//     }
-//   }
-
-// });
-
 var vm_users = new Vue({
   data: {
     users: {},
@@ -104,10 +85,8 @@ var vm_recordEntry = new Vue({
 
 
 registerRoute("connect", function(msg) {
-  console.log("login recieved");
 
   if (msg.msg.success) {
-    console.log(msg);
     sessionStorage.setItem("uuid", msg.msg.uuid);
     createConfig(msg.msg.config);
     
@@ -127,7 +106,6 @@ registerRoute("connect", function(msg) {
 registerRoute("object", function(msg) {
   switch (msg.msg.type) {
     case "portfolio":
-      //console.log(msg.msg.object)
       Vue.set(vm_portfolios.portfolios, msg.msg.uuid, msg.msg.object);
       break;
 
@@ -206,11 +184,6 @@ $(document).ready(function() {
   load_modal_vues(); // modal.js
 
 
-  // setTimeout(function() {
-  //   checkUsedItems(); // Display item perks that are in use 
-  // }, 500);
-
-
   console.log("------ USER ITEMS ------")
   console.log(vm_items.items);
   console.log("------ USERS ------");
@@ -267,8 +240,6 @@ $(document).ready(function() {
       .find(".stock-ticker-id")
       .attr("tid");
 
-    console.log("TID: " + ticker_id + " has been favorited");
-
     //var stock = Object.values(vm_users.stocks).filter(d => d.ticker_id === ticker_id)[0];
 
     // Set show modal to true
@@ -282,8 +253,6 @@ $(document).ready(function() {
     var ticker_id = $(this)
       .find(".stock-ticker-id")
       .attr("tid");
-
-    console.log("SHOW CHART FOR: " + ticker_id);
 
     //var stock = Object.values(vm_users.stocks).filter(d => d.ticker_id === ticker_id)[0];
 
@@ -303,7 +272,6 @@ $(document).ready(function() {
       $(event.currentTarget)
         .find("i")
         .toggleClass("flipped");
-      // console.log("is asc");
     } else {
       $("thead tr th i").removeClass("shown");
       $(event.currentTarget)
@@ -323,7 +291,6 @@ $(document).ready(function() {
     $(event.currentTarget)
       .find(".card.item")
       .toggleClass("hover");
-    console.log("hover");
   });
 
   // $(".buy-item-btn.item-disabled").hover(function(event) {
@@ -460,7 +427,6 @@ $(document).ready(function() {
       var targetChange = changeObject.value;
 
       vm_recordBook.records[targetUUID][targetField] = targetChange;
-      console.log(vm_recordBook.records);
     })
   };
 

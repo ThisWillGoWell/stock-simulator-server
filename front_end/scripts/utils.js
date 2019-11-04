@@ -26,6 +26,13 @@ function findPercentChange(newPrice, oldPrice) {
     }
   };
 
+function unique(listy) {
+	listy = listy.filter(function(val, ind, self){
+		return self.indexOf(val) === ind;
+	})
+	return listy
+}
+
 function abbrevPrice(value) {
 	// TODO if value is greater than something abbreviate
 	// Handle negative values for formatting change
