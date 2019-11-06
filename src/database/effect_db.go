@@ -37,16 +37,18 @@ func (d *Database) initEffect() error {
 	return d.Exec("init-effect", effectTableCreateStatement)
 }
 
-func (d *Database) WriteEffect(entry models.Effect) error {
+func writeEffect(entry models.Effect, tx *sql.Tx) error {
 	e, err := json.Marshal(entry.InnerEffect)
 	if err != nil {
 		return fmt.Errorf("failed to marshal inner effect err=[%v]", err)
 	}
-	return d.Exec("effect-update", effectTableUpdateInsert, entry.Uuid, entry.PortfolioUuid, entry.Type, entry.Title, entry.Duration.Duration, entry.StartTime, entry.Tag, e)
+	_, err = tx.Exec(effectTableUpdateInsert, entry.Uuid, entry.PortfolioUuid, entry.Type, entry.Title, entry.Duration.Duration, entry.StartTime, entry.Tag, e)
+	return err
 }
 
-func (d *Database) DeleteEffect(uuid string) error {
-	return d.Exec(effectTableDeleteStatement, uuid)
+func deleteEffect(entry models.Effect, tx *sql.Tx) error {
+	_, err := tx.Exec(effectTableDeleteStatement, entry.Uuid)
+	return err
 }
 
 func (d *Database) PopulateEffects() (map[string]models.Effect, error) {

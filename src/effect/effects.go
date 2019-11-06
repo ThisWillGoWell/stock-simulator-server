@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ThisWillGoWell/stock-simulator-server/src/id"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
@@ -30,61 +32,81 @@ var portfolioEffectTags = make(map[string]map[string]*Effect)
 
 const EffectIdType = "effect"
 
-func deleteEffect(uuid string, lockAcquired bool) error {
-	if !lockAcquired {
+func DeleteEffect(uuid string, aquireLock bool) error {
+	if !aquireLock {
 		EffectLock.Acquire("delete-effect")
 		defer EffectLock.Release()
 	}
+
 	if _, ok := effects[uuid]; !ok {
 		log.Log.Warnf("got effect delete for effect that does not exists")
 		return nil
 	}
 	e := effects[uuid]
+	if err := database.Db.Execute(nil, []interface{}{e}); err != nil {
+		return err
+	}
+	deleteEffect(e)
 	wires.EffectsDelete.Offer(e)
-	dbErr := database.Db.DeleteEffect(e.Uuid)
+	return nil
+}
+
+func deleteEffect(e *Effect) {
+
 	delete(portfolioEffectTags[e.PortfolioUuid], e.Tag)
-	delete(effects, uuid)
-	delete(portfolioEffects[e.PortfolioUuid], uuid)
+	delete(effects, e.Uuid)
+	delete(portfolioEffects[e.PortfolioUuid], e.Uuid)
 	if len(portfolioEffects[e.PortfolioUuid]) == 0 {
 		delete(portfolioEffects, e.PortfolioUuid)
 		delete(portfolioEffectTags, e.PortfolioUuid)
 	}
 	change.UnregisterChangeDetect(e)
-	utils.RemoveUuid(uuid)
+	id.RemoveUuid(e.Uuid)
 
-	return dbErr
+}
+
+func getTaggedEffect(portfolioUuid, tag string) *Effect {
+	if tag == "" {
+		return nil
+	}
+	if _, ok := portfolioEffectTags[portfolioUuid]; !ok {
+		return nil
+	}
+	if e, ok := portfolioEffectTags[portfolioUuid][tag]; !ok {
+		return nil
+	} else {
+		return e
+	}
 }
 
 func newEffect(portfolioUuid, title, effectType, tag string, innerEffect interface{}, duration time.Duration) (e *Effect, err error) {
 	EffectLock.Acquire("make-effect")
 	defer EffectLock.Release()
-	uuid := utils.SerialUuid()
+	uuid := id.SerialUuid()
+
+	// tagged effect
+	preEffect := getTaggedEffect(portfolioUuid, tag)
 	if e, err = MakeEffect(uuid, portfolioUuid, title, effectType, tag, innerEffect, duration, time.Now(), true); err != nil {
 		return nil, err
 	}
 
-	if err := database.Db.WriteEffect(e.Effect); err != nil {
-		_ = deleteEffect(uuid, false)
+	deletes := make([]interface{}, 1)
+	if preEffect != nil {
+		deletes[0] = preEffect
+	}
+
+	if err := database.Db.Execute([]interface{}{e.Effect}, deletes); err != nil {
+		deleteEffect(e)
 		return nil, err
 	}
+	//todo this could lead to getting 2 trade effects at once
+	deleteEffect(preEffect)
 
 	wires.EffectsNewObject.Offer(e)
 	if err := notification.NewEffectNotification(portfolioUuid, title); err != nil {
 		log.Log.Warnf("failed to make new %s effect notification for %s ", title, portfolioUuid)
 	}
 	return e, nil
-}
-
-func getTaggedEffect(portfolioUuid, tag string) *Effect {
-	pTagEffects, portfolioExists := portfolioEffectTags[portfolioUuid]
-	if !portfolioExists {
-		panic("portfolio not fond in update base: " + portfolioUuid)
-	}
-	effect, tagExists := pTagEffects[tag]
-	if !tagExists {
-		panic("portfolio: " + portfolioUuid + " does not have a base tag to update")
-	}
-	return effect
 }
 
 func MakeEffect(uuid, portfolioUuid, title, effectType, tag string, innerEffect interface{}, duration time.Duration, startTime time.Time, lockAcquired bool) (*Effect, error) {
@@ -122,10 +144,6 @@ func MakeEffect(uuid, portfolioUuid, title, effectType, tag string, innerEffect 
 		portfolioEffects[portfolioUuid] = pEffects
 	}
 	if tag != "" {
-		oldEffect, tagExists := portfolioEffectTags[portfolioUuid][tag]
-		if tagExists {
-			_ = deleteEffect(oldEffect.Uuid, true)
-		}
 		if _, portfolioExists := portfolioEffectTags[portfolioUuid]; !portfolioExists {
 			// the portfolio map was deleted by the Delete Effect
 			pEffects = make(map[string]*Effect)
@@ -137,7 +155,7 @@ func MakeEffect(uuid, portfolioUuid, title, effectType, tag string, innerEffect 
 
 	pEffects[newEffect.Uuid] = newEffect
 	effects[newEffect.Uuid] = newEffect
-	utils.RegisterUuid(uuid, newEffect)
+	id.RegisterUuid(uuid, newEffect)
 	return newEffect, nil
 }
 
@@ -201,7 +219,7 @@ func RunEffectCleaner() {
 			EffectLock.Acquire("clean")
 			for uuid, effect := range effects {
 				if effect.Duration.Duration != 0 && time.Since(effect.StartTime) > effect.Duration.Duration {
-					if err := deleteEffect(uuid, true); err != nil {
+					if err := DeleteEffect(uuid, false); err != nil {
 						log.Log.Errorf("failed to clean effect err=[%v]", err)
 					} else {
 						if err := notification.EndEffectNotification(effect.PortfolioUuid, effect.Title); err != nil {

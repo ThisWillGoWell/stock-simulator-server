@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ThisWillGoWell/stock-simulator-server/src/id"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
@@ -13,7 +15,6 @@ import (
 	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/messages"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
 )
 
@@ -109,7 +110,7 @@ func MakeQuery(qm *messages.QueryMessage) *Query {
 }
 
 func makeQuery(query *Query, lockAcquired bool) {
-	val, exists := utils.GetVal(query.QueryUUID)
+	val, exists := id.GetVal(query.QueryUUID)
 	if !exists {
 		failedQuery(query, errors.New("uuid does not exist"))
 	}

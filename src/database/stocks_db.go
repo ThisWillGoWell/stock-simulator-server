@@ -55,19 +55,20 @@ func (d *Database) InitStocks() error {
 	return d.Exec("stocks-history-init", stocksHistoryTableCreateStatement)
 }
 
-func (d *Database) WriteStock(stock models.Stock) error {
-	if err := d.Exec(stocksTableUpdateInsert, stock.Uuid, stock.TickerId, stock.Name, stock.CurrentPrice, stock.OpenShares, stock.ChangeDuration); err != nil {
-		return err
+func writeStock(stock models.Stock, tx *sql.Tx) error {
+	_, e1 := tx.Exec(stocksTableUpdateInsert, stock.Uuid, stock.TickerId, stock.Name, stock.CurrentPrice, stock.OpenShares, stock.ChangeDuration)
+	_, e2 := tx.Exec(stocksHistoryTableUpdateInsert, stock.Uuid, stock.CurrentPrice, stock.OpenShares)
+	if e1 != nil || e2 != nil {
+		return fmt.Errorf("write stock uuid=%s stockdb=[%v] history=[%v]", stock.Uuid, e1, e2)
 	}
-	return d.Exec(stocksHistoryTableUpdateInsert, stock.Uuid, stock.CurrentPrice, stock.OpenShares)
-
+	return nil
 }
 
-func (d *Database) DeleteStock(uuid string) error {
-	e1 := d.Exec("delete-stock", stocksTableDeleteStatement, uuid)
-	e2 := d.Exec("delete-stock", stocksHistoryTableDeleteStatement, uuid)
+func deleteStock(stock models.Stock, tx *sql.Tx) error {
+	_, e1 := tx.Exec(stocksTableDeleteStatement, stock.Uuid)
+	_, e2 := tx.Exec(stocksHistoryTableDeleteStatement, stock.Uuid)
 	if e1 != nil || e2 != nil {
-		return fmt.Errorf("delete stock uuid=%s stockdb=[%v] history=[%v]", uuid, e1, e2)
+		return fmt.Errorf("delete stock uuid=%s stockdb=[%v] history=[%v]", stock.Uuid, e1, e2)
 	}
 	return nil
 }

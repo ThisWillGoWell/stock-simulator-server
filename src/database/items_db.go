@@ -34,16 +34,18 @@ func (d *Database) initItems() error {
 	return d.Exec("init-items", itemsTableCreateStatement)
 }
 
-func (d *Database) WriteItem(entry models.Item) error {
+func writeItem(entry models.Item, tx *sql.Tx) error {
 	innerItemStr, err := json.Marshal(entry.InnerItem)
 	if err != nil {
 		return fmt.Errorf("failed to marshal inner item err=[%v]", err)
 	}
-	return d.Exec("items-update", itemsTableUpdateInsert, entry.Uuid, entry.Type, entry.Name, entry.ConfigId, entry.PortfolioUuid, innerItemStr, entry.CreateTime)
+	_, err = tx.Exec(itemsTableUpdateInsert, entry.Uuid, entry.Type, entry.Name, entry.ConfigId, entry.PortfolioUuid, innerItemStr, entry.CreateTime)
+	return err
 }
 
-func (d *Database) DeleteItem(uuid string) error {
-	return d.Exec("items-delete", itemsTableDeleteStatement, uuid)
+func deleteItem(entry models.Item, tx *sql.Tx) error {
+	_, err := tx.Exec(itemsTableDeleteStatement, uuid)
+	return err
 }
 
 func (d *Database) PopulateItems() (map[string]models.Item, error) {

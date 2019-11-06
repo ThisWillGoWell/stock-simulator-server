@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
+
+	"github.com/ThisWillGoWell/stock-simulator-server/src/id"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 
@@ -15,8 +17,6 @@ import (
 	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 )
 
 var recordsLock = lock.NewLock("records")
@@ -49,15 +49,7 @@ type ActiveBuyRecord struct {
 }
 
 type Record struct {
-	Uuid           string    `json:"uuid"`
-	SharePrice     int64     `json:"share_price"`
-	ShareCount     int64     `json:"share_count"`
-	Time           time.Time `json:"time"`
-	RecordBookUuid string    `json:"book_uuid"`
-	Fees           int64     `json:"fee"`
-	Taxes          int64     `json:"taxes"`
-	Bonus          int64     `json:"bonus"`
-	Result         int64     `json:"result"`
+	models.Record
 }
 
 //func (br *BuyRecord) GetTime() time.Time {
@@ -73,45 +65,35 @@ type Record struct {
 //	ShareCount     int64  `json:"amount"`
 //}
 
-func NewRecord(recordBookUuid string, amount, sharePrice, taxes, fees, bonus, result int64) (*Record, error) {
-	uuid := utils.SerialUuid()
-	// need to hold the lock to make sure if it fails, we can delete it before another one gets made, messing up the activeBuyRecords
-	recordsLock.Acquire("new-record")
-	defer recordsLock.Release()
-
-	r, err := MakeRecord(uuid, recordBookUuid, amount, sharePrice, taxes, fees, bonus, result, time.Now(), true)
-	if err != nil {
-		return nil, fmt.Errorf("failed to make record err=[%v]", err)
-	}
-
-	return r, nil
+func NewRecord(recordBookUuid string, amount, sharePrice, taxes, fees, bonus, result int64) (*Record, *Book) {
+	uuid := id.SerialUuid()
+	return MakeRecord(uuid, recordBookUuid, amount, sharePrice, taxes, fees, bonus, result, time.Now(), true), books[recordBookUuid]
 }
 
-func DeleteRecord(uuid string, lockAcquired bool) error {
+func DeleteRecord(uuid string, lockAcquired bool) {
 	if !lockAcquired {
 		recordsLock.Acquire("delete-record")
 		defer recordsLock.Release()
 	}
 	r, ok := records[uuid]
 	if !ok {
-		log.Log.Warnf("got delete for reord but cant fine uuid=%s", uuid)
-		return nil
+		log.Log.Warnf("got delete for reord but cant find uuid=%s", uuid)
+		return
 	}
+	// remove from db first
+	delete(records, r.Uuid)
+
 	book, ok := books[r.RecordBookUuid]
 	if !ok {
 		log.Log.Errorf("got delete for a record but there was no book %s", r.RecordBookUuid)
-		return nil
+		return
 	}
 	//remove the record from the book
 	book.ActiveRecords = book.ActiveRecords[:len(book.ActiveRecords)-1]
 	if r.ShareCount < 0 { // we have a sell, need to readd those those
 
 	}
-	// remove from db first
-	dbErr := database.Db.DeleteRecord(r)
-	delete(records, r.Uuid)
-	utils.RemoveUuid(r.Uuid)
-	return dbErr
+	id.RemoveUuid(r.Uuid)
 
 	//for i, r := range book.ActiveRecords {
 	//	if r.RecordUuid == r.RecordUuid {
@@ -154,7 +136,7 @@ func DeleteRecordBook(uuid string) {
 			portfolioBooks[b.PortfolioUuid][remove] = portfolioBooks[b.PortfolioUuid][len(portfolioBooks[b.PortfolioUuid])-1]
 			portfolioBooks[b.PortfolioUuid] = portfolioBooks[b.PortfolioUuid][:len(portfolioBooks[b.PortfolioUuid])-1]
 		} else {
-			log.Log.Printf("did not find delete record book=%s for protfolio=%s", uuid, b.PortfolioUuid)
+			log.Log.Printf("did not find delete record book=%s for portfolio=%s", uuid, b.PortfolioUuid)
 		}
 	}
 }
@@ -179,11 +161,11 @@ func MakeBook(uuid, ledgerUuid, portfolioUuid string) error {
 
 	sender.RegisterChangeUpdate(portfolioUuid, bookChange)
 	sender.SendNewObject(portfolioUuid, books[uuid])
-	utils.RegisterUuid(uuid, books[uuid])
+	id.RegisterUuid(uuid, books[uuid])
 	return nil
 }
 
-func MakeRecord(uuid, recordBookUuid string, amount, sharePrice, taxes, fees, bonus, result int64, t time.Time, lockAcquired bool) (*Record, error) {
+func MakeRecord(uuid, recordBookUuid string, amount, sharePrice, taxes, fees, bonus, result int64, t time.Time, lockAcquired bool) *Record {
 	if !lockAcquired {
 		recordsLock.Acquire("new-record")
 		defer recordsLock.Release()
@@ -191,18 +173,20 @@ func MakeRecord(uuid, recordBookUuid string, amount, sharePrice, taxes, fees, bo
 
 	book, ok := books[recordBookUuid]
 	if !ok {
-		return nil, fmt.Errorf("record book id %s not found for record how?", recordBookUuid)
+		panic("record book not found for a record, NO!")
 	}
 	newRecord := &Record{
-		Uuid:           uuid,
-		SharePrice:     sharePrice,
-		Time:           t,
-		ShareCount:     amount,
-		RecordBookUuid: recordBookUuid,
-		Fees:           fees,
-		Bonus:          bonus,
-		Result:         result,
-		Taxes:          taxes,
+		Record: models.Record{
+			Uuid:           uuid,
+			SharePrice:     sharePrice,
+			Time:           t,
+			ShareCount:     amount,
+			RecordBookUuid: recordBookUuid,
+			Fees:           fees,
+			Bonus:          bonus,
+			Result:         result,
+			Taxes:          taxes,
+		},
 	}
 	records[uuid] = newRecord
 	if amount > 0 {
@@ -210,10 +194,10 @@ func MakeRecord(uuid, recordBookUuid string, amount, sharePrice, taxes, fees, bo
 	} else {
 		walkRecords(book, amount*-1, true)
 	}
-	utils.RegisterUuid(uuid, newRecord)
+	id.RegisterUuid(uuid, newRecord)
 	wires.BookUpdate.Offer(book)
 	sender.SendNewObject(book.PortfolioUuid, newRecord)
-	return newRecord, nil
+	return newRecord
 }
 
 // ok so how does this work?

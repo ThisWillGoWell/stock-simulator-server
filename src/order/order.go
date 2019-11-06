@@ -3,6 +3,7 @@ package order
 import (
 	"fmt"
 
+	"github.com/ThisWillGoWell/stock-simulator-server/src/sender"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
@@ -158,30 +159,44 @@ func executeTrade(o *TradeOrder) {
 	//ledger.EntriesLock.EnableDebug()
 	var err error
 	valuable.ValuablesLock.Acquire("trade")
-	defer valuable.ValuablesLock.Release()
-
-	ledger.EntriesLock.Acquire("trade")
-	defer ledger.EntriesLock.Release()
-
 	value, exists := valuable.Stocks[o.ValuableID]
 	if !exists {
+		valuable.ValuablesLock.Release()
 		failureOrder("asset is not recognized", o)
 		return
 	}
-
+	// lock the object for the rest of the trade
 	value.GetLock().Acquire("trade")
 	defer value.GetLock().Release()
+	valuable.ValuablesLock.Release()
 
+	portfolio.PortfoliosLock.Acquire("trade")
 	port, exists := portfolio.Portfolios[o.PortfolioID]
 	if !exists {
+		portfolio.PortfoliosLock.Release()
 		failureOrder("portfolio does not exist, this is very bad", o)
 		return
 	}
+	//lock the portfolio for the rest of the trade
+	port.Lock.Acquire("trade")
+	portfolio.PortfoliosLock.Release()
+
+	// get the ledger or make a new one
+
+	ledger.EntriesLock.Acquire("trade")
+	ledger.NewEntriesLock.Acquire("trade")
+	ledgerEntry, ledgerExists := ledger.EntriesStockPortfolio[o.ValuableID][o.PortfolioID]
+	if !ledgerExists {
+		defer ledger.NewEntriesLock.Release()
+	} else {
+		ledger.NewEntriesLock.Release()
+		ledgerEntry.Lock.Acquire("trade")
+		defer ledgerEntry.Lock.Release()
+	}
+	ledger.EntriesLock.Release()
+	// no need to aquire lock here, nothing changed or added
 	tradeEffects, activeEffects := effect.TotalTradeEffect(port.Uuid)
 
-	port.Lock.Acquire("trade")
-	defer port.Lock.Release()
-	ledgerEntry, ledgerExists := ledger.EntriesStockPortfolio[o.ValuableID][o.PortfolioID]
 	details := Details{}
 	if o.Amount > 0 {
 		//we have a buy
@@ -220,152 +235,118 @@ func executeTrade(o *TradeOrder) {
 		details = calculateSellDetails(o.Amount, value, ledgerEntry.RecordBookId, tradeEffects, activeEffects)
 	}
 
+	// update/create the ledger
 	if !ledgerExists {
+		// todo acquire lock when its made
 		ledgerEntry, err = ledger.NewLedgerEntry(o.PortfolioID, o.ValuableID)
 		if err != nil {
 			log.Log.Errorf("err during ledger create err=[%v]", err)
 			failureOrder(fmt.Sprintf("Opps! Something went wrong 0x043"), o)
 			return
 		}
-		port.UpdateInput.RegisterInput(ledgerEntry.UpdateChannel.GetBufferedOutput(10))
 	} else {
 		ledgerEntry.Amount += o.Amount
-		if err := ledgerEntry.PublishUpdate(); err != nil {
-			ledgerEntry.Amount -= o.Amount
-		}
 	}
 
-	//add the holder amount
-	r, err := record.NewRecord(ledgerEntry.RecordBookId, details.ShareCount, details.SharePrice, details.Tax, details.Fees, details.Bonus, details.Result)
-	if err != nil {
-		// uaa oh, record failed, but we already made the trade
-		// so what?
-		// delete the ledger if it was made and undo the trade
-		log.Alerts.Printf("Send Help! somehow we hit this edge case! 0x45")
-		//update the ledger
-		ledgerEntry.Amount -= o.Amount
-		//delete the ledger if we had it
-		if ledgerEntry.Amount == 0 {
-			_ = ledger.DeleteLedger(ledgerEntry.Uuid, false)
-		}
-		failureOrder("Opps! Something Went wrong 0x45", o)
-		return
-	}
-	// now we commit the trade to database
-	value.OpenShares -= o.Amount
-	if err := database.Db.WriteStock(value.Stock); err != nil {
-		record.DeleteRecord(r.Uuid, false)
-		ledgerEntry.Amount -= o.Amount
-		log.Alerts.Printf("Send help! 0xA4F")
-		failureOrder("Oops! something went wrong 0xA4F")
-		return
-	}
+	// make the record
+	r, book := record.NewRecord(ledgerEntry.RecordBookId, details.ShareCount, details.SharePrice, details.Tax, details.Fees, details.Bonus, details.Result)
+	// make the notification
+	note := notification.DoneTradeNotification(port.Uuid, value.Uuid, o.Amount)
 
-	// Update the portfolio with the new ledgerEntry
+	// make the trade
 	port.Wallet += details.Result
+	value.OpenShares -= o.Amount
 
-	// commit the ledger entry to the database
-	if err != nil {
-		// we failed to update the ledger entry, undo the trade
-		// 1 undo the trade
+	if dbErr := database.Db.Execute([]interface{}{port.Portfolio, value.Stock, ledgerEntry.Ledger, r.Record, note}, nil); dbErr != nil {
+		// undo the trade
 		port.Wallet -= details.Result
-		//update the ledger
+		value.OpenShares += o.Amount
 		ledgerEntry.Amount -= o.Amount
-		//delete the ledger if we made it
-		if ledgerEntry.Amount != 0 {
-			if err := ledger.DeleteLedger(ledgerEntry.Uuid, false); err != nil {
-				log.Log.Errorf("unrecoveryable err, failed to ")
-			}
-		} else {
-
+		record.DeleteRecord(r.Uuid, true)
+		if ledgerEntry.Amount == 0 {
+			ledger.DeleteLedger(ledgerEntry, true)
 		}
-
-		log.Alerts.Printf("Send Help! somehow we hit this edge case! 0x1A4")
-		// delete the recrd
-		failureOrder("Opps! Something Went wrong", o)
+		notification.DeleteNotification(note.Uuid, true)
+		record.DeleteRecord(r.Uuid, true)
+		log.Log.Errorf("failed to make trade err=[%v]", err)
+		failureOrder("Oops! something went wrong!", o)
 		return
 	}
 
-	// commit the portfolio to the database
-	if err := database.Db.WritePortfolio(port); err != nil {
-		// undo the trade
-		// we failed to update the ledger entry, undo the trade
-		// 1 undo the trade
-		port.Wallet -= details.Result
-		//update the ledger
-		ledgerEntry.Amount -= o.Amount
-		//delete the ledger if we had it
-		if ledgerEntry.Amount != 0 {
-			ledger.DeleteLedger(ledgerEntry.Uuid, false)
-		}
-		//delete the record
-	}
-
+	// we have committed the stuff to the database, offer to all downstream listeners
 	if !ledgerExists {
 		port.UpdateInput.RegisterInput(value.UpdateChannel.GetBufferedOutput(100))
 		wires.LedgerNewObject.Offer(ledgerEntry)
 	} else {
 		ledgerEntry.UpdateChannel.Offer(ledgerEntry)
 	}
-
-	if err := notification.DoneTradeNotification(port.Uuid, value.Uuid, o.Amount); err != nil {
-		log.Log.Errorf("failed to make notification for trade err=[%v]", err)
-		//no point to fail trade on notification failure
-	}
-	wires.RecordsNewObject.Offer(r)
-	successOrder(o, details)
+	go port.Update()
 	go value.Update()
+	// send the new objects
+	sender.SendNewObject(port.Uuid, note)
+	wires.RecordsNewObject.Offer(r)
+	wires.BookNewObject.Offer(book)
+
+	successOrder(o, details)
 	go port.Update()
 }
 
 func calculateDetails(order *ProspectOrder) {
-	ledger.EntriesLock.Acquire("prospect")
-	defer ledger.EntriesLock.Release()
-
 	response := &BasicResponse{Order: order}
 
+	valuable.ValuablesLock.Acquire("prospect")
 	v, ok := valuable.Stocks[order.ValuableID]
 	if !ok {
+		valuable.ValuablesLock.Release()
 		response.Err = "valuable id not found"
 		return
 	}
+	// lock for rest
+	v.GetLock().Acquire("prospect")
+	defer v.GetLock().Release()
+	valuable.ValuablesLock.Release()
+
+	portfolio.PortfoliosLock.Acquire("prospect")
 	port, ok := portfolio.Portfolios[order.PortfolioID]
 	if !ok {
+		portfolio.PortfoliosLock.Release()
 		response.Err = "portfolio id not found"
 		return
 	}
-	tradeEffect, activeEffects := effect.TotalTradeEffect(order.PortfolioID)
-
-	v.GetLock().Acquire("calculate-order-details")
-	defer v.GetLock().Release()
 	port.Lock.Acquire("calculate-order-details")
 	defer port.Lock.Release()
+	portfolio.PortfoliosLock.Release()
+
+	tradeEffect, activeEffects := effect.TotalTradeEffect(order.PortfolioID)
+
 	var ledgerEntry *ledger.Entry
 	recordUuid := ""
 
 	if order.Amount > 0 {
 		response.Success = true
 		response.OrderDetails = calculateBuyDetails(order.Amount, v, tradeEffect, activeEffects)
-	} else {
-		ledgerPortfolio, ledgerExists := ledger.EntriesPortfolioStock[order.PortfolioID]
-		if ledgerExists {
-			ledgerEntry, ledgerExists = ledgerPortfolio[v.Uuid]
-		}
-		if !ledgerExists {
-			response.Err = "can't calculate sell order for ledger that does not exist"
-		} else {
-			if ledgerEntry.Amount < order.Amount*-1 {
-				response.Err = "don't own that many shares"
-
-			} else {
-				recordUuid = ledgerEntry.RecordBookId
-				response.Success = true
-				response.OrderDetails = calculateSellDetails(order.Amount, v, recordUuid, tradeEffect, activeEffects)
-
-			}
-		}
+		order.ResponseChannel <- response
+		return
 	}
+	ledgerPortfolio, ledgerExists := ledger.EntriesPortfolioStock[order.PortfolioID]
+	if ledgerExists {
+		ledgerEntry, ledgerExists = ledgerPortfolio[v.Uuid]
+	}
+	if !ledgerExists || ledgerEntry == nil {
+		response.Err = "can't calculate sell order for ledger that does not exist"
+		order.ResponseChannel <- response
+		return
+	}
+	if ledgerEntry.Amount < order.Amount*-1 {
+		response.Err = "don't own that many shares"
+		order.ResponseChannel <- response
+		return
+	}
+	recordUuid = ledgerEntry.RecordBookId
+	response.Success = true
+	response.OrderDetails = calculateSellDetails(order.Amount, v, recordUuid, tradeEffect, activeEffects)
 	order.ResponseChannel <- response
+
 }
 
 func calculateBuyDetails(amount int64, v *valuable.Stock, tradeEffect *effect.TradeEffect, activeTradeEffects []string) Details {
@@ -411,26 +392,31 @@ func executeTransfer(o *TransferOrder) {
 		failureOrder("cant transfer to and from same user", o)
 		return
 	}
+	portfolio.PortfoliosLock.Acquire("transfer money")
 	port, exists := portfolio.Portfolios[o.PortfolioID]
 	if !exists {
+		portfolio.PortfoliosLock.Release()
 		failureOrder("giver portfolio not known", o)
-		return
-	}
-
-	if port.Level == 0 {
-		failureOrder("need to be level 1 to transfer money", o)
 		return
 	}
 
 	receiver, exists := portfolio.Portfolios[o.ReceiverID]
 	if !exists {
-		failureOrder("portfolio does not exist, this is very bad", o)
+		portfolio.PortfoliosLock.Release()
+		failureOrder("receiver portolio not found und", o)
 		return
 	}
+	// lock the lock both portfolios for the rest of the trade
 	port.Lock.Acquire("transfer")
 	defer port.Lock.Release()
 	receiver.Lock.Acquire("transfer")
 	defer receiver.Lock.Release()
+	portfolio.PortfoliosLock.Release()
+
+	if port.Level == 0 {
+		failureOrder("need to be level 1 to transfer money", o)
+		return
+	}
 
 	if o.Amount <= 0 {
 		failureOrder("invalid amount", o)
@@ -443,10 +429,27 @@ func executeTransfer(o *TransferOrder) {
 	}
 	receiver.Wallet += o.Amount
 	port.Wallet -= o.Amount
-	successOrder(o, Details{})
-	if err := notification.SendMoneyTradeNotification(port.Uuid, receiver.Uuid, o.Amount); err != nil {
-		log.Log.Errorf("failed to send money trade notification from=%s err=%s err=[%v]", port.Uuid, receiver.Uuid, err)
+
+	notification.NotificationLock.Acquire("transfer")
+	defer notification.NotificationLock.Release()
+
+	n1, n2 := notification.SendMoneyTradeNotification(port.Uuid, receiver.Uuid, o.Amount)
+
+	// commit the changes to the database
+	if dbErr := database.Db.Write(n1.Notification, n2.Notification, receiver.Portfolio, port.Portfolio); dbErr != nil {
+		// undo the transfer
+		receiver.Wallet -= o.Amount
+		port.Wallet += o.Amount
+		notification.DeleteNotification(n1.Uuid, true)
+		notification.DeleteNotification(n2.Uuid, true)
+		log.Log.Errorf("failed to write to database send money err=[%v]", dbErr)
+		failureOrder("Oops! something went wrong", o)
+		return
 	}
+
+	successOrder(o, Details{})
+	sender.SendNewObject(port.Uuid, n1)
+	sender.SendNewObject(receiver.Uuid, n2)
 	go port.Update()
 	go receiver.Update()
 }

@@ -63,6 +63,9 @@ func UpdateBaseProfit(portfolioUuid string, profitMultiplier float64) {
 	EffectLock.Acquire("update-effect")
 	defer EffectLock.Release()
 	effect := getTaggedEffect(portfolioUuid, baseTradeEffectTag)
+	if effect == nil {
+		panic(fmt.Errorf("there was no base effect?? port=[%v]", portfolioUuid))
+	}
 	effect.InnerEffect.(*TradeEffect).BonusProfitMultiplier = utils.CreateFloat(profitMultiplier)
 	wires.EffectsUpdate.Offer(effect)
 }

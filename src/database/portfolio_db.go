@@ -52,18 +52,22 @@ func (d *Database) InitPortfolio() error {
 	return d.Exec("portfolio-history-init", portfolioHistoryTableCreateStatement)
 }
 
-func (d *Database) WritePortfolio(port models.Portfolio) error {
-	if err := d.Exec(portfolioTableUpdateInsert, port.Uuid, port.UserUUID, port.Wallet, port.Level); err != nil {
+func writePortfolio(port models.Portfolio, tx *sql.Tx) error {
+	if _, err := tx.Exec(portfolioTableUpdateInsert, port.Uuid, port.UserUUID, port.Wallet, port.Level); err != nil {
 		return err
 	}
-	return d.Exec(portfolioHistoryTableUpdateInsert, port.Uuid, port.NetWorth, port.Wallet)
+	if _, err := tx.Exec(portfolioHistoryTableUpdateInsert, port.Uuid, port.NetWorth, port.Wallet); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (d *Database) DeletePortfolio(uuid string) error {
-	e1 := d.Exec("delete-portfolio", portfolioTableDelete, uuid)
-	e2 := d.Exec("delete-portfolio", portfolioHistroyTableDelete, uuid)
-	if e1 != nil || e2 != nil {
-		return fmt.Errorf("delete stock uuid=%s stockdb=[%v] history=[%v]", uuid, e1, e2)
+func deletePortfolio(port models.Portfolio, tx *sql.Tx) error {
+	if _, err := tx.Exec(portfolioTableDelete, port.Uuid); err != nil {
+		return err
+	}
+	if _, err := tx.Exec(portfolioHistroyTableDelete, port.Uuid); err != nil {
+		return nil
 	}
 	return nil
 }

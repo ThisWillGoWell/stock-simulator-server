@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/ThisWillGoWell/stock-simulator-server/src/id"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
@@ -22,7 +24,6 @@ import (
 	"github.com/ThisWillGoWell/stock-simulator-server/src/duplicator"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/session"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 )
 
 // keep the uuid to user
@@ -140,7 +141,7 @@ func MakeUser(uuid, username, displayName, password, portfolioUUID, config strin
 	}
 	uuidList[username] = uuid
 	UserList[uuid] = u
-	utils.RegisterUuid(uuid, UserList[uuid])
+	id.RegisterUuid(uuid, UserList[uuid])
 	return UserList[uuid], nil
 }
 

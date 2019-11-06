@@ -32,12 +32,14 @@ func (d *Database) initAccount() error {
 	return d.Exec("user-init", accountTableCreateStatement)
 }
 
-func (d *Database) WriteUser(user models.User) error {
-	return d.Exec("user-update", accountTableUpdateInsert, user.Uuid, user.UserName, user.DisplayName, user.Password, user.PortfolioId, user.ConfigStr)
+func writeUser(user models.User, tx *sql.Tx) error {
+	_, err := tx.Exec(accountTableUpdateInsert, user.Uuid, user.UserName, user.DisplayName, user.Password, user.PortfolioId, user.ConfigStr)
+	return err
 }
 
-func (d *Database) DeleteUser(uuid string) error {
-	return d.Exec("user-delete", userTableDelete, uuid)
+func deleteUser(user models.User, tx *sql.Tx) error {
+	_, err := tx.Exec(userTableDelete, uuid)
+	return err
 }
 
 func (d *Database) PopulateUsers() (map[string]models.User, error) {

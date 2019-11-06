@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/record"
 )
 
@@ -34,12 +36,14 @@ func (d *Database) InitRecord() error {
 	return d.Exec("record-init", recordTableCreateStatement)
 }
 
-func (d *Database) DeleteRecord(record *record.Record) error {
-	return d.Exec("record-delete", recordDeleteRecord, record.Uuid)
+func deleteRecord(record models.Record, tx *sql.Tx) error {
+	_, err := tx.Exec(recordDeleteRecord, record.Uuid)
+	return err
 }
 
-func (d *Database) WriteRecord(record *record.Record) error {
-	return d.Exec("record-update", recordTableUpdateInsert, record.Uuid, record.SharePrice, record.RecordBookUuid, record.Fees, record.ShareCount, record.Taxes, record.Bonus, record.Result)
+func writeRecord(record models.Record, tx *sql.Tx) error {
+	_, err := tx.Exec(recordTableUpdateInsert, record.Uuid, record.SharePrice, record.RecordBookUuid, record.Fees, record.ShareCount, record.Taxes, record.Bonus, record.Result)
+	return err
 }
 
 func (d *Database) populateRecords() error {

@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/ThisWillGoWell/stock-simulator-server/src/id"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
@@ -67,19 +69,19 @@ var (
 	PublicSubscribeChange = duplicator.MakeDuplicator("subscribe-outputs")
 )
 
-func RegisterPublicChangeDetect(o Identifiable) error {
+func RegisterPublicChangeDetect(o id.Identifiable) error {
 	log.Log.Trace("registering public change detect: ", o.GetType(), o.GetId())
 	output := make(chan interface{})
 	PublicSubscribeChange.RegisterInput(output)
 	return registerChangeDetect(o, output)
 }
 
-func RegisterPrivateChangeDetect(o Identifiable, update chan interface{}) error {
+func RegisterPrivateChangeDetect(o id.Identifiable, update chan interface{}) error {
 	log.Log.Trace("registering private change detect", o.GetType(), o.GetId())
 	return registerChangeDetect(o, update)
 }
 
-func UnregisterChangeDetect(o Identifiable) {
+func UnregisterChangeDetect(o id.Identifiable) {
 	subscribeablesLock.Acquire("unregister-change")
 	defer subscribeablesLock.Release()
 	if _, ok := subscribeables[o.GetType()+o.GetId()]; !ok {
@@ -90,7 +92,7 @@ func UnregisterChangeDetect(o Identifiable) {
 	delete(subscribeables, o.GetType()+o.GetId())
 }
 
-func registerChangeDetect(o Identifiable, outputChan chan interface{}) error {
+func registerChangeDetect(o id.Identifiable, outputChan chan interface{}) error {
 	//get the include tags
 	subscribeablesLock.Acquire("register-change")
 	defer subscribeablesLock.Release()
@@ -199,7 +201,7 @@ func StartDetectChanges() {
 	subscribeUpdateChannel := allUpdates.GetBufferedOutput(10000)
 	go func() {
 		for updateObj := range subscribeUpdateChannel {
-			update, ok := updateObj.(Identifiable)
+			update, ok := updateObj.(id.Identifiable)
 			if !ok {
 				continue
 			}
@@ -255,10 +257,10 @@ type ChangeField struct {
 }
 
 type ChangeNotify struct {
-	Type    string         `json:"type"`
-	Id      string         `json:"uuid"`
-	Changes []*ChangeField `json:"changes"`
-	Object  Identifiable   `json:"-"`
+	Type    string          `json:"type"`
+	Id      string          `json:"uuid"`
+	Changes []*ChangeField  `json:"changes"`
+	Object  id.Identifiable `json:"-"`
 }
 
 func (cn *ChangeNotify) GetId() string {

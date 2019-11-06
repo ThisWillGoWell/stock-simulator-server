@@ -8,6 +8,11 @@ import (
 	"time"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
+
+	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
+
+	"github.com/ThisWillGoWell/stock-simulator-server/src/id"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
@@ -70,7 +75,7 @@ func NewStock(tickerID, name string, startPrice int64, runInterval time.Duration
 	ValuablesLock.Acquire("new-stock")
 	defer ValuablesLock.Release()
 
-	uuidString := utils.SerialUuid()
+	uuidString := id.SerialUuid()
 
 	s, err := MakeStock(uuidString, tickerID, name, startPrice, 1000, runInterval)
 	if err != nil {
@@ -80,23 +85,12 @@ func NewStock(tickerID, name string, startPrice int64, runInterval time.Duration
 	return s, nil
 }
 
-func deleteStock(uuid string) {
-	s, ok := Stocks[uuid]
-	if !ok {
-		log.Log.Errorf("got delete for stock something that does not exists? uuid=%s", uuid)
-		return
-	}
+func DeleteStock(s *Stock) {
 	s.UpdateChannel.StopDuplicator()
 	close(s.close)
-	delete(Stocks, uuid)
-	utils.RemoveUuid(uuid)
+	delete(Stocks, s.Uuid)
+	id.RemoveUuid(s.Uuid)
 	change.UnregisterChangeDetect(s)
-}
-
-func (s *Stock) PublishUpdate() error {
-
-	s.UpdateChannel.Offer(s)
-	return nil
 }
 
 func MakeStock(uuid, tickerID, name string, startPrice, openShares int64, runInterval time.Duration) (*Stock, error) {
@@ -133,7 +127,7 @@ func MakeStock(uuid, tickerID, name string, startPrice, openShares int64, runInt
 	Stocks[uuid] = stock
 	stock.UpdateChannel.EnableCopyMode()
 	wires.StocksUpdate.RegisterInput(stock.UpdateChannel.GetBufferedOutput(1000))
-	utils.RegisterUuid(uuid, stock)
+	id.RegisterUuid(uuid, stock)
 	return stock, nil
 }
 
@@ -214,7 +208,13 @@ func (randPrice *RandomPrice) change(stock *Stock) {
 	if rand.Float64() <= randPrice.RandomNoise {
 		change = change * -1 * .25
 	}
+	startPrice := stock.CurrentPrice
 	stock.CurrentPrice = int64(float64(stock.CurrentPrice) + (change * .5))
+	if err := database.Db.Execute([]interface{}{stock}, nil); err != nil {
+		log.Log.Errorf("failed to update stock err=[%v]", err)
+		stock.CurrentPrice = startPrice
+		return
+	}
 
 	stock.UpdateChannel.Offer(stock)
 

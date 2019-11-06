@@ -2,107 +2,85 @@ package notification
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
+
+	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/id"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/sender"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
-
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 
 	"github.com/pkg/errors"
 )
 
-var notificationLock = lock.NewLock("notifications")
+var NotificationLock = lock.NewLock("notifications")
 var notifications = make(map[string]*Notification)
 var notificationsPortfolioUuid = make(map[string]map[string]*Notification)
 
 const IdentifiableType = "notification"
 
 type Notification struct {
-	Uuid          string      `json:"uuid"`
-	PortfolioUuid string      `json:"portfolio_uuid"`
-	Timestamp     time.Time   `json:"time"`
-	Type          string      `json:"type"`
-	Notification  interface{} `json:"notification"`
-	Seen          bool        `json:"seen"`
+	models.Notification
 }
 
-func NewNotification(portfolioUuid, t string, notification interface{}) (*Notification, error) {
-	uuid := utils.SerialUuid()
+func NewNotification(portfolioUuid, t string, notification interface{}) *Notification {
+	uuid := id.SerialUuid()
 	n := MakeNotification(uuid, portfolioUuid, t, time.Now(), false, notification)
-
-	if err := database.Db.WriteNotification(n); err != nil {
-		_ = DeleteNotification(uuid, portfolioUuid, true, false, false)
-		return nil, fmt.Errorf("failed to write notificaion to db err=[%v]", err)
-	}
-	wires.NotificationNewObject.Offer(n)
-	return n, nil
+	return n
 }
 
-func DeleteNotification(uuid, portfolioUuid string, lockAcquired, broadcastDelete, force bool) error {
+func DeleteNotification(uuid string, lockAcquired bool) {
 	if !lockAcquired {
-		notificationLock.Acquire("delete note")
-		defer notificationLock.Release()
+		NotificationLock.Acquire("delete note")
+		defer NotificationLock.Release()
 	}
 
-	if _, exists := notificationsPortfolioUuid[portfolioUuid]; !exists {
-		return errors.New("user does not have any notification")
+	item, ok := notifications[uuid]
+	if !ok {
+		log.Log.Errorf("got a delete for a uuid that does not exists")
+		return
 	}
-	note, exists := notificationsPortfolioUuid[portfolioUuid][uuid]
-	if !exists {
-		return errors.New("notification does not exist")
-	}
-	if err := database.Db.DeleteNotification(uuid); err != nil {
-		log.Log.Errorf("failed to delete notification in db err=[%v]", err)
-		if !force {
-			return fmt.Errorf("opps! something happened 0x032")
-		}
-	}
-
 	delete(notifications, uuid)
+	id.RemoveUuid(uuid)
+
+	if _, exists := notificationsPortfolioUuid[item.PortfolioUuid]; !exists {
+		log.Log.Errorf("user does not have any items")
+		return
+	}
+	note, exists := notificationsPortfolioUuid[item.PortfolioUuid][uuid]
+	if !exists {
+		log.Log.Errorf("notification does not exist in users inventory")
+		return
+	}
 	delete(notificationsPortfolioUuid[note.PortfolioUuid], uuid)
 	if len(notificationsPortfolioUuid[note.PortfolioUuid]) == 0 {
 		delete(notificationsPortfolioUuid, note.PortfolioUuid)
 	}
-
-	utils.RemoveUuid(uuid)
-	if broadcastDelete {
-		sender.SendDeleteObject(portfolioUuid, note)
-		wires.NotificationsDelete.Offer(note)
-	}
-
-	return nil
 }
 
 func MakeNotification(uuid, portfolioUuid, t string, timestamp time.Time, seen bool, notification interface{}) *Notification {
-	notificationLock.Acquire("get-all-notifications")
-	defer notificationLock.Release()
 	note := &Notification{
-		Uuid:          uuid,
-		PortfolioUuid: portfolioUuid,
-		Type:          t,
-		Notification:  notification,
-		Timestamp:     timestamp,
-		Seen:          seen,
+		Notification: models.Notification{
+			Uuid:          uuid,
+			PortfolioUuid: portfolioUuid,
+			Type:          t,
+			Notification:  notification,
+			Timestamp:     timestamp,
+			Seen:          seen,
+		},
 	}
 	notifications[uuid] = note
 	if _, ok := notificationsPortfolioUuid[portfolioUuid]; !ok {
 		notificationsPortfolioUuid[portfolioUuid] = make(map[string]*Notification)
 	}
 	notificationsPortfolioUuid[portfolioUuid][uuid] = note
-	utils.RegisterUuid(uuid, note)
-
-	sender.SendNewObject(portfolioUuid, note)
+	id.RegisterUuid(uuid, note)
 	return note
 }
 
@@ -132,19 +110,20 @@ type MailNotification struct {
 
 func NewMailNotifcation(uuid, from string, text string, money int64) *Notification {
 	return &Notification{
-		Timestamp: time.Now(),
-		Type:      "mail",
-		Notification: &MailNotification{
-			From:  from,
-			Text:  text,
-			Money: money,
-		},
-	}
+		models.Notification{
+			Timestamp: time.Now(),
+			Type:      "mail",
+			Notification: &MailNotification{
+				From:  from,
+				Text:  text,
+				Money: money,
+			},
+		}}
 }
 
 func GetAllNotifications(portfolioUuid string) []*Notification {
-	notificationLock.Acquire("get-all-notifications")
-	defer notificationLock.Release()
+	NotificationLock.Acquire("get-all-notifications")
+	defer NotificationLock.Release()
 	notifications := make([]*Notification, 0)
 	for _, notification := range notificationsPortfolioUuid[portfolioUuid] {
 		notifications = append(notifications, notification)
@@ -163,7 +142,7 @@ func JsonToNotification(jsonString, notificationType string) interface{} {
 		i = TradeNotification{}
 	case SendMoneyNotificationType:
 		i = MoneyTransferNotification{}
-	case RecieveNotificationType:
+	case ReceiveNotificationType:
 		i = MoneyTransferNotification{}
 	case NewEffectNotificationType:
 		i = EffectNotification{}

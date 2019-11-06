@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
-
 	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
 
+	"github.com/ThisWillGoWell/stock-simulator-server/src/id"
+
+	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/merge"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
@@ -18,7 +19,6 @@ import (
 	"github.com/ThisWillGoWell/stock-simulator-server/src/notification"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/sender"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 	"github.com/pkg/errors"
 )
 
@@ -59,19 +59,7 @@ func (*Item) GetType() string {
 }
 
 func newItem(portfolioUuid, configId, itemType, name string, innerItem interface{}) (i *Item, err error) {
-
-	if i, err = MakeItem(utils.SerialUuid(), portfolioUuid, configId, itemType, name, innerItem, time.Now()); err != nil {
-		log.Log.Errorf("making item err=[%v]", err)
-		return nil, err
-	}
-	if err := database.Db.WriteItem(i.Item); err != nil {
-		_ = DeleteItem(i.Uuid, portfolioUuid, false, false, true)
-		return nil, err
-	}
-
-	sender.SendNewObject(portfolioUuid, i)
-	wires.ItemsNewObjects.Offer(i)
-	return
+	return MakeItem(id.SerialUuid(), portfolioUuid, configId, itemType, name, innerItem, time.Now())
 }
 
 func MakeItem(uuid, portfolioUuid, itemConfigId, itemType, name string, innerItem interface{}, createTime time.Time) (*Item, error) {
@@ -107,7 +95,7 @@ func MakeItem(uuid, portfolioUuid, itemConfigId, itemType, name string, innerIte
 		return nil, err
 	}
 
-	utils.RegisterUuid(uuid, i)
+	id.RegisterUuid(uuid, i)
 	ItemsPortInventory[i.PortfolioUuid][i.Uuid] = i
 	Items[i.Uuid] = i
 
@@ -115,18 +103,20 @@ func MakeItem(uuid, portfolioUuid, itemConfigId, itemType, name string, innerIte
 }
 
 func BuyItem(portUuid, configId string) (string, error) {
-
-	port, _ := portfolio.GetPortfolio(portUuid)
+	portfolio.PortfoliosLock.Acquire("buy-item")
+	port, ok := portfolio.Portfolios[portUuid]
+	if !ok {
+		portfolio.PortfoliosLock.Release()
+		return "", fmt.Errorf("portfolio not found")
+	}
+	port.Lock.Acquire("buy-item")
+	defer port.Lock.Release()
+	portfolio.PortfoliosLock.Release()
 
 	config, found := validItems[configId]
 	if !found {
 		return "", errors.New("config not found")
 	}
-
-	port.Lock.Acquire("buy item")
-	defer port.Lock.Release()
-	ItemLock.Acquire("buy-item")
-	defer ItemLock.Release()
 
 	if config.RequiredLevel > port.Level {
 		return "", errors.New("not high enough level")
@@ -135,69 +125,80 @@ func BuyItem(portUuid, configId string) (string, error) {
 		return "", errors.New("not enough $$ in wallet")
 	}
 
-	port.Wallet -= config.Cost
+	ItemLock.Acquire("buy-item")
+	defer ItemLock.Release()
+
 	if _, ok := ItemsPortInventory[port.Uuid]; !ok {
 		ItemsPortInventory[port.Uuid] = make(map[string]*Item)
 	}
+
 	var i *Item
 	var err error
 	if i, err = newItem(portUuid, configId, config.Type, config.Name, config.Prams.Copy()); err != nil {
-		port.Wallet += config.Cost
 		log.Log.Errorf("failed to make item err=[%v]", err)
 		return "", fmt.Errorf("failed to make item")
 	}
+
 	i.InnerItem.(InnerItem).SetPortfolioUuid(portUuid)
-	ItemsPortInventory[port.Uuid][i.PortfolioUuid] = i
+	ItemsPortInventory[port.Uuid][i.Uuid] = i
 	Items[i.Uuid] = i
 
-	if err := notification.NewItemNotification(portUuid, i.Type, i.Uuid); err != nil {
-		log.Log.Errorf("failed to make %s new-item notification for %s err=[%v]", portUuid, err)
-	}
+	port.Wallet -= config.Cost
 
-	go port.Update()
+	notification.NotificationLock.Acquire("buy item")
+	defer notification.NotificationLock.Release()
+
+	note := notification.NewItemNotification(portUuid, i.Type, i.Uuid)
+
+	//commit them all to the database
+	if dbErr := database.Db.Execute([]interface{}{note.Notification, i.Item, port.Portfolio}, nil); dbErr != nil {
+		// undo the item buy
+		delete(ItemsPortInventory[port.Uuid], i.Uuid)
+		if len(ItemsPortInventory[port.Uuid]) == 0 {
+			delete(ItemsPortInventory, port.Uuid)
+		}
+		notification.DeleteNotification(note.Uuid, true)
+		port.Wallet += config.Cost
+		deleteItem(i)
+		log.Log.Errorf("failed to buy item err=[%v]", err)
+		return "", fmt.Errorf("oops! something went wrong")
+	}
 	return i.Uuid, nil
 }
 
 func (i *Item) DeleteItem() error {
-	return DeleteItem(i.Uuid, i.PortfolioUuid, true, true, true)
+	return database.Db.Execute(nil, []interface{}{i})
 }
 
-func DeleteItem(uuid, portfolioUuid string, broadcastDelete, lockAcquired, force bool) error {
-	if !lockAcquired {
-		ItemLock.Acquire("delete-item")
-		defer ItemLock.Release()
-	}
+func DeleteItem(uuid string) error {
 
-	if _, exists := ItemsPortInventory[portfolioUuid]; !exists {
-		return errors.New("user does not have any item")
-	}
-	item, exists := ItemsPortInventory[portfolioUuid][uuid]
+	ItemLock.Acquire("delete-item")
+	defer ItemLock.Release()
+	// delete from the database
+	item, exists := Items[uuid]
 	if !exists {
-		return errors.New("item does not exist")
+		log.Log.Errorf("got a delete for a item that does not exists")
+		return nil
 	}
-
-	dbErr := database.Db.DeleteItem(item.Uuid)
-	if dbErr != nil {
-		log.Log.Errorf("Failed to delete Item in database uuid=%v err=[%v]", item.Uuid, dbErr)
-		if !force {
-			return fmt.Errorf("oops! something went wrong 0x01432")
-		}
+	if err := database.Db.Execute(nil, []interface{}{item}); err != nil {
+		log.Log.Errorf("failed to delete item err=[%v]", err)
+		return fmt.Errorf("opps! something went wrong")
 	}
+	// we can delete the item now
+	deleteItem(item)
+	sender.SendDeleteObject(item.PortfolioUuid, item)
+	return nil
+}
 
+func deleteItem(item *Item) {
 	change.UnregisterChangeDetect(item)
 	close(item.UpdateChannel)
-	delete(Items, uuid)
-	delete(ItemsPortInventory[item.PortfolioUuid], uuid)
+	delete(Items, item.Uuid)
+	delete(ItemsPortInventory[item.PortfolioUuid], item.Uuid)
 	if len(ItemsPortInventory[item.PortfolioUuid]) == 0 {
 		delete(ItemsPortInventory, item.PortfolioUuid)
 	}
-	utils.RemoveUuid(uuid)
-	if broadcastDelete {
-		sender.SendDeleteObject(portfolioUuid, item)
-		wires.ItemsDelete.Offer(item)
-	}
-
-	return dbErr
+	id.RemoveUuid(item.Uuid)
 }
 
 func GetItemsForPortfolio(portfolioUuid string) []*Item {

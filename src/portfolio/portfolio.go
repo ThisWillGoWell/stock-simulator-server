@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/ThisWillGoWell/stock-simulator-server/src/id"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
 
@@ -16,7 +18,6 @@ import (
 	"github.com/ThisWillGoWell/stock-simulator-server/src/ledger"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/level"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 )
@@ -75,7 +76,7 @@ func DeletePortfolio(uuid string, lockAquired, force bool) {
 	port.UpdateChannel.StopDuplicator()
 	change.UnregisterChangeDetect(port)
 	delete(Portfolios, uuid)
-	utils.RemoveUuid(uuid)
+	id.RemoveUuid(uuid)
 }
 
 func MakePortfolio(uuid, userUUID string, wallet, level int64, lockAquired bool) (*Portfolio, error) {
@@ -85,7 +86,7 @@ func MakePortfolio(uuid, userUUID string, wallet, level int64, lockAquired bool)
 		defer PortfoliosLock.Release()
 	}
 	if _, exists := Portfolios[uuid]; exists {
-		utils.RemoveUuid(uuid)
+		id.RemoveUuid(uuid)
 		return nil, errors.New("portfolio uuid already Exists")
 	}
 	port :=
@@ -110,7 +111,7 @@ func MakePortfolio(uuid, userUUID string, wallet, level int64, lockAquired bool)
 
 	wires.PortfolioNewObject.Offer(port)
 	wires.PortfolioUpdate.RegisterInput(port.UpdateChannel.GetBufferedOutput(1000))
-	utils.RegisterUuid(uuid, port)
+	id.RegisterUuid(uuid, port)
 	go port.valuableUpdate()
 	return port, nil
 }

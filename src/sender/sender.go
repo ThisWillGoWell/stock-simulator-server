@@ -3,6 +3,8 @@ package sender
 import (
 	"fmt"
 
+	"github.com/ThisWillGoWell/stock-simulator-server/src/id"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/duplicator"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
@@ -26,14 +28,14 @@ func RunGlobalSender() {
 		globalObjects.RegisterInput(wires.EffectsNewObject.GetBufferedOutput(10000))
 		out := globalObjects.GetBufferedOutput(100000)
 		for ele := range out {
-			GlobalMessages.Offer(messages.NewObjectMessage(ele.(change.Identifiable)))
+			GlobalMessages.Offer(messages.NewObjectMessage(ele.(id.Identifiable)))
 		}
 	}()
 
 	go func() {
 		out := change.PublicSubscribeChange.GetBufferedOutput(100000)
 		for ele := range out {
-			GlobalMessages.Offer(messages.BuildUpdateMessage(ele.(change.Identifiable)))
+			GlobalMessages.Offer(messages.BuildUpdateMessage(ele.(id.Identifiable)))
 		}
 	}()
 
@@ -41,7 +43,7 @@ func RunGlobalSender() {
 		globalDeletes := duplicator.MakeDuplicator("global-deletes")
 		globalDeletes.RegisterInput(wires.EffectsDelete.GetBufferedOutput(10000))
 		for ele := range globalDeletes.GetBufferedOutput(10000) {
-			GlobalMessages.Offer(messages.BuildDeleteMessage(ele.(change.Identifiable)))
+			GlobalMessages.Offer(messages.BuildDeleteMessage(ele.(id.Identifiable)))
 		}
 	}()
 
@@ -125,7 +127,7 @@ func (s *Sender) runSendObjects() {
 		for {
 			select {
 			case newObject := <-object:
-				s.Output.Offer(messages.NewObjectMessage(newObject.(change.Identifiable)))
+				s.Output.Offer(messages.NewObjectMessage(newObject.(id.Identifiable)))
 			case <-s.close:
 				break
 			}
@@ -139,7 +141,7 @@ func (s *Sender) runSendUpdates() {
 		for {
 			select {
 			case newObject := <-object:
-				s.Output.Offer(messages.BuildUpdateMessage(newObject.(change.Identifiable)))
+				s.Output.Offer(messages.BuildUpdateMessage(newObject.(id.Identifiable)))
 			case <-s.close:
 				break
 			}
@@ -154,7 +156,7 @@ func (s *Sender) runSendDeletes() {
 			select {
 			case newObject := <-object:
 				s.Output.Offer(messages.BuildDeleteMessage(
-					newObject.(change.Identifiable)))
+					newObject.(id.Identifiable)))
 			case <-s.close:
 				break
 			}
@@ -176,7 +178,7 @@ func (s *Sender) runSendNotifications() {
 	}()
 }
 
-func SendNewObject(id string, newObject change.Identifiable) {
+func SendNewObject(id string, newObject id.Identifiable) {
 	if _, exists := senders[id]; !exists {
 		fmt.Println("cant find sender id during new: " + id)
 		return
@@ -184,7 +186,7 @@ func SendNewObject(id string, newObject change.Identifiable) {
 	senders[id].NewObjects.Offer(newObject)
 }
 
-func SendDeleteObject(id string, deleteObject change.Identifiable) {
+func SendDeleteObject(id string, deleteObject id.Identifiable) {
 	if _, exists := senders[id]; !exists {
 		fmt.Println("cant find sender id during delete: " + id)
 		return

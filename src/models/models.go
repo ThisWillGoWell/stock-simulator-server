@@ -64,3 +64,24 @@ type Ledger struct {
 	Amount       int64  `json:"amount" change:"-"`
 	RecordBookId string `json:"record_book"`
 }
+
+type Record struct {
+	Uuid           string    `json:"uuid"`
+	SharePrice     int64     `json:"share_price"`
+	ShareCount     int64     `json:"share_count"`
+	Time           time.Time `json:"time"`
+	RecordBookUuid string    `json:"book_uuid"`
+	Fees           int64     `json:"fee"`
+	Taxes          int64     `json:"taxes"`
+	Bonus          int64     `json:"bonus"`
+	Result         int64     `json:"result"`
+}
+
+type Notification struct {
+	Uuid          string      `json:"uuid"`
+	PortfolioUuid string      `json:"portfolio_uuid"`
+	Timestamp     time.Time   `json:"time"`
+	Type          string      `json:"type"`
+	Notification  interface{} `json:"notification"`
+	Seen          bool        `json:"seen"`
+}

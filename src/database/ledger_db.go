@@ -34,13 +34,14 @@ func (d *Database) InitLedger() error {
 	return d.Exec("ledgers-init", ledgerTableCreateStatement)
 }
 
-func (d *Database) WriteLedger(entry models.Ledger) error {
-	return d.Exec("ledger-update", ledgerTableUpdateInsert, entry.Uuid, entry.PortfolioId, entry.RecordBookId, entry.StockId, entry.Amount)
-
+func writeLedger(entry models.Ledger, tx *sql.Tx) error {
+	_, err := tx.Exec(ledgerTableUpdateInsert, entry.Uuid, entry.PortfolioId, entry.RecordBookId, entry.StockId, entry.Amount)
+	return err
 }
 
-func (d Database) DeleteLedger(uuid string) error {
-	return d.Exec("ledger-delete", ledgerTableDeleteStatement, uuid)
+func deleteLedger(entry models.Ledger, tx *sql.Tx) error {
+	_, err := tx.Exec(ledgerTableDeleteStatement, uuid)
+	return err
 }
 
 func (d *Database) PopulateLedger() (map[string]models.Ledger, error) {

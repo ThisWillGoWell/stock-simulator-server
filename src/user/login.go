@@ -4,13 +4,14 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/ThisWillGoWell/stock-simulator-server/src/id"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/session"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 )
 
 const minPasswordLength = 4
@@ -85,8 +86,8 @@ func NewUser(username, displayName, password string) (string, error) {
 	if !isAllowedCharacterDisplayName(displayName) {
 		return "", errors.New("display name contains invalid characters")
 	}
-	uuid := utils.SerialUuid()
-	portUuid := utils.SerialUuid()
+	uuid := id.SerialUuid()
+	portUuid := id.SerialUuid()
 
 	hashedPassword := hashAndSalt(password)
 	user, err := MakeUser(uuid, username, displayName, hashedPassword, portUuid, "{}", false)
