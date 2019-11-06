@@ -2,6 +2,7 @@ package effect
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
@@ -90,6 +91,13 @@ func MakeEffect(uuid, portfolioUuid, title, effectType, tag string, innerEffect 
 	if !lockAcquired {
 		EffectLock.Acquire("make-effect")
 		defer EffectLock.Release()
+	}
+
+	if s, ok := innerEffect.(string); ok {
+		var err error
+		if innerEffect, err = UnmarshalJsonEffect(effectType, s); err != nil {
+			return nil, fmt.Errorf("failed to unmarhsal inner effect err=[%v]", err)
+		}
 	}
 	newEffect := &Effect{
 		Effect: models.Effect{

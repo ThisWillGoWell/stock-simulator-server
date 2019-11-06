@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/ledger"
 )
 
@@ -32,7 +34,7 @@ func (d *Database) InitLedger() error {
 	return d.Exec("ledgers-init", ledgerTableCreateStatement)
 }
 
-func (d *Database) WriteLedger(entry *ledger.Entry) error {
+func (d *Database) WriteLedger(entry models.Ledger) error {
 	return d.Exec("ledger-update", ledgerTableUpdateInsert, entry.Uuid, entry.PortfolioId, entry.RecordBookId, entry.StockId, entry.Amount)
 
 }
@@ -41,14 +43,14 @@ func (d Database) DeleteLedger(uuid string) error {
 	return d.Exec("ledger-delete", ledgerTableDeleteStatement, uuid)
 }
 
-func (d *Database) populateLedger() error {
+func (d *Database) PopulateLedger() (map[string]models.Ledger, error) {
 	var uuid, portfolioId, stockId, recordId string
 	var amount int64
 
 	var rows *sql.Rows
 	var err error
 	if rows, err = d.db.Query(ledgerTableQueryStatement); err != nil {
-		return fmt.Errorf("failed to query portfolio err=[%v]", err)
+		return nil, fmt.Errorf("failed to query portfolio err=[%v]", err)
 	}
 	defer func() {
 		_ = rows.Close()

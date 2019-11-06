@@ -5,8 +5,6 @@ import (
 	"fmt"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/user"
 )
 
 var (
@@ -42,23 +40,37 @@ func (d *Database) DeleteUser(uuid string) error {
 	return d.Exec("user-delete", userTableDelete, uuid)
 }
 
-func (d *Database) populateUsers() error {
+func (d *Database) PopulateUsers() (map[string]models.User, error) {
 	var uuid, name, displayName, password, portfolioId, config string
 	var rows *sql.Rows
 	var err error
 	if rows, err = d.db.Query(effectTableQueryStatement); err != nil {
-		return fmt.Errorf("failed to query portfolio err=[%v]", err)
+		return nil, fmt.Errorf("failed to query portfolio err=[%v]", err)
 	}
 	defer func() {
 		_ = rows.Close()
 	}()
+	users := make(map[string]models.User)
+
 	for rows.Next() {
 		if err = rows.Scan(&uuid, &name, &displayName, &password, &portfolioId, &config); err != nil {
-			return err
+			return nil, err
 		}
-		if _, err = user.MakeUser(uuid, name, displayName, password, portfolioId, config); err != nil {
-			return err
+		users[uuid] = models.User{
+			UserName:      name,
+			Password:      password,
+			DisplayName:   displayName,
+			Uuid:          uuid,
+			PortfolioId:   portfolioId,
+			Active:        false,
+			Config:        nil,
+			ConfigStr:     config,
+			ActiveClients: 0,
 		}
 	}
-	return rows.Err()
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return users, err
 }

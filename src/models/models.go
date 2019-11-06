@@ -56,3 +56,11 @@ type Item struct {
 	InnerItemString string      `json:"-"`
 	InnerItem       interface{} `json:"-" change:"inner"`
 }
+
+type Ledger struct {
+	Uuid         string `json:"uuid"`
+	PortfolioId  string `json:"portfolio_id"`
+	StockId      string `json:"stock_id"`
+	Amount       int64  `json:"amount" change:"-"`
+	RecordBookId string `json:"record_book"`
+}

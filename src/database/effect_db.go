@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/effect"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
 )
 
@@ -48,30 +49,38 @@ func (d *Database) DeleteEffect(uuid string) error {
 	return d.Exec(effectTableDeleteStatement, uuid)
 }
 
-func (d *Database) populateEffects() error {
+func (d *Database) PopulateEffects() (map[string]models.Effect, error) {
 	var effectType, effectJsonString, uuid, portfolioUuid, title, tag string
 	var duration float64
 	var startTime time.Time
 	var rows *sql.Rows
 	var err error
 	if rows, err = d.db.Query(effectTableQueryStatement); err != nil {
-		return fmt.Errorf("failed to query portfolio err=[%v]", err)
+		return nil, fmt.Errorf("failed to query portfolio err=[%v]", err)
 	}
 	defer func() {
 		_ = rows.Close()
 	}()
+	effects := make(map[string]models.Effect)
+
 	for rows.Next() {
 		if err = rows.Scan(&uuid, &portfolioUuid, &effectType, &title, &duration, &startTime, &tag, &effectJsonString); err != nil {
-			return err
+			return nil, err
 		}
-		var innerEffect interface{}
-		if innerEffect, err = effect.UnmarshalJsonEffect(effectType, effectJsonString); err != nil {
-			return err
-		}
-		if _, err = effect.MakeEffect(uuid, portfolioUuid, title, effectType, tag, innerEffect, time.Duration(duration), startTime); err != nil {
-			return err
+		effects[uuid] = models.Effect{
+			PortfolioUuid: portfolioUuid,
+			Uuid:          uuid,
+			Title:         title,
+			Duration:      utils.Duration{Duration: time.Duration(duration)},
+			StartTime:     startTime,
+			Type:          title,
+			InnerEffect:   effectJsonString,
+			Tag:           tag,
 		}
 	}
-	return rows.Err()
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return effects, nil
 
 }

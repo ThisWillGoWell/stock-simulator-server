@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
 	"github.com/pkg/errors"
 )
 
@@ -69,33 +68,41 @@ func (d *Database) DeletePortfolio(uuid string) error {
 	return nil
 }
 
-func (d *Database) populatePortfolios() error {
+func (d *Database) PopulatePortfolios() (map[string]models.Portfolio, error) {
 	var uuid, userUuid string
 	var wallet, level int64
 	var rows *sql.Rows
 	var err error
 	if rows, err = d.db.Query(portfolioTableQueryStatement); err != nil {
-		return fmt.Errorf("failed to query portfolio err=[%v]", err)
+		return nil, fmt.Errorf("failed to query portfolio err=[%v]", err)
 	}
 	defer func() {
 		_ = rows.Close()
 	}()
+	ports := make(map[string]models.Portfolio)
 	for rows.Next() {
 		if err = rows.Scan(&uuid, &userUuid, &wallet, &level); err != nil {
-			return err
+			return nil, err
 		}
-		if _, err = portfolio.MakePortfolio(uuid, userUuid, wallet, level, false); err != nil {
-			return err
+		ports[uuid] = models.Portfolio{
+			UserUUID: userUuid,
+			Uuid:     uuid,
+			Wallet:   wallet,
+			NetWorth: 0,
+			Level:    level,
 		}
 	}
-	return rows.Err()
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return ports, nil
 }
 
 func (d *Database) MakePortfolioHistoryTimeQuery(uuid, timeLength, field, intervalLength string) ([][]interface{}, error) {
 	if _, valid := validPortfolioFields[field]; !valid {
 		return nil, errors.New("not valid choice")
 	}
-	return MakeHistoryTimeQuery(portfolioHistoryTableName, uuid, timeLength, field, intervalLength)
+	return d.MakeHistoryTimeQuery(portfolioHistoryTableName, uuid, timeLength, field, intervalLength)
 
 }
 
@@ -103,5 +110,5 @@ func (d *Database) MakePortfolioHistoryLimitQuery(uuid, field string, limit int)
 	if _, valid := validPortfolioFields[field]; !valid {
 		return nil, errors.New("not valid choice")
 	}
-	return MakeHistoryLimitQuery(portfolioHistoryTableName, uuid, field, limit)
+	return d.MakeHistoryLimitQuery(portfolioHistoryTableName, uuid, field, limit)
 }

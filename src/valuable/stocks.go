@@ -10,8 +10,6 @@ import (
 	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
-
 	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/money"
@@ -78,26 +76,27 @@ func NewStock(tickerID, name string, startPrice int64, runInterval time.Duration
 	if err != nil {
 		return nil, err
 	}
-	if err := database.Db.WriteStock(s.Stock); err != nil {
-		_ = deleteStock(s.Uuid)
-		return nil, fmt.Errorf("failed to make stock because db err=[%v]", err)
-	}
 	wires.StocksNewObject.Offer(s)
 	return s, nil
 }
 
-func deleteStock(uuid string) error {
+func deleteStock(uuid string) {
 	s, ok := Stocks[uuid]
 	if !ok {
 		log.Log.Errorf("got delete for stock something that does not exists? uuid=%s", uuid)
+		return
 	}
-	dbErr := database.Db.DeleteStock(uuid)
 	s.UpdateChannel.StopDuplicator()
 	close(s.close)
 	delete(Stocks, uuid)
 	utils.RemoveUuid(uuid)
 	change.UnregisterChangeDetect(s)
-	return dbErr
+}
+
+func (s *Stock) PublishUpdate() error {
+
+	s.UpdateChannel.Offer(s)
+	return nil
 }
 
 func MakeStock(uuid, tickerID, name string, startPrice, openShares int64, runInterval time.Duration) (*Stock, error) {

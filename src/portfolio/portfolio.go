@@ -4,8 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
-
+	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/effect"
@@ -58,26 +57,18 @@ func NewPortfolio(portfolioUuid, userUuid string) (*Portfolio, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := database.Db.WritePortfolio(port.Portfolio); err != nil {
-		_ = DeletePortfolio(portfolioUuid, true, true)
-		return nil, fmt.Errorf("failed to make portfolio db err =[%v]", err)
-	}
-	wires.PortfolioNewObject.Offer(port)
 	return port, err
 }
 
-func DeletePortfolio(uuid string, lockAquired, force bool) error {
+func DeletePortfolio(uuid string, lockAquired, force bool) {
 	if !lockAquired {
 		PortfoliosLock.Acquire("delete-portfolio")
 		defer PortfoliosLock.Release()
 	}
 	port, ok := Portfolios[uuid]
 	if !ok {
-		return fmt.Errorf("got a delete for a uud not found")
-	}
-	dbErr := database.Db.DeletePortfolio(uuid)
-	if dbErr != nil && force {
-		return dbErr
+		log.Log.Errorf("ot a portfolio delete on a uuid not found")
+		return
 	}
 	close(port.close)
 	port.UpdateInput.StopDuplicator()
@@ -85,7 +76,6 @@ func DeletePortfolio(uuid string, lockAquired, force bool) error {
 	change.UnregisterChangeDetect(port)
 	delete(Portfolios, uuid)
 	utils.RemoveUuid(uuid)
-	return dbErr
 }
 
 func MakePortfolio(uuid, userUUID string, wallet, level int64, lockAquired bool) (*Portfolio, error) {

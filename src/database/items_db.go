@@ -7,8 +7,6 @@ import (
 	"time"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/items"
 )
 
 var (
@@ -48,25 +46,35 @@ func (d *Database) DeleteItem(uuid string) error {
 	return d.Exec("items-delete", itemsTableDeleteStatement, uuid)
 }
 
-func (d *Database) populateItems() error {
+func (d *Database) PopulateItems() (map[string]models.Item, error) {
 	var uuid, itemType, name, configId, portfolioUuid, innerJson string
 	var createTime time.Time
 
 	var rows *sql.Rows
 	var err error
 	if rows, err = d.db.Query(itemsTableQueryStatement); err != nil {
-		return fmt.Errorf("failed to query portfolio err=[%v]", err)
+		return nil, fmt.Errorf("failed to query items err=[%v]", err)
 	}
 	defer func() {
 		_ = rows.Close()
 	}()
+	items := make(map[string]models.Item)
 	for rows.Next() {
 		if err = rows.Scan(&uuid, &itemType, &name, &configId, &portfolioUuid, &innerJson, &createTime); err != nil {
-			return err
+			return nil, err
 		}
-		if _, err = items.MakeItem(uuid, portfolioUuid, configId, itemType, name, innerJson, createTime); err != nil {
-			return err
+		items[uuid] = models.Item{
+			Uuid:          uuid,
+			Name:          name,
+			ConfigId:      configId,
+			Type:          itemType,
+			PortfolioUuid: portfolioUuid,
+			CreateTime:    createTime,
+			InnerItem:     innerJson,
 		}
 	}
-	return rows.Err()
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

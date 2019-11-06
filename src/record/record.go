@@ -73,7 +73,7 @@ type Record struct {
 //	ShareCount     int64  `json:"amount"`
 //}
 
-func NewRecord(recordBookUuid string, amount, sharePrice, taxes, fees, bonus, result int64) error {
+func NewRecord(recordBookUuid string, amount, sharePrice, taxes, fees, bonus, result int64) (*Record, error) {
 	uuid := utils.SerialUuid()
 	// need to hold the lock to make sure if it fails, we can delete it before another one gets made, messing up the activeBuyRecords
 	recordsLock.Acquire("new-record")
@@ -81,21 +81,22 @@ func NewRecord(recordBookUuid string, amount, sharePrice, taxes, fees, bonus, re
 
 	r, err := MakeRecord(uuid, recordBookUuid, amount, sharePrice, taxes, fees, bonus, result, time.Now(), true)
 	if err != nil {
-		return fmt.Errorf("failed to make record err=[%v]", err)
+		return nil, fmt.Errorf("failed to make record err=[%v]", err)
 	}
-	if err := database.Db.WriteRecord(r); err != nil {
-		_ = deleteRecord(r)
-		return fmt.Errorf("failed to make record err=[%v]", err)
-	}
-	wires.RecordsNewObject.Offer(r)
-	return nil
+
+	return r, nil
 }
 
-func deleteRecord(r *Record) error {
-	log.Log.Printf("deleting record from book uuid=%s", r.RecordBookUuid)
-	// this should only get called if the database write fails
-	recordsLock.Acquire("delete-record")
-	defer recordsLock.Release()
+func DeleteRecord(uuid string, lockAcquired bool) error {
+	if !lockAcquired {
+		recordsLock.Acquire("delete-record")
+		defer recordsLock.Release()
+	}
+	r, ok := records[uuid]
+	if !ok {
+		log.Log.Warnf("got delete for reord but cant fine uuid=%s", uuid)
+		return nil
+	}
 	book, ok := books[r.RecordBookUuid]
 	if !ok {
 		log.Log.Errorf("got delete for a record but there was no book %s", r.RecordBookUuid)
@@ -106,7 +107,6 @@ func deleteRecord(r *Record) error {
 	if r.ShareCount < 0 { // we have a sell, need to readd those those
 
 	}
-	// attempt to delete even though we know something failed with the db
 	// remove from db first
 	dbErr := database.Db.DeleteRecord(r)
 	delete(records, r.Uuid)

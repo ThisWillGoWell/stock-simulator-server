@@ -3,10 +3,10 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
 	"github.com/pkg/errors"
 )
 
@@ -87,7 +87,7 @@ func (d *Database) MakeStockHistoryLimitQuery(uuid, field string, limit int) ([]
 	return d.MakeHistoryLimitQuery(stocksHistoryTableName, uuid, field, limit)
 }
 
-func (d *Database) populateStocks() error {
+func (d *Database) PopulateStocks() (map[string]models.Stock, error) {
 	var uuid, name, tickerId string
 	var currentPrice, openShares int64
 	var changeInterval float64
@@ -95,18 +95,27 @@ func (d *Database) populateStocks() error {
 	var rows *sql.Rows
 	var err error
 	if rows, err = d.db.Query(stocksTableQueryStatement); err != nil {
-		return fmt.Errorf("failed to query portfolio err=[%v]", err)
+		return nil, fmt.Errorf("failed to query portfolio err=[%v]", err)
 	}
 	defer func() {
 		_ = rows.Close()
 	}()
+	stocks := make(map[string]models.Stock)
 	for rows.Next() {
 		if err = rows.Scan(&uuid, &tickerId, &name, &currentPrice, &openShares, &changeInterval); err != nil {
-			return err
+			return nil, err
 		}
-		if _, err = valuable.MakeStock(uuid, tickerId, name, currentPrice, openShares, t); err != nil {
-			return err
+		stocks[uuid] = models.Stock{
+			Uuid:           uuid,
+			Name:           name,
+			TickerId:       tickerId,
+			CurrentPrice:   currentPrice,
+			OpenShares:     openShares,
+			ChangeDuration: time.Duration(changeInterval),
 		}
 	}
-	return rows.Err()
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return stocks, nil
 }
