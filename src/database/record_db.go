@@ -46,26 +46,34 @@ func writeRecord(record models.Record, tx *sql.Tx) error {
 	return err
 }
 
-func (d *Database) populateRecords() error {
+func (d *Database) GetRecords() (map[string]models.Record, error) {
 	var uuid, recordUuid string
 	var sharePrice, fees, taxes, bonus, amount, id, result int64
 	var t time.Time
 	var rows *sql.Rows
 	var err error
 	if rows, err = d.db.Query(recordQuery); err != nil {
-		return fmt.Errorf("failed to query portfolio err=[%v]", err)
+		return nil, fmt.Errorf("failed to query portfolio err=[%v]", err)
 	}
 	defer func() {
 		_ = rows.Close()
 	}()
-
+	records := make(map[string]models.Record)
 	for rows.Next() {
 		if err = rows.Scan(&id, &t, &uuid, &sharePrice, &recordUuid, &fees, &amount, &taxes, &bonus, &result); err != nil {
-			return err
+			return nil, err
 		}
-		if _, err = record.MakeRecord(uuid, recordUuid, amount, sharePrice, taxes, fees, bonus, result, t); err != nil {
-			return err
+		records[uuid] = models.Record{
+			Uuid: uuid,
+			RecordBookUuid: recordUuid,
+			ShareCount: amount,
+			SharePrice: sharePrice,
+			Taxes: taxes,
+			Fees: fees,
+			Bonus: bonus,
+			Result:result,
+			Time: t,
 		}
 	}
-	return rows.Err()
+	return records, rows.Err()
 }

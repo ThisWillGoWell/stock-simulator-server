@@ -75,7 +75,7 @@ func NewSender(userUuid, portfolioUuid string) *Sender {
 		userId:        userUuid,
 		portfolioId:   portfolioUuid,
 	}
-	sender.Output.RegisterInput(GlobalMessages.GetBufferedOutput(10000))
+	sender.Output.RegisterInput(GlobalMessages.GetBufferedOutput(100))
 	sender.runSendDeletes()
 	sender.runSendObjects()
 	sender.runSendUpdates()

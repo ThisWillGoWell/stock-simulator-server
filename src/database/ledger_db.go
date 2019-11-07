@@ -40,11 +40,11 @@ func writeLedger(entry models.Ledger, tx *sql.Tx) error {
 }
 
 func deleteLedger(entry models.Ledger, tx *sql.Tx) error {
-	_, err := tx.Exec(ledgerTableDeleteStatement, uuid)
+	_, err := tx.Exec(ledgerTableDeleteStatement, entry.Uuid)
 	return err
 }
 
-func (d *Database) PopulateLedger() (map[string]models.Ledger, error) {
+func (d *Database) GetLedgers() (map[string]models.Ledger, error) {
 	var uuid, portfolioId, stockId, recordId string
 	var amount int64
 
@@ -56,13 +56,18 @@ func (d *Database) PopulateLedger() (map[string]models.Ledger, error) {
 	defer func() {
 		_ = rows.Close()
 	}()
+	ledgers := make(map[string]models.Ledger)
 	for rows.Next() {
 		if err = rows.Scan(&uuid, &portfolioId, &stockId, &recordId, &amount); err != nil {
-			return err
+			return nil, err
 		}
-		if _, err = ledger.MakeLedgerEntry(uuid, portfolioId, stockId, recordId, amount); err != nil {
-			return err
-		}
+		 ledgers[uuid] = models.Ledger{
+		 	Uuid: uuid,
+		 	PortfolioId: portfolioId,
+		 	StockId: stockId,
+		 	RecordBookId: recordId,
+		 	Amount: amount,
+		 }
 	}
-	return rows.Err()
+	return ledgers, rows.Err()
 }

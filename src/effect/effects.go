@@ -94,18 +94,17 @@ func newEffect(portfolioUuid, title, effectType, tag string, innerEffect interfa
 	if preEffect != nil {
 		deletes[0] = preEffect
 	}
-
-	if err := database.Db.Execute([]interface{}{e.Effect}, deletes); err != nil {
+	n := notification.NewEffectNotification(portfolioUuid, title)
+	if err := database.Db.Execute([]interface{}{e.Effect, n}, deletes); err != nil {
 		deleteEffect(e)
 		return nil, err
 	}
-	//todo this could lead to getting 2 trade effects at once
-	deleteEffect(preEffect)
+	if preEffect != nil {
+		deleteEffect(preEffect)
+	}
 
 	wires.EffectsNewObject.Offer(e)
-	if err := notification.NewEffectNotification(portfolioUuid, title); err != nil {
-		log.Log.Warnf("failed to make new %s effect notification for %s ", title, portfolioUuid)
-	}
+
 	return e, nil
 }
 

@@ -50,6 +50,8 @@ func NewLedgerEntry(portfolioId, stockId string) (*Entry, error) {
 	recordId := id.SerialUuid()
 	e, err := MakeLedgerEntry(uuid, portfolioId, stockId, recordId, 0, true)
 	if err != nil {
+		id.RemoveUuid(uuid)
+		id.RemoveUuid(recordId)
 		return nil, err
 	}
 

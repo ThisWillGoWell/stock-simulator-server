@@ -72,7 +72,7 @@ func deletePortfolio(port models.Portfolio, tx *sql.Tx) error {
 	return nil
 }
 
-func (d *Database) PopulatePortfolios() (map[string]models.Portfolio, error) {
+func (d *Database) GetPortfolios() (map[string]models.Portfolio, error) {
 	var uuid, userUuid string
 	var wallet, level int64
 	var rows *sql.Rows

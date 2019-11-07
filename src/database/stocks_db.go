@@ -88,7 +88,7 @@ func (d *Database) MakeStockHistoryLimitQuery(uuid, field string, limit int) ([]
 	return d.MakeHistoryLimitQuery(stocksHistoryTableName, uuid, field, limit)
 }
 
-func (d *Database) PopulateStocks() (map[string]models.Stock, error) {
+func (d *Database) GetStocks() (map[string]models.Stock, error) {
 	var uuid, name, tickerId string
 	var currentPrice, openShares int64
 	var changeInterval float64

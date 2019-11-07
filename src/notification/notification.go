@@ -17,6 +17,8 @@ import (
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
 
 	"github.com/pkg/errors"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
+	"fmt"
 )
 
 var NotificationLock = lock.NewLock("notifications")
@@ -35,36 +37,49 @@ func NewNotification(portfolioUuid, t string, notification interface{}) *Notific
 	return n
 }
 
-func DeleteNotification(uuid string, lockAcquired bool) {
+func DeleteNotification(uuid string, lockAcquired bool) error{
 	if !lockAcquired {
 		NotificationLock.Acquire("delete note")
 		defer NotificationLock.Release()
 	}
 
-	item, ok := notifications[uuid]
+	n, ok := notifications[uuid]
 	if !ok {
 		log.Log.Errorf("got a delete for a uuid that does not exists")
-		return
+		return nil
 	}
-	delete(notifications, uuid)
-	id.RemoveUuid(uuid)
+	if dbErr := database.Db.Execute(nil, []interface{}{n}); dbErr != nil {
+		log.Log.Errorf("failed to delete notification from database err=[%v]", dbErr)
+		return fmt.Errorf("opps! something went wrong 0x231")
+	}
+	deleteNotification(n)
+	sender.SendDeleteObject(n.Uuid, n)
+	return nil
+}
 
-	if _, exists := notificationsPortfolioUuid[item.PortfolioUuid]; !exists {
-		log.Log.Errorf("user does not have any items")
+func deleteNotification(note *Notification){
+	delete(notifications, note.Uuid)
+	if _, exists := notificationsPortfolioUuid[note.PortfolioUuid]; !exists {
+		log.Log.Errorf("user does not have any notifications ")
 		return
 	}
-	note, exists := notificationsPortfolioUuid[item.PortfolioUuid][uuid]
+	note, exists := notificationsPortfolioUuid[note.PortfolioUuid][note.Uuid]
 	if !exists {
 		log.Log.Errorf("notification does not exist in users inventory")
 		return
 	}
-	delete(notificationsPortfolioUuid[note.PortfolioUuid], uuid)
+	delete(notificationsPortfolioUuid[note.PortfolioUuid], note.Uuid)
 	if len(notificationsPortfolioUuid[note.PortfolioUuid]) == 0 {
 		delete(notificationsPortfolioUuid, note.PortfolioUuid)
 	}
+	id.RemoveUuid(note.Uuid)
+
 }
 
 func MakeNotification(uuid, portfolioUuid, t string, timestamp time.Time, seen bool, notification interface{}) *Notification {
+	if s, ok := notification.(string); ok {
+		notification = JsonToNotification(s, t)
+	}
 	note := &Notification{
 		Notification: models.Notification{
 			Uuid:          uuid,

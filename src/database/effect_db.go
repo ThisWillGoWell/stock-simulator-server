@@ -51,7 +51,7 @@ func deleteEffect(entry models.Effect, tx *sql.Tx) error {
 	return err
 }
 
-func (d *Database) PopulateEffects() (map[string]models.Effect, error) {
+func (d *Database) GetEffects() (map[string]models.Effect, error) {
 	var effectType, effectJsonString, uuid, portfolioUuid, title, tag string
 	var duration float64
 	var startTime time.Time

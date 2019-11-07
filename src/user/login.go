@@ -12,6 +12,8 @@ import (
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/session"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
 )
 
 const minPasswordLength = 4
@@ -86,27 +88,40 @@ func NewUser(username, displayName, password string) (string, error) {
 	if !isAllowedCharacterDisplayName(displayName) {
 		return "", errors.New("display name contains invalid characters")
 	}
+	UserListLock.Acquire("make-user")
+	defer UserListLock.Release()
+
 	uuid := id.SerialUuid()
 	portUuid := id.SerialUuid()
 
 	hashedPassword := hashAndSalt(password)
-	user, err := MakeUser(uuid, username, displayName, hashedPassword, portUuid, "{}", false)
+	u, err := MakeUser(models.User{UserName:username, DisplayName:displayName, Password:hashedPassword, Config:nil})
 	if err != nil {
+		id.RemoveUuid(uuid)
+		id.RemoveUuid(portUuid)
 		log.Log.Errorf("failed to make user err=[%v]", err)
 		return "", fmt.Errorf("opps! Something went wrong 0x834")
 	}
 	port, err := portfolio.NewPortfolio(portUuid, uuid)
 	if err != nil {
+		id.RemoveUuid(portUuid)
 		log.Log.Errorf("failed to make portfolio err=[%v]", err)
-		deleteErr := deleteUser(uuid, false, true)
-		if deleteErr != nil {
-			log.Log.Errorf("reached a unrecoverable error, cant delete user %s after port failed err=[%v]", err)
-		}
+		 deleteUser(u.Uuid, true)
 		return "", fmt.Errorf("opps! Something went wrong 0x042")
 	}
-	sessionToken := session.NewSessionToken(user.Uuid)
 
-	wires.UsersNewObject.Offer(user)
+
+	if dbErr := database.Db.Execute([]interface{}{port, u}, nil); dbErr != nil {
+		deleteUser(u.Uuid, true)
+		portfolio.DeletePortfolio(portUuid)
+		log.Log.Errorf("failed to make new user database err=[%v]", err)
+		return "", fmt.Errorf("oops! something went wrong 0x48")
+	}
+
+
+	sessionToken := session.NewSessionToken(u.Uuid)
+
+	wires.UsersNewObject.Offer(u)
 	wires.PortfolioNewObject.Offer(port)
 	return sessionToken, nil
 }

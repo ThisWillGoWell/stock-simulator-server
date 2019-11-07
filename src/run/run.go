@@ -42,11 +42,6 @@ func App() {
 	}
 
 	portfolio.UpdateAll()
-
-	if serveLog {
-		filepath := os.Getenv("FILE_SERVE")
-		web.ServePath(filepath)
-	}
 	//valuable.ValuablesLock.EnableDebug()
 	//ledger.EntriesLock.EnableDebug()
 

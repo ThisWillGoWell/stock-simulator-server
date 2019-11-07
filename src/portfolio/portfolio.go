@@ -61,11 +61,7 @@ func NewPortfolio(portfolioUuid, userUuid string) (*Portfolio, error) {
 	return port, err
 }
 
-func DeletePortfolio(uuid string, lockAquired, force bool) {
-	if !lockAquired {
-		PortfoliosLock.Acquire("delete-portfolio")
-		defer PortfoliosLock.Release()
-	}
+func DeletePortfolio(uuid string) {
 	port, ok := Portfolios[uuid]
 	if !ok {
 		log.Log.Errorf("ot a portfolio delete on a uuid not found")
@@ -108,8 +104,6 @@ func MakePortfolio(uuid, userUUID string, wallet, level int64, lockAquired bool)
 		return nil, err
 	}
 	Portfolios[uuid] = port
-
-	wires.PortfolioNewObject.Offer(port)
 	wires.PortfolioUpdate.RegisterInput(port.UpdateChannel.GetBufferedOutput(1000))
 	id.RegisterUuid(uuid, port)
 	go port.valuableUpdate()
@@ -121,7 +115,7 @@ async code that gets called whenever a stock or a ledger that the portfolio owns
 This then triggers a recalc of net worth and offers its self up as a update
 */
 func (port *Portfolio) valuableUpdate() {
-	updateChannel := port.UpdateInput.GetBufferedOutput(1000)
+	updateChannel := port.UpdateInput.GetBufferedOutput(100)
 	for range updateChannel {
 		port.Update()
 	}

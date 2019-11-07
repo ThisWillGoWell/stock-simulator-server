@@ -60,10 +60,10 @@ func LoadConfig(dat []byte) {
 		if err != nil {
 			log.Log.Error("error making user from config config: ", err)
 		} else {
-			user, _ := session.GetUserId(token)
+			uuid, _ := session.GetUserId(token)
 			if userConfig.Wallet != 0 {
-				portfolio.Portfolios[user.UserList[user].PortfolioId].Wallet = userConfig.Wallet
-				portfolios = append(portfolios, user.UserList[user].PortfolioId)
+				portfolio.Portfolios[user.UserList[uuid].PortfolioId].Wallet = userConfig.Wallet
+				portfolios = append(portfolios, user.UserList[uuid].PortfolioId)
 			}
 
 		}
@@ -79,4 +79,15 @@ func LoadConfig(dat []byte) {
 
 	log.Log.Info("Config done loaded", err)
 
+}
+
+
+func LoadFromDatabase(){
+
+	for _, l := range ledger.Entries {
+		port := portfolio.Portfolios[l.PortfolioId]
+		stock := valuable.Stocks[l.StockId]
+		port.UpdateInput.RegisterInput(stock.UpdateChannel.GetBufferedOutput(100))
+		port.UpdateInput.RegisterInput(l.UpdateChannel.GetBufferedOutput(100))
+	}
 }

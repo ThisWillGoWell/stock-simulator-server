@@ -277,6 +277,7 @@ func executeTrade(o *TradeOrder) {
 	if !ledgerExists {
 		port.UpdateInput.RegisterInput(value.UpdateChannel.GetBufferedOutput(100))
 		wires.LedgerNewObject.Offer(ledgerEntry)
+		wires.BookNewObject.Offer(book)
 	} else {
 		ledgerEntry.UpdateChannel.Offer(ledgerEntry)
 	}
@@ -285,7 +286,6 @@ func executeTrade(o *TradeOrder) {
 	// send the new objects
 	sender.SendNewObject(port.Uuid, note)
 	wires.RecordsNewObject.Offer(r)
-	wires.BookNewObject.Offer(book)
 
 	successOrder(o, details)
 	go port.Update()
@@ -436,7 +436,7 @@ func executeTransfer(o *TransferOrder) {
 	n1, n2 := notification.SendMoneyTradeNotification(port.Uuid, receiver.Uuid, o.Amount)
 
 	// commit the changes to the database
-	if dbErr := database.Db.Write(n1.Notification, n2.Notification, receiver.Portfolio, port.Portfolio); dbErr != nil {
+	if dbErr := database.Db.Execute([]interface{}{n1.Notification, n2.Notification, receiver.Portfolio, port.Portfolio}, nil ); dbErr != nil {
 		// undo the transfer
 		receiver.Wallet -= o.Amount
 		port.Wallet += o.Amount

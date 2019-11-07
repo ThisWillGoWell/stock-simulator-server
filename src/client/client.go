@@ -27,6 +27,7 @@ import (
 	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
+	"golang.org/x/tools/cmd/guru/testdata/src/alias"
 )
 
 var clientsLock = lock.NewLock("clients-lock")
@@ -74,15 +75,15 @@ func InitialReceive(initialPayload string, tx, rx chan string) error {
 		log.Log.Error("Unmarshal error: ", initialPayload)
 		return unmarshalErr
 	}
-	user := new(user.User)
+	u := new(user.User)
 	var sessionToken string
 	if initialMessage.IsConnect() {
 		userTemp, err := user.ConnectUser(initialMessage.Msg.(*messages.ConnectMessage).SessionToken)
 		if err != nil {
-			log.Log.Error("error in connecting user: ", err, user.Uuid)
+			log.Log.Error("error in connecting user: ", err, u.Uuid)
 			return err
 		}
-		user = userTemp
+		u = userTemp
 		sessionToken = initialMessage.Msg.(*messages.ConnectMessage).SessionToken
 	} else {
 		log.Log.Error("unknown message action for connect message", initialPayload)
@@ -91,19 +92,19 @@ func InitialReceive(initialPayload string, tx, rx chan string) error {
 
 	client := &Client{
 		clientNum: currentId,
-		user:      user,
+		user:      u,
 		socketRx:  rx,
 		socketTx:  tx,
 		active:    true,
 		close:     make(chan interface{}),
 	}
 	currentId += 1
-	_, exists := connections[user.Uuid]
+	_, exists := connections[u.Uuid]
 	if !exists {
-		connections[user.Uuid] = make(map[int]*Client)
+		connections[u.Uuid] = make(map[int]*Client)
 	}
-	connections[user.Uuid][client.clientNum] = client
-	log.Log.Info("client connected", user.Uuid, user.ActiveClients)
+	connections[u.Uuid][client.clientNum] = client
+	log.Log.Info("client connected", u.Uuid, u.ActiveClients)
 	metrics.ClientConnect()
 	go client.tx(sessionToken)
 	go client.rx()
@@ -345,9 +346,9 @@ func (client *Client) processDeleteAction(baseMessage *messages.BaseMessage) {
 	var err error
 	switch deleteMsg.Type {
 	case items.ItemIdentifiableType:
-		err = items.DeleteItem(deleteMsg.Uuid, client.user.PortfolioId, false, true, false)
+		err = items.DeleteItem(deleteMsg.Uuid)
 	case notification.IdentifiableType:
-		err = notification.DeleteNotification(deleteMsg.Uuid, client.user.PortfolioId, false, true, false)
+		err = notification.DeleteNotification(deleteMsg.Uuid, false)
 	}
 	client.sendMessage(messages.BuildDeleteResponseMsg(baseMessage.RequestID, err))
 }

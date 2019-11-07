@@ -7,11 +7,9 @@ type EffectNotification struct {
 	EffectTitle string `json:"title"`
 }
 
-func NewEffectNotification(portfolioId, effectTitle string) error {
-	_, err := NewNotification(portfolioId, NewEffectNotificationType, &EffectNotification{effectTitle})
-	return err
+func NewEffectNotification(portfolioId, effectTitle string) *Notification {
+	return  NewNotification(portfolioId, NewEffectNotificationType, &EffectNotification{effectTitle})
 }
-func EndEffectNotification(portfolioId, effectTitle string) error {
-	_, err := NewNotification(portfolioId, EndEffectNotificationType, &EffectNotification{effectTitle})
-	return err
+func EndEffectNotification(portfolioId, effectTitle string) *Notification {
+	return NewNotification(portfolioId, EndEffectNotificationType, &EffectNotification{effectTitle})
 }

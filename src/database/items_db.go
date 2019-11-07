@@ -44,11 +44,11 @@ func writeItem(entry models.Item, tx *sql.Tx) error {
 }
 
 func deleteItem(entry models.Item, tx *sql.Tx) error {
-	_, err := tx.Exec(itemsTableDeleteStatement, uuid)
+	_, err := tx.Exec(itemsTableDeleteStatement, entry.Uuid)
 	return err
 }
 
-func (d *Database) PopulateItems() (map[string]models.Item, error) {
+func (d *Database) GetItems() (map[string]models.Item, error) {
 	var uuid, itemType, name, configId, portfolioUuid, innerJson string
 	var createTime time.Time
 

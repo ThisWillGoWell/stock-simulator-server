@@ -24,6 +24,7 @@ import (
 	"github.com/ThisWillGoWell/stock-simulator-server/src/duplicator"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/session"
+	"os/user"
 )
 
 // keep the uuid to user
@@ -81,68 +82,51 @@ func RenewUser(sessionToken string) (*User, error) {
 	return user, nil
 }
 
-func deleteUser(uuid string, lockAquired, force bool) error {
+func deleteUser(uuid string, lockAquired bool) {
 	if !lockAquired {
 		UserListLock.Acquire("delete-user")
 		defer UserListLock.Release()
 	}
 	u, ok := UserList[uuid]
 	if !ok {
-		return fmt.Errorf("uuid delete not found")
-	}
-	dbErr := database.Db.DeleteUser(uuid)
-	if dbErr != nil {
-		log.Log.Errorf("delete-user db err=[%v]", dbErr)
-		if !force {
-			return dbErr
-		}
+		return
 	}
 	change.UnregisterChangeDetect(u)
 	delete(UserList, uuid)
 	delete(uuidList, u.DisplayName)
 	u.Sender.Stop()
-	return dbErr
+
 }
 
-func MakeUser(uuid, username, displayName, password, portfolioUUID, config string, lockAquired bool) (*User, error) {
-	if !lockAquired {
-		UserListLock.Acquire("make-user")
-		defer UserListLock.Release()
-	}
-	_, userNameExists := uuidList[username]
+
+func MakeUser(uModel models.User) (*User, error){
+	_, userNameExists := uuidList[uModel.DisplayName]
 	if userNameExists {
 		return nil, errors.New("username already exists")
 	}
-	var configMap map[string]interface{}
-	err := json.Unmarshal([]byte(config), &configMap)
-	if err != nil {
-		fmt.Println("error making config json in MakeUser: ", err)
-		configMap = make(map[string]interface{})
+	if uModel.Config == nil {
+		uModel.Config = make(map[string]interface{})
+		if uModel.ConfigStr != ""{
+			if err := json.Unmarshal([]byte(uModel.ConfigStr), &uModel.Config); err != nil {
+				return nil, fmt.Errorf("failed to unmarhsal provided config err=[%v]", err)
+			}
+		}
 	}
 
 	u := &User{
-		User: models.User{
-			UserName:    username,
-			DisplayName: displayName,
-			Password:    password,
-			Uuid:        uuid,
-			PortfolioId: portfolioUUID,
-			Active:      false,
-			Config:      configMap,
-			ConfigStr:   config,
-		},
-		Lock:           lock.NewLock("user-" + uuid),
-		UserUpdateChan: duplicator.MakeDuplicator("user-" + uuid),
-		Sender:         sender.NewSender(uuid, portfolioUUID),
+		User: uModel,
+		Lock:           lock.NewLock("user-" + uModel.Uuid),
+		UserUpdateChan: duplicator.MakeDuplicator("user-" + uModel.Uuid),
+		Sender:         sender.NewSender(uModel.Uuid, uModel.PortfolioId),
 	}
 
 	if err := change.RegisterPublicChangeDetect(u); err != nil {
 		return nil, err
 	}
-	uuidList[username] = uuid
-	UserList[uuid] = u
-	id.RegisterUuid(uuid, UserList[uuid])
-	return UserList[uuid], nil
+	uuidList[uModel.DisplayName] = u.Uuid
+	UserList[u.Uuid] = u
+	id.RegisterUuid(u.Uuid, UserList[u.Uuid])
+	return UserList[u.Uuid], nil
 }
 
 /**

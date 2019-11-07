@@ -85,9 +85,8 @@ func UnregisterChangeDetect(o id.Identifiable) {
 	subscribeablesLock.Acquire("unregister-change")
 	defer subscribeablesLock.Release()
 	if _, ok := subscribeables[o.GetType()+o.GetId()]; !ok {
-		log.Alerts.Fatal("Panic in Change Detect, cant unregister since does not exists change", o.GetId(), o.GetId())
-		log.Log.Fatal("Panic in Change Detect, cant unregister since does not exists change", o.GetId(), o.GetId())
-		panic("cant unregister change detect that does not exists" + o.GetType() + o.GetId())
+		log.Log.Errorf("err in Change Detect, cant unrested since does not exists change", o.GetId(), o.GetId())
+		return
 	}
 	delete(subscribeables, o.GetType()+o.GetId())
 }

@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-const expireTime = time.Hour * 24
+const expireTime = time.Hour * 24 * 5
 const tokenLength = 32
 
 var sessions = make(map[string]*sessionToken)

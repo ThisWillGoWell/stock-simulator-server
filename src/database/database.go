@@ -3,17 +3,12 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
-
 	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/ledger"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
+
 	_ "github.com/lib/pq"
 )
 
@@ -23,71 +18,33 @@ var dbLock = lock.NewLock("db lock")
 
 type Database struct {
 	enable bool
-	db     sql.DB
+	db     *sql.DB
 }
 
-func InitDatabase(enableDb, enableDbWrite bool, host, port, username, password string) error {
+func InitDatabase(enableDb, enableDbWrite bool, host, port, username, password, database string) error {
 	db := &Database{}
 	if !enableDb {
-		db.enable = false
+		db.enable = enableDbWrite
 		return nil
 	}
-	connectionString := fmt.Sprintf()
-	dbConStr := os.Getenv("RDS")
-	// if the env is not set, default to use the local host default port
-	database, err := sql.Open("postgres", dbConStr)
-	fmt.Println(dbConStr)
-	if err != nil {
-		log.Alerts.Fatal("could not connect to database: " + err.Error())
-		log.Log.Fatal("could not connect to database: " + err.Error())
-		panic("could not connect to database: " + err.Error())
+	connectionString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s", host, port, username, password, database)
+	var err error
+	if db.db, err = sql.Open("postgres", connectionString); err != nil {
+		return fmt.Errorf("could not open database connection err[%v]", err)
 	}
-	db = database
 
 	for i := 0; i < 10; i++ {
-		err := db.Ping()
+		err := db.db.Ping()
 
 		if err == nil {
 			break
 		}
-		fmt.Println("	waitng for connection to db")
+		log.Log.Warn("could not connect to database, waiting 1 second")
 		<-time.After(time.Second)
 	}
-	log.Log.Println("connected to database")
+	log.Log.Info("connected to database")
+	return nil
 
-	initLedger()
-	initStocks()
-	initPortfolio()
-	initStocksHistory()
-	initPortfolioHistory()
-	initNotification()
-	initItems()
-	initLedgerHistory()
-	initAccount()
-	initRecordHistory()
-	initEffect()
-
-	populateUsers()
-	populateStocks()
-	populatePortfolios()
-	populateLedger()
-	populateItems()
-	populateNotification()
-	populateRecords()
-	populateEffects()
-
-	for _, l := range ledger.Entries {
-		port := portfolio.Portfolios[l.PortfolioId]
-		stock := valuable.Stocks[l.StockId]
-		port.UpdateInput.RegisterInput(stock.UpdateChannel.GetBufferedOutput(100))
-		port.UpdateInput.RegisterInput(l.UpdateChannel.GetBufferedOutput(100))
-	}
-
-	runHistoricalQueries()
-	if !disableDbWrite {
-		fmt.Println("starting db writer")
-		go databaseWriter()
-	}
 
 }
 
@@ -116,6 +73,8 @@ func (d *Database) Execute(writes []interface{}, deletes []interface{}) error {
 				err = writeEffect(obj.(models.Effect), tx)
 			case models.Record:
 				err = writeRecord(obj.(models.Record), tx)
+			case models.Notification:
+				err = writeNotification(obj.(models.Notification), tx)
 			}
 			if err != nil {
 				err := fmt.Errorf("failed to write %d items, failed on %T err=[%v]", len(writes), obj, err)
@@ -173,7 +132,6 @@ func (d *Database) Exec(commandName, exec string, args ...interface{}) error {
 	}
 	tx, err := d.db.Begin()
 	if err != nil {
-		_ = db.Close()
 		return fmt.Errorf("begin %s: err=[%v]", commandName, err)
 	}
 	_, err = tx.Exec(itemsTableCreateStatement, args)

@@ -37,7 +37,7 @@ func (d *Database) InitNotification() error {
 	return d.Exec("notification-init", notificationTableCreateStatement)
 }
 
-func writeNotification(entry models.Notification, tx sql.Tx) error {
+func writeNotification(entry models.Notification, tx *sql.Tx) error {
 	jsonString, err := json.Marshal(entry.Notification)
 	if err != nil {
 		return fmt.Errorf("failed to marshal inner notificaion err=[%v]", err)
@@ -51,27 +51,30 @@ func deleteNotification(note models.Notification, tx *sql.Tx) error {
 	return err
 }
 
-func (d *Database) populateNotification() {
+func (d *Database) GetNotification() (map[string]models.Notification, error ) {
 	var uuid, userUuid, jsonString, notType string
 	var seen bool
 	var t time.Time
 
 	rows, err := d.db.Query(notificationTableQueryStatement)
 	if err != nil {
-		log.Fatal("error reading notifications databse")
-		panic("could not populate notifications: " + err.Error())
+		return nil, fmt.Errorf("failed to query database err=[%v]", err)
 	}
+	n := make(map[string]models.Notification)
 	defer rows.Close()
 	for rows.Next() {
 		err := rows.Scan(&uuid, &userUuid, &seen, &t, &notType, &jsonString)
 		if err != nil {
-			log.Fatal("error in querying ledger: ", err)
+			return nil, fmt.Errorf("failed to scan notificaion err=[%v]", err )
 		}
-		note := notification.JsonToNotification(jsonString, notType)
-		notification.MakeNotification(uuid, userUuid, notType, t, seen, note)
+		n[uuid] = models.Notification{
+			Uuid: uuid,
+			PortfolioUuid: userUuid,
+			Timestamp: t,
+			Seen: seen,
+			Type: notType,
+			Notification: jsonString,
+		}
 	}
-	err = rows.Err()
-	if err != nil {
-		log.Fatal(err)
-	}
+	return n, rows.Err()
 }
