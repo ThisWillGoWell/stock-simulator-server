@@ -4,12 +4,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"log"
 	"time"
-
 	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/notification"
 )
 
 var (
