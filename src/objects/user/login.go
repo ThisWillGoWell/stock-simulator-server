@@ -3,17 +3,17 @@ package user
 import (
 	"errors"
 	"fmt"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/id"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/app/log"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/portfolio"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/session"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/portfolio"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/web/session"
 )
 
 const minPasswordLength = 4
@@ -95,7 +95,7 @@ func NewUser(username, displayName, password string) (string, error) {
 	portUuid := id.SerialUuid()
 
 	hashedPassword := hashAndSalt(password)
-	u, err := MakeUser(models.User{UserName:username, DisplayName:displayName, Password:hashedPassword, Config:nil})
+	u, err := MakeUser(objects.User{UserName: username, DisplayName:displayName, Password:hashedPassword, Config:nil})
 	if err != nil {
 		id.RemoveUuid(uuid)
 		id.RemoveUuid(portUuid)

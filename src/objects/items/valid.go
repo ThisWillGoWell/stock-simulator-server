@@ -3,7 +3,7 @@ package items
 import (
 	"encoding/json"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/app/log"
 )
 
 func LoadItemConfig(data []byte) {

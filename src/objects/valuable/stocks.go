@@ -3,26 +3,25 @@ package valuable
 import (
 	"errors"
 	"fmt"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 	"math/rand"
 	"reflect"
 	"time"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/app/log"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/id"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/id/change"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/game/money"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/money"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/duplicator"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/wires/duplicator"
 )
 
 const (
@@ -59,7 +58,7 @@ func StartStockStimulation() {
 
 //Stock type for storing the stock information
 type Stock struct {
-	models.Stock
+	objects.Stock
 	PriceChanger  PriceChange                   `json:"-"`
 	UpdateChannel *duplicator.ChannelDuplicator `json:"-"`
 	lock          *lock.Lock                    `json:"-"`
@@ -74,7 +73,7 @@ func NewStock(tickerID, name string, startPrice int64, runInterval time.Duration
 	// Acquire the valuableMapLock so no one can add a new entry till we are done
 	ValuablesLock.Acquire("new-stock")
 	defer ValuablesLock.Release()
-	stock := models.Stock{
+	stock := objects.Stock{
 		OpenShares:     1000,
 		Uuid:           id.SerialUuid(),
 		Name:           name,
@@ -98,7 +97,7 @@ func DeleteStock(s *Stock) {
 	change.UnregisterChangeDetect(s)
 }
 
-func MakeStock(s models.Stock) (*Stock, error) {
+func MakeStock(s objects.Stock) (*Stock, error) {
 	for _, currentStocks := range Stocks {
 		if currentStocks.TickerId == s.TickerId {
 			return nil, errors.New("tickerID is already taken by another valuable")
@@ -106,7 +105,7 @@ func MakeStock(s models.Stock) (*Stock, error) {
 	}
 
 	stock := &Stock{
-		Stock: s,
+		Stock:         s,
 		lock:          lock.NewLock(fmt.Sprintf("stock-%s", s.TickerId)),
 		UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("stock-%s-update", s.TickerId)),
 	}

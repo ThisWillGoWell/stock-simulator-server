@@ -3,9 +3,8 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 	"time"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
 
 	"github.com/pkg/errors"
 )
@@ -55,7 +54,7 @@ func (d *Database) InitStocks() error {
 	return d.Exec("stocks-history-init", stocksHistoryTableCreateStatement)
 }
 
-func writeStock(stock models.Stock, tx *sql.Tx) error {
+func writeStock(stock objects.Stock, tx *sql.Tx) error {
 	_, e1 := tx.Exec(stocksTableUpdateInsert, stock.Uuid, stock.TickerId, stock.Name, stock.CurrentPrice, stock.OpenShares, stock.ChangeDuration)
 	_, e2 := tx.Exec(stocksHistoryTableUpdateInsert, stock.Uuid, stock.CurrentPrice, stock.OpenShares)
 	if e1 != nil || e2 != nil {
@@ -64,7 +63,7 @@ func writeStock(stock models.Stock, tx *sql.Tx) error {
 	return nil
 }
 
-func deleteStock(stock models.Stock, tx *sql.Tx) error {
+func deleteStock(stock objects.Stock, tx *sql.Tx) error {
 	_, e1 := tx.Exec(stocksTableDeleteStatement, stock.Uuid)
 	_, e2 := tx.Exec(stocksHistoryTableDeleteStatement, stock.Uuid)
 	if e1 != nil || e2 != nil {
@@ -88,7 +87,7 @@ func (d *Database) MakeStockHistoryLimitQuery(uuid, field string, limit int) ([]
 	return d.MakeHistoryLimitQuery(stocksHistoryTableName, uuid, field, limit)
 }
 
-func (d *Database) GetStocks() (map[string]models.Stock, error) {
+func (d *Database) GetStocks() ([]objects.Stock, error) {
 	var uuid, name, tickerId string
 	var currentPrice, openShares int64
 	var changeInterval float64
@@ -101,19 +100,19 @@ func (d *Database) GetStocks() (map[string]models.Stock, error) {
 	defer func() {
 		_ = rows.Close()
 	}()
-	stocks := make(map[string]models.Stock)
+	stocks := make([]objects.Stock,0)
 	for rows.Next() {
 		if err = rows.Scan(&uuid, &tickerId, &name, &currentPrice, &openShares, &changeInterval); err != nil {
 			return nil, err
 		}
-		stocks[uuid] = models.Stock{
+		stocks = append(stocks, objects.Stock{
 			Uuid:           uuid,
 			Name:           name,
 			TickerId:       tickerId,
 			CurrentPrice:   currentPrice,
 			OpenShares:     openShares,
 			ChangeDuration: time.Duration(changeInterval),
-		}
+		})
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

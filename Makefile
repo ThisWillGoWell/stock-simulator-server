@@ -80,16 +80,16 @@ run_container:
 #					Database Connection
 #################################################################
 
-dev_database: DatabaseHost=${DevDatabase}
-dev_database: ServerHost=${DevHost}
-dev_database: connect_database
+dev_database:
+	etc/database.sh mockstarket/dev/database-master
 
 prod_database: DatabaseHost=${ProdDatabase}
 prod_database: ServerHost=${ProdHost}
 prod_database: connect_database
 
+
 connect_database:
-	. etc/secrets.sh prod && ssh -i mockstarket.pem ec2-user@$\${ServerHost} "  psql \"host=${DatabaseHost} port=5432 user=postgres password=$$RDS_PASSWORD dbname=postgres\""
+	etc/secrets.sh prod && ssh -i mockstarket.pem ec2-user@$\${ServerHost} "  psql \"host=${DatabaseHost} port=5432 user=postgres password=$$RDS_PASSWORD dbname=postgres\""
 
 
 #################################################################

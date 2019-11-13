@@ -3,23 +3,22 @@ package portfolio
 import (
 	"errors"
 	"fmt"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/id"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
-
+	"github.com/ThisWillGoWell/stock-simulator-server/src/app/log"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/effect"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/money"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/game/money"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/duplicator"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/ledger"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/level"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/game/level"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/id/change"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/ledger"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/valuable"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/wires/duplicator"
 )
 
 const (
@@ -33,7 +32,7 @@ var PortfoliosLock = lock.NewLock("portfolios")
 Portfolios are the $$$ part of a user
 */
 type Portfolio struct {
-	models.Portfolio
+	objects.Portfolio
 	//keeps track of how much $$$ they own, used for some slight optomization on calc networth
 	// stock_uuid -> ledgerObject
 	UpdateChannel *duplicator.ChannelDuplicator `json:"-"`
@@ -54,11 +53,11 @@ func NewPortfolio(portfolioUuid, userUuid string) (*Portfolio, error) {
 	PortfoliosLock.Acquire("new-portfolio")
 	defer PortfoliosLock.Release()
 
-	portfolio :=  models.Portfolio{
+	portfolio :=  objects.Portfolio{
 		UserUUID: userUuid,
 		Uuid:     portfolioUuid,
-		Wallet:   10*money.Thousand,
-		NetWorth:  10*money.Thousand,
+		Wallet:   10* money.Thousand,
+		NetWorth:  10* money.Thousand,
 		Level:    0,
 	}
 	port, err := MakePortfolio(portfolio, true)
@@ -82,7 +81,7 @@ func DeletePortfolio(uuid string) {
 	id.RemoveUuid(uuid)
 }
 
-func MakePortfolio(portfolio models.Portfolio, lockAquired bool) (*Portfolio, error) {
+func MakePortfolio(portfolio objects.Portfolio, lockAquired bool) (*Portfolio, error) {
 	//PortfoliosUpdateChannel.EnableDebug("port update")
 	if !lockAquired {
 		PortfoliosLock.Acquire("new-portfolio")
@@ -93,7 +92,7 @@ func MakePortfolio(portfolio models.Portfolio, lockAquired bool) (*Portfolio, er
 	}
 	port :=
 		&Portfolio{
-			Portfolio: portfolio,
+			Portfolio:     portfolio,
 			UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-update", portfolio.Uuid)),
 			Lock:          lock.NewLock(fmt.Sprintf("portfolio-%s", portfolio.Uuid)),
 			UpdateInput:   duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-valueable-update", portfolio.Uuid)),

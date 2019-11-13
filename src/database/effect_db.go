@@ -4,11 +4,10 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 	"time"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
 )
 
 var (
@@ -37,7 +36,7 @@ func (d *Database) initEffect() error {
 	return d.Exec("init-effect", effectTableCreateStatement)
 }
 
-func writeEffect(entry models.Effect, tx *sql.Tx) error {
+func writeEffect(entry objects.Effect, tx *sql.Tx) error {
 	e, err := json.Marshal(entry.InnerEffect)
 	if err != nil {
 		return fmt.Errorf("failed to marshal inner effect err=[%v]", err)
@@ -46,12 +45,12 @@ func writeEffect(entry models.Effect, tx *sql.Tx) error {
 	return err
 }
 
-func deleteEffect(entry models.Effect, tx *sql.Tx) error {
+func deleteEffect(entry objects.Effect, tx *sql.Tx) error {
 	_, err := tx.Exec(effectTableDeleteStatement, entry.Uuid)
 	return err
 }
 
-func (d *Database) GetEffects() (map[string]models.Effect, error) {
+func (d *Database) GetEffects() ([]objects.Effect, error) {
 	var effectType, effectJsonString, uuid, portfolioUuid, title, tag string
 	var duration float64
 	var startTime time.Time
@@ -63,13 +62,13 @@ func (d *Database) GetEffects() (map[string]models.Effect, error) {
 	defer func() {
 		_ = rows.Close()
 	}()
-	effects := make(map[string]models.Effect)
+	effects := make([]objects.Effect, 0)
 
 	for rows.Next() {
 		if err = rows.Scan(&uuid, &portfolioUuid, &effectType, &title, &duration, &startTime, &tag, &effectJsonString); err != nil {
 			return nil, err
 		}
-		effects[uuid] = models.Effect{
+		effects = append(effects,  objects.Effect{
 			PortfolioUuid: portfolioUuid,
 			Uuid:          uuid,
 			Title:         title,
@@ -78,7 +77,7 @@ func (d *Database) GetEffects() (map[string]models.Effect, error) {
 			Type:          title,
 			InnerEffect:   effectJsonString,
 			Tag:           tag,
-		}
+		})
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

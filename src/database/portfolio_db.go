@@ -3,8 +3,8 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
 	"github.com/pkg/errors"
 )
 
@@ -52,7 +52,7 @@ func (d *Database) InitPortfolio() error {
 	return d.Exec("portfolio-history-init", portfolioHistoryTableCreateStatement)
 }
 
-func writePortfolio(port models.Portfolio, tx *sql.Tx) error {
+func writePortfolio(port objects.Portfolio, tx *sql.Tx) error {
 	if _, err := tx.Exec(portfolioTableUpdateInsert, port.Uuid, port.UserUUID, port.Wallet, port.Level); err != nil {
 		return err
 	}
@@ -62,7 +62,7 @@ func writePortfolio(port models.Portfolio, tx *sql.Tx) error {
 	return nil
 }
 
-func deletePortfolio(port models.Portfolio, tx *sql.Tx) error {
+func deletePortfolio(port objects.Portfolio, tx *sql.Tx) error {
 	if _, err := tx.Exec(portfolioTableDelete, port.Uuid); err != nil {
 		return err
 	}
@@ -72,7 +72,7 @@ func deletePortfolio(port models.Portfolio, tx *sql.Tx) error {
 	return nil
 }
 
-func (d *Database) GetPortfolios() (map[string]models.Portfolio, error) {
+func (d *Database) GetPortfolios() ([]objects.Portfolio, error) {
 	var uuid, userUuid string
 	var wallet, level int64
 	var rows *sql.Rows
@@ -83,18 +83,18 @@ func (d *Database) GetPortfolios() (map[string]models.Portfolio, error) {
 	defer func() {
 		_ = rows.Close()
 	}()
-	ports := make(map[string]models.Portfolio)
+	ports := make([]objects.Portfolio, 0)
 	for rows.Next() {
 		if err = rows.Scan(&uuid, &userUuid, &wallet, &level); err != nil {
 			return nil, err
 		}
-		ports[uuid] = models.Portfolio{
+		ports= append(ports, objects.Portfolio{
 			UserUUID: userUuid,
 			Uuid:     uuid,
 			Wallet:   wallet,
 			NetWorth: 0,
 			Level:    level,
-		}
+		})
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

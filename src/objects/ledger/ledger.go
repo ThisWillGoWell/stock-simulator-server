@@ -2,19 +2,18 @@ package ledger
 
 import (
 	"fmt"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/id"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/record"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/record"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/id/change"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/duplicator"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/wires/duplicator"
 )
 
 const objectType = "ledger"
@@ -36,7 +35,7 @@ They are stored in two maps
 2) given a portfolio uuid, get all stocks it owns
 */
 type Entry struct {
-	models.Ledger
+	objects.Ledger
 	Lock          *lock.Lock                    `json:"-"`
 	UpdateChannel *duplicator.ChannelDuplicator `json:"-"`
 }
@@ -48,7 +47,7 @@ takes in the lock acquired since trade already owns the lock for the entries
 func NewLedgerEntry(portfolioId, stockId string) (*Entry, error) {
 	uuid := id.SerialUuid()
 	recordId := id.SerialUuid()
-	ledger := models.Ledger{
+	ledger := objects.Ledger{
 		Uuid:         uuid,
 		PortfolioId:  portfolioId,
 		StockId:      stockId,
@@ -90,7 +89,7 @@ func DeleteLedger(l *Entry, lockAcquired bool) {
 /**
 Make a Ledger
 */
-func MakeLedgerEntry(ledger models.Ledger, lockAcquired bool) (*Entry, error) {
+func MakeLedgerEntry(ledger objects.Ledger, lockAcquired bool) (*Entry, error) {
 	if !lockAcquired {
 		EntriesLock.Acquire("make-ledger")
 		defer EntriesLock.Release()
@@ -101,7 +100,7 @@ func MakeLedgerEntry(ledger models.Ledger, lockAcquired bool) (*Entry, error) {
 	}
 
 	entry := &Entry{
-		Ledger: ledger,
+		Ledger:        ledger,
 		UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("LedgerEntry-%s", ledger.Uuid)),
 	}
 

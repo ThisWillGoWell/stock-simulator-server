@@ -3,12 +3,11 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 	"time"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/app/log"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
-
 	_ "github.com/lib/pq"
 )
 
@@ -43,6 +42,7 @@ func InitDatabase(enableDb, enableDbWrite bool, host, port, username, password, 
 		<-time.After(time.Second)
 	}
 	log.Log.Info("connected to database")
+	Db = db
 	return nil
 
 
@@ -59,22 +59,22 @@ func (d *Database) Execute(writes []interface{}, deletes []interface{}) error {
 	if writes != nil {
 		for _, obj := range writes {
 			switch obj.(type) {
-			case models.Portfolio:
-				err = writePortfolio(obj.(models.Portfolio), tx)
-			case models.Ledger:
-				err = writeLedger(obj.(models.Ledger), tx)
-			case models.User:
-				err = writeUser(obj.(models.User), tx)
-			case models.Item:
-				err = writeItem(obj.(models.Item), tx)
-			case models.Stock:
-				err = writeStock(obj.(models.Stock), tx)
-			case models.Effect:
-				err = writeEffect(obj.(models.Effect), tx)
-			case models.Record:
-				err = writeRecord(obj.(models.Record), tx)
-			case models.Notification:
-				err = writeNotification(obj.(models.Notification), tx)
+			case objects.Portfolio:
+				err = writePortfolio(obj.(objects.Portfolio), tx)
+			case objects.Ledger:
+				err = writeLedger(obj.(objects.Ledger), tx)
+			case objects.User:
+				err = writeUser(obj.(objects.User), tx)
+			case objects.Item:
+				err = writeItem(obj.(objects.Item), tx)
+			case objects.Stock:
+				err = writeStock(obj.(objects.Stock), tx)
+			case objects.Effect:
+				err = writeEffect(obj.(objects.Effect), tx)
+			case objects.Record:
+				err = writeRecord(obj.(objects.Record), tx)
+			case objects.Notification:
+				err = writeNotification(obj.(objects.Notification), tx)
 			}
 			if err != nil {
 				err := fmt.Errorf("failed to write %d items, failed on %T err=[%v]", len(writes), obj, err)
@@ -89,22 +89,22 @@ func (d *Database) Execute(writes []interface{}, deletes []interface{}) error {
 	if deletes != nil {
 		for _, obj := range deletes {
 			switch obj.(type) {
-			case models.Portfolio:
-				err = deletePortfolio(obj.(models.Portfolio), tx)
-			case models.Ledger:
-				err = deleteLedger(obj.(models.Ledger), tx)
-			case models.User:
-				err = deleteUser(obj.(models.User), tx)
-			case models.Item:
-				err = deleteItem(obj.(models.Item), tx)
-			case models.Stock:
-				err = deleteStock(obj.(models.Stock), tx)
-			case models.Effect:
-				err = deleteEffect(obj.(models.Effect), tx)
-			case models.Record:
-				err = deleteRecord(obj.(models.Record), tx)
-			case models.Notification:
-				err = deleteNotification(obj.(models.Notification), tx)
+			case objects.Portfolio:
+				err = deletePortfolio(obj.(objects.Portfolio), tx)
+			case objects.Ledger:
+				err = deleteLedger(obj.(objects.Ledger), tx)
+			case objects.User:
+				err = deleteUser(obj.(objects.User), tx)
+			case objects.Item:
+				err = deleteItem(obj.(objects.Item), tx)
+			case objects.Stock:
+				err = deleteStock(obj.(objects.Stock), tx)
+			case objects.Effect:
+				err = deleteEffect(obj.(objects.Effect), tx)
+			case objects.Record:
+				err = deleteRecord(obj.(objects.Record), tx)
+			case objects.Notification:
+				err = deleteNotification(obj.(objects.Notification), tx)
 			}
 			if err != nil {
 				err := fmt.Errorf("failed to write %d items, failed on %T err=[%v]", len(deletes), obj, err)

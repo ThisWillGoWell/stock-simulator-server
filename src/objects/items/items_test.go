@@ -10,9 +10,9 @@ import (
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/session"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/web/session"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/order"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/game/order"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/portfolio"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/user"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/valuable"

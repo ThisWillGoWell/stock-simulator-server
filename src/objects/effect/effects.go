@@ -3,19 +3,18 @@ package effect
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 	"time"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/id"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/app/log"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/notification"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/id/change"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/merge"
 
@@ -82,11 +81,12 @@ func getTaggedEffect(PortfolioUuid, tag string) *Effect {
 func newEffect(PortfolioUuid, title, effectType, tag string, innerEffect interface{}, duration time.Duration) (e *Effect, err error) {
 	EffectLock.Acquire("make-effect")
 	defer EffectLock.Release()
-	uuid := id.SerialUuid()
+
 
 	// tagged effect
 	preEffect := getTaggedEffect(PortfolioUuid, tag)
-	effect := models.Effect{
+	effect := objects.Effect{
+		Uuid: id.SerialUuid(),
 		PortfolioUuid:PortfolioUuid,
 		Title: title,
 		Type: effectType,
@@ -95,7 +95,7 @@ func newEffect(PortfolioUuid, title, effectType, tag string, innerEffect interfa
 		Duration: utils.Duration{duration},
 		StartTime: time.Now(),
 	}
-	if e, err = MakeEffect(uuid, effect, true); err != nil {
+	if e, err = MakeEffect( effect, true); err != nil {
 		return nil, err
 	}
 
@@ -119,7 +119,7 @@ func newEffect(PortfolioUuid, title, effectType, tag string, innerEffect interfa
 
 
 
-func MakeEffect(uuid string, effect models.Effect, lockAcquired bool) (*Effect, error) {
+func MakeEffect( effect objects.Effect, lockAcquired bool) (*Effect, error) {
 	if !lockAcquired {
 		EffectLock.Acquire("make-effect")
 		defer EffectLock.Release()
@@ -156,7 +156,7 @@ func MakeEffect(uuid string, effect models.Effect, lockAcquired bool) (*Effect, 
 
 	pEffects[newEffect.Uuid] = newEffect
 	effects[newEffect.Uuid] = newEffect
-	id.RegisterUuid(uuid, newEffect)
+	id.RegisterUuid(newEffect.Uuid, newEffect)
 	return newEffect, nil
 }
 
@@ -188,7 +188,7 @@ type EffectType interface {
 //
 
 type Effect struct {
-	models.Effect
+	objects.Effect
 }
 
 type e2 struct {

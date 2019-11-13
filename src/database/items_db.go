@@ -4,9 +4,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 	"time"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
 )
 
 var (
@@ -34,7 +33,7 @@ func (d *Database) initItems() error {
 	return d.Exec("init-items", itemsTableCreateStatement)
 }
 
-func writeItem(entry models.Item, tx *sql.Tx) error {
+func writeItem(entry objects.Item, tx *sql.Tx) error {
 	innerItemStr, err := json.Marshal(entry.InnerItem)
 	if err != nil {
 		return fmt.Errorf("failed to marshal inner item err=[%v]", err)
@@ -43,12 +42,12 @@ func writeItem(entry models.Item, tx *sql.Tx) error {
 	return err
 }
 
-func deleteItem(entry models.Item, tx *sql.Tx) error {
+func deleteItem(entry objects.Item, tx *sql.Tx) error {
 	_, err := tx.Exec(itemsTableDeleteStatement, entry.Uuid)
 	return err
 }
 
-func (d *Database) GetItems() (map[string]models.Item, error) {
+func (d *Database) GetItems() ([]objects.Item, error) {
 	var uuid, itemType, name, configId, portfolioUuid, innerJson string
 	var createTime time.Time
 
@@ -60,12 +59,12 @@ func (d *Database) GetItems() (map[string]models.Item, error) {
 	defer func() {
 		_ = rows.Close()
 	}()
-	items := make(map[string]models.Item)
+	items := make([]objects.Item, 0)
 	for rows.Next() {
 		if err = rows.Scan(&uuid, &itemType, &name, &configId, &portfolioUuid, &innerJson, &createTime); err != nil {
 			return nil, err
 		}
-		items[uuid] = models.Item{
+		items= append(items,objects.Item{
 			Uuid:          uuid,
 			Name:          name,
 			ConfigId:      configId,
@@ -73,7 +72,7 @@ func (d *Database) GetItems() (map[string]models.Item, error) {
 			PortfolioUuid: portfolioUuid,
 			CreateTime:    createTime,
 			InnerItem:     innerJson,
-		}
+		})
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/app/log"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/money"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/game/money"
 )
 
 const TradeEffectType = "trade"

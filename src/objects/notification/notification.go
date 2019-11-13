@@ -2,24 +2,22 @@ package notification
 
 import (
 	"encoding/json"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 	"time"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/app/log"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/id"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/id/change"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/sender"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/wires/sender"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
 
-	"github.com/pkg/errors"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
 	"fmt"
-	"github.com/stock-simulator-server/src/notification"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
+	"github.com/pkg/errors"
 )
 
 var NotificationLock = lock.NewLock("notifications")
@@ -29,13 +27,13 @@ var notificationsPortfolioUuid = make(map[string]map[string]*Notification)
 const IdentifiableType = "notification"
 
 type Notification struct {
-	models.Notification
+	objects.Notification
 }
 
 func NewNotification(portfolioUuid, t string, notification interface{}) *Notification {
 	uuid := id.SerialUuid()
 
-	noti :=  models.Notification{
+	noti :=  objects.Notification{
 		Uuid:          uuid,
 		PortfolioUuid: portfolioUuid,
 		Type:          t,
@@ -87,7 +85,7 @@ func deleteNotification(note *Notification){
 
 }
 
-func MakeNotification(notification models.Notification) *Notification {
+func MakeNotification(notification objects.Notification) *Notification {
 	if s, ok := notification.Notification.(string); ok {
 		notification.Notification = JsonToNotification(s, notification.Type)
 	}
@@ -129,7 +127,7 @@ type MailNotification struct {
 
 func NewMailNotifcation(uuid, from string, text string, money int64) *Notification {
 	return &Notification{
-		models.Notification{
+		objects.Notification{
 			Timestamp: time.Now(),
 			Type:      "mail",
 			Notification: &MailNotification{

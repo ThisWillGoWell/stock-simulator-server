@@ -3,10 +3,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/ledger"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 )
 
 var (
@@ -34,17 +31,17 @@ func (d *Database) InitLedger() error {
 	return d.Exec("ledgers-init", ledgerTableCreateStatement)
 }
 
-func writeLedger(entry models.Ledger, tx *sql.Tx) error {
+func writeLedger(entry objects.Ledger, tx *sql.Tx) error {
 	_, err := tx.Exec(ledgerTableUpdateInsert, entry.Uuid, entry.PortfolioId, entry.RecordBookId, entry.StockId, entry.Amount)
 	return err
 }
 
-func deleteLedger(entry models.Ledger, tx *sql.Tx) error {
+func deleteLedger(entry objects.Ledger, tx *sql.Tx) error {
 	_, err := tx.Exec(ledgerTableDeleteStatement, entry.Uuid)
 	return err
 }
 
-func (d *Database) GetLedgers() (map[string]models.Ledger, error) {
+func (d *Database) GetLedgers() ([]objects.Ledger, error) {
 	var uuid, portfolioId, stockId, recordId string
 	var amount int64
 
@@ -56,18 +53,18 @@ func (d *Database) GetLedgers() (map[string]models.Ledger, error) {
 	defer func() {
 		_ = rows.Close()
 	}()
-	ledgers := make(map[string]models.Ledger)
+	ledgers := make([]objects.Ledger, 0 )
 	for rows.Next() {
 		if err = rows.Scan(&uuid, &portfolioId, &stockId, &recordId, &amount); err != nil {
 			return nil, err
 		}
-		 ledgers[uuid] = models.Ledger{
+		 ledgers = append(ledgers,  objects.Ledger{
 		 	Uuid: uuid,
 		 	PortfolioId: portfolioId,
 		 	StockId: stockId,
 		 	RecordBookId: recordId,
 		 	Amount: amount,
-		 }
+		 })
 	}
 	return ledgers, rows.Err()
 }

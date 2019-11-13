@@ -3,22 +3,21 @@ package items
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 	"time"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/id"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
-
 	"github.com/ThisWillGoWell/stock-simulator-server/src/merge"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/app/log"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/id/change"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/notification"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/portfolio"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/sender"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/wires/sender"
 	"github.com/pkg/errors"
 )
 
@@ -36,7 +35,7 @@ type InnerItem interface {
 }
 
 type Item struct {
-	models.Item
+	objects.Item
 	UpdateChannel chan interface{} `json:"-"`
 }
 
@@ -59,7 +58,7 @@ func (*Item) GetType() string {
 }
 
 func newItem(portfolioUuid, configId, itemType, name string, innerItem interface{}) (i *Item, err error) {
-	return MakeItem(models.Item{
+	return MakeItem(objects.Item{
 		Name:          name,
 		ConfigId:      configId,
 		Uuid:          id.SerialUuid(),
@@ -70,7 +69,7 @@ func newItem(portfolioUuid, configId, itemType, name string, innerItem interface
 	})
 }
 
-func MakeItem(i models.Item) (*Item, error) {
+func MakeItem(i objects.Item) (*Item, error) {
 	switch i.InnerItem.(type) {
 	case string:
 		var err error
@@ -95,8 +94,8 @@ func MakeItem(i models.Item) (*Item, error) {
 		return nil, err
 	}
 
-	id.RegisterUuid(item.Uuid, i)
-	ItemsPortInventory[item.PortfolioUuid][item.Uuid] = i
+	id.RegisterUuid(item.Uuid, item)
+	ItemsPortInventory[item.PortfolioUuid][item.Uuid] = item
 	Items[item.Uuid] = item
 
 	return item, nil

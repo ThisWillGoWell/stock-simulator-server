@@ -4,9 +4,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 	"time"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
-
 )
 
 var (
@@ -34,7 +33,7 @@ func (d *Database) InitNotification() error {
 	return d.Exec("notification-init", notificationTableCreateStatement)
 }
 
-func writeNotification(entry models.Notification, tx *sql.Tx) error {
+func writeNotification(entry objects.Notification, tx *sql.Tx) error {
 	jsonString, err := json.Marshal(entry.Notification)
 	if err != nil {
 		return fmt.Errorf("failed to marshal inner notificaion err=[%v]", err)
@@ -43,12 +42,12 @@ func writeNotification(entry models.Notification, tx *sql.Tx) error {
 	return err
 }
 
-func deleteNotification(note models.Notification, tx *sql.Tx) error {
+func deleteNotification(note objects.Notification, tx *sql.Tx) error {
 	_, err := tx.Exec(notificationDeleteStatement, note.Uuid)
 	return err
 }
 
-func (d *Database) GetNotification() (map[string]models.Notification, error ) {
+func (d *Database) GetNotification() ([]objects.Notification, error ) {
 	var uuid, userUuid, jsonString, notType string
 	var seen bool
 	var t time.Time
@@ -57,21 +56,21 @@ func (d *Database) GetNotification() (map[string]models.Notification, error ) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to query database err=[%v]", err)
 	}
-	n := make(map[string]models.Notification)
+	n := make([]objects.Notification, 0)
 	defer rows.Close()
 	for rows.Next() {
 		err := rows.Scan(&uuid, &userUuid, &seen, &t, &notType, &jsonString)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan notificaion err=[%v]", err )
 		}
-		n[uuid] = models.Notification{
+		n = append(n,  objects.Notification{
 			Uuid: uuid,
 			PortfolioUuid: userUuid,
 			Timestamp: t,
 			Seen: seen,
 			Type: notType,
 			Notification: jsonString,
-		}
+		})
 	}
 	return n, rows.Err()
 }

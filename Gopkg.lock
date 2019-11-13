@@ -2,10 +2,9 @@
 
 
 [[projects]]
-  digest = "1:f24e2a14304360ab060ce73eb66efc184b9bedb66ee963bcb468270df46d65cf"
+  digest = "1:7c97300410bba15eab918a16375395022b06a6689eb2f03142dbc0da5bcf6712"
   name = "github.com/aws/aws-sdk-go"
   packages = [
-    ".",
     "aws",
     "aws/awserr",
     "aws/awsutil",
@@ -157,11 +156,18 @@
   pruneopts = "UT"
   revision = "3e7259c5e7c2076bb2728047a3df75adb1bad8e5"
 
+[[projects]]
+  branch = "master"
+  digest = "1:2269b3eb8c1ef6dc68ec2ecf642e1757c542b5fdcac2c35f5f75085b7986f5d0"
+  name = "golang.org/x/tools"
+  packages = ["cmd/guru/testdata/src/alias"]
+  pruneopts = "UT"
+  revision = "76a3b8da50ef7c9da5c87b2fdff51392aad781a0"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/aws/aws-sdk-go",
     "github.com/aws/aws-sdk-go/aws",
     "github.com/aws/aws-sdk-go/aws/endpoints",
     "github.com/aws/aws-sdk-go/aws/session",
@@ -173,6 +179,7 @@
     "github.com/pkg/errors",
     "github.com/sirupsen/logrus",
     "golang.org/x/crypto/bcrypt",
+    "golang.org/x/tools/cmd/guru/testdata/src/alias",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

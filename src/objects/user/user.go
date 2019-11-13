@@ -4,27 +4,21 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/id"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/id/change"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/sender"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/wires/sender"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 
 	"unicode"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/duplicator"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/session"
-	"os/user"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/web/session"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/wires/duplicator"
 )
 
 // keep the uuid to user
@@ -39,7 +33,7 @@ User Object
 Represents a unique individual of the system
 */
 type User struct {
-	models.User
+	objects.User
 	Lock           *lock.Lock                    `json:"-"`
 	UserUpdateChan *duplicator.ChannelDuplicator `json:"-"`
 	Sender         *sender.Sender                `json:"-"`
@@ -99,7 +93,7 @@ func deleteUser(uuid string, lockAquired bool) {
 }
 
 
-func MakeUser(uModel models.User) (*User, error){
+func MakeUser(uModel objects.User) (*User, error){
 	_, userNameExists := uuidList[uModel.DisplayName]
 	if userNameExists {
 		return nil, errors.New("username already exists")
@@ -114,7 +108,7 @@ func MakeUser(uModel models.User) (*User, error){
 	}
 
 	u := &User{
-		User: uModel,
+		User:           uModel,
 		Lock:           lock.NewLock("user-" + uModel.Uuid),
 		UserUpdateChan: duplicator.MakeDuplicator("user-" + uModel.Uuid),
 		Sender:         sender.NewSender(uModel.Uuid, uModel.PortfolioId),
