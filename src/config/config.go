@@ -7,7 +7,7 @@ import (
 	"github.com/ThisWillGoWell/stock-simulator-server/src/level"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/app"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/items"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/items"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 )
 

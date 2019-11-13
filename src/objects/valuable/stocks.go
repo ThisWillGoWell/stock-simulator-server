@@ -74,10 +74,15 @@ func NewStock(tickerID, name string, startPrice int64, runInterval time.Duration
 	// Acquire the valuableMapLock so no one can add a new entry till we are done
 	ValuablesLock.Acquire("new-stock")
 	defer ValuablesLock.Release()
-
-	uuidString := id.SerialUuid()
-
-	s, err := MakeStock(uuidString, tickerID, name, startPrice, 1000, runInterval)
+	stock := models.Stock{
+		OpenShares:     1000,
+		Uuid:           id.SerialUuid(),
+		Name:           name,
+		TickerId:       tickerID,
+		CurrentPrice:   startPrice,
+		ChangeDuration: runInterval,
+	}
+	s, err := MakeStock(stock)
 	if err != nil {
 		return nil, err
 	}
@@ -93,28 +98,22 @@ func DeleteStock(s *Stock) {
 	change.UnregisterChangeDetect(s)
 }
 
-func MakeStock(uuid, tickerID, name string, startPrice, openShares int64, runInterval time.Duration) (*Stock, error) {
-	for _, s := range Stocks {
-		if s.TickerId == tickerID {
+func MakeStock(s models.Stock) (*Stock, error) {
+	for _, currentStocks := range Stocks {
+		if currentStocks.TickerId == s.TickerId {
 			return nil, errors.New("tickerID is already taken by another valuable")
 		}
 	}
+
 	stock := &Stock{
-		Stock: models.Stock{
-			OpenShares:     openShares,
-			Uuid:           uuid,
-			Name:           name,
-			TickerId:       tickerID,
-			CurrentPrice:   startPrice,
-			ChangeDuration: runInterval,
-		},
-		lock:          lock.NewLock(fmt.Sprintf("stock-%s", tickerID)),
-		UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("stock-%s-update", tickerID)),
+		Stock: s,
+		lock:          lock.NewLock(fmt.Sprintf("stock-%s", s.TickerId)),
+		UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("stock-%s-update", s.TickerId)),
 	}
 	//stock.lock.EnableDebug()
 
 	stock.PriceChanger = &RandomPrice{
-		RunPercent:            timeSimulationPeriod.Seconds() / (runInterval.Seconds() * 1.0),
+		RunPercent:            timeSimulationPeriod.Seconds() / (s.ChangeDuration.Seconds() * 1.0),
 		TargetPrice:           int64(rand.Intn(100000)),
 		PercentToChangeTarget: .1,
 		Volatility:            5,
@@ -124,10 +123,10 @@ func MakeStock(uuid, tickerID, name string, startPrice, openShares int64, runInt
 		return nil, err
 	}
 	go stock.stockUpdateRoutine()
-	Stocks[uuid] = stock
+	Stocks[s.Uuid] = stock
 	stock.UpdateChannel.EnableCopyMode()
 	wires.StocksUpdate.RegisterInput(stock.UpdateChannel.GetBufferedOutput(1000))
-	id.RegisterUuid(uuid, stock)
+	id.RegisterUuid(s.Uuid, stock)
 	return stock, nil
 }
 

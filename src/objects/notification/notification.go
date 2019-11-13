@@ -19,6 +19,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
 	"fmt"
+	"github.com/stock-simulator-server/src/notification"
 )
 
 var NotificationLock = lock.NewLock("notifications")
@@ -33,7 +34,17 @@ type Notification struct {
 
 func NewNotification(portfolioUuid, t string, notification interface{}) *Notification {
 	uuid := id.SerialUuid()
-	n := MakeNotification(uuid, portfolioUuid, t, time.Now(), false, notification)
+
+	noti :=  models.Notification{
+		Uuid:          uuid,
+		PortfolioUuid: portfolioUuid,
+		Type:          t,
+		Notification:  notification,
+		Timestamp:     time.Now(),
+		Seen:          false,
+	}
+
+	n := MakeNotification(noti)
 	return n
 }
 
@@ -76,26 +87,19 @@ func deleteNotification(note *Notification){
 
 }
 
-func MakeNotification(uuid, portfolioUuid, t string, timestamp time.Time, seen bool, notification interface{}) *Notification {
-	if s, ok := notification.(string); ok {
-		notification = JsonToNotification(s, t)
+func MakeNotification(notification models.Notification) *Notification {
+	if s, ok := notification.Notification.(string); ok {
+		notification.Notification = JsonToNotification(s, notification.Type)
 	}
 	note := &Notification{
-		Notification: models.Notification{
-			Uuid:          uuid,
-			PortfolioUuid: portfolioUuid,
-			Type:          t,
-			Notification:  notification,
-			Timestamp:     timestamp,
-			Seen:          seen,
-		},
+		notification,
 	}
-	notifications[uuid] = note
-	if _, ok := notificationsPortfolioUuid[portfolioUuid]; !ok {
-		notificationsPortfolioUuid[portfolioUuid] = make(map[string]*Notification)
+	notifications[notification.Uuid] = note
+	if _, ok := notificationsPortfolioUuid[notification.PortfolioUuid]; !ok {
+		notificationsPortfolioUuid[notification.PortfolioUuid] = make(map[string]*Notification)
 	}
-	notificationsPortfolioUuid[portfolioUuid][uuid] = note
-	id.RegisterUuid(uuid, note)
+	notificationsPortfolioUuid[notification.PortfolioUuid][note.Uuid] = note
+	id.RegisterUuid(note.Uuid, note)
 	return note
 }
 

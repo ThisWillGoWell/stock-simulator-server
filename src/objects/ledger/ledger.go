@@ -48,7 +48,14 @@ takes in the lock acquired since trade already owns the lock for the entries
 func NewLedgerEntry(portfolioId, stockId string) (*Entry, error) {
 	uuid := id.SerialUuid()
 	recordId := id.SerialUuid()
-	e, err := MakeLedgerEntry(uuid, portfolioId, stockId, recordId, 0, true)
+	ledger := models.Ledger{
+		Uuid:         uuid,
+		PortfolioId:  portfolioId,
+		StockId:      stockId,
+		Amount:       0,
+		RecordBookId: recordId,
+	}
+	e, err := MakeLedgerEntry(ledger, true)
 	if err != nil {
 		id.RemoveUuid(uuid)
 		id.RemoveUuid(recordId)
@@ -83,43 +90,39 @@ func DeleteLedger(l *Entry, lockAcquired bool) {
 /**
 Make a Ledger
 */
-func MakeLedgerEntry(uuid, portfolioId, stockId, recordId string, amount int64, lockAquired bool) (*Entry, error) {
-	if !lockAquired {
+func MakeLedgerEntry(ledger models.Ledger, lockAcquired bool) (*Entry, error) {
+	if !lockAcquired {
 		EntriesLock.Acquire("make-ledger")
 		defer EntriesLock.Release()
 	}
-	entry := &Entry{
-		Ledger: models.Ledger{
-			Uuid:         uuid,
-			PortfolioId:  portfolioId,
-			StockId:      stockId,
-			Amount:       amount,
-			RecordBookId: recordId,
-		},
-		UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("LedgerEntry-%s", uuid)),
-	}
-	if err := record.MakeBook(recordId, uuid, portfolioId); err != nil {
+
+	if err := record.MakeBook(ledger.RecordBookId, ledger.Uuid, ledger.PortfolioId); err != nil {
 		return nil, fmt.Errorf("failed to make recored book for ledger err=[%v]", err)
+	}
+
+	entry := &Entry{
+		Ledger: ledger,
+		UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("LedgerEntry-%s", ledger.Uuid)),
 	}
 
 	if err := change.RegisterPublicChangeDetect(entry); err != nil {
 		return nil, err
 	}
 
-	if EntriesPortfolioStock[portfolioId] == nil {
-		EntriesPortfolioStock[portfolioId] = make(map[string]*Entry)
+	if EntriesPortfolioStock[ledger.PortfolioId] == nil {
+		EntriesPortfolioStock[ledger.PortfolioId] = make(map[string]*Entry)
 	}
-	EntriesPortfolioStock[portfolioId][stockId] = entry
+	EntriesPortfolioStock[ledger.PortfolioId][ledger.StockId] = entry
 
-	if EntriesStockPortfolio[stockId] == nil {
-		EntriesStockPortfolio[stockId] = make(map[string]*Entry)
+	if EntriesStockPortfolio[ledger.StockId] == nil {
+		EntriesStockPortfolio[ledger.StockId] = make(map[string]*Entry)
 	}
 
-	Entries[uuid] = entry
-	EntriesStockPortfolio[stockId][portfolioId] = entry
+	Entries[ledger.Uuid] = entry
+	EntriesStockPortfolio[ledger.StockId][ledger.PortfolioId] = entry
 	entry.UpdateChannel.EnableCopyMode()
 	wires.LedgerUpdate.RegisterInput(entry.UpdateChannel.GetOutput())
-	id.RegisterUuid(uuid, entry)
+	id.RegisterUuid(entry.Uuid, entry)
 	return entry, nil
 }
 

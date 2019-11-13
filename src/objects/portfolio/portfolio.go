@@ -9,16 +9,16 @@ import (
 	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/effect"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/effect"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/money"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/duplicator"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/ledger"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/ledger"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/level"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/valuable"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 )
 
@@ -54,7 +54,14 @@ func NewPortfolio(portfolioUuid, userUuid string) (*Portfolio, error) {
 	PortfoliosLock.Acquire("new-portfolio")
 	defer PortfoliosLock.Release()
 
-	port, err := MakePortfolio(portfolioUuid, userUuid, 10*money.Thousand, 0, true)
+	portfolio :=  models.Portfolio{
+		UserUUID: userUuid,
+		Uuid:     portfolioUuid,
+		Wallet:   10*money.Thousand,
+		NetWorth:  10*money.Thousand,
+		Level:    0,
+	}
+	port, err := MakePortfolio(portfolio, true)
 	if err != nil {
 		return nil, err
 	}
@@ -75,37 +82,30 @@ func DeletePortfolio(uuid string) {
 	id.RemoveUuid(uuid)
 }
 
-func MakePortfolio(uuid, userUUID string, wallet, level int64, lockAquired bool) (*Portfolio, error) {
+func MakePortfolio(portfolio models.Portfolio, lockAquired bool) (*Portfolio, error) {
 	//PortfoliosUpdateChannel.EnableDebug("port update")
 	if !lockAquired {
 		PortfoliosLock.Acquire("new-portfolio")
 		defer PortfoliosLock.Release()
 	}
-	if _, exists := Portfolios[uuid]; exists {
-		id.RemoveUuid(uuid)
+	if _, exists := Portfolios[portfolio.Uuid]; exists {
 		return nil, errors.New("portfolio uuid already Exists")
 	}
 	port :=
 		&Portfolio{
-			Portfolio: models.Portfolio{
-				UserUUID: userUUID,
-				Uuid:     uuid,
-				Wallet:   wallet,
-				NetWorth: wallet,
-				Level:    level,
-			},
-			UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-update", uuid)),
-			Lock:          lock.NewLock(fmt.Sprintf("portfolio-%s", uuid)),
-			UpdateInput:   duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-valueable-update", uuid)),
+			Portfolio: portfolio,
+			UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-update", portfolio.Uuid)),
+			Lock:          lock.NewLock(fmt.Sprintf("portfolio-%s", portfolio.Uuid)),
+			UpdateInput:   duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-valueable-update", portfolio.Uuid)),
 		}
 
 	port.UpdateChannel.EnableCopyMode()
 	if err := change.RegisterPublicChangeDetect(port); err != nil {
 		return nil, err
 	}
-	Portfolios[uuid] = port
+	Portfolios[port.Uuid] = port
 	wires.PortfolioUpdate.RegisterInput(port.UpdateChannel.GetBufferedOutput(1000))
-	id.RegisterUuid(uuid, port)
+	id.RegisterUuid(port.Uuid, port)
 	go port.valuableUpdate()
 	return port, nil
 }

@@ -6,7 +6,7 @@ import (
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/ledger"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/ledger"
 )
 
 var (

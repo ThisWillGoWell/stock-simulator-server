@@ -9,12 +9,12 @@ import (
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/order"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/portfolio"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/valuable"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/record"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/ledger"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/ledger"
 )
 
 func TestProspectAll(t *testing.T) {

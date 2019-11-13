@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/portfolio"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/order"
 
@@ -14,9 +14,9 @@ import (
 	"github.com/ThisWillGoWell/stock-simulator-server/src/session"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/valuable"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/user"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/user"
 )
 
 type JsonStock struct {

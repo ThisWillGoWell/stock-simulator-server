@@ -16,7 +16,7 @@ import (
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/client"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/messages"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/user"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/user"
 	"github.com/gorilla/websocket"
 )
 

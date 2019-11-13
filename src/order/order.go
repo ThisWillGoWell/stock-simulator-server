@@ -7,14 +7,14 @@ import (
 	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/effect"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/ledger"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/effect"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/ledger"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/level"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/notification"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/notification"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/portfolio"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/record"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/valuable"
 )
 
 type Order interface {

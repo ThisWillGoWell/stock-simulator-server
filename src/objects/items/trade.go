@@ -1,7 +1,7 @@
 package items
 
 import (
-	"github.com/ThisWillGoWell/stock-simulator-server/src/effect"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/effect"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 )

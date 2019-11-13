@@ -14,8 +14,8 @@ import (
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/messages"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/portfolio"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/valuable"
 )
 
 type queryCacheItem struct {

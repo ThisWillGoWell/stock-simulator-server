@@ -5,10 +5,10 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/portfolio"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/config"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/effect"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/effect"
 
 	metrics "github.com/ThisWillGoWell/stock-simulator-server/src/metics"
 
@@ -20,7 +20,7 @@ import (
 	"github.com/ThisWillGoWell/stock-simulator-server/src/order"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/sender"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/session"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/valuable"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/web"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 )

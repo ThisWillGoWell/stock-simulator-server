@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/user"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/user"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/valuable"
 )
 
 func TestOrder(t *testing.T) {

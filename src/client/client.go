@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/effect"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/effect"
 
 	metrics "github.com/ThisWillGoWell/stock-simulator-server/src/metics"
 
@@ -13,18 +13,18 @@ import (
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/record"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/items"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/items"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/messages"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/sender"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/histroy"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/ledger"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/ledger"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/notification"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/notification"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/order"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/user"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/portfolio"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/user"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/valuable"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 	"golang.org/x/tools/cmd/guru/testdata/src/alias"

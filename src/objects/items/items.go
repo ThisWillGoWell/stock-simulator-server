@@ -16,8 +16,8 @@ import (
 	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/notification"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/notification"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/portfolio"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/sender"
 	"github.com/pkg/errors"
 )
@@ -59,47 +59,47 @@ func (*Item) GetType() string {
 }
 
 func newItem(portfolioUuid, configId, itemType, name string, innerItem interface{}) (i *Item, err error) {
-	return MakeItem(id.SerialUuid(), portfolioUuid, configId, itemType, name, innerItem, time.Now())
+	return MakeItem(models.Item{
+		Name:          name,
+		ConfigId:      configId,
+		Uuid:          id.SerialUuid(),
+		PortfolioUuid: portfolioUuid,
+		Type:          itemType,
+		CreateTime:    time.Now(),
+		InnerItem:     innerItem,
+	})
 }
 
-func MakeItem(uuid, portfolioUuid, itemConfigId, itemType, name string, innerItem interface{}, createTime time.Time) (*Item, error) {
-	switch innerItem.(type) {
+func MakeItem(i models.Item) (*Item, error) {
+	switch i.InnerItem.(type) {
 	case string:
 		var err error
-		if innerItem, err = UnmarshalJsonItem(itemType, innerItem.(string)); err != nil {
+		if  i.InnerItem, err = UnmarshalJsonItem(i.Type,  i.InnerItem.(string)); err != nil {
 			return nil, err
 		}
 	}
-	i := &Item{
-		Item: models.Item{
-			Name:          name,
-			ConfigId:      itemConfigId,
-			Uuid:          uuid,
-			PortfolioUuid: portfolioUuid,
-			Type:          itemType,
-			CreateTime:    createTime,
-			InnerItem:     innerItem,
-		},
+	item := &Item{
+		Item: i,
 		UpdateChannel: make(chan interface{}),
 	}
-	if err := sender.RegisterChangeUpdate(i.PortfolioUuid, i.UpdateChannel); err != nil {
+	if err := sender.RegisterChangeUpdate(item.PortfolioUuid, item.UpdateChannel); err != nil {
 		return nil, err
 	}
 
-	if _, ok := ItemsPortInventory[i.PortfolioUuid]; !ok {
-		ItemsPortInventory[i.PortfolioUuid] = make(map[string]*Item)
+	if _, ok := ItemsPortInventory[item.PortfolioUuid]; !ok {
+		ItemsPortInventory[item.PortfolioUuid] = make(map[string]*Item)
 	}
-	i.InnerItem.(InnerItem).SetParentItemUuid(i.Uuid)
+	item.InnerItem.(InnerItem).SetParentItemUuid(item.Uuid)
 
-	if err := change.RegisterPrivateChangeDetect(i, i.UpdateChannel); err != nil {
+	if err := change.RegisterPrivateChangeDetect(item, item.UpdateChannel); err != nil {
 		return nil, err
 	}
 
-	id.RegisterUuid(uuid, i)
-	ItemsPortInventory[i.PortfolioUuid][i.Uuid] = i
-	Items[i.Uuid] = i
+	id.RegisterUuid(item.Uuid, i)
+	ItemsPortInventory[item.PortfolioUuid][item.Uuid] = i
+	Items[item.Uuid] = item
 
-	return i, nil
+	return item, nil
 }
 
 func BuyItem(portUuid, configId string) (string, error) {

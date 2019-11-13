@@ -10,7 +10,7 @@ import (
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/portfolio"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/session"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/models"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/database"

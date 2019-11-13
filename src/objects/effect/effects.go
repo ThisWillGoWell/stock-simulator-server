@@ -13,7 +13,7 @@ import (
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/notification"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/notification"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/change"
 
@@ -65,28 +65,37 @@ func deleteEffect(e *Effect) {
 
 }
 
-func getTaggedEffect(portfolioUuid, tag string) *Effect {
+func getTaggedEffect(PortfolioUuid, tag string) *Effect {
 	if tag == "" {
 		return nil
 	}
-	if _, ok := portfolioEffectTags[portfolioUuid]; !ok {
+	if _, ok := portfolioEffectTags[PortfolioUuid]; !ok {
 		return nil
 	}
-	if e, ok := portfolioEffectTags[portfolioUuid][tag]; !ok {
+	if e, ok := portfolioEffectTags[PortfolioUuid][tag]; !ok {
 		return nil
 	} else {
 		return e
 	}
 }
 
-func newEffect(portfolioUuid, title, effectType, tag string, innerEffect interface{}, duration time.Duration) (e *Effect, err error) {
+func newEffect(PortfolioUuid, title, effectType, tag string, innerEffect interface{}, duration time.Duration) (e *Effect, err error) {
 	EffectLock.Acquire("make-effect")
 	defer EffectLock.Release()
 	uuid := id.SerialUuid()
 
 	// tagged effect
-	preEffect := getTaggedEffect(portfolioUuid, tag)
-	if e, err = MakeEffect(uuid, portfolioUuid, title, effectType, tag, innerEffect, duration, time.Now(), true); err != nil {
+	preEffect := getTaggedEffect(PortfolioUuid, tag)
+	effect := models.Effect{
+		PortfolioUuid:PortfolioUuid,
+		Title: title,
+		Type: effectType,
+		Tag: tag,
+		InnerEffect: innerEffect,
+		Duration: utils.Duration{duration},
+		StartTime: time.Now(),
+	}
+	if e, err = MakeEffect(uuid, effect, true); err != nil {
 		return nil, err
 	}
 
@@ -94,7 +103,7 @@ func newEffect(portfolioUuid, title, effectType, tag string, innerEffect interfa
 	if preEffect != nil {
 		deletes[0] = preEffect
 	}
-	n := notification.NewEffectNotification(portfolioUuid, title)
+	n := notification.NewEffectNotification(PortfolioUuid, title)
 	if err := database.Db.Execute([]interface{}{e.Effect, n}, deletes); err != nil {
 		deleteEffect(e)
 		return nil, err
@@ -108,48 +117,41 @@ func newEffect(portfolioUuid, title, effectType, tag string, innerEffect interfa
 	return e, nil
 }
 
-func MakeEffect(uuid, portfolioUuid, title, effectType, tag string, innerEffect interface{}, duration time.Duration, startTime time.Time, lockAcquired bool) (*Effect, error) {
+
+
+func MakeEffect(uuid string, effect models.Effect, lockAcquired bool) (*Effect, error) {
 	if !lockAcquired {
 		EffectLock.Acquire("make-effect")
 		defer EffectLock.Release()
 	}
 
-	if s, ok := innerEffect.(string); ok {
+	if s, ok := effect.InnerEffect.(string); ok {
 		var err error
-		if innerEffect, err = UnmarshalJsonEffect(effectType, s); err != nil {
+		if effect.InnerEffect, err = UnmarshalJsonEffect(effect.Type, s); err != nil {
 			return nil, fmt.Errorf("failed to unmarhsal inner effect err=[%v]", err)
 		}
 	}
 	newEffect := &Effect{
-		Effect: models.Effect{
-			PortfolioUuid: portfolioUuid,
-			Uuid:          uuid,
-			Title:         title,
-			StartTime:     startTime,
-			Duration:      utils.Duration{Duration: duration},
-			Type:          effectType,
-			InnerEffect:   innerEffect,
-			Tag:           tag,
-		},
+		Effect: effect,
 	}
 
 	if err := change.RegisterPublicChangeDetect(newEffect); err != nil {
 		return nil, err
 	}
 
-	pEffects, ok := portfolioEffects[portfolioUuid]
+	pEffects, ok := portfolioEffects[effect.PortfolioUuid]
 	if !ok {
 		pEffects = make(map[string]*Effect)
-		portfolioEffects[portfolioUuid] = pEffects
+		portfolioEffects[effect.PortfolioUuid] = pEffects
 	}
-	if tag != "" {
-		if _, portfolioExists := portfolioEffectTags[portfolioUuid]; !portfolioExists {
+	if effect.Tag != "" {
+		if _, portfolioExists := portfolioEffectTags[effect.PortfolioUuid]; !portfolioExists {
 			// the portfolio map was deleted by the Delete Effect
 			pEffects = make(map[string]*Effect)
-			portfolioEffects[portfolioUuid] = pEffects
-			portfolioEffectTags[portfolioUuid] = make(map[string]*Effect)
+			portfolioEffects[effect.PortfolioUuid] = pEffects
+			portfolioEffectTags[effect.PortfolioUuid] = make(map[string]*Effect)
 		}
-		portfolioEffectTags[portfolioUuid][tag] = newEffect
+		portfolioEffectTags[effect.PortfolioUuid][effect.Tag] = newEffect
 	}
 
 	pEffects[newEffect.Uuid] = newEffect
@@ -158,19 +160,19 @@ func MakeEffect(uuid, portfolioUuid, title, effectType, tag string, innerEffect 
 	return newEffect, nil
 }
 
-//func UpdatePortfolioTag(portfolioUuid, tag string, newEffect *Effect) {
+//func UpdatePortfolioTag(PortfolioUuid, tag string, newEffect *Effect) {
 //	EffectLock.Acquire("update portfolio effect tag")
 //	defer EffectLock.Release()
-//	tags, exists := portfolioEffectTags[portfolioUuid]
+//	tags, exists := portfolioEffectTags[PortfolioUuid]
 //	if !exists {
-//		panic("got tag: " + tag + " update for a portfolio: " + portfolioUuid + " portfolio not found")
+//		panic("got tag: " + tag + " update for a portfolio: " + PortfolioUuid + " portfolio not found")
 //	}
 //	taggedEffect, foundTag := tags[tag]
 //	if !foundTag {
-//		panic("got tag: " + tag + " update for a portfolio: " + portfolioUuid + " tag not found")
+//		panic("got tag: " + tag + " update for a portfolio: " + PortfolioUuid + " tag not found")
 //	}
 //	DeleteEffect(taggedEffect.Uuid, true)
-//	portfolioEffects[portfolioUuid][newEffect.Uuid]
+//	portfolioEffects[PortfolioUuid][newEffect.Uuid]
 //
 //}
 
