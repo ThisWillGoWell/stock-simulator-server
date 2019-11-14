@@ -98,13 +98,13 @@ wait_for_running:
 
 # The port tells the frontend what to connect too
 frontend_local:
-	cd front_end && python ../etc/serve.py 8080
+	cd front_end && python ../etc/server.py 8080
 
 frontend_dev:
-	cd front_end && python ../etc/serve.py 8081
+	cd front_end && python ../etc/server.py 8081
 
 frontend_prod:
-	cd front_end && python ../etc/serve.py 8082
+	cd front_end && python ../etc/server.py 8082
 
 
 

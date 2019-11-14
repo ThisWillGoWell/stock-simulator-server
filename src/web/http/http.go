@@ -117,11 +117,6 @@ func StartHandlers() {
 
 }
 
-func ServePath(p string) {
-	var fs = http.FileServer(http.Dir(p))
-
-}
-
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  2048,
 	WriteBufferSize: 2048,
