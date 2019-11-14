@@ -1,6 +1,7 @@
 $( document ).ready(function() {
 
-    let url = window.location.origin;
+    let url = "https://mockstarket.com";
+
 
     if( window.location.host.includes("localhost") ){
         if(window.location.port === "8080"){
@@ -14,7 +15,10 @@ $( document ).ready(function() {
             // force use prod
             url = "https://mockstarket.com"
         }
+    } else if(window.location.host.includes("dev")){
+        url = "https://dev.mockstarket.com"
     }
+
 
     let input_login_uid = $('#login-uid');
     let input_login_pw = $('#login-pw');

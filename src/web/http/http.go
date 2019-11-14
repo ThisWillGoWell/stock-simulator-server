@@ -105,6 +105,10 @@ func StartHandlers() {
 		b, _ := json.Marshal(metrics.Counter)
 		io.WriteString(w, string(b))
 	})
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		setupResponse(&w, r)
+		w.WriteHeader(200)
+	})
 
 	err := http.ListenAndServe(":8000", nil)
 	if err != nil {
@@ -115,7 +119,7 @@ func StartHandlers() {
 
 func ServePath(p string) {
 	var fs = http.FileServer(http.Dir(p))
-	http.Handle("/", fs)
+
 }
 
 var upgrader = websocket.Upgrader{

@@ -23,7 +23,7 @@ if (token) {
 	// }
 	//
 	// host = "mockstarket.com";
-	wsUri = "wss://"+ window.location.host + "/api/ws";
+	wsUri = "wss://mockstarket.com/api/ws";
 
 	if( window.location.host.includes("localhost") ){
 		if(window.location.port === "8080"){
@@ -36,6 +36,8 @@ if (token) {
 			// force use prod
 			wsUri = "wss://mockstarket.com/api/ws"
 		}
+	}else if(window.location.host.includes("dev")){
+		url = "wss://dev.mockstarket.com"
 	}
 
 
