@@ -6,6 +6,6 @@ COPY vendor vendor
 RUN GOOS=linux GOARCH=amd64  go build -o app .
 WORKDIR /bin
 RUN cp /go/src/github.com/ThisWillGoWell/stock-simulator-server/app .
-COPY config config
+COPY seed seed
 EXPOSE 8000
 CMD ["app"]
