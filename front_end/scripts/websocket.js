@@ -23,7 +23,22 @@ if (token) {
 	// }
 	//
 	// host = "mockstarket.com";
-	wsUri = "wss://mockstarket.com/api/ws";
+	wsUri = "wss://"+ window.location.host + "/api/ws";
+
+	if( window.location.host.includes("localhost") ){
+		if(window.location.port === "8080"){
+			// force use localhost
+			wsUri = "ws://localhost:8000/api/ws"
+		}else if(window.location.port === "8081"){
+			// force use dev
+			wsUri = "wss://dev.mockstarket.com/api/ws"
+		} else if (window.location.port === "8082"){
+			// force use prod
+			wsUri = "wss://mockstarket.com/api/ws"
+		}
+	}
+
+
 
 	var output;
 	var webSocket;

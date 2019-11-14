@@ -3,13 +3,13 @@ package portfolio
 import (
 	"errors"
 	"fmt"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 
+	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/id"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/app/log"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/effect"
 
+	"github.com/ThisWillGoWell/stock-simulator-server/src/app/log"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/game/money"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/game/level"
@@ -19,10 +19,6 @@ import (
 	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/valuable"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/wires/duplicator"
-)
-
-const (
-	ObjectType = "portfolio"
 )
 
 var Portfolios = make(map[string]*Portfolio)
@@ -41,23 +37,15 @@ type Portfolio struct {
 	close         chan interface{}
 }
 
-func (port *Portfolio) GetId() string {
-	return port.Uuid
-}
-
-func (port *Portfolio) GetType() string {
-	return ObjectType
-}
-
 func NewPortfolio(portfolioUuid, userUuid string) (*Portfolio, error) {
 	PortfoliosLock.Acquire("new-portfolio")
 	defer PortfoliosLock.Release()
 
-	portfolio :=  objects.Portfolio{
+	portfolio := objects.Portfolio{
 		UserUUID: userUuid,
 		Uuid:     portfolioUuid,
-		Wallet:   10* money.Thousand,
-		NetWorth:  10* money.Thousand,
+		Wallet:   10 * money.Thousand,
+		NetWorth: 10 * money.Thousand,
 		Level:    0,
 	}
 	port, err := MakePortfolio(portfolio, true)
@@ -97,7 +85,7 @@ func MakePortfolio(portfolio objects.Portfolio, lockAquired bool) (*Portfolio, e
 			Lock:          lock.NewLock(fmt.Sprintf("portfolio-%s", portfolio.Uuid)),
 			UpdateInput:   duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-valueable-update", portfolio.Uuid)),
 		}
-
+	port.Lock.EnableDebug()
 	port.UpdateChannel.EnableCopyMode()
 	if err := change.RegisterPublicChangeDetect(port); err != nil {
 		return nil, err
@@ -133,7 +121,7 @@ func (port *Portfolio) Update() {
 	port.Lock.Acquire("portfolio-update")
 	newNetWorth := port.calculateNetWorth()
 	port.NetWorth = newNetWorth
-	port.UpdateChannel.Offer(port)
+	port.UpdateChannel.Offer(port.Portfolio)
 	port.Lock.Release()
 }
 
@@ -183,9 +171,27 @@ func (port *Portfolio) LevelUp() error {
 	if port.Wallet < l.Cost {
 		return errors.New("not enough $$")
 	}
+	effect.EffectLock.Acquire("level-up")
+	defer effect.EffectLock.Release()
+	newEffect, oldEffect, err := effect.UpdateBaseProfit(port.Uuid, l.ProfitMultiplier)
+	if err != nil {
+		log.Log.Errorf("failed to level up, err new effect err=[%v]", err)
+		return fmt.Errorf("opps! something went wrong 0x24")
+	}
+
 	port.Wallet = port.Wallet - l.Cost
 	port.Level = nextLevel
-	effect.UpdateBaseProfit(port.Uuid, l.ProfitMultiplier)
+
+	// commit to database
+	if dbErr := database.Db.Execute([]interface{}{newEffect, port}, []interface{}{oldEffect}); dbErr != nil {
+		log.Log.Errorf("failed to write level up to database err=[%v]", err)
+		return fmt.Errorf("opps! something went wrong! 0x34")
+	}
+
+	wires.EffectsDelete.Offer(newEffect.Effect)
+	effect.DeleteEffect(oldEffect)
+	wires.EffectsDelete.Offer(oldEffect.Effect)
+
 	go port.Update()
 	return nil
 }

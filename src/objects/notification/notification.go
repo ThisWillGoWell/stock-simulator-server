@@ -24,8 +24,6 @@ var NotificationLock = lock.NewLock("notifications")
 var notifications = make(map[string]*Notification)
 var notificationsPortfolioUuid = make(map[string]map[string]*Notification)
 
-const IdentifiableType = "notification"
-
 type Notification struct {
 	objects.Notification
 }
@@ -33,7 +31,7 @@ type Notification struct {
 func NewNotification(portfolioUuid, t string, notification interface{}) *Notification {
 	uuid := id.SerialUuid()
 
-	noti :=  objects.Notification{
+	noti := objects.Notification{
 		Uuid:          uuid,
 		PortfolioUuid: portfolioUuid,
 		Type:          t,
@@ -46,27 +44,25 @@ func NewNotification(portfolioUuid, t string, notification interface{}) *Notific
 	return n
 }
 
-func DeleteNotification(uuid string, lockAcquired bool) error{
-	if !lockAcquired {
-		NotificationLock.Acquire("delete note")
-		defer NotificationLock.Release()
-	}
-
+func DeleteRequest(uuid string) error {
+	NotificationLock.Acquire("delete note")
+	defer NotificationLock.Release()
 	n, ok := notifications[uuid]
 	if !ok {
 		log.Log.Errorf("got a delete for a uuid that does not exists")
 		return nil
 	}
+	DeleteNotification(n)
 	if dbErr := database.Db.Execute(nil, []interface{}{n}); dbErr != nil {
 		log.Log.Errorf("failed to delete notification from database err=[%v]", dbErr)
 		return fmt.Errorf("opps! something went wrong 0x231")
 	}
-	deleteNotification(n)
-	sender.SendDeleteObject(n.Uuid, n)
+	sender.SendDeleteObject(n.PortfolioUuid, n)
 	return nil
 }
 
-func deleteNotification(note *Notification){
+func DeleteNotification(note *Notification) {
+
 	delete(notifications, note.Uuid)
 	if _, exists := notificationsPortfolioUuid[note.PortfolioUuid]; !exists {
 		log.Log.Errorf("user does not have any notifications ")
@@ -169,14 +165,6 @@ func JsonToNotification(jsonString, notificationType string) interface{} {
 
 	json.Unmarshal([]byte(jsonString), &i)
 	return &i
-}
-
-func (note *Notification) GetId() string {
-	return note.Uuid
-}
-
-func (*Notification) GetType() string {
-	return IdentifiableType
 }
 
 //**

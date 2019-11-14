@@ -88,7 +88,7 @@ func (d *Database) GetPortfolios() ([]objects.Portfolio, error) {
 		if err = rows.Scan(&uuid, &userUuid, &wallet, &level); err != nil {
 			return nil, err
 		}
-		ports= append(ports, objects.Portfolio{
+		ports = append(ports, objects.Portfolio{
 			UserUUID: userUuid,
 			Uuid:     uuid,
 			Wallet:   wallet,

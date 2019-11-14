@@ -53,18 +53,18 @@ func (d *Database) GetLedgers() ([]objects.Ledger, error) {
 	defer func() {
 		_ = rows.Close()
 	}()
-	ledgers := make([]objects.Ledger, 0 )
+	ledgers := make([]objects.Ledger, 0)
 	for rows.Next() {
 		if err = rows.Scan(&uuid, &portfolioId, &stockId, &recordId, &amount); err != nil {
 			return nil, err
 		}
-		 ledgers = append(ledgers,  objects.Ledger{
-		 	Uuid: uuid,
-		 	PortfolioId: portfolioId,
-		 	StockId: stockId,
-		 	RecordBookId: recordId,
-		 	Amount: amount,
-		 })
+		ledgers = append(ledgers, objects.Ledger{
+			Uuid:         uuid,
+			PortfolioId:  portfolioId,
+			StockId:      stockId,
+			RecordBookId: recordId,
+			Amount:       amount,
+		})
 	}
 	return ledgers, rows.Err()
 }

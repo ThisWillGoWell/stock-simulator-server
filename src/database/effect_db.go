@@ -68,7 +68,7 @@ func (d *Database) GetEffects() ([]objects.Effect, error) {
 		if err = rows.Scan(&uuid, &portfolioUuid, &effectType, &title, &duration, &startTime, &tag, &effectJsonString); err != nil {
 			return nil, err
 		}
-		effects = append(effects,  objects.Effect{
+		effects = append(effects, objects.Effect{
 			PortfolioUuid: portfolioUuid,
 			Uuid:          uuid,
 			Title:         title,

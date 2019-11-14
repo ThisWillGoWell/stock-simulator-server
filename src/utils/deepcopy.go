@@ -4,7 +4,7 @@
 //
 // Copyright (c)2014-2016, Joel Scoble (github.com/mohae), all rights reserved.
 // License: MIT, for more details check the included LICENSE file.
-package duplicator
+package utils
 
 import (
 	"reflect"

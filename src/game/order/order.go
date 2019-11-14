@@ -179,6 +179,7 @@ func executeTrade(o *TradeOrder) {
 	}
 	//lock the portfolio for the rest of the trade
 	port.Lock.Acquire("trade")
+	defer port.Lock.Release()
 	portfolio.PortfoliosLock.Release()
 
 	// get the ledger or make a new one
@@ -228,7 +229,7 @@ func executeTrade(o *TradeOrder) {
 		}
 		// we have a sell
 		//make sure they have that many shares
-		if ledgerEntry.Amount >= o.Amount {
+		if ledgerEntry.Amount < o.Amount {
 			failureOrder("not enough shares", o)
 			return
 		}
@@ -247,8 +248,10 @@ func executeTrade(o *TradeOrder) {
 	} else {
 		ledgerEntry.Amount += o.Amount
 	}
-
+	record.RecordsLock.Acquire("trade")
+	defer record.RecordsLock.Release()
 	// make the record
+
 	r, book := record.NewRecord(ledgerEntry.RecordBookId, details.ShareCount, details.SharePrice, details.Tax, details.Fees, details.Bonus, details.Result)
 	// make the notification
 	note := notification.DoneTradeNotification(port.Uuid, value.Uuid, o.Amount)
@@ -266,7 +269,7 @@ func executeTrade(o *TradeOrder) {
 		if ledgerEntry.Amount == 0 {
 			ledger.DeleteLedger(ledgerEntry, true)
 		}
-		notification.DeleteNotification(note.Uuid, true)
+		notification.DeleteNotification(note)
 		record.DeleteRecord(r.Uuid, true)
 		log.Log.Errorf("failed to make trade err=[%v]", err)
 		failureOrder("Oops! something went wrong!", o)
@@ -276,19 +279,19 @@ func executeTrade(o *TradeOrder) {
 	// we have committed the stuff to the database, offer to all downstream listeners
 	if !ledgerExists {
 		port.UpdateInput.RegisterInput(value.UpdateChannel.GetBufferedOutput(100))
-		wires.LedgerNewObject.Offer(ledgerEntry)
-		wires.BookNewObject.Offer(book)
+		port.UpdateInput.RegisterInput(ledgerEntry.UpdateChannel.GetBufferedOutput(1000))
+		wires.LedgerNewObject.Offer(ledgerEntry.Ledger)
+		wires.BookNewObject.Offer(book.Book)
 	} else {
-		ledgerEntry.UpdateChannel.Offer(ledgerEntry)
+		wires.BookUpdate.Offer(book.Book)
+		ledgerEntry.UpdateChannel.Offer(ledgerEntry.Ledger)
 	}
+	value.UpdateChannel.Offer(value.Stock)
 	go port.Update()
-	go value.Update()
 	// send the new objects
 	sender.SendNewObject(port.Uuid, note)
 	wires.RecordsNewObject.Offer(r)
-
 	successOrder(o, details)
-	go port.Update()
 }
 
 func calculateDetails(order *ProspectOrder) {
@@ -436,12 +439,12 @@ func executeTransfer(o *TransferOrder) {
 	n1, n2 := notification.SendMoneyTradeNotification(port.Uuid, receiver.Uuid, o.Amount)
 
 	// commit the changes to the database
-	if dbErr := database.Db.Execute([]interface{}{n1.Notification, n2.Notification, receiver.Portfolio, port.Portfolio}, nil ); dbErr != nil {
+	if dbErr := database.Db.Execute([]interface{}{n1.Notification, n2.Notification, receiver.Portfolio, port.Portfolio}, nil); dbErr != nil {
 		// undo the transfer
 		receiver.Wallet -= o.Amount
 		port.Wallet += o.Amount
-		notification.DeleteNotification(n1.Uuid, true)
-		notification.DeleteNotification(n2.Uuid, true)
+		notification.DeleteNotification(n1)
+		notification.DeleteNotification(n2)
 		log.Log.Errorf("failed to write to database send money err=[%v]", dbErr)
 		failureOrder("Oops! something went wrong", o)
 		return

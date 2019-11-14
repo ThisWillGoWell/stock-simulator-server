@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ThisWillGoWell/stock-simulator-server/src/id"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/app/log"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/game/money"
 )
@@ -30,67 +31,77 @@ func (TradingType) Name() string {
 type TradeEffect struct {
 	parentEffect *Effect `json:"-"`
 
-	BuyFeeAmount     *int64   `json:"buy_fee_amount" change:"-"`     // fee on all trades ex: base fee
-	BuyFeeMultiplier *float64 `json:"buy_fee_multiplier" change:"-"` // fee % of the total fees, ex: double fees
+	BuyFeeAmount     *int64   `json:"buy_fee_amount"`     // fee on all trades ex: base fee
+	BuyFeeMultiplier *float64 `json:"buy_fee_multiplier"` // fee % of the total fees, ex: double fees
 
-	SellFeeAmount     *int64   `json:"sell_fee_amount" change:"-"`     // fee on all sales trades ex: base fee
-	SellFeeMultiplier *float64 `json:"sell_fee_multiplier" change:"-"` // fee % of the total fees, ex: double fees on trades
+	SellFeeAmount     *int64   `json:"sell_fee_amount"`     // fee on all sales trades ex: base fee
+	SellFeeMultiplier *float64 `json:"sell_fee_multiplier"` // fee % of the total fees, ex: double fees on trades
 
-	BonusProfitMultiplier *float64 `json:"profit_multiplier" change:"-"` // current profit multiplier, ex: bonus
+	BonusProfitMultiplier *float64 `json:"profit_multiplier"` // current profit multiplier, ex: bonus
 
-	TaxPercent    *float64 `json:"tax_percent" change:"-"`    // tax payed on profits, ex:  base tax
-	TaxMultiplier *float64 `json:"tax_multiplier" change:"-"` // percent multiplier, ex: taxless sales
+	TaxPercent    *float64 `json:"tax_percent"`    // tax payed on profits, ex:  base tax
+	TaxMultiplier *float64 `json:"tax_multiplier"` // percent multiplier, ex: taxless sales
 
-	TradeBlocked *bool `json:"trade_blocked" change:"-"` // if trade is blocked
+	TradeBlocked *bool `json:"trade_blocked"` // if trade is blocked
 }
 
-func NewBaseTradeEffect(portfolioUuid string) error {
+func NewBaseTradeEffect(portfolioUuid string) (*Effect, error) {
 	baseTradeEffect := &TradeEffect{
 		BuyFeeAmount:  utils.CreateInt(BaseBuyFee),
 		SellFeeAmount: utils.CreateInt(BaseSellFell),
 		TaxPercent:    utils.CreateFloat(BaseTaxRate),
 	}
 	var err error
-	baseTradeEffect.parentEffect, err = newEffect(portfolioUuid, "Base Effect", TradeEffectType, baseTradeEffectTag, baseTradeEffect, 0)
+	// should be no current base effect
+	baseTradeEffect.parentEffect, _, err = newEffect(portfolioUuid, "Base Effect", TradeEffectType, baseTradeEffectTag, baseTradeEffect, 0)
 	if err != nil {
-		log.Log.Errorf("failed to make base effect err=[%v]", err)
-		return fmt.Errorf("failed to make effect")
+		return nil, fmt.Errorf("failed to make base effect err=[%v]", err)
 	}
-	return nil
+	return baseTradeEffect.parentEffect, nil
 }
 
-func UpdateBaseProfit(portfolioUuid string, profitMultiplier float64) {
-	EffectLock.Acquire("update-effect")
-	defer EffectLock.Release()
+func UpdateBaseProfit(portfolioUuid string, profitMultiplier float64) (*Effect, *Effect, error) {
 	effect := getTaggedEffect(portfolioUuid, baseTradeEffectTag)
+
 	if effect == nil {
-		panic(fmt.Errorf("there was no base effect?? port=[%v]", portfolioUuid))
+		return nil, nil, fmt.Errorf("there was no base effect?? port=[%v]", portfolioUuid)
 	}
-	effect.InnerEffect.(*TradeEffect).BonusProfitMultiplier = utils.CreateFloat(profitMultiplier)
-	wires.EffectsUpdate.Offer(effect)
-}
 
-func NewTradeEffect(portfolioUuid, title, tag string, effect *TradeEffect, duration time.Duration) error {
-	var err error
-	effect.parentEffect, err = newEffect(portfolioUuid, title, TradeEffectType, tag, effect, duration)
+	newEffectObject := utils.Copy(effect.Effect).(objects.Effect)
+	newEffectObject.Uuid = id.SerialUuid()
+	newEffectObject.InnerEffect.(*TradeEffect).BonusProfitMultiplier = utils.CreateFloat(profitMultiplier)
+
+	newEffect, err := MakeEffect(newEffectObject, true)
 	if err != nil {
-		log.Log.Errorf("failed to make trade effect err=[%v]", err)
-		return fmt.Errorf("failed to make effect")
+		return nil, nil, fmt.Errorf("failed to make new effect err=[%v]", err)
 	}
-	return nil
+
+	return newEffect, effect, nil
 }
 
-func NewTaxModifier(portfolioUuid, title string, duration time.Duration, taxMultiplier float64) error {
+func NewTradeEffect(portfolioUuid, title, tag string, effect *TradeEffect, duration time.Duration) (*Effect, *Effect, error) {
+	var err error
+	var deletedEffect *Effect
+	effect.parentEffect, deletedEffect, err = newEffect(portfolioUuid, title, TradeEffectType, tag, effect, duration)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to make trade effect err=[%v]", err)
+	}
+	return effect.parentEffect, deletedEffect, nil
+}
+
+func NewTaxModifier(portfolioUuid, title string, duration time.Duration, taxMultiplier float64) (*Effect, *Effect, error) {
 	var err error
 	newTradeEffect := &TradeEffect{
 		TaxMultiplier: &taxMultiplier,
 	}
-	newTradeEffect.parentEffect, err = newEffect(portfolioUuid, title, "", TradeEffectType, newTradeEffect, duration)
+	var deleteEffect *Effect
+	newTradeEffect.parentEffect, deleteEffect, err = newEffect(portfolioUuid, title, "", TradeEffectType, newTradeEffect, duration)
 	if err != nil {
 		log.Log.Errorf("failed to make tax effect err=[%v]", err)
-		return fmt.Errorf("failed to make effect")
+		return nil, nil, fmt.Errorf("failed to make effect")
 	}
-	return nil
+
+	return newTradeEffect.parentEffect, deleteEffect, nil
 }
 
 // Calculate the total bonus  for a portfolio
@@ -186,12 +197,4 @@ func (t *TradeEffect) Add(effect *TradeEffect) {
 			t.TradeBlocked = utils.CreateBool(true)
 		}
 	}
-}
-
-func (t *TradeEffect) GetId() string {
-	return t.parentEffect.Uuid
-}
-
-func (*TradeEffect) GetType() string {
-	return EffectIdType
 }

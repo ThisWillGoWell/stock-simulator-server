@@ -25,8 +25,6 @@ var ItemsPortInventory = make(map[string]map[string]*Item)
 var Items = make(map[string]*Item)
 var ItemLock = lock.NewLock("item")
 
-const ItemIdentifiableType = "item"
-
 type InnerItem interface {
 	SetPortfolioUuid(string)
 	Activate(interface{}) (interface{}, error)
@@ -49,14 +47,6 @@ type i2 struct {
 	InnerItem     InnerItem `json:"-" change:"inner"`
 }
 
-func (i *Item) GetId() string {
-	return i.Uuid
-}
-
-func (*Item) GetType() string {
-	return ItemIdentifiableType
-}
-
 func newItem(portfolioUuid, configId, itemType, name string, innerItem interface{}) (i *Item, err error) {
 	return MakeItem(objects.Item{
 		Name:          name,
@@ -73,14 +63,18 @@ func MakeItem(i objects.Item) (*Item, error) {
 	switch i.InnerItem.(type) {
 	case string:
 		var err error
-		if  i.InnerItem, err = UnmarshalJsonItem(i.Type,  i.InnerItem.(string)); err != nil {
+		if i.InnerItem, err = UnmarshalJsonItem(i.Type, i.InnerItem.(string)); err != nil {
 			return nil, err
 		}
 	}
 	item := &Item{
-		Item: i,
+		Item:          i,
 		UpdateChannel: make(chan interface{}),
 	}
+	if err := change.RegisterPrivateChangeDetect(item.Item, item.UpdateChannel); err != nil {
+		return nil, err
+	}
+
 	if err := sender.RegisterChangeUpdate(item.PortfolioUuid, item.UpdateChannel); err != nil {
 		return nil, err
 	}
@@ -89,10 +83,6 @@ func MakeItem(i objects.Item) (*Item, error) {
 		ItemsPortInventory[item.PortfolioUuid] = make(map[string]*Item)
 	}
 	item.InnerItem.(InnerItem).SetParentItemUuid(item.Uuid)
-
-	if err := change.RegisterPrivateChangeDetect(item, item.UpdateChannel); err != nil {
-		return nil, err
-	}
 
 	id.RegisterUuid(item.Uuid, item)
 	ItemsPortInventory[item.PortfolioUuid][item.Uuid] = item
@@ -156,21 +146,16 @@ func BuyItem(portUuid, configId string) (string, error) {
 		if len(ItemsPortInventory[port.Uuid]) == 0 {
 			delete(ItemsPortInventory, port.Uuid)
 		}
-		notification.DeleteNotification(note.Uuid, true)
+		notification.DeleteNotification(note)
 		port.Wallet += config.Cost
-		deleteItem(i)
+		DeleteItem(i)
 		log.Log.Errorf("failed to buy item err=[%v]", err)
 		return "", fmt.Errorf("oops! something went wrong")
 	}
 	return i.Uuid, nil
 }
 
-func (i *Item) DeleteItem() error {
-	return database.Db.Execute(nil, []interface{}{i})
-}
-
-func DeleteItem(uuid string) error {
-
+func DeleteRequest(uuid string) error {
 	ItemLock.Acquire("delete-item")
 	defer ItemLock.Release()
 	// delete from the database
@@ -179,18 +164,23 @@ func DeleteItem(uuid string) error {
 		log.Log.Errorf("got a delete for a item that does not exists")
 		return nil
 	}
+
 	if err := database.Db.Execute(nil, []interface{}{item}); err != nil {
-		log.Log.Errorf("failed to delete item err=[%v]", err)
-		return fmt.Errorf("opps! something went wrong")
+		return err
 	}
-	// we can delete the item now
-	deleteItem(item)
-	sender.SendDeleteObject(item.PortfolioUuid, item)
+	DeleteItem(item)
+	sender.SendDeleteObject(item.PortfolioUuid, item.Item)
 	return nil
 }
 
-func deleteItem(item *Item) {
-	change.UnregisterChangeDetect(item)
+func DeleteItem(item *Item) {
+
+	if err := database.Db.Execute(nil, []interface{}{item}); err != nil {
+		log.Log.Errorf("failed to delete item err=[%v]", err)
+		return
+	}
+	// we can delete the item now
+	change.UnregisterChangeDetect(item.Item)
 	close(item.UpdateChannel)
 	delete(Items, item.Uuid)
 	delete(ItemsPortInventory[item.PortfolioUuid], item.Uuid)

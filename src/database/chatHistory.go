@@ -1,4 +1,5 @@
 package database
+
 //
 //var (
 //	chatHistoryTableName            = `chat_history`

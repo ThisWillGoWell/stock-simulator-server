@@ -100,7 +100,7 @@ func (d *Database) GetStocks() ([]objects.Stock, error) {
 	defer func() {
 		_ = rows.Close()
 	}()
-	stocks := make([]objects.Stock,0)
+	stocks := make([]objects.Stock, 0)
 	for rows.Next() {
 		if err = rows.Scan(&uuid, &tickerId, &name, &currentPrice, &openShares, &changeInterval); err != nil {
 			return nil, err

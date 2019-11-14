@@ -3,10 +3,11 @@ package valuable
 import (
 	"errors"
 	"fmt"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 	"math/rand"
 	"reflect"
 	"time"
+
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/app/log"
 
@@ -65,10 +66,6 @@ type Stock struct {
 	close         chan interface{}              `json:"-"`
 }
 
-func (stock *Stock) GetType() string {
-	return ObjectType
-}
-
 func NewStock(tickerID, name string, startPrice int64, runInterval time.Duration) (*Stock, error) {
 	// Acquire the valuableMapLock so no one can add a new entry till we are done
 	ValuablesLock.Acquire("new-stock")
@@ -85,7 +82,12 @@ func NewStock(tickerID, name string, startPrice int64, runInterval time.Duration
 	if err != nil {
 		return nil, err
 	}
-	wires.StocksNewObject.Offer(s)
+
+	if err := database.Db.Execute([]interface{}{stock}, nil); err != nil {
+		return nil, err
+	}
+	wires.StocksNewObject.Offer(s.Stock)
+
 	return s, nil
 }
 
@@ -118,12 +120,11 @@ func MakeStock(s objects.Stock) (*Stock, error) {
 		Volatility:            5,
 		RandomNoise:           .15,
 	}
-	if err := change.RegisterPublicChangeDetect(stock); err != nil {
+	if err := change.RegisterPublicChangeDetect(stock.Stock); err != nil {
 		return nil, err
 	}
 	go stock.stockUpdateRoutine()
 	Stocks[s.Uuid] = stock
-	stock.UpdateChannel.EnableCopyMode()
 	wires.StocksUpdate.RegisterInput(stock.UpdateChannel.GetBufferedOutput(1000))
 	id.RegisterUuid(s.Uuid, stock)
 	return stock, nil
@@ -143,10 +144,6 @@ func (stock *Stock) GetLock() *lock.Lock {
 
 func (stock *Stock) GetUpdateChannel() *duplicator.ChannelDuplicator {
 	return stock.UpdateChannel
-}
-
-func (stock *Stock) GetId() string {
-	return stock.Uuid
 }
 
 func (stock *Stock) stockUpdateRoutine() {
@@ -214,7 +211,7 @@ func (randPrice *RandomPrice) change(stock *Stock) {
 		return
 	}
 
-	stock.UpdateChannel.Offer(stock)
+	stock.UpdateChannel.Offer(stock.Stock)
 
 }
 

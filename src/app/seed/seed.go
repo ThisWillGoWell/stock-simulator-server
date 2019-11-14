@@ -29,7 +29,7 @@ type ObjectsJson struct {
 	AutoBuy  bool                   `json:"auto_buy"`
 }
 
-func SeedObjects(path string ) {
+func SeedObjects(path string) {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Log.Error("error reading file", err)
@@ -78,4 +78,3 @@ func SeedObjects(path string ) {
 	log.Log.Info("Config done loaded", err)
 
 }
-

@@ -14,6 +14,16 @@ type Portfolio struct {
 	Level    int64  `json:"level" change:"-"`
 }
 
+func (port Portfolio) GetId() string {
+	return port.Uuid
+}
+
+const PortIdentifiableType = "portfolio"
+
+func (Portfolio) GetType() string {
+	return PortIdentifiableType
+}
+
 type Effect struct {
 	PortfolioUuid string         `json:"portfolio_uuid"`
 	Uuid          string         `json:"uuid"`
@@ -25,6 +35,16 @@ type Effect struct {
 	Tag           string         `json:"tag"`
 }
 
+const EffectIdentifiableType = "effect"
+
+func (Effect) GetType() string {
+	return EffectIdentifiableType
+}
+
+func (e Effect) GetId() string {
+	return e.Uuid
+}
+
 type Stock struct {
 	Uuid           string        `json:"uuid"`
 	Name           string        `json:"name"`
@@ -32,6 +52,15 @@ type Stock struct {
 	CurrentPrice   int64         `json:"current_price" change:"-"`
 	OpenShares     int64         `json:"open_shares" change:"-"`
 	ChangeDuration time.Duration `json:"-"`
+}
+
+const StockIdentifiableType = "stock"
+
+func (stock Stock) GetId() string {
+	return stock.Uuid
+}
+func (stock Stock) GetType() string {
+	return StockIdentifiableType
 }
 
 type User struct {
@@ -46,6 +75,13 @@ type User struct {
 	ActiveClients int64                  `json:"-"`
 }
 
+func (user User) GetId() string {
+	return user.Uuid
+}
+func (user User) GetType() string {
+	return "user"
+}
+
 type Item struct {
 	Uuid            string      `json:"uuid"`
 	Name            string      `json:"name"`
@@ -57,12 +93,32 @@ type Item struct {
 	InnerItem       interface{} `json:"-" change:"inner"`
 }
 
+func (i Item) GetId() string {
+	return i.Uuid
+}
+
+const ItemIdentifiableType = "item"
+
+func (Item) GetType() string {
+	return ItemIdentifiableType
+}
+
 type Ledger struct {
 	Uuid         string `json:"uuid"`
 	PortfolioId  string `json:"portfolio_id"`
 	StockId      string `json:"stock_id"`
 	Amount       int64  `json:"amount" change:"-"`
 	RecordBookId string `json:"record_book"`
+}
+
+const LedgerIdentifiableType = "ledger"
+
+func (ledger Ledger) GetId() string {
+	return ledger.Uuid
+}
+
+func (Ledger) GetType() string {
+	return LedgerIdentifiableType
 }
 
 type Record struct {
@@ -77,6 +133,37 @@ type Record struct {
 	Result         int64     `json:"result"`
 }
 
+const RecordIdentifiableType = "record_entry"
+
+func (Record) GetType() string {
+	return RecordIdentifiableType
+}
+func (br Record) GetId() string {
+	return br.Uuid
+}
+
+type Book struct {
+	Uuid          string            `json:"uuid"`
+	LedgerUuid    string            `json:"ledger_uuid"`
+	PortfolioUuid string            `json:"portfolio_uuid"`
+	ActiveRecords []ActiveBuyRecord `json:"active_records" change:"-"`
+}
+
+type ActiveBuyRecord struct {
+	RecordUuid string `json:"record_uud"`
+	AmountLeft int64  `json:"still_own"`
+}
+
+const BookIdentifiableType = "record_book"
+
+func (Book) GetType() string {
+	return BookIdentifiableType
+}
+
+func (b Book) GetId() string {
+	return b.Uuid
+}
+
 type Notification struct {
 	Uuid          string      `json:"uuid"`
 	PortfolioUuid string      `json:"portfolio_uuid"`
@@ -84,4 +171,14 @@ type Notification struct {
 	Type          string      `json:"type"`
 	Notification  interface{} `json:"notification"`
 	Seen          bool        `json:"seen"`
+}
+
+func (note Notification) GetId() string {
+	return note.Uuid
+}
+
+const NotificationIdentifiableType = "notification"
+
+func (Notification) GetType() string {
+	return NotificationIdentifiableType
 }

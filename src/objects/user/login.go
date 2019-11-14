@@ -3,7 +3,9 @@ package user
 import (
 	"errors"
 	"fmt"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/effect"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/id"
 
@@ -55,7 +57,7 @@ func ConnectUser(sessionToken string) (*User, error) {
 		return nil, errors.New("user found in session list but not in current users")
 	}
 	user.Active = true
-	wires.UsersUpdate.Offer(user)
+	wires.UsersUpdate.Offer(user.User)
 	return user, nil
 }
 
@@ -95,7 +97,7 @@ func NewUser(username, displayName, password string) (string, error) {
 	portUuid := id.SerialUuid()
 
 	hashedPassword := hashAndSalt(password)
-	u, err := MakeUser(objects.User{UserName: username, DisplayName:displayName, Password:hashedPassword, Config:nil})
+	u, err := MakeUser(objects.User{Uuid: uuid, PortfolioId: portUuid, UserName: username, DisplayName: displayName, Password: hashedPassword, Config: nil})
 	if err != nil {
 		id.RemoveUuid(uuid)
 		id.RemoveUuid(portUuid)
@@ -106,22 +108,30 @@ func NewUser(username, displayName, password string) (string, error) {
 	if err != nil {
 		id.RemoveUuid(portUuid)
 		log.Log.Errorf("failed to make portfolio err=[%v]", err)
-		 deleteUser(u.Uuid, true)
+		deleteUser(u.Uuid, true)
 		return "", fmt.Errorf("opps! Something went wrong 0x042")
 	}
 
+	baseEffect, err := effect.NewBaseTradeEffect(portUuid)
+	if err != nil {
+		portfolio.DeletePortfolio(portUuid)
+		deleteUser(u.Uuid, true)
+		effect.DeleteEffect(baseEffect)
+		log.Log.Errorf("failed to make base trade effect err=[%v]", err)
+		return "", fmt.Errorf("opps!, something went wrong 0x72")
+	}
 
-	if dbErr := database.Db.Execute([]interface{}{port, u}, nil); dbErr != nil {
+	if dbErr := database.Db.Execute([]interface{}{port, u, baseEffect}, nil); dbErr != nil {
 		deleteUser(u.Uuid, true)
 		portfolio.DeletePortfolio(portUuid)
 		log.Log.Errorf("failed to make new user database err=[%v]", err)
 		return "", fmt.Errorf("oops! something went wrong 0x48")
 	}
 
-
 	sessionToken := session.NewSessionToken(u.Uuid)
 
-	wires.UsersNewObject.Offer(u)
-	wires.PortfolioNewObject.Offer(port)
+	wires.UsersNewObject.Offer(u.User)
+	wires.PortfolioNewObject.Offer(port.Portfolio)
+	wires.EffectsNewObject.Offer(baseEffect.Effect)
 	return sessionToken, nil
 }

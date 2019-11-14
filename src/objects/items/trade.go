@@ -1,9 +1,12 @@
 package items
 
 import (
-	"github.com/ThisWillGoWell/stock-simulator-server/src/app/log"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/effect"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/notification"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/wires/sender"
 )
 
 const TradeItemType = "trade_effect"
@@ -48,12 +51,30 @@ func (p *TradeEffectItem) Activate(interface{}) (interface{}, error) {
 		SellFeeAmount:         p.SellFeeAmount,
 		BonusProfitMultiplier: p.ProfitMultiplier,
 	}
-	parent := Items[p.ParentItemUuid]
-	if err := effect.NewTradeEffect(p.TargetPortfolio, parent.Name, parent.Name, tradeEffect, p.Duration.Duration); err != nil {
+	item := Items[p.ParentItemUuid]
+
+	newEffect, deleteEffect, err := effect.NewTradeEffect(p.TargetPortfolio, item.Name, item.Name, tradeEffect, p.Duration.Duration)
+	if err != nil {
 		return nil, err
 	}
-	if err := parent.DeleteItem(); err != nil {
-		log.Log.Error("failed to delete item (in database) err=[%v]", err)
+
+	notification.NotificationLock.Acquire("ActivateTradeEffectItem")
+	defer notification.NotificationLock.Release()
+
+	n := notification.NewEffectNotification(p.TargetPortfolio, newEffect.Title)
+	n2 := notification.UsedItemNotification(p.TargetPortfolio, item.Uuid, item.Type)
+	if dbErr := database.Db.Execute([]interface{}{newEffect, n, n2}, []interface{}{item, deleteEffect}); dbErr != nil {
+		notification.DeleteNotification(n)
+		notification.DeleteNotification(n2)
 	}
+	DeleteItem(item)
+
+	effect.DeleteEffect(deleteEffect)
+	wires.EffectsNewObject.Offer(newEffect.Effect)
+	sender.SendDeleteObject(item.PortfolioUuid, item.Item)
+	sender.SendDeleteObject(deleteEffect.PortfolioUuid, deleteEffect.Effect)
+	sender.SendNewObject(n.PortfolioUuid, n.Notification)
+	sender.SendNewObject(n2.PortfolioUuid, n2.Notification)
+	sender.SendDeleteObject(item.Uuid, item.Item)
 	return nil, nil
 }

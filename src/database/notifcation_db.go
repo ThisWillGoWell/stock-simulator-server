@@ -47,7 +47,7 @@ func deleteNotification(note objects.Notification, tx *sql.Tx) error {
 	return err
 }
 
-func (d *Database) GetNotification() ([]objects.Notification, error ) {
+func (d *Database) GetNotification() ([]objects.Notification, error) {
 	var uuid, userUuid, jsonString, notType string
 	var seen bool
 	var t time.Time
@@ -61,15 +61,15 @@ func (d *Database) GetNotification() ([]objects.Notification, error ) {
 	for rows.Next() {
 		err := rows.Scan(&uuid, &userUuid, &seen, &t, &notType, &jsonString)
 		if err != nil {
-			return nil, fmt.Errorf("failed to scan notificaion err=[%v]", err )
+			return nil, fmt.Errorf("failed to scan notificaion err=[%v]", err)
 		}
-		n = append(n,  objects.Notification{
-			Uuid: uuid,
+		n = append(n, objects.Notification{
+			Uuid:          uuid,
 			PortfolioUuid: userUuid,
-			Timestamp: t,
-			Seen: seen,
-			Type: notType,
-			Notification: jsonString,
+			Timestamp:     t,
+			Seen:          seen,
+			Type:          notType,
+			Notification:  jsonString,
 		})
 	}
 	return n, rows.Err()

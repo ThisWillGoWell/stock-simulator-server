@@ -21,11 +21,11 @@ type ProgramSecrets struct {
 type DatabaseSecret struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
-	Host string `json:"host"`
-	Port int `json:"port"`
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
 }
 
-func GetDatabaseSecret(env string)(DatabaseSecret, error){
+func GetDatabaseSecret(env string) (DatabaseSecret, error) {
 	awsSecret, err := getSecret(fmt.Sprintf("mockstarket/%s/database", env))
 	var secrets DatabaseSecret
 	if err != nil {
@@ -66,25 +66,25 @@ func getSecret(name string) (*secretsmanager.GetSecretValueOutput, error) {
 	result, err := svc.GetSecretValue(input)
 	if err != nil {
 
-			if aerr, ok := err.(awserr.Error); ok {
-				switch aerr.Code() {
-				case secretsmanager.ErrCodeResourceNotFoundException:
-					log.Log.Println(secretsmanager.ErrCodeResourceNotFoundException, aerr.Error())
-				case secretsmanager.ErrCodeInvalidParameterException:
-					log.Log.Println(secretsmanager.ErrCodeInvalidParameterException, aerr.Error())
-				case secretsmanager.ErrCodeInvalidRequestException:
-					log.Log.Println(secretsmanager.ErrCodeInvalidRequestException, aerr.Error())
-				case secretsmanager.ErrCodeDecryptionFailure:
-					log.Log.Println(secretsmanager.ErrCodeDecryptionFailure, aerr.Error())
-				case secretsmanager.ErrCodeInternalServiceError:
-					log.Log.Println(secretsmanager.ErrCodeInternalServiceError, aerr.Error())
-				default:
-					log.Log.Println(aerr.Error())
-				}
-			} else {
-				log.Log.Println(err.Error())
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case secretsmanager.ErrCodeResourceNotFoundException:
+				log.Log.Println(secretsmanager.ErrCodeResourceNotFoundException, aerr.Error())
+			case secretsmanager.ErrCodeInvalidParameterException:
+				log.Log.Println(secretsmanager.ErrCodeInvalidParameterException, aerr.Error())
+			case secretsmanager.ErrCodeInvalidRequestException:
+				log.Log.Println(secretsmanager.ErrCodeInvalidRequestException, aerr.Error())
+			case secretsmanager.ErrCodeDecryptionFailure:
+				log.Log.Println(secretsmanager.ErrCodeDecryptionFailure, aerr.Error())
+			case secretsmanager.ErrCodeInternalServiceError:
+				log.Log.Println(secretsmanager.ErrCodeInternalServiceError, aerr.Error())
+			default:
+				log.Log.Println(aerr.Error())
 			}
-			return nil, err
+		} else {
+			log.Log.Println(err.Error())
+		}
+		return nil, err
 
 	}
 

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/effect"
 
 	metrics "github.com/ThisWillGoWell/stock-simulator-server/src/app/metics"
@@ -103,7 +105,7 @@ func InitialReceive(initialPayload string, tx, rx chan string) error {
 		connections[u.Uuid] = make(map[int]*Client)
 	}
 	connections[u.Uuid][client.clientNum] = client
-	log.Log.Info("client connected", u.Uuid, u.ActiveClients)
+	log.Log.Info("client connected ", u.Uuid, u.ActiveClients)
 	metrics.ClientConnect()
 	go client.tx(sessionToken)
 	go client.rx()
@@ -303,9 +305,12 @@ func (client *Client) processSetMessage(baseMessage *messages.BaseMessage) {
 			response = messages.BuildFailedSet(errors.New("failed, invalid type"))
 			break
 		}
-		client.user.SetConfig(newConfig)
+		if err := client.user.SetConfig(newConfig); err != nil {
+			response = messages.BuildFailedSet(err)
+		} else {
+			response = messages.BuildSuccessSet()
+		}
 
-		response = messages.BuildSuccessSet()
 	case "password":
 		newPassword, ok := setMessage.Value.(string)
 		if !ok {
@@ -344,10 +349,10 @@ func (client *Client) processDeleteAction(baseMessage *messages.BaseMessage) {
 	deleteMsg := baseMessage.Msg.(*messages.DeleteMessage)
 	var err error
 	switch deleteMsg.Type {
-	case items.ItemIdentifiableType:
-		err = items.DeleteItem(deleteMsg.Uuid)
-	case notification.IdentifiableType:
-		err = notification.DeleteNotification(deleteMsg.Uuid, false)
+	case objects.ItemIdentifiableType:
+		err = items.DeleteRequest(deleteMsg.Uuid)
+	case objects.NotificationIdentifiableType:
+		err = notification.DeleteRequest(deleteMsg.Uuid)
 	}
 	client.sendMessage(messages.BuildDeleteResponseMsg(baseMessage.RequestID, err))
 }

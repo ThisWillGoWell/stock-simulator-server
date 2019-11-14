@@ -3,8 +3,9 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 	"time"
+
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/app/log"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
@@ -22,6 +23,7 @@ type Database struct {
 
 func InitDatabase(enableDb, enableDbWrite bool, host, port, username, password, database string) error {
 	db := &Database{}
+	Db = db
 	if !enableDb {
 		db.enable = enableDbWrite
 		return nil
@@ -42,10 +44,7 @@ func InitDatabase(enableDb, enableDbWrite bool, host, port, username, password, 
 		<-time.After(time.Second)
 	}
 	log.Log.Info("connected to database")
-	Db = db
 	return nil
-
-
 }
 
 func (d *Database) Execute(writes []interface{}, deletes []interface{}) error {
@@ -58,6 +57,9 @@ func (d *Database) Execute(writes []interface{}, deletes []interface{}) error {
 	}
 	if writes != nil {
 		for _, obj := range writes {
+			if obj == nil {
+				continue
+			}
 			switch obj.(type) {
 			case objects.Portfolio:
 				err = writePortfolio(obj.(objects.Portfolio), tx)
@@ -88,6 +90,9 @@ func (d *Database) Execute(writes []interface{}, deletes []interface{}) error {
 	}
 	if deletes != nil {
 		for _, obj := range deletes {
+			if obj == nil {
+				continue
+			}
 			switch obj.(type) {
 			case objects.Portfolio:
 				err = deletePortfolio(obj.(objects.Portfolio), tx)

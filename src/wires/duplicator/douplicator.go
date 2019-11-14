@@ -2,6 +2,7 @@ package duplicator
 
 import (
 	"fmt"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 	"time"
 
 	"encoding/json"
@@ -166,7 +167,7 @@ func (ch *ChannelDuplicator) Offer(value interface{}) {
 		fmt.Println("offering to transfer", ch.debugName)
 	}
 	if ch.copy && (reflect.TypeOf(value).Kind() == reflect.Ptr || reflect.TypeOf(value).Kind() == reflect.Slice) {
-		newVal := Copy(value)
+		newVal := utils.Copy(value)
 		//pass that pointer down the transfer line
 		if ch.debug {
 			str, _ := json.Marshal(newVal)

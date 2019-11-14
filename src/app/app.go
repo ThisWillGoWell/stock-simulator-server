@@ -24,20 +24,18 @@ import (
 	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/valuable"
 )
 
-
 func LoadConfigs() {
-
 
 }
 func App() {
 
 	c := config.FromEnv()
-	secret,err := aws.GetDatabaseSecret(c.Environment)
+	secret, err := aws.GetDatabaseSecret(c.Environment)
 	if err != nil {
 		panic(err)
 	}
 
-	if err := database.InitDatabase(c.EnableDb, c.EnableDbWrites, secret.Host,fmt.Sprintf("%d", secret.Port), secret.Username, secret.Password, "postgres"); err != nil {
+	if err := database.InitDatabase(c.EnableDb, c.EnableDbWrites, secret.Host, fmt.Sprintf("%d", secret.Port), secret.Username, secret.Password, "postgres"); err != nil {
 		panic(err)
 	}
 	log.Log.Info("Starting App")

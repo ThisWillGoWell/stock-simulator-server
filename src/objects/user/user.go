@@ -4,6 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
+	"github.com/ThisWillGoWell/stock-simulator-server/src/app/log"
+
+	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/id"
@@ -56,7 +61,7 @@ func GetUser(username, password string) (*User, error) {
 		return nil, errors.New("password is incorrect")
 	}
 	user.Active = true
-	wires.UsersUpdate.Offer(user)
+	wires.UsersUpdate.Offer(user.User)
 	return user, nil
 }
 
@@ -72,7 +77,7 @@ func RenewUser(sessionToken string) (*User, error) {
 		return nil, errors.New("user found in session list but not in current users")
 	}
 	user.Active = true
-	wires.UsersUpdate.Offer(user)
+	wires.UsersUpdate.Offer(user.User)
 	return user, nil
 }
 
@@ -85,22 +90,21 @@ func deleteUser(uuid string, lockAquired bool) {
 	if !ok {
 		return
 	}
-	change.UnregisterChangeDetect(u)
+	change.UnregisterChangeDetect(u.User)
 	delete(UserList, uuid)
 	delete(uuidList, u.DisplayName)
 	u.Sender.Stop()
 
 }
 
-
-func MakeUser(uModel objects.User) (*User, error){
-	_, userNameExists := uuidList[uModel.DisplayName]
+func MakeUser(uModel objects.User) (*User, error) {
+	_, userNameExists := uuidList[uModel.UserName]
 	if userNameExists {
 		return nil, errors.New("username already exists")
 	}
 	if uModel.Config == nil {
 		uModel.Config = make(map[string]interface{})
-		if uModel.ConfigStr != ""{
+		if uModel.ConfigStr != "" {
 			if err := json.Unmarshal([]byte(uModel.ConfigStr), &uModel.Config); err != nil {
 				return nil, fmt.Errorf("failed to unmarhsal provided config err=[%v]", err)
 			}
@@ -114,10 +118,10 @@ func MakeUser(uModel objects.User) (*User, error){
 		Sender:         sender.NewSender(uModel.Uuid, uModel.PortfolioId),
 	}
 
-	if err := change.RegisterPublicChangeDetect(u); err != nil {
+	if err := change.RegisterPublicChangeDetect(u.User); err != nil {
 		return nil, err
 	}
-	uuidList[uModel.DisplayName] = u.Uuid
+	uuidList[uModel.UserName] = u.Uuid
 	UserList[u.Uuid] = u
 	id.RegisterUuid(u.Uuid, UserList[u.Uuid])
 	return UserList[u.Uuid], nil
@@ -136,14 +140,7 @@ func (user *User) LogoutUser() {
 	if user.ActiveClients == 0 {
 		user.Active = false
 	}
-	wires.UsersUpdate.Offer(user)
-}
-
-func (user *User) GetId() string {
-	return user.Uuid
-}
-func (user *User) GetType() string {
-	return "user"
+	wires.UsersUpdate.Offer(user.User)
 }
 
 /**
@@ -161,20 +158,36 @@ func GetAllUsers() []*User {
 	return lst
 }
 
-func (user *User) SetConfig(config map[string]interface{}) {
+func (user *User) SetConfig(config map[string]interface{}) error {
+	optionalConfig := user.Config
+	ordinalConfigSir := user.ConfigStr
+
 	user.Config = config
 	configBytes, _ := json.Marshal(config)
 	user.ConfigStr = string(configBytes)
-	wires.UsersUpdate.Offer(user)
+	if dbErr := database.Db.Execute([]interface{}{user}, nil); dbErr != nil {
+		user.Config = optionalConfig
+		user.ConfigStr = ordinalConfigSir
+		log.Log.Errorf("failed to update password database err=[%v]", dbErr)
+		return fmt.Errorf("opps! something went wrong 0x092")
+	}
+	return nil
 }
 
 func (user *User) SetPassword(pass string) error {
 	if len(pass) < minPasswordLength {
 		return errors.New("password too short")
 	}
+	oldPassword := user.Password
 	hashedPassword := hashAndSalt(pass)
 	user.Password = hashedPassword
-	wires.UsersUpdate.Offer(user)
+
+	if dbErr := database.Db.Execute([]interface{}{user}, nil); dbErr != nil {
+		user.Password = oldPassword
+		log.Log.Errorf("failed to update password database err=[%v]", dbErr)
+		return fmt.Errorf("opps! something went wrong 0x093")
+	}
+
 	return nil
 }
 
@@ -188,9 +201,16 @@ func (user *User) SetDisplayName(displayName string) error {
 	if len(displayName) < minDisplayNameLength {
 		return errors.New("display name too short")
 	}
-
+	optionalDisplayName := user.DisplayName
 	user.DisplayName = displayName
-	wires.UsersUpdate.Offer(user)
+
+	if dbErr := database.Db.Execute([]interface{}{user}, nil); dbErr != nil {
+		user.DisplayName = optionalDisplayName
+		log.Log.Errorf("failed to update password database err=[%v]", dbErr)
+		return fmt.Errorf("opps! something went wrong 0x094")
+	}
+	wires.UsersUpdate.Offer(user.User)
+
 	return nil
 }
 
@@ -210,8 +230,4 @@ func isAllowedCharacterUsername(s string) bool {
 		}
 	}
 	return true
-}
-
-func SendNotifcation(uuid string, note interface{}) {
-	UserList[uuid].Sender.Notifications.Offer(note)
 }

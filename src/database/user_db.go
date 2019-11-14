@@ -24,7 +24,7 @@ var (
 		`ON CONFLICT (uuid) DO UPDATE SET display_name=EXCLUDED.display_name, password=EXCLUDED.password, config=EXCLUDED.config;`
 
 	userTableQueryStatement = "SELECT uuid, name, display_name, password, portfolio_uuid, config FROM " + accountTableName + `;`
-	userTableDelete            = "DELETE from " + accountTableName + `WHERE uuid = $1`
+	userTableDelete         = "DELETE from " + accountTableName + `WHERE uuid = $1`
 )
 
 func (d *Database) initAccount() error {

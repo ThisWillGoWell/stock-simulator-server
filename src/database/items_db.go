@@ -64,7 +64,7 @@ func (d *Database) GetItems() ([]objects.Item, error) {
 		if err = rows.Scan(&uuid, &itemType, &name, &configId, &portfolioUuid, &innerJson, &createTime); err != nil {
 			return nil, err
 		}
-		items= append(items,objects.Item{
+		items = append(items, objects.Item{
 			Uuid:          uuid,
 			Name:          name,
 			ConfigId:      configId,

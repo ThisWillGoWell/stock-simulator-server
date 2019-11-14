@@ -2,8 +2,9 @@ package record
 
 import (
 	"fmt"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 	"time"
+
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/id"
 
@@ -13,18 +14,14 @@ import (
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/id/change"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
-
 	"github.com/ThisWillGoWell/stock-simulator-server/src/lock"
 )
 
-var recordsLock = lock.NewLock("records")
+var RecordsLock = lock.NewLock("records")
 var books = make(map[string]*Book)
 var records = make(map[string]*Record)
 var portfolioBooks = make(map[string][]*Book)
 
-const EntryIdentifiableType = "record_entry"
-const BookIdentifiableType = "record_book"
 const BuyRecordType = "buy"
 const SellRecordType = "sell"
 
@@ -36,15 +33,7 @@ const SellRecordType = "sell"
 //}
 
 type Book struct {
-	Uuid          string            `json:"uuid"`
-	LedgerUuid    string            `json:"ledger_uuid"`
-	PortfolioUuid string            `json:"portfolio_uuid"`
-	ActiveRecords []ActiveBuyRecord `json:"active_records" change:"-"`
-}
-
-type ActiveBuyRecord struct {
-	RecordUuid string
-	AmountLeft int64
+	objects.Book
 }
 
 type Record struct {
@@ -66,7 +55,7 @@ type Record struct {
 
 func NewRecord(recordBookUuid string, amount, sharePrice, taxes, fees, bonus, result int64) (*Record, *Book) {
 
-	record :=  objects.Record{
+	record := objects.Record{
 		Uuid:           id.SerialUuid(),
 		SharePrice:     sharePrice,
 		Time:           time.Now(),
@@ -82,12 +71,12 @@ func NewRecord(recordBookUuid string, amount, sharePrice, taxes, fees, bonus, re
 
 func DeleteRecord(uuid string, lockAcquired bool) {
 	if !lockAcquired {
-		recordsLock.Acquire("delete-record")
-		defer recordsLock.Release()
+		RecordsLock.Acquire("delete-record")
+		defer RecordsLock.Release()
 	}
 	r, ok := records[uuid]
 	if !ok {
-		log.Log.Warnf("got delete for reord but cant find uuid=%s", uuid)
+		log.Log.Warnf("got delete for record but cant find uuid=%s", uuid)
 		return
 	}
 	// remove from db first
@@ -101,7 +90,7 @@ func DeleteRecord(uuid string, lockAcquired bool) {
 	//remove the record from the book
 	book.ActiveRecords = book.ActiveRecords[:len(book.ActiveRecords)-1]
 	if r.ShareCount < 0 { // we have a sell, need to readd those those
-
+		//todo this is broken lol
 	}
 	id.RemoveUuid(r.Uuid)
 
@@ -127,8 +116,8 @@ func DeleteRecord(uuid string, lockAcquired bool) {
 
 func DeleteRecordBook(uuid string) {
 	// is called when a ledger fails to make, must delete the record book
-	recordsLock.Acquire("delete-record-book")
-	defer recordsLock.Release()
+	RecordsLock.Acquire("delete-record-book")
+	defer RecordsLock.Release()
 	b, ok := books[uuid]
 	if !ok {
 		log.Log.Warnf("got delete for record book that we dont know uuid=%s", uuid)
@@ -153,17 +142,18 @@ func DeleteRecordBook(uuid string) {
 
 func MakeBook(uuid, ledgerUuid, portfolioUuid string) error {
 
-	book := &Book{
+	book := &Book{Book: objects.Book{
 		Uuid:          uuid,
 		LedgerUuid:    ledgerUuid,
 		PortfolioUuid: portfolioUuid,
-		ActiveRecords: make([]ActiveBuyRecord, 0),
+		ActiveRecords: make([]objects.ActiveBuyRecord, 0),
+	},
 	}
 	bookChange := make(chan interface{})
 	if err := change.RegisterPrivateChangeDetect(book, bookChange); err != nil {
 		return err
 	}
-	if err := 	sender.RegisterChangeUpdate(portfolioUuid, bookChange); err != nil {
+	if err := sender.RegisterChangeUpdate(portfolioUuid, bookChange); err != nil {
 		return err
 	}
 	books[uuid] = book
@@ -171,17 +161,14 @@ func MakeBook(uuid, ledgerUuid, portfolioUuid string) error {
 		portfolioBooks[portfolioUuid] = make([]*Book, 0)
 	}
 	portfolioBooks[portfolioUuid] = append(portfolioBooks[portfolioUuid], books[uuid])
-
-	sender.SendNewObject(portfolioUuid, books[uuid])
 	id.RegisterUuid(uuid, books[uuid])
 	return nil
 }
 
 func MakeRecord(record objects.Record, lockAcquired bool) *Record {
-	fmt.Println(record.Uuid)
 	if !lockAcquired {
-		recordsLock.Acquire("new-record")
-		defer recordsLock.Release()
+		RecordsLock.Acquire("new-record")
+		defer RecordsLock.Release()
 	}
 
 	book, ok := books[record.RecordBookUuid]
@@ -189,22 +176,17 @@ func MakeRecord(record objects.Record, lockAcquired bool) *Record {
 		panic("record book not found for a record, NO!")
 	}
 	newRecord := &Record{
-		Record:record,
-	}
-	if book.Uuid == "73"{
-		fmt.Sprintf("As")
+		Record: record,
 	}
 	records[record.Uuid] = newRecord
 	if record.ShareCount > 0 {
-		book.ActiveRecords = append(book.ActiveRecords, ActiveBuyRecord{RecordUuid: record.Uuid, AmountLeft: record.ShareCount})
+		book.ActiveRecords = append(book.ActiveRecords, objects.ActiveBuyRecord{RecordUuid: record.Uuid, AmountLeft: record.ShareCount})
 	} else {
-		walkRecords(book,  record.ShareCount*-1, true)
+		walkRecords(book, record.ShareCount*-1, true)
 	}
 
-
 	id.RegisterUuid(record.Uuid, newRecord)
-	wires.BookUpdate.Offer(book)
-	sender.SendNewObject(book.PortfolioUuid, newRecord)
+
 	return newRecord
 }
 
@@ -253,14 +235,14 @@ func walkRecords(book *Book, shares int64, mark bool) int64 {
 
 func GetPrinciple(recordUuid string, shares int64) int64 {
 	book := books[recordUuid]
-	recordsLock.Acquire("get-principle")
-	defer recordsLock.Release()
+	RecordsLock.Acquire("get-principle")
+	defer RecordsLock.Release()
 	return walkRecords(book, shares, false)
 }
 
 func GetRecordsForPortfolio(portfolioUuid string) ([]*Book, []*Record) {
-	recordsLock.Acquire("get-records")
-	defer recordsLock.Release()
+	RecordsLock.Acquire("get-records")
+	defer RecordsLock.Release()
 	books := portfolioBooks[portfolioUuid]
 	portRecord := make([]*Record, 0)
 
@@ -273,8 +255,8 @@ func GetRecordsForPortfolio(portfolioUuid string) ([]*Book, []*Record) {
 }
 
 func GetAllBooks() []*Book {
-	recordsLock.Acquire("get-all-books")
-	defer recordsLock.Release()
+	RecordsLock.Acquire("get-all-books")
+	defer RecordsLock.Release()
 	bookList := make([]*Book, len(books))
 	i := 0
 	for _, book := range books {
@@ -284,8 +266,8 @@ func GetAllBooks() []*Book {
 	return bookList
 }
 func GetAllRecords() []*Record {
-	recordsLock.Acquire("get-all-books")
-	defer recordsLock.Release()
+	RecordsLock.Acquire("get-all-books")
+	defer RecordsLock.Release()
 	recordList := make([]*Record, len(records))
 	i := 0
 	for _, record := range records {
@@ -293,19 +275,4 @@ func GetAllRecords() []*Record {
 		i += 1
 	}
 	return recordList
-}
-
-func (*Record) GetType() string {
-	return EntryIdentifiableType
-}
-func (br *Record) GetId() string {
-	return br.Uuid
-}
-
-func (*Book) GetType() string {
-	return BookIdentifiableType
-}
-
-func (b *Book) GetId() string {
-	return b.Uuid
 }

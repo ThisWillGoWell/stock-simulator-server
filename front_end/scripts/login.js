@@ -1,10 +1,20 @@
 $( document ).ready(function() {
 
-    let url = "https://mockstarket.com";
-    var port = location.port
-    // if(port == "8000"){
-    //     url = "http://localhost:8000"
-    // }
+    let url = window.location.origin;
+
+    if( window.location.host.includes("localhost") ){
+        if(window.location.port === "8080"){
+            // force use localhost
+            url = "http://localhost:8000";
+            getToken("Will", "pass")
+        }else if(window.location.port === "8081"){
+            // force use dev
+            url = "https://dev.mockstarket.com"
+        } else if (window.location.port === "8082"){
+            // force use prod
+            url = "https://mockstarket.com"
+        }
+    }
 
     let input_login_uid = $('#login-uid');
     let input_login_pw = $('#login-pw');

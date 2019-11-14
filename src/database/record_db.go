@@ -61,15 +61,15 @@ func (d *Database) GetRecords() ([]objects.Record, error) {
 			return nil, err
 		}
 		records = append(records, objects.Record{
-			Uuid: uuid,
+			Uuid:           uuid,
 			RecordBookUuid: recordUuid,
-			ShareCount: amount,
-			SharePrice: sharePrice,
-			Taxes: taxes,
-			Fees: fees,
-			Bonus: bonus,
-			Result:result,
-			Time: t,
+			ShareCount:     amount,
+			SharePrice:     sharePrice,
+			Taxes:          taxes,
+			Fees:           fees,
+			Bonus:          bonus,
+			Result:         result,
+			Time:           t,
 		})
 	}
 	return records, rows.Err()

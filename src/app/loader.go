@@ -3,13 +3,13 @@ package app
 import (
 	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/effect"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/items"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/ledger"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/notification"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/portfolio"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/record"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/user"
 	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/valuable"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/items"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/ledger"
 )
 
 func LoadFromDb() error {
@@ -41,8 +41,6 @@ func LoadFromDb() error {
 		return err
 	}
 
-
-
 	for _, l := range ledger.Entries {
 		port := portfolio.Portfolios[l.PortfolioId]
 		stock := valuable.Stocks[l.StockId]
@@ -58,38 +56,36 @@ func LoadFromDb() error {
 }
 
 func loadRecords() error {
-	models,err  := database.Db.GetRecords()
+	models, err := database.Db.GetRecords()
 	if err != nil {
 		return err
 	}
-	for _, m := range models{
-		record.MakeRecord(m, false )
+	for _, m := range models {
+		record.MakeRecord(m, false)
 	}
 	return nil
 }
 
-
 func loadUsers() error {
-	models,err  := database.Db.GetUsers()
+	models, err := database.Db.GetUsers()
 	if err != nil {
 		return err
 	}
-	for _, m := range models{
-		if _, err := user.MakeUser(m ); err != nil {
+	for _, m := range models {
+		if _, err := user.MakeUser(m); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-
 func loadEffects() error {
-	effects,err  := database.Db.GetEffects()
+	effects, err := database.Db.GetEffects()
 	if err != nil {
 		return err
 	}
-	for _, m := range effects{
-		if _, err := effect.MakeEffect(m, false ); err != nil {
+	for _, m := range effects {
+		if _, err := effect.MakeEffect(m, false); err != nil {
 			return err
 		}
 	}
@@ -97,11 +93,11 @@ func loadEffects() error {
 }
 
 func loadItems() error {
-	models,err  := database.Db.GetItems()
+	models, err := database.Db.GetItems()
 	if err != nil {
 		return err
 	}
-	for _, m := range models{
+	for _, m := range models {
 		if _, err := items.MakeItem(m); err != nil {
 			return err
 		}
@@ -110,11 +106,11 @@ func loadItems() error {
 }
 
 func loadLedgers() error {
-	models,err  := database.Db.GetLedgers()
+	models, err := database.Db.GetLedgers()
 	if err != nil {
 		return err
 	}
-	for _, m := range models{
+	for _, m := range models {
 		if _, err := ledger.MakeLedgerEntry(m, false); err != nil {
 			return err
 		}
@@ -123,23 +119,22 @@ func loadLedgers() error {
 }
 
 func loadNotificiaons() error {
-	models,err  := database.Db.GetNotification()
+	models, err := database.Db.GetNotification()
 	if err != nil {
 		return err
 	}
-	for _, m := range models{
+	for _, m := range models {
 		notification.MakeNotification(m)
 	}
 	return nil
 }
 
-
 func loadPortfolio() error {
-	models,err  := database.Db.GetPortfolios()
+	models, err := database.Db.GetPortfolios()
 	if err != nil {
 		return err
 	}
-	for _, m := range models{
+	for _, m := range models {
 		if _, err := portfolio.MakePortfolio(m, false); err != nil {
 			return err
 		}
@@ -148,16 +143,15 @@ func loadPortfolio() error {
 }
 
 func loadStocks() error {
-	models,err  := database.Db.GetStocks()
+	models, err := database.Db.GetStocks()
 	if err != nil {
 		return err
 	}
 
-	for _, m := range models{
+	for _, m := range models {
 		if _, err := valuable.MakeStock(m); err != nil {
 			return err
 		}
 	}
 	return nil
 }
-

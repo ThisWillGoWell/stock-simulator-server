@@ -59,18 +59,23 @@
         }, 1000)
 
     } ;
-    let requestCount = 0;
-    let forceUseProd = false;
-    let httpUrl = location.protocol + "://"+ window.location.host;
 
-    let  websocketUrl =  "ws://" + window.location.host + '/ws';
-    if(location.protocol === "https:") {
-        websocketUrl =  "wss://" + window.location.host + '/ws';
+    let httpUrl = location.protocol + "://"+ window.location.host;
+    let  websocketUrl =  "wss://" + window.location.host + '/api/ws';
+
+    if( window.location.host.includes("localhost") ){
+        if(window.location.port === "8081"){
+            // force use dev
+            websocketUrl = "wss://dev.mockstarket.com/api/ws"
+        } else if (window.location.port === "8082"){
+            // force use prod
+            websocketUrl = "wss://mockstarket.com/api/ws"
+        }
     }
-    if(forceUseProd){
-        websocketUrl = "wss://mockstarket.com/ws";
-        httpUrl = "https://mockstarket.com";
-    }
+
+
+
+
     let webSocket = null;
 
 

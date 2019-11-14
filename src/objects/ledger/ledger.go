@@ -2,6 +2,7 @@ package ledger
 
 import (
 	"fmt"
+
 	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/id"
@@ -100,11 +101,11 @@ func MakeLedgerEntry(ledger objects.Ledger, lockAcquired bool) (*Entry, error) {
 	}
 
 	entry := &Entry{
+		Lock:          lock.NewLock(fmt.Sprintf("LedgerEntry-%s", ledger.Uuid)),
 		Ledger:        ledger,
 		UpdateChannel: duplicator.MakeDuplicator(fmt.Sprintf("LedgerEntry-%s", ledger.Uuid)),
 	}
-
-	if err := change.RegisterPublicChangeDetect(entry); err != nil {
+	if err := change.RegisterPublicChangeDetect(entry.Ledger); err != nil {
 		return nil, err
 	}
 
@@ -139,12 +140,4 @@ func GetAllLedgers() []*Entry {
 		i += 1
 	}
 	return lst
-}
-
-func (ledger *Entry) GetId() string {
-	return ledger.Uuid
-}
-
-func (ledger *Entry) GetType() string {
-	return objectType
 }
