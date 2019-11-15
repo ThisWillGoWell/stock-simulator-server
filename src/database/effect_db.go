@@ -4,8 +4,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 	"time"
+
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 
 	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
 )
@@ -74,7 +75,7 @@ func (d *Database) GetEffects() ([]objects.Effect, error) {
 			Title:         title,
 			Duration:      utils.Duration{Duration: time.Duration(duration)},
 			StartTime:     startTime,
-			Type:          title,
+			Type:          effectType,
 			InnerEffect:   effectJsonString,
 			Tag:           tag,
 		})

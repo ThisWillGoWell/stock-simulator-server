@@ -85,7 +85,6 @@ func MakePortfolio(portfolio objects.Portfolio, lockAquired bool) (*Portfolio, e
 			Lock:          lock.NewLock(fmt.Sprintf("portfolio-%s", portfolio.Uuid)),
 			UpdateInput:   duplicator.MakeDuplicator(fmt.Sprintf("portfolio-%s-valueable-update", portfolio.Uuid)),
 		}
-	port.Lock.EnableDebug()
 	port.UpdateChannel.EnableCopyMode()
 	if err := change.RegisterPublicChangeDetect(port); err != nil {
 		return nil, err

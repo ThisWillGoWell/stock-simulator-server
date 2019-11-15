@@ -76,7 +76,6 @@ func getTaggedEffect(PortfolioUuid, tag string) *Effect {
 }
 
 func newEffect(PortfolioUuid, title, effectType, tag string, innerEffect interface{}, duration time.Duration) (*Effect, *Effect, error) {
-	EffectLock.EnableDebug()
 	EffectLock.Acquire("make-effect")
 	defer EffectLock.Release()
 
