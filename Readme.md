@@ -1,4 +1,45 @@
+# Mock Stock Market 
 
+Getting started 
+## Download the go code
+`go get -u github.com/ThisWillGoWell/stock-simulator-server`
+
+
+## Run Server Locally
+
+
+Run With the following environment variables 
+ENV=dev;ENABLE_DB_WRITES=false;ENABLE_DB=true;ITEMS_JSON=seed/items.json;SEED_OBJECTS=false;AWS_PROFILE=mockstarket;LEVELS_JSON=seed/levels.json;OBJECTS_JSON=seed/seed_dev.json
+
+## Frontend locally 
+To run the a local copy of the frontend:
+- dev.mockstarket.com: `make frotned_dev`
+- mockstarket.com: `make frontend_prod`
+- localhost:8000: `make frontend_local`
+
+This will start up a pyhton simple http server running on certin ports. The javascript code will then use the
+port the server is running on to decide what url to connect to 
+
+## Committing 
+The makefile is used to simplify many of the command 
+1. Get added to the contributor list in github and get a iam user in aws
+1. Install Windows Subsystem for Linux (Ubuntu) (windows only)
+    - https://docs.microsoft.com/en-us/windows/wsl/install-win10
+1. Open a wsl bash program (terminal if using linux or mac)
+1. Add ssh key to git profile 
+    - https://help.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh
+1. Tell git to always use ssh 
+    - `git config --global url."git@github.com:".insteadOf "https://github.com/"`
+1. install aws cli 
+    - linux/wsl: https://docs.aws.amazon.com/cli/latest/userguide/install-linux.html
+    - mac: https://docs.aws.amazon.com/cli/latest/userguide/install-macos.html
+1. `aws configure --profile mockstarket`
+    - enter the aws access key and secret provided when registered 
+
+To run the server locally you need the aws creds, ask @will or @jake to generate a set of credentials if you wish to connect to the dev database 
+- https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html
+- region is us-west-2
+- name the profile ([default] in example) to mockstarket  
 
 # Message Structure
 
