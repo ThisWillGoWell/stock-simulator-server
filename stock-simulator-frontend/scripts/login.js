@@ -1,7 +1,7 @@
 $( document ).ready(function() {
 
     let url = "https://mockstarket.com";
-
+    let querystring="";
 
     if( window.location.host.includes("localhost") ){
         if(window.location.port === "8080"){
@@ -10,13 +10,15 @@ $( document ).ready(function() {
             getToken("Will", "pass")
         }else if(window.location.port === "8081"){
             // force use dev
-            url = "https://dev.mockstarket.com"
+            url = "https://dev.mockstarket.com";
+            querystring="?dev=1"; // this connects to dev instance
         } else if (window.location.port === "8082"){
             // force use prod
             url = "https://mockstarket.com"
         }
     } else if(window.location.host.includes("dev")){
-        url = "https://dev.mockstarket.com"
+        url = "https://dev.mockstarket.com";
+        querystring="?dev=1";
     }
 
 
@@ -295,7 +297,7 @@ $( document ).ready(function() {
 
     function getToken(user, password) {
         const Http = new XMLHttpRequest();
-        Http.open("GET", url+"/api/token", false);
+        Http.open("GET", url+"/api/token"+querystring , false);
         Http.setRequestHeader("Authorization", authenticateUser(user, password));
         Http.send();
 
@@ -312,7 +314,7 @@ $( document ).ready(function() {
 
     function createUser(user, password, nickname) {
         const Http = new XMLHttpRequest();
-        Http.open("PUT", url+"/api/create", false);
+        Http.open("PUT", url+"/api/create"+querystring , false);
         Http.setRequestHeader("Authorization", authenticateUser(user, password));
         Http.setRequestHeader("DisplayName", nickname);
         Http.send();

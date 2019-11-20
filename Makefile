@@ -1,6 +1,6 @@
 DevHost=ec2-34-211-231-2.us-west-2.compute.amazonaws.com
 DevDatabase=mockstarket-dev.c6ejpamhqiq5.us-west-2.rds.amazonaws.com
-DevFrontendBucket=mockstarket-frontend-dev
+DevFrontendBucket=dev.mockstarket.com
 
 ProdHost=ec2-34-221-86-219.us-west-2.compute.amazonaws.com
 ProdDatabase=mockstarket-prod.c6ejpamhqiq5.us-west-2.rds.amazonaws.com
