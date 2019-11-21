@@ -32,7 +32,7 @@ func MapNumFloat(value, inMin, inMax, outMin, outMax float64) float64 {
 	return (value-inMin)*(outMax-outMin)/(inMax-inMin) + outMin
 }
 
-func RandRangInt(min, max int64) int64{
+func RandRangInt(min, max int64) int64 {
 	return rand.Int63n(max-min) + min
 }
 func MapNumInt(value, inMin, inMax, outMin, outMax int64) int64 {

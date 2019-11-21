@@ -1,10 +1,12 @@
 package database
 
 import (
-	"log"
+	"database/sql"
+	"fmt"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 	"time"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
+	"github.com/pkg/errors"
 )
 
 var (
@@ -25,62 +27,95 @@ var (
 		`ON CONFLICT (uuid) DO UPDATE SET current_price=EXCLUDED.current_price, open_shares=EXCLUDED.open_shares`
 
 	stocksTableQueryStatement = "SELECT uuid, ticker_id, name, current_price, open_shares, change_interval FROM " + stocksTableName
-	//getCurrentPrice()z
+
+	stocksHistoryTableName            = `stocks_history`
+	stocksHistoryTableCreateStatement = `CREATE TABLE IF NOT EXISTS ` + stocksHistoryTableName +
+		`( ` +
+		`time TIMESTAMPTZ NOT NULL,` +
+		`uuid text NOT NULL,` +
+		`current_price bigint NULL,` +
+		`open_shares bigint NULL` +
+		`);`
+
+	stocksHistoryTableUpdateInsert = `INSERT INTO ` + stocksHistoryTableName + `(time, uuid, current_price, open_shares) values (NOW(),$1, $2, $3);`
+
+	stocksTableDeleteStatement        = "DELETE from " + stocksTableName + `WHERE uuid = $1`
+	stocksHistoryTableDeleteStatement = "DELETE from " + stocksHistoryTableName + `WHERE uuid = $1`
+
+	validStockFields = map[string]bool{
+		"current_price": true,
+	}
 )
 
-func initStocks() {
-	tx, err := db.Begin()
-	if err != nil {
-		db.Close()
-		panic("could not begin stocks init: " + err.Error())
+func (d *Database) InitStocks() error {
+	if err := d.Exec("stocks-init", stocksTableCreateStatement); err != nil {
+		return err
 	}
-	_, err = tx.Exec(stocksTableCreateStatement)
-	if err != nil {
-		tx.Rollback()
-		panic("error occurred while creating metrics table " + err.Error())
-	}
-	tx.Commit()
+	return d.Exec("stocks-history-init", stocksHistoryTableCreateStatement)
 }
 
-func writeStock(stock *valuable.Stock) {
-	dbLock.Acquire("update-stock")
-	defer dbLock.Release()
-	tx, err := db.Begin()
-
-	if err != nil {
-		db.Close()
-		panic("could not begin stocks init: " + err.Error())
+func writeStock(stock objects.Stock, tx *sql.Tx) error {
+	_, e1 := tx.Exec(stocksTableUpdateInsert, stock.Uuid, stock.TickerId, stock.Name, stock.CurrentPrice, stock.OpenShares, stock.ChangeDuration)
+	_, e2 := tx.Exec(stocksHistoryTableUpdateInsert, stock.Uuid, stock.CurrentPrice, stock.OpenShares)
+	if e1 != nil || e2 != nil {
+		return fmt.Errorf("write stock uuid=%s stockdb=[%v] history=[%v]", stock.Uuid, e1, e2)
 	}
-	_, err = tx.Exec(stocksTableUpdateInsert, stock.Uuid, stock.TickerId, stock.Name, stock.CurrentPrice, stock.OpenShares, stock.ChangeDuration)
-	if err != nil {
-		tx.Rollback()
-		panic("error occurred while insert stock in table " + err.Error())
-	}
-	tx.Commit()
+	return nil
 }
 
-func populateStocks() {
+func deleteStock(stock objects.Stock, tx *sql.Tx) error {
+	_, e1 := tx.Exec(stocksTableDeleteStatement, stock.Uuid)
+	_, e2 := tx.Exec(stocksHistoryTableDeleteStatement, stock.Uuid)
+	if e1 != nil || e2 != nil {
+		return fmt.Errorf("delete stock uuid=%s stockdb=[%v] history=[%v]", stock.Uuid, e1, e2)
+	}
+	return nil
+}
+
+func (d *Database) MakeStockHistoryTimeQuery(uuid, timeLength, field, intervalLength string) ([][]interface{}, error) {
+	if _, valid := validStockFields[field]; !valid {
+		return nil, errors.New("not valid choice")
+	}
+	return d.MakeHistoryTimeQuery(stocksHistoryTableName, uuid, timeLength, field, intervalLength)
+
+}
+
+func (d *Database) MakeStockHistoryLimitQuery(uuid, field string, limit int) ([][]interface{}, error) {
+	if _, valid := validStockFields[field]; !valid {
+		return nil, errors.New("not valid choice")
+	}
+	return d.MakeHistoryLimitQuery(stocksHistoryTableName, uuid, field, limit)
+}
+
+func (d *Database) GetStocks() ([]objects.Stock, error) {
 	var uuid, name, tickerId string
 	var currentPrice, openShares int64
 	var changeInterval float64
 
-	rows, err := db.Query(stocksTableQueryStatement)
-	if err != nil {
-		log.Fatal("error query data", err)
-		panic("could not populate portfolios: " + err.Error())
+	var rows *sql.Rows
+	var err error
+	if rows, err = d.db.Query(stocksTableQueryStatement); err != nil {
+		return nil, fmt.Errorf("failed to query portfolio err=[%v]", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
+	stocks := make([]objects.Stock, 0)
 	for rows.Next() {
-		err := rows.Scan(&uuid, &tickerId, &name, &currentPrice, &openShares, &changeInterval)
-		if err != nil {
-			panic(err)
-			log.Fatal(err)
+		if err = rows.Scan(&uuid, &tickerId, &name, &currentPrice, &openShares, &changeInterval); err != nil {
+			return nil, err
 		}
-		t := time.Duration(changeInterval)
-		valuable.MakeStock(uuid, tickerId, name, currentPrice, openShares, t)
+		stocks = append(stocks, objects.Stock{
+			Uuid:           uuid,
+			Name:           name,
+			TickerId:       tickerId,
+			CurrentPrice:   currentPrice,
+			OpenShares:     openShares,
+			ChangeDuration: time.Duration(changeInterval),
+		})
 	}
-	err = rows.Err()
-	if err != nil {
-		log.Fatal(err)
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
+	return stocks, nil
 }

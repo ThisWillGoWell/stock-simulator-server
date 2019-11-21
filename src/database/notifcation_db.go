@@ -1,11 +1,11 @@
 package database
 
 import (
+	"database/sql"
 	"encoding/json"
-	"log"
+	"fmt"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 	"time"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/notification"
 )
 
 var (
@@ -25,81 +25,52 @@ var (
 		`ON CONFLICT (uuid) DO UPDATE SET seen=EXCLUDED.seen`
 
 	notificationTableQueryStatement = "SELECT uuid, userUuid, seen, timestamp, type, notification FROM " + notificationTableName + `;`
-	//getCurrentPrice()
-	notificaionDeleteStatement = `DELETE from ` + notificationTableName + ` where uuid=$1`
+
+	notificationDeleteStatement = `DELETE from ` + notificationTableName + ` where uuid=$1`
 )
 
-func initNotification() {
-	tx, err := db.Begin()
-	if err != nil {
-		db.Close()
-		panic("could not begin ledger init: " + err.Error())
-	}
-	_, err = tx.Exec(notificationTableCreateStatement)
-	if err != nil {
-		tx.Rollback()
-		panic("error occurred while creating leger table " + err.Error())
-	}
-	tx.Commit()
+func (d *Database) InitNotification() error {
+	return d.Exec("notification-init", notificationTableCreateStatement)
 }
 
-func writeNotification(entry *notification.Notification) {
-	dbLock.Acquire("update-notification")
-	defer dbLock.Release()
-	tx, err := db.Begin()
-
-	if err != nil {
-		db.Close()
-		panic("could not begin notification init" + err.Error())
-	}
+func writeNotification(entry objects.Notification, tx *sql.Tx) error {
 	jsonString, err := json.Marshal(entry.Notification)
 	if err != nil {
+		return fmt.Errorf("failed to marshal inner notificaion err=[%v]", err)
 	}
-
 	_, err = tx.Exec(notificationTableUpdateInsert, entry.Uuid, entry.PortfolioUuid, entry.Seen, entry.Type, entry.Timestamp, jsonString)
-	if err != nil {
-		tx.Rollback()
-		panic("error occurred while insert notification in table " + err.Error())
-	}
-	tx.Commit()
+	return err
 }
 
-func populateNotification() {
+func deleteNotification(note objects.Notification, tx *sql.Tx) error {
+	_, err := tx.Exec(notificationDeleteStatement, note.Uuid)
+	return err
+}
+
+func (d *Database) GetNotification() ([]objects.Notification, error) {
 	var uuid, userUuid, jsonString, notType string
 	var seen bool
 	var t time.Time
 
-	rows, err := db.Query(notificationTableQueryStatement)
+	rows, err := d.db.Query(notificationTableQueryStatement)
 	if err != nil {
-		log.Fatal("error reading notifications databse")
-		panic("could not populate notifications: " + err.Error())
+		return nil, fmt.Errorf("failed to query database err=[%v]", err)
 	}
+	n := make([]objects.Notification, 0)
 	defer rows.Close()
 	for rows.Next() {
 		err := rows.Scan(&uuid, &userUuid, &seen, &t, &notType, &jsonString)
 		if err != nil {
-			log.Fatal("error in querying ledger: ", err)
+			return nil, fmt.Errorf("failed to scan notificaion err=[%v]", err)
 		}
-		note := notification.JsonToNotification(jsonString, notType)
-		notification.MakeNotification(uuid, userUuid, notType, t, seen, note)
+		n = append(n, objects.Notification{
+			Uuid:          uuid,
+			PortfolioUuid: userUuid,
+			Timestamp:     t,
+			Seen:          seen,
+			Type:          notType,
+			Notification:  jsonString,
+		})
 	}
-	err = rows.Err()
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func deleteNotification(note *notification.Notification) {
-	tx, err := db.Begin()
-	if err != nil {
-		db.Close()
-		panic("error opening db for deleting item: " + err.Error())
-	}
-	_, err = tx.Exec(notificaionDeleteStatement, note.Uuid)
-	if err != nil {
-		tx.Rollback()
-		panic("error delete item: " + err.Error())
-	}
-	tx.Commit()
-
+	return n, rows.Err()
 }

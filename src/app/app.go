@@ -1,82 +1,101 @@
 package app
 
 import (
-	"encoding/json"
 	"fmt"
-	"math/rand"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/app/aws"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/app/config"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/app/seed"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/database"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/game/level"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/game/order"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/id/change"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/effect"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/items"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/portfolio"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/web/http"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/wires"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/wires/sender"
+	"io/ioutil"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/portfolio"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/app/log"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/order"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/web/session"
 
-	"github.com/ThisWillGoWell/stock-simulator-server/src/log"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/session"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/utils"
-	"github.com/ThisWillGoWell/stock-simulator-server/src/valuable"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/account"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects/valuable"
 )
 
-type JsonStock struct {
-	Name   string         `json:"name"`
-	Change utils.Duration `json:"change"`
-}
+func LoadConfigs() {
 
-type JsonAccount struct {
-	Name     string `json:"display_name"`
-	Password string `json:"password"`
-	Wallet   int64  `json:"wallet"`
 }
-type ConfigJson struct {
-	Stocks   map[string]JsonStock   `json:"stocks"`
-	Accounts map[string]JsonAccount `json:"accounts"`
-	AutoBuy  bool                   `json:"auto_buy"`
-}
+func App() {
 
-func LoadConfig(dat []byte) {
-	stocks := make([]string, 0)
-	portfolios := make([]string, 0)
-	fmt.Println("loading")
-
-	var config ConfigJson
-	err := json.Unmarshal(dat, &config)
+	c := config.FromEnv()
+	secret, err := aws.GetDatabaseSecret(c.Environment)
 	if err != nil {
-		log.Log.Error("error reading config: ", err)
+		panic(err)
+	}
+
+	if err := database.InitDatabase(c.EnableDb, c.EnableDbWrites, secret.Host, fmt.Sprintf("%d", secret.Port), secret.Username, secret.Password, "postgres"); err != nil {
+		panic(err)
+	}
+	log.Log.Info("Starting App")
+	if c.EnableDb {
+		log.Log.Info("loading from database")
+		if err := LoadFromDb(); err != nil {
+			panic(err)
+		}
+		log.Log.Info("done")
+	}
+
+	portfolio.UpdateAll()
+	//valuable.ValuablesLock.EnableDebug()
+	//ledger.EntriesLock.EnableDebug()
+
+	//discordAlertToken := secrest.DiscordToken
+	//
+	//var alertWriter io.Writer
+	//if discordAlertToken != "" {
+	//	alertWriter = alert.Init(discordAlertToken, "504397270075179029")
+	//} else {
+	//	// if there is discord token, discard all alerts
+	//	alertWriter = ioutil.Discard
+	//}
+	//log.Init(alertWriter)
+	//log.Alerts.Info("Starting App")
+	log.Log.Info("Connecting wires")
+	//Wiring of system
+	wires.ConnectWires()
+	log.Log.Info("done")
+
+	//this takes the subscribe output and converts it to a message
+	change.StartDetectChanges()
+	session.StartSessionCleaner()
+	sender.RunGlobalSender()
+	effect.RunEffectCleaner()
+
+	order.Run()
+	valuable.StartStockStimulation()
+
+	// read in the levels and items config
+	data, err := ioutil.ReadFile(c.LevelsJson)
+	if err != nil {
+		log.Log.Error("error reading file", err)
 		return
 	}
-	for stockId, stockConfig := range config.Stocks {
-		stock, err := valuable.NewStock(stockId, stockConfig.Name, int64(rand.Intn(10000)), stockConfig.Change.Duration)
-		if err != nil {
-			log.Log.Error("error adding stock from config: ", err)
-		} else {
-			stocks = append(stocks, stock.Uuid)
-		}
+	level.LoadLevels(data)
+
+	data, err = ioutil.ReadFile(c.ItemsJson)
+	if err != nil {
+		log.Log.Error("error reading file", err)
+		return
 	}
+	items.LoadItemConfig(data)
 
-	for username, userConfig := range config.Accounts {
-		token, err := account.NewUser(username, userConfig.Name, userConfig.Password)
-		if err != nil {
-			log.Log.Error("error making user from config config: ", err)
-		} else {
-			user, _ := session.GetUserId(token)
-			if userConfig.Wallet != 0 {
-				portfolio.Portfolios[account.UserList[user].PortfolioId].Wallet = userConfig.Wallet
-				portfolios = append(portfolios, account.UserList[user].PortfolioId)
-			}
-
-		}
-
+	if c.SeedObjects {
+		log.Log.Info("Seeding From Config")
+		seed.SeedObjects(c.ObjectsJson)
+		log.Log.Info("done")
 	}
-	if config.AutoBuy {
-		for _, stock := range stocks {
-			for _, port := range portfolios {
-				order.MakePurchaseOrder(stock, port, 1)
-			}
-		}
-	}
-
-	log.Log.Info("Config done loaded", err)
-
+	log.Log.Info("Starting Handlers")
+	http.StartHandlers()
 }

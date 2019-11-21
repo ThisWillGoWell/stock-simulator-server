@@ -1,11 +1,11 @@
 package database
 
 import (
+	"database/sql"
 	"encoding/json"
-	"log"
+	"fmt"
+	"github.com/ThisWillGoWell/stock-simulator-server/src/objects"
 	"time"
-
-	"github.com/ThisWillGoWell/stock-simulator-server/src/items"
 )
 
 var (
@@ -27,77 +27,55 @@ var (
 
 	itemsTableQueryStatement  = "SELECT * FROM " + itemsTableName + `;`
 	itemsTableDeleteStatement = "DELETE FROM " + itemsTableName + " where uuid=$1"
-	//getCurrentPrice()
 )
 
-func initItems() {
-	tx, err := db.Begin()
-	if err != nil {
-		db.Close()
-		panic("could not begin ledger init: " + err.Error())
-	}
-	_, err = tx.Exec(itemsTableCreateStatement)
-	if err != nil {
-		tx.Rollback()
-		panic("error occurred while creating leger table " + err.Error())
-	}
-	tx.Commit()
+func (d *Database) initItems() error {
+	return d.Exec("init-items", itemsTableCreateStatement)
 }
 
-func writeItem(entry *items.Item) {
-	dbLock.Acquire("update-item")
-	defer dbLock.Release()
-	tx, err := db.Begin()
-
-	if err != nil {
-		db.Close()
-		panic("could not begin item init" + err.Error())
-	}
+func writeItem(entry objects.Item, tx *sql.Tx) error {
 	innerItemStr, err := json.Marshal(entry.InnerItem)
 	if err != nil {
+		return fmt.Errorf("failed to marshal inner item err=[%v]", err)
 	}
-
 	_, err = tx.Exec(itemsTableUpdateInsert, entry.Uuid, entry.Type, entry.Name, entry.ConfigId, entry.PortfolioUuid, innerItemStr, entry.CreateTime)
-	if err != nil {
-		tx.Rollback()
-		panic("error occurred while insert item in table " + err.Error())
-	}
-	tx.Commit()
+	return err
 }
 
-func populateItems() {
+func deleteItem(entry objects.Item, tx *sql.Tx) error {
+	_, err := tx.Exec(itemsTableDeleteStatement, entry.Uuid)
+	return err
+}
+
+func (d *Database) GetItems() ([]objects.Item, error) {
 	var uuid, itemType, name, configId, portfolioUuid, innerJson string
 	var createTime time.Time
-	rows, err := db.Query(itemsTableQueryStatement)
-	if err != nil {
-		log.Fatal("error reading items database")
-		panic("could not populate notifications: " + err.Error())
+
+	var rows *sql.Rows
+	var err error
+	if rows, err = d.db.Query(itemsTableQueryStatement); err != nil {
+		return nil, fmt.Errorf("failed to query items err=[%v]", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
+	items := make([]objects.Item, 0)
 	for rows.Next() {
-		err := rows.Scan(&uuid, &itemType, &name, &configId, &portfolioUuid, &innerJson, &createTime)
-		if err != nil {
-			log.Fatal("error in querying ledger: ", err)
+		if err = rows.Scan(&uuid, &itemType, &name, &configId, &portfolioUuid, &innerJson, &createTime); err != nil {
+			return nil, err
 		}
-		items.MakeItem(uuid, portfolioUuid, configId, itemType, name, innerJson, createTime)
+		items = append(items, objects.Item{
+			Uuid:          uuid,
+			Name:          name,
+			ConfigId:      configId,
+			Type:          itemType,
+			PortfolioUuid: portfolioUuid,
+			CreateTime:    createTime,
+			InnerItem:     innerJson,
+		})
 	}
-	err = rows.Err()
-	if err != nil {
-		log.Fatal(err)
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
-}
-
-func deleteItem(item *items.Item) {
-	tx, err := db.Begin()
-	if err != nil {
-		db.Close()
-		panic("error opening db for deleting item: " + err.Error())
-	}
-	_, err = tx.Exec(itemsTableDeleteStatement, item.Uuid)
-	if err != nil {
-		tx.Rollback()
-		panic("error delete item: " + err.Error())
-	}
-	tx.Commit()
-
+	return items, nil
 }

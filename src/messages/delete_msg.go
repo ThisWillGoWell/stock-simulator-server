@@ -1,6 +1,8 @@
 package messages
 
-import "github.com/ThisWillGoWell/stock-simulator-server/src/change"
+import (
+	"github.com/ThisWillGoWell/stock-simulator-server/src/id"
+)
 
 const DeleteAction = "delete"
 
@@ -20,7 +22,7 @@ type DeleteResponse struct {
 
 func (*DeleteMessage) message() { return }
 
-func BuildDeleteMessage(o change.Identifiable) *BaseMessage {
+func BuildDeleteMessage(o id.Identifiable) *BaseMessage {
 	return &BaseMessage{
 		Action: DeleteAction,
 		Msg: &DeleteMessage{
