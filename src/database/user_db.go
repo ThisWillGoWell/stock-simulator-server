@@ -22,7 +22,7 @@ var (
 		`PRIMARY KEY(uuid)` +
 		`);`
 
-	accountTableUpdateInsert = `INSERT into ` + accountTableName + `(uuid, name, display_name, password, portfolio_uuid, config, isAdmin) values($1, $2, $3, $4, $5, $6, $7) ` +
+	accountTableUpdateInsert = `INSERT into ` + accountTableName + `(uuid, name, display_name, password, portfolio_uuid, config, is_admin) values($1, $2, $3, $4, $5, $6, $7) ` +
 		`ON CONFLICT (uuid) DO UPDATE SET display_name=EXCLUDED.display_name, password=EXCLUDED.password, config=EXCLUDED.config, is_admin=EXCLUDED.isAdmin;`
 
 	userTableQueryStatement = "SELECT uuid, name, display_name, password, portfolio_uuid, config, is_admin FROM " + accountTableName + `;`
