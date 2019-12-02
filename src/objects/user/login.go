@@ -54,11 +54,28 @@ func ConnectUser(sessionToken string) (*User, error) {
 	defer UserListLock.Release()
 	user, exists := UserList[userId]
 	if !exists {
-		return nil, errors.New("user found in session list but not in current users")
+		log.Log.Errorf("a user was found in session token but not in user list? uid=%s", userId)
+		return nil, fmt.Errorf("oops! somehting unknown happened 0x58")
 	}
 	user.Active = true
 	wires.UsersUpdate.Offer(user.User)
 	return user, nil
+}
+
+func GetUserFromToken(sessionToken string) (objects.User, error) {
+	u := objects.User{}
+	userId, err := session.GetUserId(sessionToken)
+	if err != nil {
+		return u, err
+	}
+
+	user, exists := UserList[userId]
+	if !exists {
+		log.Log.Errorf("a user was found in session token but not in user list? uid=%s", userId)
+		return u, fmt.Errorf("oops! something unknown happened 0x78")
+	}
+	u = user.User
+	return u, nil
 }
 
 /**
