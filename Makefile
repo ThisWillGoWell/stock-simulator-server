@@ -47,6 +47,7 @@ prod_database_master:
 	etc/database.sh mockstarket/prod/database-master
 
 
+
 connect_database:
 	etc/secrets.sh prod && ssh -i mockstarket.pem ec2-user@$\${ServerHost} "  psql \"host=${DatabaseHost} port=5432 user=postgres password=$$RDS_PASSWORD dbname=postgres\""
 
