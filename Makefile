@@ -40,9 +40,11 @@ dev_database:
 dev_database_master:
 	etc/database.sh mockstarket/dev/database-master
 
-prod_database: DatabaseHost=${ProdDatabase}
+prod_database:
+	etc/database.sh mockstarket/prod/database
 
-prod_database: connect_database
+prod_database_master:
+	etc/database.sh mockstarket/prod/database-master
 
 
 connect_database:
