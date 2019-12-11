@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	historyTableTimeQuery  = `SELECT time AS tb, AVG(%s) AS current_price FROM %s WHERE time > NOW() - interval '%s' and uuid=$1 GROUP BY tb  ORDER BY tb DESC`
+	historyTableTimeQuery  = `SELECT time AS tb, AVG(%s) AS val FROM %s WHERE time > NOW() - interval '%s' and uuid=$1 GROUP BY tb  ORDER BY tb DESC`
 	historyTableLimitQuery = `SELECT time, %s FROM %s WHERE uuid=$1 LIMIT $2;`
 )
 
