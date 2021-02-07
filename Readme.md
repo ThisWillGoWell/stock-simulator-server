@@ -117,7 +117,8 @@ their portfolio. Users are there to represent the physical person in the game.
     "msg": {
         "type": "user",
         "uuid": "24",
-        "object": {
+        "object": { 
+            "is_admin": false,
             "display_name": "DisplayName",
             "active": true,
             "portfolio_uuid": "25"

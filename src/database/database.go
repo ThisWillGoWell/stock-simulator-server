@@ -28,6 +28,7 @@ func InitDatabase(enableDb, enableDbWrite bool, host, port, username, password, 
 		db.enable = enableDbWrite
 		return nil
 	}
+	db.enable = true
 	connectionString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s", host, port, username, password, database)
 	var err error
 	if db.db, err = sql.Open("postgres", connectionString); err != nil {

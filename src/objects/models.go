@@ -73,6 +73,7 @@ type User struct {
 	Config        map[string]interface{} `json:"-"`
 	ConfigStr     string                 `json:"-"`
 	ActiveClients int64                  `json:"-"`
+	IsAdmin       bool                   `json:"is_admin"`
 }
 
 func (user User) GetId() string {
